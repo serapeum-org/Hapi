@@ -65,7 +65,6 @@ class BaseConceptualModel(ABC):
     """
 
     @staticmethod
-    @abstractmethod
     def precipitation(
         temp: float,
         ltt: float,
@@ -109,7 +108,6 @@ class BaseConceptualModel(ABC):
         ...
 
     @staticmethod
-    @abstractmethod
     def snow(
         temp, ttm, cfmax, cfr, cwh, rf, sf, wc_old, sp_old
     ) -> tuple[float, float, float]:
@@ -153,7 +151,6 @@ class BaseConceptualModel(ABC):
         ...
 
     @staticmethod
-    @abstractmethod
     def soil(
         fc,
         beta,
@@ -215,7 +212,6 @@ class BaseConceptualModel(ABC):
         ...
 
     @staticmethod
-    @abstractmethod
     def response(
         tfac, perc, alpha, k, k1, area, lz_old, uz_int_1
     ) -> tuple[float, float, float]:
@@ -258,7 +254,6 @@ class BaseConceptualModel(ABC):
         """
         ...
 
-    @abstractmethod
     def routing(self, q: np.ndarray, maxbas: int = 1) -> np.ndarray:
         """Apply a triangular transfer function to route discharge.
 
