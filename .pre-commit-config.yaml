@@ -67,12 +67,20 @@ repos:
     hooks:
       - id: pydocstyle
         name: "[py   - check] pydocstyle"
-        files: ^src/llama_utils/.*\.py$
+        files: ^src/Hapi/.*\.py$
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
       - id: isort
         name: "[py   - format] isort"
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        name: "[py   - check] mypy"
+        args: [--config-file=pyproject.toml]
+        additional_dependencies: [numpy, pandas, scipy, types-PyYAML, types-requests]
+        files: ^src/Hapi/.*\.py$
   - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:

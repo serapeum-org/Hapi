@@ -7,6 +7,7 @@ of predicted runoff at known locations based on a given performance function.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -66,7 +67,7 @@ class Calibration(Catchment):
             routing_method,
         )
 
-    def read_objective_function(self, objective_function: callable, args):
+    def read_objective_function(self, objective_function: Callable[..., Any], args):
         """Read and store the objective function and its arguments.
 
         Takes the objective function and any additional arguments that
@@ -94,7 +95,13 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def extract_discharge(self, factor: list = None):
+    def extract_discharge(
+        self,
+        calculate_metrics: bool = True,
+        frame_work_1: bool = False,
+        factor: list | None = None,
+        only_outlet: bool = False,
+    ):
         """Extract the simulated discharge hydrograph at gauge locations.
 
         Extracts discharge values from the total routed discharge array
@@ -103,9 +110,18 @@ class Calibration(Catchment):
         gauge.
 
         Args:
-            factor (List, optional): List of multiplication factors for
+            calculate_metrics (bool, optional): Whether to calculate
+                performance metrics. Not used in this override but
+                kept for signature compatibility. Default is True.
+            frame_work_1 (bool, optional): True if the routing
+                function is Maxbas. Not used in this override but
+                kept for signature compatibility. Default is False.
+            factor (list, optional): List of multiplication factors for
                 the simulated discharge, one per gauge. If None, no
                 scaling is applied. Default is None.
+            only_outlet (bool, optional): True to extract discharge
+                only at the outlet cell. Not used in this override but
+                kept for signature compatibility. Default is False.
         """
         self.Qsim = np.zeros((self.TS - 1, len(self.GaugesTable)))
         # error = 0

@@ -229,7 +229,7 @@ class Routing:
         q_temp = np.float32(q)
         for w_i in w:
             q_r += q_temp * w_i
-            q_temp = np.insert(q_temp, 0, 0.0)[:-1]
+            q_temp = np.insert(q_temp, 0, 0.0)[:-1]  # type: ignore[assignment]
 
         return q_r
 

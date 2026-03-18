@@ -57,7 +57,7 @@ class HBVBergestrom92(BaseConceptualModel):
         pass
 
     @staticmethod
-    def precipitation(prec, temp, tt, rfcf, sfcf):
+    def precipitation(prec, temp, tt, rfcf, sfcf):  # type: ignore[override]
         """Partition precipitation into rainfall and snowfall.
 
         If the temperature is lower than or equal to the threshold
@@ -113,7 +113,7 @@ class HBVBergestrom92(BaseConceptualModel):
         return rf, sf
 
     @staticmethod
-    def snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
+    def snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):  # type: ignore[override]
         """Compute snow accumulation, melt, and infiltration.
 
         The snow pack consists of two states: water content (``wc``)
@@ -206,7 +206,7 @@ class HBVBergestrom92(BaseConceptualModel):
         return inf, wc_new, sp_new
 
     @staticmethod
-    def soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
+    def soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):  # type: ignore[override]
         """Compute soil moisture balance and upper zone recharge.
 
         The model checks the amount of water that can infiltrate the
@@ -282,7 +282,7 @@ class HBVBergestrom92(BaseConceptualModel):
         return sm_new, uz_int_1
 
     @staticmethod
-    def response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
+    def response(lz_old, uz_int_1, perc, k, k1, k2, uzl):  # type: ignore[override]
         """Compute the runoff response from upper and lower zones.
 
         The response routine transforms the current values of upper

@@ -115,27 +115,27 @@ class Catchment:
         self.ET = None
         self.ll_temp = None
         self.QGauges = None
-        self.Snow = None
-        self.Maxbas = None
+        self.Snow: bool | None = None
+        self.Maxbas: bool | None = None
         self.LumpedModel = None
-        self.CatArea = None
-        self.InitialCond = None
+        self.CatArea: float | int | None = None
+        self.InitialCond: list | None = None
         self.q_init = None
         self.GaugesTable = None
-        self.UB = None
-        self.LB = None
+        self.UB: np.ndarray | None = None
+        self.LB: np.ndarray | None = None
         self.cols = None
         self.rows = None
         self.NoDataValue = None
         self.FlowAccArr = None
-        self.no_elem = None
-        self.acc_val = None
-        self.Outlet = None
+        self.no_elem: int | None = None
+        self.acc_val: list[int] | None = None
+        self.Outlet: tuple | None = None
         self.CellSize = None
         self.px_area = None
-        self.px_tot_area = None
+        self.px_tot_area: float | None = None
         self.FlowDirArr = None
-        self.FDT = None
+        self.FDT: dict | None = None
         self.FPLArr = None
         (
             self.DEM,
@@ -148,18 +148,18 @@ class Catchment:
         self.quz_routed, self.qlz_translated, self.state_variables = None, None, None
         self.anim = None
         self.quz, self.qlz = None, None
-        self.Qsim = None
+        self.Qsim: np.ndarray | None = None
         self.Metrics = None
 
     def read_rainfall(
         self,
         path: str,
-        start: str = None,
-        end: str = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
+        file_name_data_fmt: str | None = None,
         extension: str = ".tif",
     ):
         r"""Read rainfall rasters into a 3D numpy array.
@@ -224,13 +224,13 @@ class Catchment:
     def read_temperature(
         self,
         path: str,
-        ll_temp: list | np.ndarray = None,
-        start: str = None,
-        end: str = None,
+        ll_temp: list | np.ndarray | None = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
+        file_name_data_fmt: str | None = None,
         extension: str = ".tif",
     ):
         r"""Read temperature rasters into a 3D numpy array.
@@ -303,12 +303,12 @@ class Catchment:
     def read_et(
         self,
         path: str,
-        start: str = None,
-        end: str = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
+        file_name_data_fmt: str | None = None,
         extension: str = ".tif",
     ):
         r"""Read evapotranspiration rasters into a 3D numpy array.
@@ -409,8 +409,8 @@ class Catchment:
                 if math.isclose(self.FlowAccArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FlowAccArr[i, j] = np.nan
 
-        self.no_elem = np.size(self.FlowAccArr[:, :]) - np.count_nonzero(
-            (self.FlowAccArr[np.isnan(self.FlowAccArr)])
+        self.no_elem = int(np.size(self.FlowAccArr[:, :]) - np.count_nonzero(
+            (self.FlowAccArr[np.isnan(self.FlowAccArr)]))
         )
         self.acc_val = [
             int(self.FlowAccArr[i, j])
@@ -542,9 +542,9 @@ class Catchment:
                 if math.isclose(self.FPLArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FPLArr[i, j] = np.nan
         # check flow accumulation input raster
-        self.no_elem = np.size(self.FPLArr[:, :]) - np.count_nonzero(
+        self.no_elem = int(np.size(self.FPLArr[:, :]) - np.count_nonzero(
             (self.FPLArr[np.isnan(self.FPLArr)])
-        )
+        ))
 
         logger.debug("Flow path length input is read successfully")
 
@@ -736,7 +736,7 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def read_lumped_inputs(self, path: str, ll_temp: list | np.ndarray = None):
+    def read_lumped_inputs(self, path: str, ll_temp: list | np.ndarray | None = None):
         """Read meteorological inputs for lumped mode.
 
         Reads precipitation, evapotranspiration, temperature, and
@@ -816,8 +816,8 @@ class Catchment:
         column: str = "id",
         fmt: str = "%Y-%m-%d",
         split: bool = False,
-        start_date: str = "",
-        end_date: str = "",
+        start_date: str | dt.datetime = "",
+        end_date: str | dt.datetime = "",
         readfrom: str = "",
     ):
         """Read gauge discharge data from CSV files.
@@ -1046,8 +1046,8 @@ class Catchment:
 
     def plot_hydrograph(
         self,
-        start_date: str,
-        end_date: str,
+        start_date: str | dt.datetime,
+        end_date: str | dt.datetime,
         gauge: int,
         hapi_color: tuple | str = "#004c99",
         gauge_color: tuple | str = "#DC143C",
@@ -1055,7 +1055,7 @@ class Catchment:
         hapi_order: int = 1,
         gauge_order: int = 0,
         label_font_size: int = 10,
-        x_major_fmt: str = "%Y-%m-%d",
+        x_major_fmt: str | dates.DateFormatter = "%Y-%m-%d",
         n_ticks: int = 5,
         title: str = "",
         x_axis_fmt: str = "%d\n%m",
@@ -1178,8 +1178,8 @@ class Catchment:
 
     def plot_distributed_results(
         self,
-        start: str,
-        end: str,
+        start: str | dt.datetime,
+        end: str | dt.datetime,
         fmt: str = "%Y-%m-%d",
         option: int = 1,
         gauges: bool = False,
@@ -1315,8 +1315,8 @@ class Catchment:
         self,
         flow_acc_path: str = "",
         result: int = 1,
-        start: str = "",
-        end: str = "",
+        start: str | dt.datetime = "",
+        end: str | dt.datetime = "",
         path: str = "",
         prefix: str = "",
         fmt: str = "%Y-%m-%d",

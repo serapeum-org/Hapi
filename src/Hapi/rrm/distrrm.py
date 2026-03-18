@@ -455,9 +455,9 @@ class DistributedRRM:
             quz.append(np.array(q_uzi))  # upper zone routed discharge mm/timestep
             # ------------------------------------------------------------------------------
             # convert to arrays
-        st = np.array(st)
-        qlz = np.array(qlz)
-        quz = np.array(quz)
+        st = np.array(st)  # type: ignore
+        qlz = np.array(qlz)  # type: ignore
+        quz = np.array(quz)  # type: ignore
         # convert quz from mm/time step to m3/sec
         area_coef = p2[1] / px_tot_area
         quz = quz * px_area * area_coef / (p2[0] * 3.6)
@@ -530,8 +530,8 @@ class DistributedRRM:
         outletx = outlet[0][0]
         outlety = outlet[1][0]
 
-        qlz = np.array(
-            [np.nanmean(qlz[:, :, i]) for i in range(n_steps)]
+        qlz = np.array(  # type: ignore[assignment]
+            [np.nanmean(qlz[:, :, i]) for i in range(n_steps)]  # type: ignore[call-overload]
         )  # average of all cells (not routed mm/timestep)
         # convert Qlz to m3/sec
         qlz = qlz * p2[1] / (p2[0] * 3.6)  # generation

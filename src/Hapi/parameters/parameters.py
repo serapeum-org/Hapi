@@ -21,7 +21,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
-import requests
+import requests  # type: ignore[import-untyped]
 from loguru import logger
 
 BASE_URL = "https://api.figshare.com/v2"
@@ -55,7 +55,7 @@ class FigshareAPIClient:
         endpoint: str,
         data: dict | None = None,
         binary: bool = False,
-    ) -> dict[str, int]:
+    ) -> dict[str, int] | None:
         """Send an HTTP request to the Figshare API.
 
         Args:
@@ -67,7 +67,7 @@ class FigshareAPIClient:
                 Defaults to False.
 
         Returns:
-            dict[str, int]: The parsed JSON response from the API.
+            dict[str, int] | None: The parsed JSON response from the API, or None if the response body is empty.
 
         Raises:
             requests.exceptions.HTTPError: If the API request fails.
@@ -89,7 +89,7 @@ class FigshareAPIClient:
             logger.error(f"HTTPError: {error}, Response: {response.text}")
             raise
 
-    def get_article_version(self, article_id: int, version: int) -> dict[str, int]:
+    def get_article_version(self, article_id: int, version: int) -> dict[str, int] | None:
         """Retrieve a specific version of an article from the API.
 
         Args:
@@ -113,7 +113,7 @@ class FigshareAPIClient:
         endpoint = f"articles/{article_id}/versions/{version}"
         return self.send_request("GET", endpoint)
 
-    def list_article_versions(self, article_id: int) -> list[dict[str, int]]:
+    def list_article_versions(self, article_id: int) -> list[dict[str, int]] | None:
         """Retrieve all available versions of a specific article.
 
         Args:
@@ -121,8 +121,8 @@ class FigshareAPIClient:
                 versions for.
 
         Returns:
-            list[dict[str, int]]: A list of available versions for the
-                specified article.
+            list[dict[str, int]] | None: A list of available versions for the
+                specified article, or None if the response body is empty.
 
         Raises:
             requests.exceptions.HTTPError: If the API request fails.
@@ -134,7 +134,7 @@ class FigshareAPIClient:
             ... )  # doctest: +SKIP
         """
         endpoint = f"articles/{article_id}/versions"
-        return self.send_request("GET", endpoint)
+        return self.send_request("GET", endpoint)  # type: ignore[return-value]
 
 
 class FileManager:
@@ -294,7 +294,7 @@ class ParameterManager:
 
     def get_parameter_set_details(
         self, set_id: int | str, version: int | None = None
-    ) -> dict[str, int]:
+    ) -> dict[str, int] | None:
         """Retrieve details of a parameter set from the Figshare API.
 
         Args:
@@ -344,6 +344,8 @@ class ParameterManager:
             >>> files = manager.list_files(1)  # doctest: +SKIP
         """
         details = self.get_parameter_set_details(set_id, version)
+        if details is None:
+            return []
         return details.get("files", [])
 
     def download_files(
@@ -454,11 +456,11 @@ class Parameter:
         self.api_client = FigshareAPIClient()
         self.manager = ParameterManager(self.api_client)
         if download_dir is None:
-            download_dir = os.getenv("HAPI_DATA_DIR")
-            if download_dir is None:
+            download_dir_env: str | None = os.getenv("HAPI_DATA_DIR")
+            if download_dir_env is None:
                 raise ValueError("HAPI_DATA_DIR environment variable is not set")
             else:
-                download_dir = Path(download_dir)
+                download_dir = Path(download_dir_env)
                 download_dir.mkdir(parents=True, exist_ok=True)
         self.download_dir = download_dir
 

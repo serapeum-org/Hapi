@@ -115,7 +115,7 @@ class HBV(BaseConceptualModel):
     """
 
     @staticmethod
-    def precipitation(temp, ltt, utt, prec, rfcf, sfcf):
+    def precipitation(temp, ltt, utt, prec, rfcf, sfcf):  # type: ignore[override]
         """Partition precipitation into rainfall and snowfall.
 
         If temperature is lower than ``ltt``, all precipitation is
@@ -183,7 +183,7 @@ class HBV(BaseConceptualModel):
         return rf, sf
 
     @staticmethod
-    def snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old) -> tuple[float, float, float]:
+    def snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old) -> tuple[float, float, float]:  # type: ignore[override]
         """Simulate snow accumulation, melt, and refreezing.
 
         The snow pack consists of two states: Water Content (``wc``)
@@ -280,7 +280,7 @@ class HBV(BaseConceptualModel):
         return inf, wc_new, sp_new
 
     @staticmethod
-    def soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old) -> tuple[float, float]:  # tfac,
+    def soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old) -> tuple[float, float]:  # type: ignore[override]  # tfac,
         """Compute soil moisture balance and recharge to the upper zone.
 
         The soil routine checks the amount of water that can infiltrate
@@ -356,7 +356,7 @@ class HBV(BaseConceptualModel):
         return sm_new, uz_int_1
 
     @staticmethod
-    def response(perc, alpha, k, k1, lz_old, uz_int_1) -> tuple[float, float, float, float]:  # tfac,area,
+    def response(perc, alpha, k, k1, lz_old, uz_int_1) -> tuple[float, float, float, float]:  # type: ignore[override]  # tfac,area,
         r"""Transform upper and lower zone storage into discharge.
 
         The response routine converts the current values of the upper
@@ -424,7 +424,7 @@ class HBV(BaseConceptualModel):
         return q_0, q_1, uz_new, lz_new  # ,uz_int_2, lz_int_1
 
     @staticmethod
-    def tf(maxbas) -> tuple[float]:
+    def tf(maxbas) -> np.ndarray:
         """Generate transfer function weights using a triangular shape.
 
         Creates a set of weights for the triangular transfer function
@@ -459,7 +459,7 @@ class HBV(BaseConceptualModel):
 
         # Normalise weights
         wi = np.array(wi) / np.sum(wi)
-        return wi
+        return wi  # type: ignore[no-any-return]
 
 
     def routing(self, q, maxbas=1):
@@ -615,7 +615,7 @@ class HBV(BaseConceptualModel):
             # soil function
             fc = p[1]
             beta = p[2]
-            e_corr = 1  # p[2]
+            e_corr = 1  # type: ignore[assignment]  # p[2]
             etf = p[3]
             lp = p[4]
             c_flux = p[5]
@@ -657,7 +657,7 @@ class HBV(BaseConceptualModel):
         #    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
         return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
-    def simulate(self, prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0):
+    def simulate(self, prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0):  # type: ignore[override]
         """Run the HBV model for the full precipitation time series.
 
         Executes the HBV model for ``n`` time steps (the length of the
@@ -756,7 +756,7 @@ class HBV(BaseConceptualModel):
         for i in range(len(prec)):
             v = [prec[i], temp[i], et[i], ll_temp[i]]
             #        q_out, st_out, uz_int_2_out, lz_int_1_out = StepRun(par, p2, v, st[i], snow=0)
-            q_uzi, q_lzi, st_out = self.step_run(par, v, st[i], snow=0)  # p2,
+            q_uzi, q_lzi, st_out = self.step_run(par, v, st[i], snow=0)  # type: ignore[arg-type]  # p2,
             #        q_sim.append(q_out)
             q_uz.append(q_uzi)
             q_lz.append(q_lzi)
@@ -764,4 +764,4 @@ class HBV(BaseConceptualModel):
         #        uz_int_2.append(uz_int_2_out) # upper zone - perc
         #        lz_int_1.append(lz_int_1_out) # lower zone + perc
 
-        return np.float32(q_uz), np.float32(q_lz), np.float32(st)
+        return np.float32(q_uz), np.float32(q_lz), np.float32(st)  # type: ignore[arg-type]

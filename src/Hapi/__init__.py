@@ -17,7 +17,7 @@ Here are just a few of the things that pandas does well:
 """
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError  # type: ignore
+from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version
 
 

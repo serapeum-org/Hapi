@@ -28,7 +28,7 @@ class Parameters:
         raster,
         no_parameters: int,
         no_lumped_par: int = 0,
-        lumped_par_pos: list[int] = None,
+        lumped_par_pos: list[int] | None = None,
         lake: bool = False,
         snow: bool = False,
         hru: bool = False,
@@ -140,7 +140,7 @@ class Parameters:
             )
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(
+            self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(  # type: ignore[assignment]
                 (self.raster_A[np.isnan(self.raster_A)])
             )
 
@@ -176,7 +176,7 @@ class Parameters:
         elif function == 2:
             self.Function = self.par3d
         elif function == 3:
-            self.Function = self.par2d_lumped_k1_lake
+            self.Function = self.par2d_lumped_k1_lake  # type: ignore[assignment]
         elif function == 4:
             self.Function = self.hydrologic_response_units
         # to overwrite any choice user choose if the is HRUs
@@ -232,7 +232,7 @@ class Parameters:
 
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
-        self.Par2d = np.ones((self.no_parameters, self.no_elem))
+        self.Par2d = np.ones((self.no_parameters, self.no_elem))  # type: ignore[assignment]
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(self.no_elem):
@@ -372,7 +372,7 @@ class Parameters:
         no_parameters = self.no_parameters - 1
 
         # create a 2d array [no_parameters, no_cells]
-        self.Par2d = np.ones((no_parameters, self.no_elem))
+        self.Par2d = np.ones((no_parameters, self.no_elem))  # type: ignore[assignment]
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell

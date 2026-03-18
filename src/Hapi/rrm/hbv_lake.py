@@ -792,7 +792,7 @@ class HBVLake(BaseConceptualModel):
 
         return qout, [sp_new, sm_new, uz_new, lz_new, wc_new, lv_new]
 
-    def simulate(
+    def simulate(  # type: ignore[override]
         self,
         avg_prec,
         temp,

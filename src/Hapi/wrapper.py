@@ -129,7 +129,7 @@ class Wrapper:
         tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = HBVLake().simulate(
+        Lake.Qlake, _ = HBVLake().simulate(  # type: ignore[abstract]
             plake,
             t,
             et,
@@ -252,7 +252,7 @@ class Wrapper:
         tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = HBVLake().simulate(
+        Lake.Qlake, _ = HBVLake().simulate(  # type: ignore[abstract]
             plake,
             t,
             et,
@@ -267,7 +267,7 @@ class Wrapper:
 
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.muskingum(
+        Lake.QlakeR = routing.Muskingum_V(
             Lake.Qlake,
             Lake.Qlake[0],
             Lake.Parameters[11],
@@ -278,7 +278,7 @@ class Wrapper:
         # subcatchment
         distrrm.run_lumped_model(Model)
 
-        distrrm.DistMAXBAS(Model)
+        distrrm.DistMaxbas1(Model)
 
         qlz1 = np.array(
             [

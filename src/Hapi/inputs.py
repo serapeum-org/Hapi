@@ -231,7 +231,7 @@ class Inputs:
 
         if not as_raster:
             dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
-            gdf = gdf.to_crs(crs=dataset.crs)
+            gdf = gdf.to_crs(crs=dataset.crs)  # type: ignore[union-attr]
 
             stats = pd.DataFrame(columns=["min", "max", "mean", "std"])
             for i in range(len(PARAMETERS_LIST)):
@@ -251,9 +251,9 @@ class Inputs:
         path: str,
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
-        start: str = None,
-        end: str = None,
+        file_name_data_fmt: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         extension: str = ".tif",
     ) -> list:
@@ -401,11 +401,10 @@ class Inputs:
             FileNotFoundError: If the directory specified by
                 ``HAPI_DATA_DIR`` does not exist.
         """
-        data_dir = os.getenv("HAPI_DATA_DIR")
-        if data_dir is None:
+        data_dir_env: str | None = os.getenv("HAPI_DATA_DIR")
+        if data_dir_env is None:
             raise ValueError("HAPI_DATA_DIR environment variable is not set")
-        else:
-            data_dir = Path(data_dir)
-            if not data_dir.exists():
-                raise FileNotFoundError(f"{data_dir} does not exist")
+        data_dir: Path = Path(data_dir_env)
+        if not data_dir.exists():
+            raise FileNotFoundError(f"{data_dir} does not exist")
         return data_dir

@@ -124,7 +124,7 @@ class DEM(Dataset):
                     celli_content.append(flow_direction_index[i, j, 0])
                     cellj_content.append(flow_direction_index[i, j, 1])
 
-        flow_acc_table = {}
+        flow_acc_table: dict[str, list[tuple[int, int]]] = {}
         # for each cell store the directly giving cells
         for i in range(rows):
             for j in range(cols):
