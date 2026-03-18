@@ -1626,7 +1626,7 @@ class Lake:
         if temporal_resolution.lower() == "daily":
             self.Index = pd.date_range(start, end, freq="D")
         elif temporal_resolution.lower() == "hourly":
-            self.Index = pd.date_range(start, end, freq="H")
+            self.Index = pd.date_range(start, end, freq="h")
         else:
             assert False, "Error"
 
