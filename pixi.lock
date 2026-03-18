@@ -3938,7 +3938,7 @@ packages:
 - pypi: ./
   name: hapi-nile
   version: 1.7.0
-  sha256: 375b0873a83d0b6d967438968cb6686587dacab88b1bb4d23e8a7aec4e3de2f3
+  sha256: f8a5e62c67a857b2465dbc15d7cb91abdf4136fa039e3390a08c6900040aa504
   requires_dist:
   - geopandas>=1.0.1
   - loguru>=0.7.2
@@ -3963,7 +3963,6 @@ packages:
   - twine>=5.0.0 ; extra == 'dev'
   - pip ; extra == 'dev'
   - jupyterlab ; extra == 'dev'
-  - notebook ; extra == 'dev'
   - jupyter ; extra == 'dev'
   - commitizen>=4.8.4 ; extra == 'dev'
   - mkdocs>=1.5.3 ; extra == 'docs'
