@@ -20,19 +20,19 @@ on:
 
 jobs:
   deploy-pr:
-      if: github.event_name == 'pull_request'
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
 
-      - uses: Serapieum-of-alex/github-actions/actions/mkdocs-deploy@mkdocs/v1
-        with:
-          trigger: 'pull_request'
-          package-manager: 'pixi'
-          install-groups: "groups: docs"
-          deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
+    - uses: Serapieum-of-alex/github-actions/actions/mkdocs-deploy@mkdocs/v1
+      with:
+        trigger: 'pull_request'
+        package-manager: 'pixi'
+        install-groups: "groups: docs"
+        deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
 
   deploy-main:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
