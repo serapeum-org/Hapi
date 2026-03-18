@@ -105,7 +105,7 @@ class Catchment:
         elif temporal_resolution.lower() == "hourly":
             self.dt = 1  # 24
             self.conversion_factor = conversion_factor * 1 / 24
-            self.Index = pd.date_range(self.start, self.end, freq="H")
+            self.Index = pd.date_range(self.start, self.end, freq="h")
         else:
             # TODO calculate the temporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
@@ -922,7 +922,7 @@ class Catchment:
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
-            ind = pd.date_range(self.start, self.end, freq="H")
+            ind = pd.date_range(self.start, self.end, freq="h")
 
         if self.spatial_resolution.lower() == "distributed":
             assert hasattr(self, "GaugesTable"), "please read the gauges' table first"

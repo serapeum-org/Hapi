@@ -348,7 +348,7 @@ class Run(Catchment):
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
-            ind = pd.date_range(self.startdate, self.enddate, freq="H")
+            ind = pd.date_range(self.startdate, self.enddate, freq="h")
 
         Qsim = pd.DataFrame(index=ind)
 
