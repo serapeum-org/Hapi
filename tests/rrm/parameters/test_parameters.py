@@ -99,7 +99,13 @@ class TestFileManager:
         new_dir = temp_directory / "new_subdir"
         file_path = new_dir / "example.txt"
         url = "https://www.example.com"
-        FileManager.download_file(url, file_path)
+
+        mock_response = MagicMock()
+        mock_response.iter_content.return_value = [b"fake content"]
+        mock_response.raise_for_status = MagicMock()
+
+        with patch("Hapi.parameters.parameters.requests.get", return_value=mock_response):
+            FileManager.download_file(url, file_path)
 
         assert new_dir.exists(), "The directory should be created."
         assert file_path.exists(), "The file should be created in the new directory."
