@@ -24,7 +24,6 @@ Concrete implementations include
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Tuple
 
 import numpy as np
 
@@ -73,7 +72,7 @@ class BaseConceptualModel(ABC):
         rfcf: float,
         sfcf: float,
         pcorr: float = 1.0,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Split precipitation into rainfall and snowfall.
 
         Partitions total precipitation into a rainfall component and a
@@ -111,7 +110,7 @@ class BaseConceptualModel(ABC):
     @staticmethod
     def snow(
         temp, ttm, cfmax, cfr, cwh, rf, sf, wc_old, sp_old
-    ) -> Tuple[float, float, float]:
+    ) -> tuple[float, float, float]:
         """Simulate snow accumulation, melt, and refreezing.
 
         Updates the snow pack state by computing melt (when
@@ -166,7 +165,7 @@ class BaseConceptualModel(ABC):
         ep,
         sm_old,
         uz_old,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Compute soil moisture balance and recharge to the upper zone.
 
         Calculates the updated soil moisture after accounting for
@@ -215,7 +214,7 @@ class BaseConceptualModel(ABC):
     @staticmethod
     def response(
         tfac, perc, alpha, k, k1, area, lz_old, uz_int_1
-    ) -> Tuple[float, float, float]:
+    ) -> tuple[float, float, float]:
         """Convert upper and lower zone storage into stream discharge.
 
         Transforms the current values of the upper and lower storage
@@ -288,7 +287,7 @@ class BaseConceptualModel(ABC):
     @abstractmethod
     def simulate(
         self, prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Run the model simulation over a full precipitation time series.
 
         Executes all model subroutines sequentially for each time step

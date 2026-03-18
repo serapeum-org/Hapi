@@ -26,7 +26,6 @@ Model characteristics:
 """
 from __future__ import annotations
 
-from typing import Tuple
 import numpy as np
 
 from Hapi.rrm.base_model import BaseConceptualModel
@@ -451,7 +450,7 @@ class HBVBergestrom92(BaseConceptualModel):
 
     def simulate(
         self, prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Run the HBV Bergestrom92 model simulation.
 
         Executes the HBV model for the number of time steps in the

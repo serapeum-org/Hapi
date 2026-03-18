@@ -7,7 +7,7 @@ of predicted runoff at known locations based on a given performance function.
 """
 from __future__ import annotations
 
-from typing import Any, Optional, List
+from typing import Any
 
 import numpy as np
 from Oasis.harmonysearch import HSapi
@@ -37,9 +37,9 @@ class Calibration(Catchment):
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: Optional[str] = "Lumped",
-        temporal_resolution: Optional[str] = "Daily",
-        routing_method: Optional[str] = "Muskingum",
+        spatial_resolution: str | None = "Lumped",
+        temporal_resolution: str | None = "Daily",
+        routing_method: str | None = "Muskingum",
     ):
         """Initialize the Calibration object.
 
@@ -94,7 +94,7 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def extract_discharge(self, factor: List = None):
+    def extract_discharge(self, factor: list = None):
         """Extract the simulated discharge hydrograph at gauge locations.
 
         Extracts discharge values from the total routed discharge array

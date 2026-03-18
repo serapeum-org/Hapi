@@ -9,7 +9,6 @@ It includes:
 """
 from __future__ import annotations
 
-from typing import Union
 import numpy as np
 
 
@@ -92,10 +91,10 @@ class Routing:
     @staticmethod
     def Muskingum_V(
         inflow: np.ndarray,
-        Qinitial: Union[int, float],
-        k: Union[int, float],
-        x: Union[int, float],
-        dt: Union[int, float],
+        Qinitial: int | float,
+        k: int | float,
+        x: int | float,
+        dt: int | float,
     ) -> np.ndarray:
         """Route an inflow hydrograph using a vectorized Muskingum method.
 
@@ -107,14 +106,14 @@ class Routing:
         Args:
             inflow (numpy.ndarray): Time series of inflow discharge
                 values.
-            Qinitial (Union[int, float]): Initial outflow value at the
+            Qinitial (int | float): Initial outflow value at the
                 first time step.
-            k (Union[int, float]): Channel travel time in the same
+            k (int | float): Channel travel time in the same
                 units as ``dt`` (typically hours).
-            x (Union[int, float]): Weighting factor for inflow versus
+            x (int | float): Weighting factor for inflow versus
                 storage, ranging from 0 (maximum attenuation) to 0.5
                 (no attenuation).
-            dt (Union[int, float]): Computational time step in the
+            dt (int | float): Computational time step in the
                 same units as ``k``.
 
         Returns:

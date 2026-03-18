@@ -6,7 +6,6 @@ the distributed rainfall-runoff modelling pipeline.
 """
 from __future__ import annotations
 
-from typing import Dict
 import numpy as np
 from pyramids.dataset import Dataset
 
@@ -93,7 +92,7 @@ class DEM(Dataset):
 
         return fd_cell
 
-    def flow_direction_table(self) -> Dict:
+    def flow_direction_table(self) -> dict:
         """Build an upstream-cell lookup table from flow directions.
 
         Uses ``flow_direction_index`` to determine downstream
@@ -101,7 +100,7 @@ class DEM(Dataset):
         maps to the list of cells that flow directly into it.
 
         Returns:
-            Dict[str, list[tuple[int, int]]]: A dictionary keyed by
+            dict[str, list[tuple[int, int]]]: A dictionary keyed by
                 ``"row,col"`` strings.  Each value is a list of
                 ``(row, col)`` tuples identifying the cells whose
                 flow direction points directly into the key cell.

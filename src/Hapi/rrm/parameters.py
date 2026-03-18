@@ -7,7 +7,6 @@ generated parameters into rasters.
 """
 from __future__ import annotations
 
-from typing import List
 import datetime as dt
 import math
 import os
@@ -29,7 +28,7 @@ class Parameters:
         raster,
         no_parameters: int,
         no_lumped_par: int = 0,
-        lumped_par_pos: List[int] = None,
+        lumped_par_pos: list[int] = None,
         lake: bool = False,
         snow: bool = False,
         hru: bool = False,

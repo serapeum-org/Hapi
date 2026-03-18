@@ -27,7 +27,6 @@ Otherwise it uses 10 parameters::
 """
 from __future__ import annotations
 
-from typing import Tuple
 import numpy as np
 from Hapi.rrm.base_model import BaseConceptualModel
 
@@ -184,7 +183,7 @@ class HBV(BaseConceptualModel):
         return rf, sf
 
     @staticmethod
-    def snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old) -> Tuple[float, float, float]:
+    def snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old) -> tuple[float, float, float]:
         """Simulate snow accumulation, melt, and refreezing.
 
         The snow pack consists of two states: Water Content (``wc``)
@@ -281,7 +280,7 @@ class HBV(BaseConceptualModel):
         return inf, wc_new, sp_new
 
     @staticmethod
-    def soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old) -> Tuple[float, float]:  # tfac,
+    def soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old) -> tuple[float, float]:  # tfac,
         """Compute soil moisture balance and recharge to the upper zone.
 
         The soil routine checks the amount of water that can infiltrate
@@ -357,7 +356,7 @@ class HBV(BaseConceptualModel):
         return sm_new, uz_int_1
 
     @staticmethod
-    def response(perc, alpha, k, k1, lz_old, uz_int_1) -> Tuple[float, float, float, float]:  # tfac,area,
+    def response(perc, alpha, k, k1, lz_old, uz_int_1) -> tuple[float, float, float, float]:  # tfac,area,
         r"""Transform upper and lower zone storage into discharge.
 
         The response routine converts the current values of the upper
@@ -425,7 +424,7 @@ class HBV(BaseConceptualModel):
         return q_0, q_1, uz_new, lz_new  # ,uz_int_2, lz_int_1
 
     @staticmethod
-    def tf(maxbas) -> Tuple[float]:
+    def tf(maxbas) -> tuple[float]:
         """Generate transfer function weights using a triangular shape.
 
         Creates a set of weights for the triangular transfer function

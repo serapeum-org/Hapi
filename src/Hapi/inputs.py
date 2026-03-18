@@ -15,8 +15,6 @@ from __future__ import annotations
 import datetime as dt
 import os
 from pathlib import Path
-from typing import Union
-
 import pandas as pd
 from geopandas import GeoDataFrame
 from pyramids.datacube import Datacube
@@ -73,7 +71,7 @@ class Inputs:
         self.source_dem = src
 
     def prepare_inputs(
-        self, inputs_dir: Union[str, Path], outputs_dir: Union[str, Path]
+        self, inputs_dir: str | Path, outputs_dir: str | Path
     ):
         """Align and crop input rasters to match the source DEM.
 
@@ -179,7 +177,7 @@ class Inputs:
 
     def extract_parameters(
         self,
-        gdf: Union[GeoDataFrame, str],
+        gdf: GeoDataFrame | str,
         scenario: str,
         as_raster: bool = False,
         save_to: str = "",

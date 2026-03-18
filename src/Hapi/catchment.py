@@ -14,13 +14,10 @@ upstream sub-catchments are treated as one lumped model.
 """
 from __future__ import annotations
 
-__name__ = "catchment"
-
 import datetime as dt
 import inspect
 import math
 import os
-from typing import Optional, Union
 
 import geopandas as gpd
 import matplotlib.dates as dates
@@ -55,9 +52,9 @@ class Catchment:
         start_data: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: Optional[str] = "Lumped",
-        temporal_resolution: Optional[str] = "Daily",
-        routing_method: Optional[str] = "Muskingum",
+        spatial_resolution: str | None = "Lumped",
+        temporal_resolution: str | None = "Daily",
+        routing_method: str | None = "Muskingum",
     ):
         """Initialize a Catchment instance.
 
@@ -227,7 +224,7 @@ class Catchment:
     def read_temperature(
         self,
         path: str,
-        ll_temp: Union[list, np.ndarray] = None,
+        ll_temp: list | np.ndarray = None,
         start: str = None,
         end: str = None,
         fmt: str = "%Y-%m-%d",
@@ -241,7 +238,7 @@ class Catchment:
         Args:
             path (str): Path to the folder containing temperature
                 rasters.
-            ll_temp (Union[list, np.ndarray], optional): Long-term
+            ll_temp (list | np.ndarray, optional): Long-term
                 average temperature array. If None, it is computed
                 from the mean of the temperature data. Default is
                 None.
@@ -692,7 +689,7 @@ class Catchment:
     def read_lumped_model(
         self,
         lumped_model,
-        catchment_area: Union[float, int],
+        catchment_area: float | int,
         initial_condition: list,
         q_init=None,
     ):
@@ -701,7 +698,7 @@ class Catchment:
         Args:
             lumped_model: A class representing the lumped conceptual
                 model (e.g., HBV).
-            catchment_area (Union[float, int]): Catchment area in
+            catchment_area (float | int): Catchment area in
                 km2.
             initial_condition (list): List of 5 initial condition
                 values: [SnowPack, SoilMoisture, Upper Zone,
@@ -739,7 +736,7 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def read_lumped_inputs(self, path: str, ll_temp: Union[list, np.ndarray] = None):
+    def read_lumped_inputs(self, path: str, ll_temp: list | np.ndarray = None):
         """Read meteorological inputs for lumped mode.
 
         Reads precipitation, evapotranspiration, temperature, and
@@ -748,7 +745,7 @@ class Catchment:
         Args:
             path (str): Path to the input CSV file. Data columns must
                 be in the order [date, precipitation, ET, Temp].
-            ll_temp (Union[list, np.ndarray], optional): Average
+            ll_temp (list | np.ndarray, optional): Average
                 long-term temperature. If None, it is calculated as
                 the mean of the temperature column. Default is None.
 
@@ -905,17 +902,17 @@ class Catchment:
 
     def read_parameters_bound(
         self,
-        upper_bound: Union[list, np.ndarray],
-        lower_bound: Union[list, np.ndarray],
+        upper_bound: list | np.ndarray,
+        lower_bound: list | np.ndarray,
         snow: bool = False,
         maxbas: bool = False,
     ):
         """Read the lower and upper parameter bounds for calibration.
 
         Args:
-            upper_bound (Union[list, np.ndarray]): Upper bound values
+            upper_bound (list | np.ndarray): Upper bound values
                 for each parameter.
-            lower_bound (Union[list, np.ndarray]): Lower bound values
+            lower_bound (list | np.ndarray): Lower bound values
                 for each parameter.
             snow (bool, optional): Whether to simulate snow
                 processes. If True, snow-related parameters must be
@@ -1052,8 +1049,8 @@ class Catchment:
         start_date: str,
         end_date: str,
         gauge: int,
-        hapi_color: Union[tuple, str] = "#004c99",
-        gauge_color: Union[tuple, str] = "#DC143C",
+        hapi_color: tuple | str = "#004c99",
+        gauge_color: tuple | str = "#DC143C",
         line_width: int = 3,
         hapi_order: int = 1,
         gauge_order: int = 0,
@@ -1071,9 +1068,9 @@ class Catchment:
             start_date (str): Starting date for the plot.
             end_date (str): End date for the plot.
             gauge (int): Index of the gauge in the GaugesTable.
-            hapi_color (Union[tuple, str], optional): Color of the
+            hapi_color (tuple | str, optional): Color of the
                 simulated hydrograph. Default is "#004c99".
-            gauge_color (Union[tuple, str], optional): Color of the
+            gauge_color (tuple | str, optional): Color of the
                 observed gauge hydrograph. Default is "#DC143C".
             line_width (int, optional): Line width for the
                 hydrographs. Default is 3.

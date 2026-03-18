@@ -19,7 +19,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -39,7 +38,7 @@ class FigshareAPIClient:
         >>> client = FigshareAPIClient()
     """
 
-    def __init__(self, headers: Optional[dict] = None):
+    def __init__(self, headers: dict | None = None):
         """Initialize FigshareAPIClient.
 
         Args:
@@ -54,9 +53,9 @@ class FigshareAPIClient:
         self,
         method: str,
         endpoint: str,
-        data: Optional[dict] = None,
+        data: dict | None = None,
         binary: bool = False,
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Send an HTTP request to the Figshare API.
 
         Args:
@@ -68,7 +67,7 @@ class FigshareAPIClient:
                 Defaults to False.
 
         Returns:
-            Dict[str, int]: The parsed JSON response from the API.
+            dict[str, int]: The parsed JSON response from the API.
 
         Raises:
             requests.exceptions.HTTPError: If the API request fails.
@@ -90,7 +89,7 @@ class FigshareAPIClient:
             logger.error(f"HTTPError: {error}, Response: {response.text}")
             raise
 
-    def get_article_version(self, article_id: int, version: int) -> Dict[str, int]:
+    def get_article_version(self, article_id: int, version: int) -> dict[str, int]:
         """Retrieve a specific version of an article from the API.
 
         Args:
@@ -99,7 +98,7 @@ class FigshareAPIClient:
                 retrieve.
 
         Returns:
-            Dict[str, int]: Details of the specific version of the
+            dict[str, int]: Details of the specific version of the
                 article.
 
         Raises:
@@ -114,7 +113,7 @@ class FigshareAPIClient:
         endpoint = f"articles/{article_id}/versions/{version}"
         return self.send_request("GET", endpoint)
 
-    def list_article_versions(self, article_id: int) -> List[Dict[str, int]]:
+    def list_article_versions(self, article_id: int) -> list[dict[str, int]]:
         """Retrieve all available versions of a specific article.
 
         Args:
@@ -122,7 +121,7 @@ class FigshareAPIClient:
                 versions for.
 
         Returns:
-            List[Dict[str, int]]: A list of available versions for the
+            list[dict[str, int]]: A list of available versions for the
                 specified article.
 
         Raises:
@@ -195,14 +194,14 @@ class FileManager:
         logger.debug(f"File downloaded: {download_path}")
 
     @staticmethod
-    def clear_directory(directory: Union[Path, str]):
+    def clear_directory(directory: Path | str):
         """Clear all files in the specified directory.
 
         Only regular files are removed; subdirectories are left
         untouched.
 
         Args:
-            directory (Union[Path, str]): The directory to clear.
+            directory (Path | str): The directory to clear.
 
         Examples:
             >>> FileManager.clear_directory(
@@ -294,18 +293,18 @@ class ParameterManager:
         self.api_client = api_client
 
     def get_parameter_set_details(
-        self, set_id: Union[int, str], version: Optional[int] = None
-    ) -> Dict[str, int]:
+        self, set_id: int | str, version: int | None = None
+    ) -> dict[str, int]:
         """Retrieve details of a parameter set from the Figshare API.
 
         Args:
-            set_id (Union[int, str]): The user-friendly ID of the
+            set_id (int | str): The user-friendly ID of the
                 parameter set (1--10, ``"avg"``, ``"max"``, ``"min"``).
             version (int, optional): The version of the parameter set.
                 Defaults to None (latest version).
 
         Returns:
-            Dict[str, int]: A dictionary containing full article
+            dict[str, int]: A dictionary containing full article
                 metadata (files, authors, license, dates, etc.).
 
         Raises:
@@ -325,11 +324,11 @@ class ParameterManager:
             endpoint += f"/versions/{version}"
         return self.api_client.send_request("GET", endpoint)
 
-    def list_files(self, set_id: Union[int, str], version: Optional[int] = None):
+    def list_files(self, set_id: int | str, version: int | None = None):
         """List all files in a parameter set.
 
         Args:
-            set_id (Union[int, str]): The user-friendly ID of the
+            set_id (int | str): The user-friendly ID of the
                 parameter set.
             version (int, optional): The version of the article.
                 Defaults to None.
@@ -348,12 +347,12 @@ class ParameterManager:
         return details.get("files", [])
 
     def download_files(
-        self, set_id: Union[int, str], download_dir: Path, version: Optional[int] = None
+        self, set_id: int | str, download_dir: Path, version: int | None = None
     ):
         r"""Download all files in a parameter set to a local directory.
 
         Args:
-            set_id (Union[int, str]): The user-friendly ID of the
+            set_id (int | str): The user-friendly ID of the
                 parameter set.
             download_dir (Path): The local directory to save the files.
             version (int, optional): The version of the article.
@@ -375,11 +374,11 @@ class ParameterManager:
             dest_path = download_dir / file["name"]
             FileManager.download_file(file["download_url"], dest_path)
 
-    def get_article_id(self, set_id: Union[int, str]) -> int:
+    def get_article_id(self, set_id: int | str) -> int:
         """Map a user-friendly set ID to a Figshare article ID.
 
         Args:
-            set_id (Union[int, str]): The parameter set ID (1--10,
+            set_id (int | str): The parameter set ID (1--10,
                 ``"avg"``, ``"max"``, ``"min"``).
 
         Returns:
@@ -437,7 +436,7 @@ class Parameter:
         '18_x_muskingum'
     """
 
-    def __init__(self, version: int = 1, download_dir: Optional[Path] = None):
+    def __init__(self, version: int = 1, download_dir: Path | None = None):
         """Initialize Parameter.
 
         Args:
@@ -463,7 +462,7 @@ class Parameter:
                 download_dir.mkdir(parents=True, exist_ok=True)
         self.download_dir = download_dir
 
-    def get_parameters(self, download_dir: Optional[Path] = None):
+    def get_parameters(self, download_dir: Path | None = None):
         r"""Download all parameter sets.
 
         Iterates over every entry in
@@ -486,12 +485,12 @@ class Parameter:
             logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
 
     def get_parameter_set(
-        self, set_id: Union[int, str], download_dir: Optional[Path] = None
+        self, set_id: int | str, download_dir: Path | None = None
     ):
         r"""Download a specific parameter set.
 
         Args:
-            set_id (Union[int, str]): The user-friendly ID of the
+            set_id (int | str): The user-friendly ID of the
                 parameter set to download (1--10, ``"avg"``, ``"max"``,
                 ``"min"``).
             download_dir (Path, optional): The directory where the
@@ -522,11 +521,11 @@ class Parameter:
         logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
 
     @staticmethod
-    def list_parameter_names() -> List[str]:
+    def list_parameter_names() -> list[str]:
         """List all parameter names.
 
         Returns:
-            List[str]: A list of the 18 HBV parameter names.
+            list[str]: A list of the 18 HBV parameter names.
 
         Examples:
             >>> names = Parameter.list_parameter_names()
