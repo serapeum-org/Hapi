@@ -1,0 +1,118 @@
+site_name: Hapi
+site_url: https://github.com/Serapieum-of-alex/llama-utils/
+site_description: Llama-utils is a Python package for data manipulation and analysis in the Llama language model
+theme:
+  name: material
+  language: en
+  features:
+  - announce.dismiss
+  - content.action.edit
+  - content.action.view
+  - content.code.annotate
+  - content.code.copy
+  - content.tooltips
+  - navigation.footer
+  - navigation.indexes
+  - navigation.sections
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - search.highlight
+  - search.suggest
+  - toc.follow
+  palette:
+  - media: "(prefers-color-scheme)"
+    toggle:
+      icon: material/brightness-auto
+      name: Switch to light mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: teal
+    accent: purple
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: lime
+    toggle:
+      icon: material/weather-night
+      name: Switch to system preference
+
+use_directory_urls: false
+plugins:
+  - search
+  - mkdocs-jupyter
+  - autorefs
+  - mkdocstrings:
+        default_handler: python
+        handlers:
+          python:
+            rendering:
+              show_root_toc_entry: false
+              show_source: true
+              show_signature_annotations: true
+              heading_level: 3
+              show_category_heading: false
+              group_by_category: false
+            selection:
+              inherited_members: false
+            options:
+              show_root_heading: true
+              show_signature_annotations: true
+              docstring_style: numpy
+  - table-reader
+  - tags
+  - mike:
+      # These fields are all optional; the defaults are as below...
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ''
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.tabbed
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      permalink: "#"
+      toc_depth: 1-4
+      anchorlink: true
+
+nav:
+  - Home: index.md
+  - Installation:
+      - dev/installation.md
+  - API Reference:
+      - api/catchment.md
+      - api/dem.md
+      - api/calibration.md
+      - api/inputs.md
+      - api/routing.md
+      - api/run.md
+      - api/wrapper.md
+  - Examples:
+      - examples/distributed-model-calib.md
+      - examples/distributed-model-run.md
+      - examples/gis-inputs.md
+      - examples/hbv.md
+      - examples/lumped-model-calibration.md
+      - examples/lumped-model-run.md
+      - examples/meteo-inputs.md
+      - examples/muskingum.md
+      - examples/parameters.md
+  - Change logs: change-log.md
+
+extra:
+  version:
+    provider: mike
+  version_selector: true
