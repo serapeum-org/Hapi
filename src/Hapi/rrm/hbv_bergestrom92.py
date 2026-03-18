@@ -168,21 +168,9 @@ class HBVBergestrom92(BaseConceptualModel):
 
         Parameters
         ----------
-        fc : float
-            Filed capacity
-        beta : float
-            Shape coefficient for effective precipitation separation
-        etf : float
-            Total potential evapotranspiration
         temp : float
             Temperature
-        tm : float
-            Average long term temperature
-        e_corr : float
-            Evapotranspiration corrector factor
-        lp : float _soil
-            wilting point
-        _in : float
+        inf : float
             actual infiltration
         ep : float
             actual evapotranspiration
@@ -190,6 +178,16 @@ class HBVBergestrom92(BaseConceptualModel):
             Previous soil moisture value
         uz_old : float
             Previous Upper zone value
+        tm : float
+            Average long term temperature
+        fc : float
+            Filed capacity
+        beta : float
+            Shape coefficient for effective precipitation separation
+        e_corr : float
+            Evapotranspiration corrector factor
+        lp : float
+            wilting point
 
         Returns
         -------

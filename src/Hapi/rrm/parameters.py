@@ -689,21 +689,17 @@ class Parameters:
             for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of
             parameters are the same as the no of parameters of the conceptual model)
 
-        Parameters
-        ----------
-        The Parameters object should have the following attributes before tyring so use the saveParameters function
-        self
-            raster : [gdal.dataset]
-                raster to get the spatial information of the catchment
-                (DEM, flow accumulation or flow direction raster)
-            no_parameters : [integer]
-                no of parameters of the cell according to the rainfall runoff model
-            no_lumped_par : [integer]
-                nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            HRUs : [0 or 1]
-                0 to define that no hydrologic response units (HRUs), 1 to define that
-                HRUs are used
+        Notes
+        -----
+        The Parameters object should have the following attributes before calling this method:
+
+        - raster : [gdal.dataset] raster to get the spatial information of the catchment
+          (DEM, flow accumulation or flow direction raster)
+        - no_parameters : [integer] no of parameters of the cell according to the rainfall runoff model
+        - no_lumped_par : [integer] number of lumped parameters, you have to enter the value of
+          the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+        - HRUs : [0 or 1] 0 to define that no hydrologic response units (HRUs), 1 to define that
+          HRUs are used
         """
         if not self.HRUs:
             if self.no_lumped_par > 0:
@@ -732,28 +728,22 @@ class Parameters:
 
         Parameters
         ----------
-        The DistParameters object should have the following attributes before tyring so use the saveParameters function
-        self:
-             DistParFn:
-                 [function] function to distribute the parameters (all functions are
-                 in Hapi.DistParameters )
-             raster:
-                 [gdal.dataset] raster to get the spatial information
-             Par
-                 [list or numpy ndarray] parameters as 1D array or list
-             no_parameters:
-                 [int] number of the parameters in the conceptual model
-             snow:
-                 [integer] number to define whether to take parameters of
-                 the conceptual model with snow subroutine or without
-             kub:
-                 [numeric] upper bound for k parameter in muskingum function
-             klb:
-                 [numeric] lower bound for k parameter in muskingum function
-        path:
-              [string] path to the folder you want to save the parameters in
-              default value is None (parameters are going to be saved in the
-              current directory)
+        path : str
+            path to the folder you want to save the parameters in.
+            default value is None (parameters are going to be saved in the
+            current directory)
+
+        Notes
+        -----
+        The Parameters object should have the following attributes set before calling this method:
+
+        - DistParFn : [function] function to distribute the parameters (all functions are in Hapi.DistParameters)
+        - raster : [gdal.dataset] raster to get the spatial information
+        - Par : [list or numpy ndarray] parameters as 1D array or list
+        - no_parameters : [int] number of the parameters in the conceptual model
+        - snow : [integer] number to define whether to take parameters of the conceptual model with snow subroutine or without
+        - kub : [numeric] upper bound for k parameter in muskingum function
+        - klb : [numeric] lower bound for k parameter in muskingum function
 
         Returns
         -------

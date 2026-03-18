@@ -226,25 +226,20 @@ class Run(Catchment):
 
         Parameters
         ----------
-        1-Paths:
-            1-prec_path:
-                [String] path to the Folder contains precipitation rasters
-            2-evap_path:
-                [String] path to the Folder contains Evapotranspiration rasters
-            3-temp_path:
-                [String] path to the Folder contains Temperature rasters
-            4-flow_acc_path:
-                [String] path to the Flow Accumulation raster of the catchment (it should
-                include the raster name and extension)
-            5-flow_direction_path:
-                [String] path to the Flow Direction raster of the catchment (it should
-                include the raster name and extension)
-        7-ParPath:
-            [String] path to the Folder contains parameters rasters of the catchment
-        8-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
+        Lake : object
+            Lake object containing lake configuration and meteorological data.
+
+        Notes
+        -----
+        The following catchment attributes should be set before calling this method:
+
+        - prec_path : [String] path to the Folder contains precipitation rasters
+        - evap_path : [String] path to the Folder contains Evapotranspiration rasters
+        - temp_path : [String] path to the Folder contains Temperature rasters
+        - flow_acc_path : [String] path to the Flow Accumulation raster of the catchment
+        - flow_direction_path : [String] path to the Flow Direction raster of the catchment
+        - ParPath : [String] path to the Folder contains parameters rasters of the catchment
+        - p2 : [List] list of unoptimized parameters (p2[0] = tfac, p2[1] = catchment area in km2)
 
         Returns
         -------
@@ -308,26 +303,21 @@ class Run(Catchment):
 
         Parameters
         ----------
-        Route: [0 or 1]
-            to decide wether t route the generated discharge hydrograph or not
-        RoutingFn: [function]
-            function to route the dischrge hydrograph.
+        Route : int
+            to decide whether to route the generated discharge hydrograph or not (0 or 1)
+        RoutingFn : function
+            function to route the discharge hydrograph.
 
-        Parameters that should be defined before calling the function
-            ConceptualModel: [function]
-                conceptual model and it should contain a function called simulate
-            data: [numpy array]
-                meteorological data as array with the first column as precipitation
-                second as evapotranspiration, third as temperature and forth column as
-                long term average temperature
-            parameters: [numpy array]
-                conceptual model parameters as array
-            p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            init_st: [list]
-                initial state variables values [sp, sm, uz, lz, wc].
+        Notes
+        -----
+        The following attributes should be defined before calling the function:
+
+        - ConceptualModel : [function] conceptual model and it should contain a function called simulate
+        - data : [numpy array] meteorological data as array with the first column as precipitation,
+          second as evapotranspiration, third as temperature and fourth column as long term average temperature
+        - parameters : [numpy array] conceptual model parameters as array
+        - p2 : [List] list of unoptimized parameters (p2[0] = tfac, p2[1] = catchment area in km2)
+        - init_st : [list] initial state variables values [sp, sm, uz, lz, wc].
 
         Returns
         -------

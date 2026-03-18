@@ -1,25 +1,25 @@
 site_name: Hapi
-site_url: https://github.com/Serapieum-of-alex/llama-utils/
-site_description: Llama-utils is a Python package for data manipulation and analysis in the Llama language model
+site_url: https://serapieum-of-alex.github.io/Hapi/
+site_description: Hapi is a Python package for distributed hydrological modeling using HBV96
 theme:
   name: material
   language: en
   features:
-  - announce.dismiss
-  - content.action.edit
-  - content.action.view
-  - content.code.annotate
-  - content.code.copy
-  - content.tooltips
-  - navigation.footer
-  - navigation.indexes
-  - navigation.sections
-  - navigation.tabs
-  - navigation.tabs.sticky
-  - navigation.top
-  - search.highlight
-  - search.suggest
-  - toc.follow
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
   palette:
   - media: "(prefers-color-scheme)"
     toggle:
@@ -41,27 +41,27 @@ theme:
       name: Switch to system preference
 
 use_directory_urls: false
+not_in_nav: |
+  LICENSE.md
+  conf.py
 plugins:
   - search
   - mkdocs-jupyter
   - autorefs
   - mkdocstrings:
-        default_handler: python
-        handlers:
-          python:
-            rendering:
-              show_root_toc_entry: false
-              show_source: true
-              show_signature_annotations: true
-              heading_level: 3
-              show_category_heading: false
-              group_by_category: false
-            selection:
-              inherited_members: false
-            options:
-              show_root_heading: true
-              show_signature_annotations: true
-              docstring_style: numpy
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_source: true
+            show_signature_annotations: true
+            heading_level: 3
+            show_category_heading: false
+            group_by_category: false
+            inherited_members: false
+            docstring_style: numpy
   - table-reader
   - tags
   - mike:
@@ -91,7 +91,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Installation:
-      - dev/installation.md
+      - dev/Installation.md
   - API Reference:
       - api/catchment.md
       - api/dem.md
@@ -100,6 +100,10 @@ nav:
       - api/routing.md
       - api/run.md
       - api/wrapper.md
+      - api/hbv.md
+      - api/hbv-bergestrom92.md
+      - api/hbv-lake.md
+      - api/rrm-parameters.md
   - Examples:
       - examples/distributed-model-calib.md
       - examples/distributed-model-run.md

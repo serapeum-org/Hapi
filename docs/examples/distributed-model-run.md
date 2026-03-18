@@ -88,7 +88,7 @@ Coello.readLumpedModel(HBV, CatchmentArea, InitialCond)
 ```
 - If the Inpus are consistent in dimensions you will get a the following message
 
-![check_inputs](../img/check_inputs.png)
+![check_inputs](../img/check_inputs.PNG)
 
 
 - to check the performance of the model we need to read the gauge hydrographs

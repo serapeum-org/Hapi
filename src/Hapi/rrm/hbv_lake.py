@@ -505,7 +505,11 @@ class HBVLake(BaseConceptualModel):
             input hydrograph
         maxbas: []
             maxbas weight
-        Qout = output hydrograph
+
+        Returns
+        -------
+        Qout:
+            output hydrograph
         """
         # CALCULATE maxbas WEIGHTS
         maxbas_w = self.calculate_max_bas(maxbas)

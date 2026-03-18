@@ -139,8 +139,6 @@ class HBV(BaseConceptualModel):
         ----------
         cfmax : float
             Day degree factor
-        tfac : float
-            Temperature correction factor
         temp : float
             Temperature [C]
         ttm : float
@@ -149,9 +147,9 @@ class HBV(BaseConceptualModel):
             Refreezing factor
         cwh : float
             Capacity for water holding in snow pack
-        _rf : float
+        rf : float
             Rainfall [mm]
-        _sf : float
+        sf : float
             Snowfall [mm]
         wc_old : float
             Water content in previous state [mm]
@@ -228,13 +226,11 @@ class HBV(BaseConceptualModel):
             Average long term temperature
         e_corr : float
             Evapotranspiration corrector factor
-        lp : float _soil
+        lp : float
             wilting point
-        tfac : float
-            Time conversion factor
         c_flux : float
             Capilar flux in the root zone
-        _in : float
+        inf : float
             actual infiltration
         ep : float
             actual evapotranspiration
