@@ -1,4 +1,19 @@
-"""hydrological-model parameter."""
+"""Hydrological model parameters.
+
+The ``Hapi.parameters.parameters`` module provides classes for
+interacting with the Figshare API to retrieve, download, and manage
+global hydrological parameter sets used by the Hapi framework.
+
+The module contains four main classes:
+
+- ``FigshareAPIClient``: low-level HTTP client for the Figshare REST API.
+- ``FileManager``: static helpers for downloading files and clearing
+  directories.
+- ``ParameterManager``: maps user-friendly parameter-set IDs to Figshare
+  article IDs and orchestrates file listing / downloading.
+- ``Parameter``: high-level facade that wires everything together and
+  exposes a CLI-friendly interface.
+"""
 
 import json
 import os
@@ -13,21 +28,24 @@ BASE_URL = "https://api.figshare.com/v2"
 
 
 class FigshareAPIClient:
-    """
-    A client for interacting with the Figshare API.
+    """A client for interacting with the Figshare API.
 
-    Parameters
-    ----------
-    headers : dict, optional
-        Headers to include in the API requests, by default None.
+    Attributes:
+        base_url (str): The base URL for the Figshare API.
+        headers (dict): Headers included in every API request.
 
-    Examples
-    --------
-    >>> client = FigshareAPIClient()
+    Examples:
+        >>> client = FigshareAPIClient()
     """
 
     def __init__(self, headers: Optional[dict] = None):
-        """initialize."""
+        """Initialize FigshareAPIClient.
+
+        Args:
+            headers (dict, optional): Headers to include in the API
+                requests. Defaults to None, which uses
+                ``{"Content-Type": "application/json"}``.
+        """
         self.base_url = BASE_URL
         self.headers = headers or {"Content-Type": "application/json"}
 
@@ -38,77 +56,27 @@ class FigshareAPIClient:
         data: Optional[dict] = None,
         binary: bool = False,
     ) -> Dict[str, int]:
-        """
-        Send an HTTP request to the Figshare API.
+        """Send an HTTP request to the Figshare API.
 
-        Parameters
-        ----------
-        method : str
-            HTTP method (e.g., 'GET', 'POST').
-        endpoint : str
-            API endpoint to interact with.
-        data : dict, optional
-            Payload to include in the request, by default None.
-        binary : bool, optional
-            Whether the data payload is binary, by default False.
+        Args:
+            method (str): HTTP method (e.g., ``'GET'``, ``'POST'``).
+            endpoint (str): API endpoint to interact with.
+            data (dict, optional): Payload to include in the request.
+                Defaults to None.
+            binary (bool, optional): Whether the data payload is binary.
+                Defaults to False.
 
-        Returns
-        -------
-        dict
-            The parsed JSON response from the API.
+        Returns:
+            Dict[str, int]: The parsed JSON response from the API.
 
-        Raises
-        ------
-        requests.exceptions.HTTPError
-            If the API request fails.
+        Raises:
+            requests.exceptions.HTTPError: If the API request fails.
 
-        Examples
-        --------
-        >>> client = FigshareAPIClient()
-        >>> response = client.send_request("GET", "articles/19999901") #doctest: +SKIP
-        >>> print(response) #doctest: +SKIP
-        {'files': [{'id': 35589521,
-           'name': '01_TT.tif',
-           'size': 1048736,
-           'is_link_only': False,
-           'download_url': 'https://ndownloader.figshare.com/files/35589521',
-           'supplied_md5': '1ddb354132c2f7f54dec6e72bdb62422',
-           'computed_md5': '1ddb354132c2f7f54dec6e72bdb62422',
-           'mimetype': 'image/tiff'},
-         'authors': [{'id': 11888465,
-           'full_name': 'Mostafa Farrag',
-           'first_name': 'Mostafa',
-           'last_name': 'Farrag',
-           'is_active': True,
-           'url_name': 'Mostafa_Farrag',
-           'orcid_id': '0000-0002-1673-0126'}],
-         'figshare_url': 'https://figshare.com/articles/dataset/parameter_set-1/19999901',
-         'download_disabled': False,
-         ...
-         'version': 2,
-         'status': 'public',
-         'size': 19878928,
-         'created_date': '2022-06-04T14:15:43Z',
-         'modified_date': '2022-06-04T14:15:44Z',
-         'is_public': True,
-         'is_confidential': False,
-         'is_metadata_record': False,
-         'confidential_reason': '',
-         'metadata_reason': '',
-         'license': {'value': 1,
-          'name': 'CC BY 4.0',
-         'id': 19999901,
-         'title': 'Parameter set-1',
-         'doi': '10.6084/m9.figshare.19999901.v2',
-         'url': 'https://api.figshare.com/v2/articles/19999901',
-         'published_date': '2022-06-04T14:15:43Z',
-         'url_private_api': 'https://api.figshare.com/v2/account/articles/19999901',
-         'url_public_api': 'https://api.figshare.com/v2/articles/19999901',
-         'url_private_html': 'https://figshare.com/account/articles/19999901',
-         'url_public_html': 'https://figshare.com/articles/dataset/parameter_set-1/19999901',
-         'timeline': {'posted': '2022-06-04T14:15:43',
-          'firstOnline': '2022-06-04T13:52:54'},
-         }
+        Examples:
+            >>> client = FigshareAPIClient()  # doctest: +SKIP
+            >>> response = client.send_request(
+            ...     "GET", "articles/19999901"
+            ... )  # doctest: +SKIP
         """
         url = f"{self.base_url}/{endpoint}"
         payload = json.dumps(data) if data and not binary else data
@@ -122,133 +90,88 @@ class FigshareAPIClient:
             raise
 
     def get_article_version(self, article_id: int, version: int) -> Dict[str, int]:
-        """
-        Retrieve a specific version of an article from the Figshare API.
+        """Retrieve a specific version of an article from the API.
 
-        Parameters
-        ----------
-        article_id : int
-            The ID of the article to retrieve.
-        version : int
-            The version number of the article to retrieve.
+        Args:
+            article_id (int): The ID of the article to retrieve.
+            version (int): The version number of the article to
+                retrieve.
 
-        Returns
-        -------
-        dict
-            Details of the specific version of the article.
+        Returns:
+            Dict[str, int]: Details of the specific version of the
+                article.
 
-        Raises
-        ------
-        requests.exceptions.HTTPError
-            If the API request fails.
+        Raises:
+            requests.exceptions.HTTPError: If the API request fails.
 
-        Examples
-        --------
-        >>> client = FigshareAPIClient()
-        >>> response = client.get_article_version(19999901, 1) #doctest: +SKIP
-        >>> print(response) #doctest: +SKIP
-        {
-            'url_public_html': 'https://figshare.com/articles/dataset/parameter_set-1/19999901/1',
-            'files': [
-                {'id': 35589521, 'name': '01_TT.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589521',
-                'mimetype': 'image/tiff'},
-                {'id': 35589524, 'name': '02_RFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589524',
-                ],
-            'custom_fields': [],
-            'authors': [
-                {'id': 11888465, 'full_name': 'Mostafa Farrag', 'first_name': 'Mostafa', 'last_name': 'Farrag',
-                'is_active': True, 'url_name': 'Mostafa_Farrag', 'orcid_id': '0000-0002-1673-0126'}
-                ],
-            'figshare_url': 'https://figshare.com/articles/dataset/parameter_set-1/19999901',
-            'description': '<p>hydrology</p>', 'version': 1, 'status': 'public', 'created_date': '2022-06-04T13:52:54Z',
-            'modified_date': '2022-06-04T14:15:43Z', 'is_public': True, 'is_confidential': False,
-            'license': {
-                'value': 1, 'name': 'CC BY 4.0', 'url': 'https://creativecommons.org/licenses/by/4.0/'},
-                'tags': ['hydrology; precipitation; river basin; discharge; modelling; flood forecasting', 'Hydrology'],
-            'citation': 'Farrag, Mostafa (2022). parameter set-1. figshare. Dataset.
-            https://doi.org/10.6084/m9.figshare.19999901.v1', 'id': 19999901, 'title': 'parameter
-            set-1', 'doi': '10.6084/m9.figshare.19999901.v1', 'url': 'https://api.figshare.com/v2/articles/19999901',
-            'published_date': '2022-06-04T13:52:54Z', 'defined_type_name': 'dataset',
-            'url_public_api': 'https://api.figshare.com/v2/articles/19999901',
-            'timeline': {'posted': '2022-06-04T13:52:54', 'firstOnline': '2022-06-04T13:52:54'}
-            }
+        Examples:
+            >>> client = FigshareAPIClient()  # doctest: +SKIP
+            >>> response = client.get_article_version(
+            ...     19999901, 1
+            ... )  # doctest: +SKIP
         """
         endpoint = f"articles/{article_id}/versions/{version}"
         return self.send_request("GET", endpoint)
 
     def list_article_versions(self, article_id: int) -> List[Dict[str, int]]:
-        """
-        Retrieve all available versions of a specific article from the Figshare API.
+        """Retrieve all available versions of a specific article.
 
-        Parameters
-        ----------
-        article_id : int
-            The ID of the article to retrieve versions for.
+        Args:
+            article_id (int): The ID of the article to retrieve
+                versions for.
 
-        Returns
-        -------
-        List[Dict[str, int]]:
-            A list of available versions for the specified article.
+        Returns:
+            List[Dict[str, int]]: A list of available versions for the
+                specified article.
 
-        Raises
-        ------
-        requests.exceptions.HTTPError
-            If the API request fails.
+        Raises:
+            requests.exceptions.HTTPError: If the API request fails.
 
-        Examples
-        --------
-        >>> client = FigshareAPIClient()
-        >>> versions = client.list_article_versions(19999901) #doctest: +SKIP
-        >>> print(versions) #doctest: +SKIP
-        [{'version': 1,
-          'url': 'https://api.figshare.com/v2/articles/19999901/versions/1'},
-         {'version': 2,
-          'url': 'https://api.figshare.com/v2/articles/19999901/versions/2'}]
+        Examples:
+            >>> client = FigshareAPIClient()  # doctest: +SKIP
+            >>> versions = client.list_article_versions(
+            ...     19999901
+            ... )  # doctest: +SKIP
         """
         endpoint = f"articles/{article_id}/versions"
         return self.send_request("GET", endpoint)
 
 
 class FileManager:
-    r"""
-    Handle file operations such as downloading and saving files.
+    r"""Handle file operations such as downloading and saving files.
 
-    Methods
-    -------
-    download_file(url: str, dest_path: Path):
-        Download a file from the specified URL to the destination path.
-    clear_directory(directory: Path):
-        Clears all files in the specified directory.
+    This class exposes only static methods and does not need to be
+    instantiated.
 
-    Examples
-    --------
-    The FileManager class can be used to download files and clear directories:
-    >>> FileManager.download_file(
-    ... "https://ndownloader.figshare.com/files/35589521", "examples/data/parameters/01_TT.tif"
-    ... ) # doctest: +SKIP
-    2025-01-05 17:24:25.610 | DEBUG    | Hapi.parameters.parameters:download_file:227 - File downloaded: examples\data\parameters\01_TT.tif
-    >>> FileManager.clear_directory("./downloads") # doctest: +SKIP
+    Examples:
+        >>> FileManager.download_file(  # doctest: +SKIP
+        ...     "https://ndownloader.figshare.com/files/35589521",
+        ...     "examples/data/parameters/01_TT.tif",
+        ... )
+        >>> FileManager.clear_directory(
+        ...     "./downloads"
+        ... )  # doctest: +SKIP
     """
 
     @staticmethod
     def download_file(url: str, download_path: Path):
-        r"""
-        Download a file from the specified URL to the destination path.
+        r"""Download a file from a URL to a local path.
 
-        Parameters
-        ----------
-        url : str
-            The URL of the file to download.
-        download_path : Path
-            The local file path where the file will be saved.
+        Args:
+            url (str): The URL of the file to download.
+            download_path (Path): The local file path where the file
+                will be saved.
 
-        Examples
-        --------
-        The FileManager class can be used to download files and clear directories:
-        >>> FileManager.download_file(
-        ... "https://ndownloader.figshare.com/files/35589521", "examples/data/parameters/01_TT.tif"
-        ... ) # doctest: +SKIP
-        2025-01-05 17:24:25.610 | DEBUG    | Hapi.parameters.parameters:download_file:227 - File downloaded: examples\data\parameters\01_TT.tif
+        Raises:
+            ValueError: If the URL scheme is not ``http`` or ``https``.
+            requests.exceptions.HTTPError: If the download request
+                fails.
+
+        Examples:
+            >>> FileManager.download_file(  # doctest: +SKIP
+            ...     "https://ndownloader.figshare.com/files/35589521",
+            ...     "examples/data/parameters/01_TT.tif",
+            ... )
         """
         allowed_schemes = {"http", "https"}
         scheme = urlparse(url).scheme
@@ -272,17 +195,18 @@ class FileManager:
 
     @staticmethod
     def clear_directory(directory: Union[Path, str]):
-        """
-        Clear all files in the specified directory.
+        """Clear all files in the specified directory.
 
-        Parameters
-        ----------
-        directory : Path/str
-            The directory to clear.
+        Only regular files are removed; subdirectories are left
+        untouched.
 
-        Examples
-        --------
-        >>> FileManager.clear_directory("./downloads")
+        Args:
+            directory (Union[Path, str]): The directory to clear.
+
+        Examples:
+            >>> FileManager.clear_directory(
+            ...     "./downloads"
+            ... )  # doctest: +SKIP
         """
         directory = Path(directory) if isinstance(directory, str) else directory
         if directory.exists():
@@ -293,71 +217,31 @@ class FileManager:
 
 
 class ParameterManager:
-    r"""
-    Manages hydrological parameters and integrates with Figshare for data retrieval.
+    r"""Manage hydrological parameters via the Figshare API.
 
-    Attributes
-    ----------
-    ARTICLE_IDS : list
-        List of article IDs corresponding to parameter sets.
-    PARAMETER_NAMES : list
-        List of parameter names.
-    PARAMETER_SET_ID : list
-        User-friendly IDs for parameter sets (e.g., 1-10, avg, max, min).
+    This class maps user-friendly parameter-set identifiers (1--10,
+    ``"avg"``, ``"max"``, ``"min"``) to Figshare article IDs and
+    provides convenience methods for listing and downloading files.
 
-    Methods
-    -------
-    get_article_details(article_id: int, version: Optional[int] = None):
-        Retrieves details of an article from the Figshare API.
-    list_files(article_id: int, version: Optional[int] = None):
-        Lists all files in an article.
-    download_files(article_id: int, dest_directory: Path, version: Optional[int] = None):
-        Downloads all files in an article to the specified directory.
-    get_article_id_from_friendly_id(friendly_id: Union[int, str]) -> int:
-        Maps a user-friendly ID to the corresponding article ID.
+    Attributes:
+        ARTICLE_IDS (list): Figshare article IDs for each parameter
+            set.
+        PARAMETER_NAMES (list): Canonical names of all 18 HBV
+            parameters.
+        PARAMETER_SET_ID (list): User-friendly IDs (1--10, ``"avg"``,
+            ``"max"``, ``"min"``).
+        api_client (FigshareAPIClient): The underlying API client.
 
-    Examples
-    --------
-    First create the Figshare API client:
+    Examples:
         >>> api_client = FigshareAPIClient()
-
-    Then create the ParameterManager:
         >>> manager = ParameterManager(api_client)
-
-    Retrieve details of a parameter set:
-        >>> set_id = 1
-        >>> files = manager.list_files(set_id) # doctest: +SKIP
-        >>> print(files) # doctest: +SKIP
-        [
-            {'id': 35589521, 'name': '01_TT.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589521', ...},
-            {'id': 35589524, 'name': '02_RFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589524', ...},
-            {'id': 35589527, 'name': '03_SFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589527', ...},
-            ...
-        ]
-
-    Get parameter set details:
-        >>> details = manager.get_parameter_set_details(1) # doctest: +SKIP
-        >>> print(details.keys()) # doctest: +SKIP
-        dict_keys(
-            [
-                'files', 'custom_fields', 'authors', 'figshare_url', 'download_disabled', 'description', 'funding',
-                'funding_list', 'version', 'status', 'size', 'created_date', 'modified_date', 'is_public',
-                'is_confidential', 'is_metadata_record', 'confidential_reason', 'metadata_reason', 'license', 'tags',
-                'categories', 'references', 'has_linked_file', 'citation', 'related_materials', 'is_embargoed',
-                'embargo_date', 'embargo_type', 'embargo_title', 'embargo_reason', 'embargo_options', 'id', 'title',
-                'doi', 'handle', 'url', 'published_date', 'thumb', 'defined_type', 'defined_type_name', 'group_id',
-                'url_private_api', 'url_public_api', 'url_private_html', 'url_public_html', 'timeline',
-                'resource_title', 'resource_doi'
-            ]
-        )
-
-    Download all files in a parameter set:
-        >>> manager.download_files(1, "examples/data/downloads") # doctest: +SKIP
-        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
-        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
-        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
-        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
-        ...
+        >>> files = manager.list_files(1)  # doctest: +SKIP
+        >>> details = manager.get_parameter_set_details(
+        ...     1
+        ... )  # doctest: +SKIP
+        >>> manager.download_files(
+        ...     1, "examples/data/downloads"
+        ... )  # doctest: +SKIP
     """
 
     ARTICLE_IDS = [
@@ -400,55 +284,39 @@ class ParameterManager:
     PARAMETER_SET_ID = list(range(1, 11)) + ["avg", "max", "min"]
 
     def __init__(self, api_client: FigshareAPIClient):
-        """initialize."""
+        """Initialize ParameterManager.
+
+        Args:
+            api_client (FigshareAPIClient): A configured Figshare API
+                client instance.
+        """
         self.api_client = api_client
 
     def get_parameter_set_details(
         self, set_id: Union[int, str], version: Optional[int] = None
     ) -> Dict[str, int]:
-        """
-        Retrieve details of a parameter set from the Figshare API.
+        """Retrieve details of a parameter set from the Figshare API.
 
-        Parameters
-        ----------
-        set_id : int/str
-            The ID of the parameter set to retrieve.
-        version : int, optional, default is None
-            The version of the parameter set.
+        Args:
+            set_id (Union[int, str]): The user-friendly ID of the
+                parameter set (1--10, ``"avg"``, ``"max"``, ``"min"``).
+            version (int, optional): The version of the parameter set.
+                Defaults to None (latest version).
 
-        Returns
-        -------
-        Dict[str, int]:
-            Details of the parameter set.
+        Returns:
+            Dict[str, int]: A dictionary containing full article
+                metadata (files, authors, license, dates, etc.).
 
-        Raises
-        ------
-        requests.exceptions.HTTPError
-            If the API request fails.
+        Raises:
+            requests.exceptions.HTTPError: If the API request fails.
+            ValueError: If *set_id* is not a valid parameter-set ID.
 
-        Examples
-        --------
-        First create the Figshare API client:
+        Examples:
             >>> api_client = FigshareAPIClient()
-
-        Then create the ParameterManager:
             >>> manager = ParameterManager(api_client)
-
-        Get parameter set details:
-            >>> details = manager.get_parameter_set_details(1) # doctest: +SKIP
-            >>> print(details.keys()) # doctest: +SKIP
-            dict_keys(
-                [
-                    'files', 'custom_fields', 'authors', 'figshare_url', 'download_disabled', 'description', 'funding',
-                    'funding_list', 'version', 'status', 'size', 'created_date', 'modified_date', 'is_public',
-                    'is_confidential', 'is_metadata_record', 'confidential_reason', 'metadata_reason', 'license', 'tags',
-                    'categories', 'references', 'has_linked_file', 'citation', 'related_materials', 'is_embargoed',
-                    'embargo_date', 'embargo_type', 'embargo_title', 'embargo_reason', 'embargo_options', 'id', 'title',
-                    'doi', 'handle', 'url', 'published_date', 'thumb', 'defined_type', 'defined_type_name', 'group_id',
-                    'url_private_api', 'url_public_api', 'url_private_html', 'url_public_html', 'timeline',
-                    'resource_title', 'resource_doi'
-                ]
-            )
+            >>> details = manager.get_parameter_set_details(
+            ...     1
+            ... )  # doctest: +SKIP
         """
         article_id = self.get_article_id(set_id)
         endpoint = f"articles/{article_id}"
@@ -457,39 +325,23 @@ class ParameterManager:
         return self.api_client.send_request("GET", endpoint)
 
     def list_files(self, set_id: Union[int, str], version: Optional[int] = None):
-        """
-        List all files in an article.
+        """List all files in a parameter set.
 
-        Parameters
-        ----------
-        set_id : int
-            The ID of the article to list files for.
-        version : int, optional
-            The version of the article, by default None.
+        Args:
+            set_id (Union[int, str]): The user-friendly ID of the
+                parameter set.
+            version (int, optional): The version of the article.
+                Defaults to None.
 
-        Returns
-        -------
-        list
-            A list of files in the article.
+        Returns:
+            list: A list of file dictionaries, each containing keys
+                such as ``"id"``, ``"name"``, and
+                ``"download_url"``.
 
-        Examples
-        --------
-        First create the Figshare API client:
+        Examples:
             >>> api_client = FigshareAPIClient()
-
-        Then create the ParameterManager:
             >>> manager = ParameterManager(api_client)
-
-        Retrieve details of a parameter set:
-            >>> set_id = 1
-            >>> files = manager.list_files(set_id) # doctest: +SKIP
-            >>> print(files) # doctest: +SKIP
-            [
-                {'id': 35589521, 'name': '01_TT.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589521', ...},
-                {'id': 35589524, 'name': '02_RFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589524', ...},
-                {'id': 35589527, 'name': '03_SFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589527', ...},
-                ...
-            ]
+            >>> files = manager.list_files(1)  # doctest: +SKIP
         """
         details = self.get_parameter_set_details(set_id, version)
         return details.get("files", [])
@@ -497,32 +349,21 @@ class ParameterManager:
     def download_files(
         self, set_id: Union[int, str], download_dir: Path, version: Optional[int] = None
     ):
-        r"""
-        Download all files in an article to the specified directory.
+        r"""Download all files in a parameter set to a local directory.
 
-        Parameters
-        ----------
-        set_id : int
-            The ID of the article to download files from.
-        download_dir : Path
-            The local directory to save the files.
-        version : int, optional, by default None.
-            The version of the article.
+        Args:
+            set_id (Union[int, str]): The user-friendly ID of the
+                parameter set.
+            download_dir (Path): The local directory to save the files.
+            version (int, optional): The version of the article.
+                Defaults to None.
 
-        Examples
-        --------
-        First create the Figshare API client:
-        >>> api_client = FigshareAPIClient()
-
-        Then create the ParameterManager:
+        Examples:
+            >>> api_client = FigshareAPIClient()
             >>> manager = ParameterManager(api_client)
-
-        >>> manager.download_files(1, "examples/data/downloads") # doctest: +SKIP
-        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
-        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
-        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
-        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
-        ...
+            >>> manager.download_files(
+            ...     1, "examples/data/downloads"
+            ... )  # doctest: +SKIP
         """
         download_dir = (
             Path(download_dir) if isinstance(download_dir, str) else download_dir
@@ -534,33 +375,22 @@ class ParameterManager:
             FileManager.download_file(file["download_url"], dest_path)
 
     def get_article_id(self, set_id: Union[int, str]) -> int:
-        """
-        Map a user-friendly ID (1-10, avg, max, min) to the corresponding article ID.
+        """Map a user-friendly set ID to a Figshare article ID.
 
-        Parameters
-        ----------
-        set_id : int or str
-            The parameter set id (1-10, avg, max, min).
+        Args:
+            set_id (Union[int, str]): The parameter set ID (1--10,
+                ``"avg"``, ``"max"``, ``"min"``).
 
-        Returns
-        -------
-        int
-            The corresponding article ID.
+        Returns:
+            int: The corresponding Figshare article ID.
 
-        Raises
-        ------
-        ValueError
-            If the friendly ID is invalid.
+        Raises:
+            ValueError: If *set_id* is not found in
+                ``PARAMETER_SET_ID``.
 
-        Examples
-        --------
-        First create the Figshare API client:
-        >>> api_client = FigshareAPIClient()
-
-        Then create the ParameterManager:
+        Examples:
+            >>> api_client = FigshareAPIClient()
             >>> manager = ParameterManager(api_client)
-
-        Then get the article ID for a parameter set:
             >>> manager.get_article_id(1)
             19999901
         """
@@ -574,56 +404,52 @@ class ParameterManager:
 
 
 class Parameter:
-    r"""
-    A simplified interface for handling hydrological parameters.
+    r"""High-level interface for handling hydrological parameters.
 
-    `HAPI_DATA_DIR` environment variable must be set to the directory where parameter sets will be saved.
+    The ``HAPI_DATA_DIR`` environment variable must be set to the
+    directory where parameter sets will be saved when *download_dir* is
+    not provided.
 
-    Attributes
-    ----------
-    version : int
-        The version of the parameter sets to retrieve.
+    Attributes:
+        version (int): The version of the parameter sets to retrieve.
+        api_client (FigshareAPIClient): The underlying Figshare API
+            client.
+        manager (ParameterManager): The parameter manager that
+            handles article lookups and downloads.
+        download_dir (Path): The directory where parameter sets are
+            saved.
 
-    Methods
-    -------
-    get_parameters(dest_directory: Path):
-        Downloads all parameter sets to the specified directory.
-    get_parameter_by_friendly_id(friendly_id: Union[int, str], dest_directory: Path):
-        Downloads a specific parameter set based on a user-friendly ID.
-    list_parameter_names() -> List[str]:
-        Lists all parameter names.
-
-    Examples
-    --------
-    First create the Parameter object:
-        >>> parameter = Parameter(version=1)
-
-    Then download all parameter sets:
-        >>> parameter.get_parameters("examples/data/parameters") # doctest: +SKIP
-        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
-        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
-        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
-        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
-        ...
-
-    Get a specific parameter set:
-        >>> parameter.get_parameter_set(1, "examples/data/parameters") # doctest: +SKIP
-        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
-        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
-        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
-        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
-        ...
-
-    Then list all parameter names:
-        >>> names = parameter.list_parameter_names()
-        >>> print(names)
-        ['01_tt', '02_rfcf', '03_sfcf', '04_cfmax', '05_cwh', '06_cfr', '07_fc', '08_beta', '09_etf',
-        '10_lp', '11_k0', '12_k1', '13_k2', '14_uzl', '15_perc', '16_maxbas', '17_K_muskingum',
-        '18_x_muskingum']
+    Examples:
+        >>> parameter = Parameter(version=1)  # doctest: +SKIP
+        >>> parameter.get_parameters(
+        ...     "examples/data/parameters"
+        ... )  # doctest: +SKIP
+        >>> parameter.get_parameter_set(
+        ...     1, "examples/data/parameters"
+        ... )  # doctest: +SKIP
+        >>> names = Parameter.list_parameter_names()
+        >>> len(names)
+        18
+        >>> names[0]
+        '01_tt'
+        >>> names[-1]
+        '18_x_muskingum'
     """
 
     def __init__(self, version: int = 1, download_dir: Optional[Path] = None):
-        """initialize."""
+        """Initialize Parameter.
+
+        Args:
+            version (int, optional): The Figshare article version to
+                use. Defaults to 1.
+            download_dir (Path, optional): Directory where parameter
+                files are saved. Defaults to None, which reads from
+                the ``HAPI_DATA_DIR`` environment variable.
+
+        Raises:
+            ValueError: If *download_dir* is None and the
+                ``HAPI_DATA_DIR`` environment variable is not set.
+        """
         self.version = version
         self.api_client = FigshareAPIClient()
         self.manager = ParameterManager(self.api_client)
@@ -637,26 +463,22 @@ class Parameter:
         self.download_dir = download_dir
 
     def get_parameters(self, download_dir: Optional[Path] = None):
-        r"""
-        Download all parameter sets to the specified directory.
+        r"""Download all parameter sets.
 
-        Parameters
-        ----------
-        download_dir : Path
-            The directory where parameter sets will be saved.
+        Iterates over every entry in
+        ``ParameterManager.PARAMETER_SET_ID`` and downloads the
+        corresponding files.
 
-        Examples
-        --------
-        First create the Parameter object:
-            >>> parameter = Parameter(version=1)
+        Args:
+            download_dir (Path, optional): The directory where
+                parameter sets will be saved. Defaults to None (uses
+                the instance ``download_dir``).
 
-        Then download all parameter sets:
-            >>> parameter.get_parameters("examples/data/parameters") # doctest: +SKIP
-            2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
-            2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
-            2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
-            2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
-            ...
+        Examples:
+            >>> parameter = Parameter(version=1)  # doctest: +SKIP
+            >>> parameter.get_parameters(
+            ...     "examples/data/parameters"
+            ... )  # doctest: +SKIP
         """
         for set_id in ParameterManager.PARAMETER_SET_ID:
             self.get_parameter_set(set_id, download_dir)
@@ -665,28 +487,25 @@ class Parameter:
     def get_parameter_set(
         self, set_id: Union[int, str], download_dir: Optional[Path] = None
     ):
-        r"""
-        Download all parameter sets to the specified directory.
+        r"""Download a specific parameter set.
 
-        Parameters
-        ----------
-        set_id: int
-            The ID of the parameter set to download.
-        download_dir : Path, optional, default is None
-            The directory where parameter sets will be saved.
+        Args:
+            set_id (Union[int, str]): The user-friendly ID of the
+                parameter set to download (1--10, ``"avg"``, ``"max"``,
+                ``"min"``).
+            download_dir (Path, optional): The directory where the
+                parameter set will be saved. Defaults to None (uses
+                the instance ``download_dir`` with a subdirectory
+                named after *set_id*).
 
-        Examples
-        --------
-        First create the Parameter object:
-            >>> parameter = Parameter(version=1)
+        Raises:
+            ValueError: If *set_id* is not a valid parameter-set ID.
 
-        Get a specific parameter set:
-            >>> parameter.get_parameter_set(1, "examples/data/parameters") # doctest: +SKIP
-            2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
-            2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
-            2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
-            2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
-            ...
+        Examples:
+            >>> parameter = Parameter(version=1)  # doctest: +SKIP
+            >>> parameter.get_parameter_set(
+            ...     1, "examples/data/parameters"
+            ... )  # doctest: +SKIP
         """
         if set_id not in ParameterManager.PARAMETER_SET_ID:
             raise ValueError(
@@ -703,105 +522,59 @@ class Parameter:
 
     @staticmethod
     def list_parameter_names() -> List[str]:
-        """
-        List all parameter names.
+        """List all parameter names.
 
-        Returns
-        -------
-        list
-            A list of parameter names.
+        Returns:
+            List[str]: A list of the 18 HBV parameter names.
 
-        Examples
-        --------
-        First create the Parameter object:
-            >>> parameter = Parameter(version=1)
-
-        Then list all parameter names:
-            >>> names = parameter.list_parameter_names()
-            >>> print(names)
-            ['01_tt', '02_rfcf', '03_sfcf', '04_cfmax', '05_cwh', '06_cfr', '07_fc', '08_beta', '09_etf',
-            '10_lp', '11_k0', '12_k1', '13_k2', '14_uzl', '15_perc', '16_maxbas', '17_K_muskingum',
-            '18_x_muskingum']
+        Examples:
+            >>> names = Parameter.list_parameter_names()
+            >>> len(names)
+            18
+            >>> names[0]
+            '01_tt'
+            >>> names[-1]
+            '18_x_muskingum'
         """
         return ParameterManager.PARAMETER_NAMES
 
 
 def main():
-    """
-    CLI.
+    """Run the Hapi CLI for hydrological parameter operations.
 
-    Hapi CLI for Hydrological Parameter Operations.
-    This command-line interface (CLI) provides tools to manage and interact with hydrological parameters.
-    Users can download parameter sets, retrieve specific parameter sets, or list all available parameter names.
+    This entry point provides three sub-commands:
 
-    Parameters
-    ----------
-    None
-        The function does not take any parameters directly. All input is handled through command-line arguments.
+    - ``download-parameters`` -- download every parameter set.
+    - ``download-parameter-set <set_id>`` -- download one parameter
+      set.
+    - ``list-parameter-names`` -- print all parameter names to stdout.
 
-    Returns
-    -------
-    None
-        The function does not return any values. Outputs are sent to stdout or files, depending on the command.
+    Raises:
+        ValueError: If invalid or insufficient arguments are provided.
+        FileNotFoundError: If the specified directory does not exist
+            and cannot be created.
+        requests.exceptions.RequestException: If there is an error
+            communicating with the Figshare API.
 
-    Raises
-    ------
-    ValueError
-        If invalid or insufficient arguments are provided.
-    FileNotFoundError
-        If the specified directory for downloads does not exist and cannot be created.
-    requests.exceptions.RequestException
-        If there is an error communicating with the Figshare API.
+    Examples:
+        Download all parameter sets::
 
-    Examples
-    --------
-    Download All Parameter Sets
-    ---------------------------
-    ```bash
-    download-parameters --directory /path/to/save --version 1
-    ```
-    - `--directory`: Optional. Specifies the directory to save downloaded parameters. Defaults to the `HAPI_DATA_DIR` environment variable.
-    - `--version`: Optional. Specifies the version of the parameters. Defaults to 1.
+            download-parameters --directory /path/to/save --version 1
 
-    Download a Specific Parameter Set
-    ----------------------------------
-    ```bash
-    download-parameter-set 1 --directory /path/to/save --version 1
-    ```
-    - Replace `1` with the desired parameter set ID (e.g., `avg`, `max`).
-    - `--directory`: Optional. Specifies the directory to save the parameter set.
-    - `--version`: Optional. Specifies the version of the parameter set.
+        Download a specific parameter set::
 
-    List Parameter Names
-    ---------------------
-    ```bash
-    list-parameter-names
-    ```
-    This command lists all available parameter names.
+            download-parameter-set 1 --directory /path/to/save \\
+                --version 1
 
-    See Also
-    --------
-    Hapi.parameters.parameters.Parameter
-        For details on the `Parameter` class and its methods.
-    Hapi.parameters.parameters.ParameterManager
-        For managing parameter-related operations.
-    requests.exceptions.RequestException
-        For handling errors in HTTP requests.
+        List parameter names::
 
-    Notes
-    -----
-    - Ensure that the `HAPI_DATA_DIR` environment variable is set if the `--directory` option is not used.
-    - The CLI depends on the Figshare API for fetching parameter data.
+            list-parameter-names
 
-    Author
-    ------
-    Mostafa Farrag
-        - Email: moah.farag@gmail.com
-        - Project: HAPI-Nile
-
-    References
-    ----------
-    [1] HAPI GitHub Repository: https://github.com/Serapieum-of-alex/Hapi
+    See Also:
+        ``Hapi.parameters.parameters.Parameter``: For details on the
+            ``Parameter`` class and its methods.
+        ``Hapi.parameters.parameters.ParameterManager``: For managing
+            parameter-related operations.
     """
     import argparse
 

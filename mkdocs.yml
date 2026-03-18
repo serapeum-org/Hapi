@@ -61,7 +61,7 @@ plugins:
             show_category_heading: false
             group_by_category: false
             inherited_members: false
-            docstring_style: numpy
+            docstring_style: google
   - table-reader
   - tags
   - mike:

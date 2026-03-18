@@ -1,3 +1,14 @@
+"""Distributed rainfall-runoff model execution and spatial routing.
+
+This module provides the ``DistributedRRM`` class, which runs a lumped
+rainfall-runoff model (e.g., HBV) independently for each grid cell and
+then routes the resulting discharge between cells following the river
+network defined by a flow direction raster.
+
+The module belongs to the ``Hapi.rrm`` package and supports both
+Muskingum and triangular (MAXBAS) routing strategies.
+"""
+
 import numpy as np
 from pyramids.dataset import Dataset
 
@@ -5,18 +16,14 @@ from Hapi.routing import Routing as routing
 
 
 class DistributedRRM:
-    """DistributedRRM class.
+    """Distributed rainfall-runoff model runner and spatial router.
 
-        runs simulation in lumped form for each cell separetly and rout the discharge between the cells following
-        the river network.
+    Runs a lumped hydrological model separately for each grid cell
+    and routes the resulting discharge between cells following the
+    river network.
 
-    Methods
-    -------
-        1-run_lumped_model
-        2-SpatialRouting
-        3-DistMaxBas1
-        4-DistMaxBas2
-        5-Dist_HBV2
+    The class is stateless; all methods are static and operate on a
+    ``Model`` object that carries the required arrays and parameters.
     """
 
     def __init__(self):
@@ -24,53 +31,43 @@ class DistributedRRM:
 
     @staticmethod
     def run_lumped_model(Model):
-        """Run Lumped RRM.
+        """Run lumped rainfall-runoff model for every grid cell.
 
-            - runs the rainfall runoff lumped model (HBV, GR4,...) separately for each cell and  return a time series
-            of arrays.
+        Executes the lumped conceptual model (e.g., HBV) independently
+        for each non-NaN cell in the catchment grid and converts the
+        resulting discharge from mm/time-step to m3/s.
 
-        Parameters
-        ----------
-        Model:
-            ConceptualModel: [function]
-                conceptual model function
-            Raster: [gdal.dataset]
-                raster to get the spatial information (nodata cells)
-                raster input could be dem, flow accumulation or flow direction raster of the catchment
-                but the nodata value stored in the raster should be far from the
-                range of values that could result from the calculation
-            sp_prec: [numpy array]
-                3d array of the precipitation data, sp_prec should
-                have the same 2d dimension of raster input
-            sp_et: [numpy array]
-                3d array of the evapotranspiration data, sp_et should
-                have the same 2d dimension of raster input
-            sp_temp: [numpy array]
-                3d array of the temperature data, sp_temp should
-                have the same 2d dimension of raster input
-            sp_pars: [numpy array]
-                number of 2d arrays of the catchment properties spatially
-                distributed in 2d and the third dimension is the number of parameters,
-                sp_pars should have the same 2d dimension of raster input
-            p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            init_st: [list]
-                initial state variables values [sp, sm, uz, lz, wc]. default=None
-            ll_temp: [numpy array]
-                3d array of the long term average temperature data
-            q_init: [float]
-                initial discharge m3/s
+        After execution the following attributes are set on *Model*:
+        ``state_variables``, ``quz``, and ``qlz``.
 
-        Returns
-        -------
-        state_variables : [numpy ndarray]
-             4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-        qlz : [numpy ndarray]
-            3D array of the lower zone discharge (lumped calculation for each cell separately)
-        quz : [numpy ndarray]
-            3D array of the upper zone discharge
+        Args:
+            Model: A catchment model object carrying the following
+                attributes:
+
+                - ``rows`` (int): Number of grid rows.
+                - ``cols`` (int): Number of grid columns.
+                - ``TS`` (int): Number of time steps.
+                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                  array; NaN marks cells outside the domain.
+                - ``LumpedModel``: Lumped model instance with a
+                  ``simulate`` method.
+                - ``Prec`` (numpy.ndarray): 3-D precipitation array
+                  ``(rows, cols, TS)``.
+                - ``Temp`` (numpy.ndarray): 3-D temperature array.
+                - ``ET`` (numpy.ndarray): 3-D evapotranspiration array.
+                - ``ll_temp`` (numpy.ndarray): 3-D long-term average
+                  temperature array.
+                - ``Parameters`` (numpy.ndarray): 3-D parameter array
+                  ``(rows, cols, n_params)``.
+                - ``InitialCond`` (list): Initial state variable values
+                  ``[sp, sm, uz, lz, wc]``.
+                - ``q_init`` (float): Initial discharge in m3/s.
+                - ``Snow`` (int): Snow module flag (0 or 1).
+                - ``CatArea`` (float): Catchment area in km2.
+                - ``px_tot_area`` (float): Total pixel area in km2.
+                - ``px_area`` (float): Single pixel area in km2.
+                - ``conversion_factor`` (float): Unit conversion
+                  factor (``tfac * 3.6``).
         """
         Model.state_variables = np.zeros(
             [Model.rows, Model.cols, Model.TS, 5], dtype=np.float32
@@ -109,38 +106,42 @@ class DistributedRRM:
 
     @staticmethod
     def SpatialRouting(Model):
-        """Spatial Routing method.
+        """Route discharge between cells following the flow direction.
 
-            routes the discharge from cell to another following the flow direction input raster.
+        Accumulates and routes upper-zone discharge (``quz``) using
+        Muskingum routing from upstream to downstream cells according
+        to the flow direction raster.  Lower-zone discharge (``qlz``)
+        is translated (accumulated without attenuation) so that total
+        discharge can be computed at any internal point.
 
-        Parameters
-        ----------
-        Model:
-            qlz: [numpy ndarray]
-                3D array of the lower zone discharge
-            quz: [numpy ndarray]
-                3D array of the upper zone discharge
-            flow_acc: [gdal.dataset]
-                flow accumulation raster file of the catchment (clipped to the catchment only)
-            flow_direct: [gdal.dataset]
-                flow Direction raster file of the catchment (clipped to the catchment only)
-            sp_pars: [numpy ndarray]
-                3D array of the parameters
-            p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
+        After execution the following attributes are set on *Model*:
+        ``quz_routed``, ``qlz_translated``, and ``Qtot``.
 
-        Returns
-        -------
-        qout: [numpy array]
-            1D timeseries of discharge at the outlet of the catchment
-            of unit m3/sec
-        quz_routed: [numpy ndarray]
-            3D array of the upper zone discharge  accumulated and
-            routed at each time step
-        qlz_translated: [numpy ndarray]
-            3D array of the lower zone discharge translated at each time step
+        Args:
+            Model: A catchment model object carrying the following
+                attributes:
+
+                - ``rows`` (int): Number of grid rows.
+                - ``cols`` (int): Number of grid columns.
+                - ``TS`` (int): Number of time steps.
+                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                  array; NaN marks cells outside the domain.
+                - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
+                  array ``(rows, cols, TS)`` in m3/s.
+                - ``qlz`` (numpy.ndarray): 3-D lower-zone discharge
+                  array ``(rows, cols, TS)`` in m3/s.
+                - ``acc_val`` (list): Sorted unique flow accumulation
+                  values.
+                - ``FDT`` (dict): Flow direction table mapping
+                  ``"row,col"`` keys to lists of upstream cell
+                  index pairs.
+                - ``Parameters`` (numpy.ndarray): 3-D parameter array
+                  where indices 10 and 11 are Muskingum K and X.
+                - ``dt`` (float): Time-step factor (``tfac``).
+                - ``routing_method`` (str): Routing method name (e.g.,
+                  ``"Muskingum"``).
+                - ``BankfullDepth`` (numpy.ndarray): 2-D bankfull
+                  depth array used for non-Muskingum methods.
         """
         #    # routing lake discharge with DS cell k & x and adding to cell Q
         #    q_lake=Routing.Muskingum_V(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
@@ -212,16 +213,27 @@ class DistributedRRM:
 
     @staticmethod
     def DistMaxbas1(Model):
-        """DistMaxbas1 method rout the discharge directly to the outlet from each cell using triangular function.
+        """Route discharge to the outlet using a triangular function.
 
-        Parameters
-        ----------
-        Model : TYPE
-            DESCRIPTION.
+        Applies triangular (MAXBAS) routing to the upper-zone
+        discharge of each cell independently.  The MAXBAS parameter
+        is read from the last column of the spatially distributed
+        parameter array.
 
-        Returns
-        -------
-        None.
+        The ``Model.quz`` array is modified in place.
+
+        Args:
+            Model: A catchment model object carrying the following
+                attributes:
+
+                - ``rows`` (int): Number of grid rows.
+                - ``cols`` (int): Number of grid columns.
+                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                  array; NaN marks cells outside the domain.
+                - ``Parameters`` (numpy.ndarray): 3-D parameter array
+                  where the last index holds the MAXBAS value.
+                - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
+                  array ``(rows, cols, TS)`` in m3/s.
         """
 
         Maxbas = Model.Parameters[:, :, -1]
@@ -235,12 +247,30 @@ class DistributedRRM:
 
     @staticmethod
     def DistMaxbas2(Model):
-        """DistMaxbas2 method rout the discharge directly to the outlet from each cell using triangular function, the maxbas parameters are going to be calculated based on the flow path length input.
+        """Route discharge using a triangular function scaled by flow path length.
 
-        Parameters
-        ----------
-        Model : TYPE
-            DESCRIPTION.
+        Similar to ``DistMaxbas1``, but the MAXBAS parameter for each
+        cell is rescaled proportionally to its flow path length so that
+        cells farther from the outlet receive more attenuation.
+
+        The ``Model.quz`` array is modified in place.
+
+        Args:
+            Model: A catchment model object carrying the following
+                attributes:
+
+                - ``rows`` (int): Number of grid rows.
+                - ``cols`` (int): Number of grid columns.
+                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                  array; NaN marks cells outside the domain.
+                - ``FPLArr`` (numpy.ndarray): 2-D flow path length
+                  array.
+                - ``NoDataValue`` (float): No-data value used in the
+                  flow path length raster.
+                - ``Parameters`` (numpy.ndarray): 3-D parameter array
+                  where the last index holds the maximum MAXBAS value.
+                - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
+                  array ``(rows, cols, TS)`` in m3/s.
         """
         MAXBAS = np.nanmax(Model.Parameters[:, :, -1])
         # replace novalue cells by nan
@@ -279,7 +309,62 @@ class DistributedRRM:
         ll_temp=None,
         q_0=None,
     ):
-        """Original Routing function."""
+        """Run distributed HBV model with lake routing (legacy).
+
+        Executes the HBV conceptual model for every grid cell, routes
+        lake discharge into the downstream cell using Muskingum
+        routing, and then routes upper-zone discharge through the
+        river network.  Lower-zone discharge is averaged across all
+        cells and converted to m3/s.
+
+        Args:
+            conceptual_model: Lumped model object with a ``simulate``
+                method.
+            lakecell (list[int]): Two-element list ``[row, col]``
+                giving the grid indices of the lake cell.
+            q_lake (numpy.ndarray): 1-D array of lake discharge
+                time series in m3/s.
+            DEM: GDAL dataset of the catchment DEM.
+            flow_acc (dict): Flow direction table mapping
+                ``"row,col"`` keys to lists of upstream cell index
+                pairs.
+            flow_acc_plan (numpy.ndarray): 2-D array of flow
+                accumulation values; NaN marks no-data cells.
+            sp_prec (numpy.ndarray): 3-D precipitation array
+                ``(rows, cols, time_steps)``.
+            sp_et (numpy.ndarray): 3-D evapotranspiration array.
+            sp_temp (numpy.ndarray): 3-D temperature array.
+            sp_pars (numpy.ndarray): 3-D parameter array
+                ``(rows, cols, n_params)``.  Indices 5, 6, 7 are
+                K1, K, and alpha; indices 10, 11 are Muskingum
+                K and X.
+            p2 (list): Unoptimized parameters.
+
+                - ``p2[0]``: tfac -- 1 for hourly, 0.25 for 15 min,
+                  24 for daily.
+                - ``p2[1]``: Catchment area in km2.
+            init_st (list, optional): Initial state variable values
+                ``[sp, sm, uz, lz, wc]``.  Defaults to None.
+            ll_temp (numpy.ndarray, optional): 3-D long-term average
+                temperature array.  Defaults to None.
+            q_0 (float, optional): Initial discharge in m3/s.
+                Defaults to None.
+
+        Returns:
+            tuple: A five-element tuple containing:
+
+                - **qout** (*numpy.ndarray*): 1-D discharge time
+                  series at the catchment outlet in m3/s.
+                - **st** (*numpy.ndarray*): 4-D state variable array
+                  ``(rows, cols, time_steps, 5)`` with states
+                  ``[sp, sm, uz, lz, wc]``.
+                - **quz_routed** (*numpy.ndarray*): 3-D routed
+                  upper-zone discharge array in m3/s.
+                - **qlz** (*numpy.ndarray*): 1-D spatially averaged
+                  lower-zone discharge in m3/s.
+                - **quz** (*numpy.ndarray*): 3-D upper-zone
+                  discharge array in m3/s (before spatial routing).
+        """
         n_steps = sp_prec.shape[2] + 1  # no of time steps =length of time series +1
         # initialize vector of nans to fill states
         dummy_states = np.empty([n_steps, 5])  # [sp,sm,uz,lz,wc]
