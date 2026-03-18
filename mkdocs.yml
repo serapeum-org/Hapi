@@ -43,7 +43,6 @@ theme:
 use_directory_urls: false
 not_in_nav: |
   LICENSE.md
-  conf.py
 plugins:
   - search
   - mkdocs-jupyter
