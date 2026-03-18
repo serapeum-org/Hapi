@@ -31,7 +31,7 @@ jobs:
         with:
           trigger: 'pull_request'
           package-manager: 'pixi'
-          install-groups: 'docs'
+          install-groups: "groups: docs"
           deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
 
   deploy-main:
@@ -45,7 +45,7 @@ jobs:
       with:
         trigger: 'main'
         package-manager: 'pixi'
-        install-groups: 'docs'
+        install-groups: "groups: docs"
         deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
 
   deploy-release:
