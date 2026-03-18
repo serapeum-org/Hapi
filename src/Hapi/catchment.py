@@ -18,6 +18,7 @@ import datetime as dt
 import inspect
 import math
 import os
+from typing import TYPE_CHECKING
 
 import geopandas as gpd
 import matplotlib.dates as dates
@@ -32,6 +33,10 @@ from pyramids.datacube import Datacube
 from pyramids.dataset import Dataset
 
 from Hapi.dem import DEM
+
+if TYPE_CHECKING:
+    import matplotlib.animation
+    from Hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
@@ -107,49 +112,51 @@ class Catchment:
             self.conversion_factor = 24
 
         self.routing_method = routing_method
-        self.Parameters = None
-        self.data = None
-        self.Prec = None
-        self.TS = None
-        self.Temp = None
-        self.ET = None
-        self.ll_temp = None
-        self.QGauges = None
+        self.Parameters: np.ndarray | list | None = None
+        self.data: np.ndarray | None = None
+        self.Prec: np.ndarray | None = None
+        self.TS: int | None = None
+        self.Temp: np.ndarray | None = None
+        self.ET: np.ndarray | None = None
+        self.ll_temp: np.ndarray | float | None = None
+        self.QGauges: pd.DataFrame | None = None
         self.Snow: bool | None = None
         self.Maxbas: bool | None = None
-        self.LumpedModel = None
+        self.LumpedModel: BaseConceptualModel | None = None
         self.CatArea: float | int | None = None
         self.InitialCond: list | None = None
-        self.q_init = None
-        self.GaugesTable = None
+        self.q_init: float | None = None
+        self.GaugesTable: gpd.GeoDataFrame | pd.DataFrame | None = None
         self.UB: np.ndarray | None = None
         self.LB: np.ndarray | None = None
-        self.cols = None
-        self.rows = None
-        self.NoDataValue = None
-        self.FlowAccArr = None
+        self.cols: int | None = None
+        self.rows: int | None = None
+        self.NoDataValue: float | None = None
+        self.FlowAccArr: np.ndarray | None = None
         self.no_elem: int | None = None
         self.acc_val: list[int] | None = None
         self.Outlet: tuple | None = None
-        self.CellSize = None
-        self.px_area = None
+        self.CellSize: float | None = None
+        self.px_area: float | None = None
         self.px_tot_area: float | None = None
-        self.FlowDirArr = None
+        self.FlowDirArr: np.ndarray | None = None
         self.FDT: dict | None = None
-        self.FPLArr = None
-        (
-            self.DEM,
-            self.BankfullDepth,
-            self.RiverWidth,
-            self.RiverRoughness,
-            self.FloodPlainRoughness,
-        ) = (None, None, None, None, None)
-        self.qout, self.Qtot = None, None
-        self.quz_routed, self.qlz_translated, self.state_variables = None, None, None
-        self.anim = None
-        self.quz, self.qlz = None, None
+        self.FPLArr: np.ndarray | None = None
+        self.DEM: np.ndarray | None = None
+        self.BankfullDepth: np.ndarray | None = None
+        self.RiverWidth: np.ndarray | None = None
+        self.RiverRoughness: np.ndarray | None = None
+        self.FloodPlainRoughness: np.ndarray | None = None
+        self.qout: np.ndarray | None = None
+        self.Qtot: np.ndarray | None = None
+        self.quz_routed: np.ndarray | None = None
+        self.qlz_translated: np.ndarray | None = None
+        self.state_variables: np.ndarray | None = None
+        self.anim: matplotlib.animation.FuncAnimation | None = None
+        self.quz: np.ndarray | None = None
+        self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
-        self.Metrics = None
+        self.Metrics: pd.DataFrame | None = None
 
     def read_rainfall(
         self,
@@ -1467,8 +1474,8 @@ class Lake:
                 the start and end dates. Default is False.
         """
 
-        self.OutflowCell = None
-        self.Snow = None
+        self.OutflowCell: list | None = None
+        self.Snow: int | None = None
         self.Split = split
         self.start = dt.datetime.strptime(start, fmt)
         self.end = dt.datetime.strptime(end, fmt)
@@ -1480,15 +1487,13 @@ class Lake:
         else:
             assert False, "Error"
 
-        self.MeteoData = None
-        self.Parameters = None
-        self.LumpedModel, self.CatArea, self.LakeArea, self.InitialCond = (
-            None,
-            None,
-            None,
-            None,
-        )
-        self.StageDischargeCurve = None
+        self.MeteoData: np.ndarray | None = None
+        self.Parameters: list | None = None
+        self.LumpedModel: BaseConceptualModel | None = None
+        self.CatArea: float | None = None
+        self.LakeArea: float | None = None
+        self.InitialCond: list | None = None
+        self.StageDischargeCurve: np.ndarray | None = None
 
     def read_meteo_data(self, path: str, fmt: str):
         """Read meteorological data for the lake simulation.

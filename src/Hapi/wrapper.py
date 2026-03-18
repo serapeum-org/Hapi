@@ -129,7 +129,7 @@ class Wrapper:
         tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = HBVLake().simulate(  # type: ignore[abstract]
+        Lake.Qlake, _ = HBVLake().simulate(
             plake,
             t,
             et,
@@ -252,7 +252,7 @@ class Wrapper:
         tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = HBVLake().simulate(  # type: ignore[abstract]
+        Lake.Qlake, _ = HBVLake().simulate(
             plake,
             t,
             et,

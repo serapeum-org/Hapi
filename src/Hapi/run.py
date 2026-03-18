@@ -33,8 +33,7 @@ class Run(Catchment):
     """
 
     def __init__(self):
-        self.Qsim = None
-        pass
+        self.Qsim: np.ndarray | pd.DataFrame | None = None
 
     def RunHapi(self):
         """Run the distributed hydrological model.
@@ -340,7 +339,7 @@ class Run(Catchment):
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
-            ind = pd.date_range(self.startdate, self.enddate, freq="h")
+            ind = pd.date_range(self.start, self.end, freq="h")
 
         Qsim = pd.DataFrame(index=ind)
 

@@ -66,6 +66,9 @@ class Calibration(Catchment):
             temporal_resolution,
             routing_method,
         )
+        self.objective_function: Callable[..., Any] | None = None
+        self.OFArgs: list | None = None
+        self.OFvalue: float | None = None
 
     def read_objective_function(self, objective_function: Callable[..., Any], args):
         """Read and store the objective function and its arguments.
