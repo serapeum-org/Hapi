@@ -77,7 +77,7 @@ docs = [
 homepage = "https://github.com/Serapieum-of-alex/Hapi"
 repository = "https://github.com/Serapieum-of-alex/Hapi"
 documentation = "https://serapieum-of-alex.github.io/Hapi"
-Changelog = "https://github.com/Serapieum-of-alex/Hapi/docs/change-log.md"
+Changelog = "https://github.com/Serapieum-of-alex/Hapi/blob/main/docs/change-log.md"
 
 [project.scripts]
 download-parameters = "Hapi.parameters.parameters:main"
