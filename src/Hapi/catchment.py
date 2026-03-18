@@ -12,6 +12,7 @@ The Lake class provides similar functionality for simulating a lake
 as a lumped model using a rating curve, where the lake and its
 upstream sub-catchments are treated as one lumped model.
 """
+from __future__ import annotations
 
 __name__ = "catchment"
 

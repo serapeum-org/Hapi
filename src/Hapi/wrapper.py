@@ -5,6 +5,7 @@ rainfall-runoff model execution with spatial routing schemes. It
 supports multiple configurations including Muskingum routing,
 triangular routing, and lake integration.
 """
+from __future__ import annotations
 
 import numpy as np
 

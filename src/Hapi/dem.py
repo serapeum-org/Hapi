@@ -4,6 +4,8 @@ This module provides the `DEM` class, which extends
 ``pyramids.dataset.Dataset`` with flow-direction utilities used by
 the distributed rainfall-runoff modelling pipeline.
 """
+from __future__ import annotations
+
 from typing import Dict
 import numpy as np
 from pyramids.dataset import Dataset

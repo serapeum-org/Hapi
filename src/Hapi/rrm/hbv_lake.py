@@ -15,7 +15,7 @@ Module-level Constants:
     DEF_q0: Default initial discharge value (2.3 m3/s).
 """
 
-from __future__ import division, print_function
+from __future__ import annotations
 
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline as interp11

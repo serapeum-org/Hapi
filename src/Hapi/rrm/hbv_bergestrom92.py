@@ -24,6 +24,7 @@ Model characteristics:
     - Uses 10 parameters otherwise:
       ``[rfcf, fc, beta, e_corr, lp, k, k1, k2, uzl, perc]``
 """
+from __future__ import annotations
 
 from typing import Tuple
 import numpy as np

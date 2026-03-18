@@ -10,6 +10,7 @@ The module relies on the ``pyramids`` library for raster I/O and
 manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
 locate pre-downloaded global parameter sets (Beck et al., 2016).
 """
+from __future__ import annotations
 
 import datetime as dt
 import os

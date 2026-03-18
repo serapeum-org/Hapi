@@ -14,6 +14,7 @@ The module contains four main classes:
 - ``Parameter``: high-level facade that wires everything together and
   exposes a CLI-friendly interface.
 """
+from __future__ import annotations
 
 import json
 import os

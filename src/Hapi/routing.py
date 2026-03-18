@@ -7,6 +7,7 @@ It includes:
 1. Muskingum-Cunge routing (iterative and vectorized variants).
 2. Triangular (MAXBAS) routing using transfer function weights.
 """
+from __future__ import annotations
 
 from typing import Union
 import numpy as np

@@ -8,6 +8,7 @@ network defined by a flow direction raster.
 The module belongs to the ``Hapi.rrm`` package and supports both
 Muskingum and triangular (MAXBAS) routing strategies.
 """
+from __future__ import annotations
 
 import numpy as np
 from pyramids.dataset import Dataset

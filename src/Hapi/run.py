@@ -5,6 +5,8 @@ both components of the spatial representation of the hydrological process
 (conceptual model and spatial routing) to calculate the predicted runoff
 at known locations based on a given performance function.
 """
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 from loguru import logger

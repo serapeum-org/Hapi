@@ -5,6 +5,8 @@ spatially (totally distributed, totally distributed with some parameters
 lumped, all parameters lumped, hydrologic response units) and saving
 generated parameters into rasters.
 """
+from __future__ import annotations
+
 from typing import List
 import datetime as dt
 import math

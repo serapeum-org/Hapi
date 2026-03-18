@@ -25,6 +25,8 @@ Otherwise it uses 10 parameters::
 
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
 """
+from __future__ import annotations
+
 from typing import Tuple
 import numpy as np
 from Hapi.rrm.base_model import BaseConceptualModel
