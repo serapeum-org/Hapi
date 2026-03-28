@@ -4,6 +4,10 @@ permissions:
   contents: write
   pages: write
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: true
+
 on:
   push:
     branches:
