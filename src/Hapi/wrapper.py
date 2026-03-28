@@ -7,11 +7,16 @@ triangular routing, and lake integration.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from Hapi.routing import Routing as routing
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
 from Hapi.rrm.hbv_lake import HBVLake
+
+if TYPE_CHECKING:
+    from Hapi.catchment import Catchment, Lake
 
 
 class Wrapper:
@@ -36,7 +41,7 @@ class Wrapper:
         pass
 
     @staticmethod
-    def RRMModel(Model, ll_temp=None, q_0=None):
+    def RRMModel(Model: Catchment, ll_temp=None, q_0=None):
         """Run the distributed rainfall-runoff model with spatial routing.
 
         Connects two modules:
@@ -91,7 +96,7 @@ class Wrapper:
         # Model.qout = Model.qout[:-1]
 
     @staticmethod
-    def RRMWithlake(Model, Lake, ll_temp=None, q_0=None):
+    def RRMWithlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
         """Run the distributed RRM with lake simulation and routing.
 
         Connects three modules: the lake module, the distributed
@@ -175,7 +180,7 @@ class Wrapper:
         # Model.qout = Model.qout[:-1]
 
     @staticmethod
-    def FW1(Model, ll_temp=None, q_0=None):
+    def FW1(Model: Catchment, ll_temp=None, q_0=None):
         """Run the distributed RRM with triangular function-1 routing.
 
         Connects two modules:
@@ -212,7 +217,7 @@ class Wrapper:
         Model.qout = Model.qout[:-1]
 
     @staticmethod
-    def FW1Withlake(Model, Lake, ll_temp=None, q_0=None):
+    def FW1Withlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
         """Run the distributed RRM with lake and triangular routing.
 
         Connects three modules:
@@ -300,7 +305,7 @@ class Wrapper:
         Model.qout = qout[:-1] + Lake.QlakeR
 
     @staticmethod
-    def Lumped(Model, Routing=0, RoutingFn=[]):
+    def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: list = []):
         """Run a lumped conceptual model with optional routing.
 
         Executes a lumped rainfall-runoff model (e.g., HBV) to
