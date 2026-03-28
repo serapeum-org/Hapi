@@ -1,0 +1,3475 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Hapi is a Python package for distributed hydrological modeling using HBV96">
+      
+      
+      
+        <link rel="canonical" href="https://serapieum-of-alex.github.io/Hapi/main/api/run.html">
+      
+      
+        <link rel="prev" href="routing.html">
+      
+      
+        <link rel="next" href="wrapper.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Run - Hapi</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#run" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="Hapi" class="md-header__button md-logo" aria-label="Hapi" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Hapi
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Run
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="lime"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../dev/Installation.html" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Installation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="catchment.html" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/distributed-model-calib.html" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../change-log.html" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Change logs
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="Hapi" class="md-nav__button md-logo" aria-label="Hapi" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Hapi
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Installation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/Installation.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="catchment.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catchment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dem.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DEM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="calibration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Rainfall runoff model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="inputs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="routing.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="run.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#run_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.RunFW1withLake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RunFW1withLake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.RunFloodModel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RunFloodModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.RunHapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RunHapi
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.runFW1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runFW1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.runHAPIwithLake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runHAPIwithLake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.runLumped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runLumped
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="wrapper.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wrapper
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hbv.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV rainfall runoff model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hbv-bergestrom92.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV rainfall runoff model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hbv-lake.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV rainfall runoff model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rrm-parameters.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/distributed-model-calib.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Hydrological Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/distributed-model-run.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distributed Hydrological Model Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/gis-inputs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GIS Inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/hbv.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV Lumped conceptual model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/lumped-model-calibration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lumped Model Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/lumped-model-run.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lumped Model Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/meteo-inputs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rainfall Runoff Model Inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/muskingum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Muskingum
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/parameters.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../change-log.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Change logs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#run_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.RunFW1withLake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RunFW1withLake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.RunFloodModel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RunFloodModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.RunHapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RunHapi
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.runFW1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runFW1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.runHAPIwithLake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runHAPIwithLake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Hapi.run.Run.runLumped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runLumped
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="run"><a class="toclink" href="#run">Run</a><a class="headerlink" href="#run" title="Permanent link">#</a></h1>
+<h2 id="run_1"><a class="toclink" href="#run_1">Run</a><a class="headerlink" href="#run_1" title="Permanent link">#</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="Hapi.run.Run" class="doc doc-heading"><a href="#Hapi.run.Run" class="toclink">
+            <code>Hapi.run.Run</code>
+
+
+</a><a href="#Hapi.run.Run" class="headerlink" title="Permanent link">#</a></h3>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="&lt;code&gt;Hapi.catchment.Catchment&lt;/code&gt;" href="catchment.html#Hapi.catchment.Catchment">Catchment</a></code></p>
+
+
+
+        <p>Run the catchment model.</p>
+<p>The Run sub-class validates the spatial data and hands it to the
+Wrapper class. It is a sub-class of the Catchment class, so you
+need to create the Catchment object first to run the model.</p>
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;RunHapi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;Hapi.run.Run.RunHapi&lt;/code&gt;)" href="#Hapi.run.Run.RunHapi">RunHapi</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Run the distributed hydrological model.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;runHAPIwithLake&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Lake&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;Hapi.run.Run.runHAPIwithLake&lt;/code&gt;)" href="#Hapi.run.Run.runHAPIwithLake">runHAPIwithLake</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Run the distributed model with a lake component.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;runFW1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;Hapi.run.Run.runFW1&lt;/code&gt;)" href="#Hapi.run.Run.runFW1">runFW1</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Run the FW1 distributed model.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;RunFW1withLake&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Lake&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;Hapi.run.Run.RunFW1withLake&lt;/code&gt;)" href="#Hapi.run.Run.RunFW1withLake">RunFW1withLake</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Run the FW1 model with a lake component.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;runLumped&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Route&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RoutingFn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;Hapi.run.Run.runLumped&lt;/code&gt;)" href="#Hapi.run.Run.runLumped">runLumped</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Run the lumped conceptual model.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src\Hapi\run.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the catchment model.</span>
+
+<span class="sd">    The Run sub-class validates the spatial data and hands it to the</span>
+<span class="sd">    Wrapper class. It is a sub-class of the Catchment class, so you</span>
+<span class="sd">    need to create the Catchment object first to run the model.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        RunHapi: Run the distributed hydrological model.</span>
+<span class="sd">        runHAPIwithLake: Run the distributed model with a lake component.</span>
+<span class="sd">        runFW1: Run the FW1 distributed model.</span>
+<span class="sd">        RunFW1withLake: Run the FW1 model with a lake component.</span>
+<span class="sd">        runLumped: Run the lumped conceptual model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">RunHapi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed hydrological model.</span>
+
+<span class="sd">        Validates that all input arrays (precipitation, evapotranspiration,</span>
+<span class="sd">        temperature, parameters, and flow direction) have consistent</span>
+<span class="sd">        dimensions, then executes the rainfall-runoff model via the</span>
+<span class="sd">        Wrapper.</span>
+
+<span class="sd">        The following instance attributes are set after execution:</span>
+
+<span class="sd">        - ``state_variables``: 4D array (rows, cols, time, states) where</span>
+<span class="sd">          states are [sp, wc, sm, uz, lv].</span>
+<span class="sd">        - ``qlz``: 3D array of the lower zone discharge.</span>
+<span class="sd">        - ``quz``: 3D array of the upper zone discharge.</span>
+<span class="sd">        - ``qout``: 1D timeseries of discharge at the catchment outlet</span>
+<span class="sd">          in m3/sec.</span>
+<span class="sd">        - ``quz_routed``: 3D array of the upper zone discharge</span>
+<span class="sd">          accumulated and routed at each time step.</span>
+<span class="sd">        - ``qlz_translated``: 3D array of the lower zone discharge</span>
+<span class="sd">          translated at each time step.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">                row counts, column counts, or temporal lengths.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># input dimensions</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+
+        <span class="c1"># input dimensions</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+        <span class="c1"># run the model</span>
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the flood model.</span>
+
+<span class="sd">        Runs the conceptual distributed hydrological model with</span>
+<span class="sd">        additional validation for river geometry inputs (bankfull depth,</span>
+<span class="sd">        river width, river roughness, and flood plain roughness).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If meteorological input arrays, parameter</span>
+<span class="sd">                arrays, or river geometry arrays have inconsistent</span>
+<span class="sd">                dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># input dimensions</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+
+        <span class="c1"># input dimensions</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+
+        <span class="c1"># run the model</span>
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RRM has finished&quot;</span><span class="p">)</span>
+        <span class="c1"># SV = SaintVenant()</span>
+        <span class="c1"># SV.KinematicRaster(self)</span>
+        <span class="c1"># print(&quot;1D model Run has finished&quot;)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed model with a lake component.</span>
+
+<span class="sd">        Validates that all input arrays have consistent dimensions and</span>
+<span class="sd">        that the lake meteorological data matches the simulation period,</span>
+<span class="sd">        then executes the rainfall-runoff model with lake routing via</span>
+<span class="sd">        the Wrapper.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Lake: Lake object containing lake configuration and</span>
+<span class="sd">                meteorological data. Must have a ``MeteoData`` attribute</span>
+<span class="sd">                with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">                rain, ET, and temperature.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">                dimensions or if the lake meteorological data length</span>
+<span class="sd">                does not match the distributed raster data length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># input dimensions</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows and columns&quot;</span>
+
+        <span class="c1"># input dimensions</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+        <span class="p">),</span> <span class="s2">&quot;Lake Meteo data has to have at least three columns of rain, ET, and Temp&quot;</span>
+
+        <span class="c1"># run the model</span>
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMWithlake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed hydrological model.</span>
+
+<span class="sd">        Validates that all input arrays have consistent dimensions,</span>
+<span class="sd">        then executes the FW1 model via the Wrapper.</span>
+
+<span class="sd">        The following instance attributes are set after execution:</span>
+
+<span class="sd">        - ``st``: 4D array of state variables.</span>
+<span class="sd">        - ``q_out``: 1D array of calculated discharge at the catchment</span>
+<span class="sd">          outlet.</span>
+<span class="sd">        - ``q_uz``: 3D array of distributed discharge for each cell.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">                row counts, column counts, or temporal lengths.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+        <span class="c1"># run the model</span>
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed model with a lake component.</span>
+
+<span class="sd">        Validates that all input arrays have consistent dimensions and</span>
+<span class="sd">        that the lake meteorological data matches the simulation period,</span>
+<span class="sd">        then executes the FW1 model with lake routing via the Wrapper.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Lake: Lake object containing lake configuration and</span>
+<span class="sd">                meteorological data. Must have a ``MeteoData`` attribute</span>
+<span class="sd">                with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">                rain, ET, and temperature.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The following catchment attributes should be set before</span>
+<span class="sd">            calling this method:</span>
+
+<span class="sd">            - ``prec_path``: Path to the folder containing precipitation</span>
+<span class="sd">              rasters.</span>
+<span class="sd">            - ``evap_path``: Path to the folder containing</span>
+<span class="sd">              evapotranspiration rasters.</span>
+<span class="sd">            - ``temp_path``: Path to the folder containing temperature</span>
+<span class="sd">              rasters.</span>
+<span class="sd">            - ``flow_acc_path``: Path to the flow accumulation raster.</span>
+<span class="sd">            - ``flow_direction_path``: Path to the flow direction raster.</span>
+<span class="sd">            - ``ParPath``: Path to the folder containing parameter</span>
+<span class="sd">              rasters.</span>
+<span class="sd">            - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
+<span class="sd">              is tfac and ``p2[1]`` is catchment area in km2.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">                dimensions or if the lake meteorological data length</span>
+<span class="sd">                does not match the distributed raster data length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># input data validation</span>
+
+        <span class="c1"># input dimensions</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+        <span class="p">),</span> <span class="s2">&quot;Lake Meteo data has to have at least three columns rain, ET, and Temp&quot;</span>
+
+        <span class="c1"># run the model</span>
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1Withlake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">RoutingFn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the lumped conceptual model.</span>
+
+<span class="sd">        Executes a lumped conceptual hydrological model, optionally</span>
+<span class="sd">        routing the generated discharge hydrograph. The simulated</span>
+<span class="sd">        discharge is stored in ``self.Qsim`` as a pandas DataFrame</span>
+<span class="sd">        indexed by the simulation date range.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Route: Flag to decide whether to route the generated</span>
+<span class="sd">                discharge hydrograph. Use 0 for no routing or 1 to</span>
+<span class="sd">                enable routing. Defaults to 0.</span>
+<span class="sd">            RoutingFn: Function to route the discharge hydrograph.</span>
+<span class="sd">                If None, an empty list is used. Defaults to None.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The following attributes should be defined before calling</span>
+<span class="sd">            this method:</span>
+
+<span class="sd">            - ``ConceptualModel``: Conceptual model containing a</span>
+<span class="sd">              ``simulate`` method.</span>
+<span class="sd">            - ``data``: Numpy array of meteorological data with columns</span>
+<span class="sd">              for precipitation, evapotranspiration, temperature, and</span>
+<span class="sd">              long-term average temperature.</span>
+<span class="sd">            - ``parameters``: Numpy array of conceptual model</span>
+<span class="sd">              parameters.</span>
+<span class="sd">            - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
+<span class="sd">              is tfac and ``p2[1]`` is catchment area in km2.</span>
+<span class="sd">            - ``init_st``: List of initial state variable values</span>
+<span class="sd">              [sp, sm, uz, lz, wc].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">RoutingFn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">RoutingFn</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_resolution</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;daily&quot;</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+
+        <span class="n">Qsim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
+
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">Lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Route</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">)</span>
+        <span class="n">Qsim</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">Qsim</span><span class="p">[:]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Lumped model run has finished successfully&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Hapi.run.Run.RunFW1withLake" class="doc doc-heading"><a href="#Hapi.run.Run.RunFW1withLake" class="toclink">
+            <code class="highlight language-python"><span class="n">RunFW1withLake</span><span class="p">(</span><span class="n">Lake</span><span class="p">)</span></code>
+
+</a><a href="#Hapi.run.Run.RunFW1withLake" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the FW1 distributed model with a lake component.</p>
+<p>Validates that all input arrays have consistent dimensions and
+that the lake meteorological data matches the simulation period,
+then executes the FW1 model with lake routing via the Wrapper.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>Lake</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lake object containing lake configuration and
+meteorological data. Must have a <code>MeteoData</code> attribute
+with shape <code>(time_steps, &gt;= 3)</code> where columns are
+rain, ET, and temperature.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The following catchment attributes should be set before
+calling this method:</p>
+<ul>
+<li><code>prec_path</code>: Path to the folder containing precipitation
+  rasters.</li>
+<li><code>evap_path</code>: Path to the folder containing
+  evapotranspiration rasters.</li>
+<li><code>temp_path</code>: Path to the folder containing temperature
+  rasters.</li>
+<li><code>flow_acc_path</code>: Path to the flow accumulation raster.</li>
+<li><code>flow_direction_path</code>: Path to the flow direction raster.</li>
+<li><code>ParPath</code>: Path to the folder containing parameter
+  rasters.</li>
+<li><code>p2</code>: List of unoptimized parameters where <code>p2[0]</code>
+  is tfac and <code>p2[1]</code> is catchment area in km2.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AssertionError">AssertionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input data arrays have inconsistent
+dimensions or if the lake meteorological data length
+does not match the distributed raster data length.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\Hapi\run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed model with a lake component.</span>
+
+<span class="sd">    Validates that all input arrays have consistent dimensions and</span>
+<span class="sd">    that the lake meteorological data matches the simulation period,</span>
+<span class="sd">    then executes the FW1 model with lake routing via the Wrapper.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        Lake: Lake object containing lake configuration and</span>
+<span class="sd">            meteorological data. Must have a ``MeteoData`` attribute</span>
+<span class="sd">            with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">            rain, ET, and temperature.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The following catchment attributes should be set before</span>
+<span class="sd">        calling this method:</span>
+
+<span class="sd">        - ``prec_path``: Path to the folder containing precipitation</span>
+<span class="sd">          rasters.</span>
+<span class="sd">        - ``evap_path``: Path to the folder containing</span>
+<span class="sd">          evapotranspiration rasters.</span>
+<span class="sd">        - ``temp_path``: Path to the folder containing temperature</span>
+<span class="sd">          rasters.</span>
+<span class="sd">        - ``flow_acc_path``: Path to the flow accumulation raster.</span>
+<span class="sd">        - ``flow_direction_path``: Path to the flow direction raster.</span>
+<span class="sd">        - ``ParPath``: Path to the folder containing parameter</span>
+<span class="sd">          rasters.</span>
+<span class="sd">        - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
+<span class="sd">          is tfac and ``p2[1]`` is catchment area in km2.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">            dimensions or if the lake meteorological data length</span>
+<span class="sd">            does not match the distributed raster data length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># input data validation</span>
+
+    <span class="c1"># input dimensions</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+    <span class="p">),</span> <span class="s2">&quot;Lake Meteo data has to have at least three columns rain, ET, and Temp&quot;</span>
+
+    <span class="c1"># run the model</span>
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1Withlake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Hapi.run.Run.RunFloodModel" class="doc doc-heading"><a href="#Hapi.run.Run.RunFloodModel" class="toclink">
+            <code class="highlight language-python"><span class="n">RunFloodModel</span><span class="p">()</span></code>
+
+</a><a href="#Hapi.run.Run.RunFloodModel" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the flood model.</p>
+<p>Runs the conceptual distributed hydrological model with
+additional validation for river geometry inputs (bankfull depth,
+river width, river roughness, and flood plain roughness).</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AssertionError">AssertionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If meteorological input arrays, parameter
+arrays, or river geometry arrays have inconsistent
+dimensions.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\Hapi\run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the flood model.</span>
+
+<span class="sd">    Runs the conceptual distributed hydrological model with</span>
+<span class="sd">    additional validation for river geometry inputs (bankfull depth,</span>
+<span class="sd">    river width, river roughness, and flood plain roughness).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If meteorological input arrays, parameter</span>
+<span class="sd">            arrays, or river geometry arrays have inconsistent</span>
+<span class="sd">            dimensions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># input dimensions</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+
+    <span class="c1"># input dimensions</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+
+    <span class="c1"># run the model</span>
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RRM has finished&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Hapi.run.Run.RunHapi" class="doc doc-heading"><a href="#Hapi.run.Run.RunHapi" class="toclink">
+            <code class="highlight language-python"><span class="n">RunHapi</span><span class="p">()</span></code>
+
+</a><a href="#Hapi.run.Run.RunHapi" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the distributed hydrological model.</p>
+<p>Validates that all input arrays (precipitation, evapotranspiration,
+temperature, parameters, and flow direction) have consistent
+dimensions, then executes the rainfall-runoff model via the
+Wrapper.</p>
+<p>The following instance attributes are set after execution:</p>
+<ul>
+<li><code>state_variables</code>: 4D array (rows, cols, time, states) where
+  states are [sp, wc, sm, uz, lv].</li>
+<li><code>qlz</code>: 3D array of the lower zone discharge.</li>
+<li><code>quz</code>: 3D array of the upper zone discharge.</li>
+<li><code>qout</code>: 1D timeseries of discharge at the catchment outlet
+  in m3/sec.</li>
+<li><code>quz_routed</code>: 3D array of the upper zone discharge
+  accumulated and routed at each time step.</li>
+<li><code>qlz_translated</code>: 3D array of the lower zone discharge
+  translated at each time step.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AssertionError">AssertionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input data arrays have inconsistent
+row counts, column counts, or temporal lengths.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\Hapi\run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunHapi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed hydrological model.</span>
+
+<span class="sd">    Validates that all input arrays (precipitation, evapotranspiration,</span>
+<span class="sd">    temperature, parameters, and flow direction) have consistent</span>
+<span class="sd">    dimensions, then executes the rainfall-runoff model via the</span>
+<span class="sd">    Wrapper.</span>
+
+<span class="sd">    The following instance attributes are set after execution:</span>
+
+<span class="sd">    - ``state_variables``: 4D array (rows, cols, time, states) where</span>
+<span class="sd">      states are [sp, wc, sm, uz, lv].</span>
+<span class="sd">    - ``qlz``: 3D array of the lower zone discharge.</span>
+<span class="sd">    - ``quz``: 3D array of the upper zone discharge.</span>
+<span class="sd">    - ``qout``: 1D timeseries of discharge at the catchment outlet</span>
+<span class="sd">      in m3/sec.</span>
+<span class="sd">    - ``quz_routed``: 3D array of the upper zone discharge</span>
+<span class="sd">      accumulated and routed at each time step.</span>
+<span class="sd">    - ``qlz_translated``: 3D array of the lower zone discharge</span>
+<span class="sd">      translated at each time step.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">            row counts, column counts, or temporal lengths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># input dimensions</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+
+    <span class="c1"># input dimensions</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+    <span class="c1"># run the model</span>
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Hapi.run.Run.runFW1" class="doc doc-heading"><a href="#Hapi.run.Run.runFW1" class="toclink">
+            <code class="highlight language-python"><span class="n">runFW1</span><span class="p">()</span></code>
+
+</a><a href="#Hapi.run.Run.runFW1" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the FW1 distributed hydrological model.</p>
+<p>Validates that all input arrays have consistent dimensions,
+then executes the FW1 model via the Wrapper.</p>
+<p>The following instance attributes are set after execution:</p>
+<ul>
+<li><code>st</code>: 4D array of state variables.</li>
+<li><code>q_out</code>: 1D array of calculated discharge at the catchment
+  outlet.</li>
+<li><code>q_uz</code>: 3D array of distributed discharge for each cell.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AssertionError">AssertionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input data arrays have inconsistent
+row counts, column counts, or temporal lengths.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\Hapi\run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed hydrological model.</span>
+
+<span class="sd">    Validates that all input arrays have consistent dimensions,</span>
+<span class="sd">    then executes the FW1 model via the Wrapper.</span>
+
+<span class="sd">    The following instance attributes are set after execution:</span>
+
+<span class="sd">    - ``st``: 4D array of state variables.</span>
+<span class="sd">    - ``q_out``: 1D array of calculated discharge at the catchment</span>
+<span class="sd">      outlet.</span>
+<span class="sd">    - ``q_uz``: 3D array of distributed discharge for each cell.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">            row counts, column counts, or temporal lengths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+    <span class="c1"># run the model</span>
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Hapi.run.Run.runHAPIwithLake" class="doc doc-heading"><a href="#Hapi.run.Run.runHAPIwithLake" class="toclink">
+            <code class="highlight language-python"><span class="n">runHAPIwithLake</span><span class="p">(</span><span class="n">Lake</span><span class="p">)</span></code>
+
+</a><a href="#Hapi.run.Run.runHAPIwithLake" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the distributed model with a lake component.</p>
+<p>Validates that all input arrays have consistent dimensions and
+that the lake meteorological data matches the simulation period,
+then executes the rainfall-runoff model with lake routing via
+the Wrapper.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>Lake</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lake object containing lake configuration and
+meteorological data. Must have a <code>MeteoData</code> attribute
+with shape <code>(time_steps, &gt;= 3)</code> where columns are
+rain, ET, and temperature.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AssertionError">AssertionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input data arrays have inconsistent
+dimensions or if the lake meteorological data length
+does not match the distributed raster data length.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\Hapi\run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed model with a lake component.</span>
+
+<span class="sd">    Validates that all input arrays have consistent dimensions and</span>
+<span class="sd">    that the lake meteorological data matches the simulation period,</span>
+<span class="sd">    then executes the rainfall-runoff model with lake routing via</span>
+<span class="sd">    the Wrapper.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        Lake: Lake object containing lake configuration and</span>
+<span class="sd">            meteorological data. Must have a ``MeteoData`` attribute</span>
+<span class="sd">            with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">            rain, ET, and temperature.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If input data arrays have inconsistent</span>
+<span class="sd">            dimensions or if the lake meteorological data length</span>
+<span class="sd">            does not match the distributed raster data length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># input dimensions</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows and columns&quot;</span>
+
+    <span class="c1"># input dimensions</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">),</span> <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+    <span class="p">),</span> <span class="s2">&quot;Lake Meteo data has to have at least three columns of rain, ET, and Temp&quot;</span>
+
+    <span class="c1"># run the model</span>
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMWithlake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lake</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Hapi.run.Run.runLumped" class="doc doc-heading"><a href="#Hapi.run.Run.runLumped" class="toclink">
+            <code class="highlight language-python"><span class="n">runLumped</span><span class="p">(</span><span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</a><a href="#Hapi.run.Run.runLumped" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the lumped conceptual model.</p>
+<p>Executes a lumped conceptual hydrological model, optionally
+routing the generated discharge hydrograph. The simulated
+discharge is stored in <code>self.Qsim</code> as a pandas DataFrame
+indexed by the simulation date range.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>Route</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Flag to decide whether to route the generated
+discharge hydrograph. Use 0 for no routing or 1 to
+enable routing. Defaults to 0.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>RoutingFn</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Function to route the discharge hydrograph.
+If None, an empty list is used. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The following attributes should be defined before calling
+this method:</p>
+<ul>
+<li><code>ConceptualModel</code>: Conceptual model containing a
+  <code>simulate</code> method.</li>
+<li><code>data</code>: Numpy array of meteorological data with columns
+  for precipitation, evapotranspiration, temperature, and
+  long-term average temperature.</li>
+<li><code>parameters</code>: Numpy array of conceptual model
+  parameters.</li>
+<li><code>p2</code>: List of unoptimized parameters where <code>p2[0]</code>
+  is tfac and <code>p2[1]</code> is catchment area in km2.</li>
+<li><code>init_st</code>: List of initial state variable values
+  [sp, sm, uz, lz, wc].</li>
+</ul>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\Hapi\run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">RoutingFn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the lumped conceptual model.</span>
+
+<span class="sd">    Executes a lumped conceptual hydrological model, optionally</span>
+<span class="sd">    routing the generated discharge hydrograph. The simulated</span>
+<span class="sd">    discharge is stored in ``self.Qsim`` as a pandas DataFrame</span>
+<span class="sd">    indexed by the simulation date range.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        Route: Flag to decide whether to route the generated</span>
+<span class="sd">            discharge hydrograph. Use 0 for no routing or 1 to</span>
+<span class="sd">            enable routing. Defaults to 0.</span>
+<span class="sd">        RoutingFn: Function to route the discharge hydrograph.</span>
+<span class="sd">            If None, an empty list is used. Defaults to None.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The following attributes should be defined before calling</span>
+<span class="sd">        this method:</span>
+
+<span class="sd">        - ``ConceptualModel``: Conceptual model containing a</span>
+<span class="sd">          ``simulate`` method.</span>
+<span class="sd">        - ``data``: Numpy array of meteorological data with columns</span>
+<span class="sd">          for precipitation, evapotranspiration, temperature, and</span>
+<span class="sd">          long-term average temperature.</span>
+<span class="sd">        - ``parameters``: Numpy array of conceptual model</span>
+<span class="sd">          parameters.</span>
+<span class="sd">        - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
+<span class="sd">          is tfac and ``p2[1]`` is catchment area in km2.</span>
+<span class="sd">        - ``init_st``: List of initial state variable values</span>
+<span class="sd">          [sp, sm, uz, lz, wc].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">RoutingFn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">RoutingFn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_resolution</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;daily&quot;</span><span class="p">:</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+
+    <span class="n">Qsim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
+
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">Lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Route</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">)</span>
+    <span class="n">Qsim</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">Qsim</span><span class="p">[:]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Lumped model run has finished successfully&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="routing.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Routing">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Routing
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="wrapper.html" class="md-footer__link md-footer__link--next" aria-label="Next: Wrapper">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Wrapper
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
