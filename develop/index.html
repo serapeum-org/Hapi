@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#current-release-info" class="md-skip">
+        <a href="#hapi-hydrological-library-for-python" class="md-skip">
           Skip to content
         </a>
       
@@ -375,6 +375,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -417,6 +419,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -425,29 +429,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#current-release-info" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current release info
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hapi-hydrological-library-for-python" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hapi - Hydrological library for Python
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Hapi - Hydrological library for Python">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#main-features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -457,31 +438,26 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#ihe-delft-sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        IHE-Delft sessions
+        IHE-Delft Sessions
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#future-work" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future work
+        Citation
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1361,6 +1337,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1369,29 +1347,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#current-release-info" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current release info
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hapi-hydrological-library-for-python" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hapi - Hydrological library for Python
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Hapi - Hydrological library for Python">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#main-features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1401,31 +1356,26 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#ihe-delft-sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        IHE-Delft sessions
+        IHE-Delft Sessions
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#future-work" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future work
+        Citation
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1457,127 +1407,50 @@
 
 
 
-  <h1>Home</h1>
-
-<p>.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4686056.svg
-   :target: https://doi.org/10.5281/zenodo.4686056</p>
-<p>.. image:: https://img.shields.io/badge/binder-Hapi-F5A252.svg?logo=data:image/png;base64,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
-    :target: https://mybinder.org/v2/gh/MAfarrag/HAPI/master</p>
-<h2 id="current-release-info"><a class="toclink" href="#current-release-info">Current release info</a><a class="headerlink" href="#current-release-info" title="Permanent link">#</a></h2>
-<p>.. image:: https://img.shields.io/pypi/v/Hapi-nile
-  :target: https://pypi.org/project/HAPI-Nile/1.0.4/</p>
-<p>.. image:: https://img.shields.io/conda/v/conda-forge/hapi?label=conda-forge
-  :target: https://pypi.org/project/HAPI-Nile/1.0.4/</p>
-<p>.. image:: https://img.shields.io/pypi/pyversions/hapi-nile
-  :target: https://pypi.org/project/HAPI-Nile/1.0.4/</p>
-<p>.. image:: https://img.shields.io/github/forks/mafarrag/hapi?style=social   :alt: GitHub forks</p>
-<p>.. image:: https://anaconda.org/conda-forge/hapi/badges/downloads.svg
-  :target: https://anaconda.org/conda-forge/hapi</p>
-<p>.. image:: https://img.shields.io/conda/vn/conda-forge/hapi   :alt: Conda (channel only)
-  :target: https://pypi.org/project/HAPI-Nile/1.0.4/</p>
-<p>.. image:: https://img.shields.io/gitter/room/mafarrag/Hapi
-  :alt: Gitter</p>
-<p>.. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&amp;units=international_system&amp;left_color=grey&amp;right_color=blue&amp;left_text=Downloads
-  :target: https://pypi.org/project/HAPI-Nile/1.0.4/</p>
-<p>.. image:: https://img.shields.io/pypi/v/hapi-nile
-  :alt: PyPI</p>
-<p>.. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg
-  :target: https://anaconda.org/conda-forge/hapi</p>
-<p>.. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&amp;units=international_system&amp;left_color=grey&amp;right_color=blue&amp;left_text=Downloads
-  :target: https://pepy.tech/project/hapi-nile</p>
-<p>.. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&amp;units=international_system&amp;left_color=grey&amp;right_color=blue&amp;left_text=Downloads
-  :target: https://pepy.tech/project/hapi-nile</p>
-<p>.. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&amp;units=international_system&amp;left_color=grey&amp;right_color=blue&amp;left_text=Downloads
-  :target: https://pepy.tech/project/hapi-nile</p>
-<h2 id="hapi-hydrological-library-for-python"><a class="toclink" href="#hapi-hydrological-library-for-python">Hapi - Hydrological library for Python</a><a class="headerlink" href="#hapi-hydrological-library-for-python" title="Permanent link">#</a></h2>
-<p>.. image:: /img/Hapi.png
-    :width: 400pt
-    :align: center</p>
-<p>.. image:: /img/name.png
-    :width: 400pt
-    :align: center</p>
-<p><strong>Hapi</strong> is a Python package providing fast and flexible way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
-The package is very flexible to an extent that it allows developers to change the structure of the defined conceptual model or to enter
-their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.</p>
-<p>.. image:: /img/Picture1.png
-  :width: 400pt
-  :align: center</p>
-<p>.. image:: /img/Picture2.png
-   :width: 800pt
-   :align: center</p>
-<h3 id="main-features"><a class="toclink" href="#main-features">Main Features</a><a class="headerlink" href="#main-features" title="Permanent link">#</a></h3>
+<h1 id="hapi-hydrological-library-for-python"><a class="toclink" href="#hapi-hydrological-library-for-python">Hapi - Hydrological library for Python</a><a class="headerlink" href="#hapi-hydrological-library-for-python" title="Permanent link">#</a></h1>
+<p><a href="https://doi.org/10.5281/zenodo.4686056"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.4686056.svg" /></a>
+<a href="https://pypi.org/project/HAPI-Nile/"><img alt="PyPI" src="https://img.shields.io/pypi/v/Hapi-nile" /></a>
+<a href="https://anaconda.org/conda-forge/hapi"><img alt="Conda" src="https://img.shields.io/conda/v/conda-forge/hapi?label=conda-forge" /></a>
+<a href="https://pypi.org/project/HAPI-Nile/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/hapi-nile" /></a>
+<a href="https://pepy.tech/project/hapi-nile"><img alt="Downloads" src="https://static.pepy.tech/badge/hapi-nile" /></a>
+<a href="https://anaconda.org/conda-forge/hapi"><img alt="Platforms" src="https://anaconda.org/conda-forge/hapi/badges/platforms.svg" /></a></p>
+<p><img alt="Hapi" src="img/Hapi.png" width="400" /></p>
+<p><strong>Hapi</strong> is a Python package providing a fast and flexible way to build hydrological models with
+different spatial representations (lumped, semi-distributed, and conceptual distributed) using HBV96.
+The package allows developers to change the structure of the defined conceptual model or to provide
+their own model. It contains two routing functions: Muskingum-Cunge and MAXBAS triangular function.</p>
+<p><img alt="Model Structure" src="img/Picture1.png" width="400" /></p>
+<h2 id="main-features"><a class="toclink" href="#main-features">Main Features</a><a class="headerlink" href="#main-features" title="Permanent link">#</a></h2>
 <ul>
-<li>Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
-  snow processes, and 10 parameters without snow, in addition to 2 parameters of Muskingum routing method</li>
-<li>Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF)</li>
-<li>GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing
-  needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and
-  convert different forms of distributed data (rasters, NetCDF, shapefiles)</li>
-<li>Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among
-  model parameters using the Sobol concept ((Rusli et al., 2015)) and a visualization</li>
-<li>Statistical module containing interpolation methods for generating distributed data from gauge data, some
-  distribution for frequency analysis and Maximum likelihood method for distribution parameter estimation.</li>
-<li>Visualization module for animating the results of the distributed model, and the meteorological inputs</li>
-<li>Optimization module, for calibrating the model based on the Harmony search method</li>
+<li>Modified version of HBV96 hydrological model (Bergstrom, 1992) with 15 parameters when
+  considering snow processes, and 10 parameters without snow, plus 2 Muskingum routing parameters</li>
+<li>GIS modules to prepare meteorological inputs and perform preprocessing (align rasters with the
+  DEM), plus methods to manipulate distributed data (rasters, NetCDF, shapefiles)</li>
+<li>Sensitivity analysis module based on One-At-a-Time (OAT) and Sobol interaction analysis
+  (Rusli et al., 2015)</li>
+<li>Statistical module with interpolation methods, frequency analysis distributions, and Maximum
+  Likelihood parameter estimation</li>
+<li>Visualization module for animating distributed model results and meteorological inputs</li>
+<li>Optimization module for calibrating the model using Harmony Search</li>
 </ul>
-<p>The recent version of Hapi (Hapi 1.0.1 Farrag et al. (2021)) integrates the global hydrological parameters obtained by Beck et al., (2016), to reduce model complexity and uncertainty of parameters.</p>
-<p>For using Hapi please cite Farrag et al. (2021) and Farrag &amp; Corzo (2021) References</p>
-<h3 id="ihe-delft-sessions"><a class="toclink" href="#ihe-delft-sessions">IHE-Delft sessions</a><a class="headerlink" href="#ihe-delft-sessions" title="Permanent link">#</a></h3>
+<p>The recent version integrates global hydrological parameters from Beck et al. (2016) to reduce
+model complexity and parameter uncertainty.</p>
+<h2 id="ihe-delft-sessions"><a class="toclink" href="#ihe-delft-sessions">IHE-Delft Sessions</a><a class="headerlink" href="#ihe-delft-sessions" title="Permanent link">#</a></h2>
 <ul>
-<li>In April 14-15 we had a two days session for Masters and PhD student in IHE-Delft to explain the different modules and the distributed hydrological model in Hapi <a href="https://youtu.be/HbmUdN9ehSo">Day 1</a> ,  <a href="https://youtu.be/m7kHdOFQFIY">Day 2</a></li>
+<li>April 14-15: Two-day session for Masters and PhD students at IHE-Delft —
+  <a href="https://youtu.be/HbmUdN9ehSo">Day 1</a>, <a href="https://youtu.be/m7kHdOFQFIY">Day 2</a></li>
 </ul>
-<p>.. digraph:: Linking</p>
-<div class="highlight"><pre><span></span><code>Hapi -&gt; GIS;
-Hapi -&gt; HM;
-Hapi -&gt; RemoteSensing;
-Hapi -&gt; RRM;
-Hapi -&gt; Statistics;
-Hapi -&gt; catchment;
-Hapi -&gt; weirdFn;
-Hapi -&gt; visualizer;
-dpi=400;
-</code></pre></div>
-<p>.. digraph:: Linking</p>
-<div class="highlight"><pre><span></span><code>RRM -&gt; HBV;
-RRM -&gt; calibration;
-RRM -&gt; distparameters;
-RRM -&gt; distrrm;
-RRM -&gt; routing;
-RRM -&gt; run;
-RRM -&gt; inputs;
-RRM -&gt; wrapper;
-RRM -&gt; hbv_lake;
-RRM -&gt; hbv_bergestrom92;
-dpi=400;
-</code></pre></div>
-<p>.. digraph:: Linking</p>
-<div class="highlight"><pre><span></span><code>HM -&gt; inputs;
-HM -&gt; event;
-HM -&gt; river;
-HM -&gt; calibration;
-HM -&gt; crosssection;
-HM -&gt; interface;
-dpi=400;
-</code></pre></div>
-<h3 id="future-work"><a class="toclink" href="#future-work">Future work</a><a class="headerlink" href="#future-work" title="Permanent link">#</a></h3>
-<ul>
-<li>Developing a regionalization method for connection model parameters with some catchment characteristics for better model calibration.</li>
-<li>Developing and integrate river routing method (kinematic and diffusive wave approximation)</li>
-<li>Apply the model for large scale (regional/continental) cases</li>
-<li>Developing a DEM processing module for generating the river network at different DEM spatial resolutions.</li>
-</ul>
+<h2 id="citation"><a class="toclink" href="#citation">Citation</a><a class="headerlink" href="#citation" title="Permanent link">#</a></h2>
+<p>For using Hapi please cite Farrag et al. (2021) and Farrag &amp; Corzo (2021).</p>
 <h2 id="references"><a class="toclink" href="#references">References</a><a class="headerlink" href="#references" title="Permanent link">#</a></h2>
 <p>Farrag, M. &amp; Corzo, G. (2021) MAfarrag/Hapi: Hapi. doi:10.5281/ZENODO.4662170</p>
-<p>Farrag, M., Perez, G. C. &amp; Solomatine, D. (2021) Spatio-Temporal Hydrological Model Structure and Parametrization Analysis. J. Mar. Sci. Eng. 9(5), 467. doi:10.3390/jmse9050467</p>
-<p>Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo, Diego G. Miralles, T. R. M. &amp; Jaap Schellekens,  and L. A. B. (2016) Global-scale regionalization of hydrologic model parameters-Supporting materials 3599–3622. doi:10.1002/2015WR018247.Received</p>
-<p>Bergström, S. (1992) The HBV model - its structure and applications. Smhi Rh 4(4), 35.</p>
-<p>Rusli, S. R., Yudianto, D. &amp; Liu, J. tao. (2015) Effects of temporal variability on HBV model calibration. Water Sci. Eng. 8(4), 291–300. Elsevier Ltd. doi:10.1016/j.wse.2015.12.002</p>
-<p>.. toctree::
-   :hidden:
-   :maxdepth: 1</p>
-<p>Installation <Installation.rst>
-   Hydrological model <Hydrological model.rst>
-   Hydrodynamic model <Hydrodynamic model.rst></p>
+<p>Farrag, M., Perez, G. C. &amp; Solomatine, D. (2021) Spatio-Temporal Hydrological Model Structure
+and Parametrization Analysis. J. Mar. Sci. Eng. 9(5), 467. doi:10.3390/jmse9050467</p>
+<p>Beck, H. E. et al. (2016) Global-scale regionalization of hydrologic model parameters.
+doi:10.1002/2015WR018247</p>
+<p>Bergstrom, S. (1992) The HBV model - its structure and applications. SMHI RH 4(4), 35.</p>
+<p>Rusli, S. R., Yudianto, D. &amp; Liu, J. (2015) Effects of temporal variability on HBV model
+calibration. Water Sci. Eng. 8(4), 291-300. doi:10.1016/j.wse.2015.12.002</p>
 
 
 
