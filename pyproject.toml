@@ -159,18 +159,16 @@ module = [
     "Hapi.calibration",
     "Hapi.wrapper",
 ]
-# These modules have complex attribute initialization patterns.
-# Attributes are set to None in __init__ and populated by separate
-# reader methods before use. Fixing requires major refactoring.
-disable_error_code = [
-    "union-attr",
-    "attr-defined",
-    "index",
-    "call-overload",
-    "operator",
-    "arg-type",
-    "misc",
-]
+# Attributes are initialized as X | None in __init__ and populated by
+# separate reader methods before use. Methods assume attributes are set
+# but mypy cannot verify call order. Adding assert guards for 200+ sites
+# is tracked as follow-up work.
+disable_error_code = ["union-attr", "arg-type", "operator", "index", "misc", "attr-defined"]
+
+[[tool.mypy.overrides]]
+module = "Hapi.rrm.base_model"
+disable_error_code = ["empty-body"]
+
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
