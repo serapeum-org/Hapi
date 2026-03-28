@@ -1,0 +1,55 @@
+GISpy contains all gis functions and
+
+Inputs (preparation_functions):
+    1-PrepareInputs
+    2-changetext2time
+    3-rescale
+    4-mycolor
+
+DistParameters(DHBV_functions):
+    1-saveobj
+    2-loadobj
+    3-getraster_data
+    4-calculateK
+    5-par2d_lumpedK1_lake
+    6-par2d_lumpedK1
+
+DistRRM(Dist_RRM):
+    1-Dist_HBV2
+    2-RunLumpedRRP
+
+HBV: new HBV structure (with direct runoff component)
+HBV_Lake: old HBV structure (without direct runoff component)
+
+java_functions:
+    javascript function used in the web interface
+    1-javaupload
+    2-upload_stations
+    3-raster_upload
+    4-warning1
+
+Performance_criteria:
+    1-rmse
+    2-rmseHF (fuzzy weighting schemes)
+    3-rmseLF (fuzzy weighting schemes)
+    4-KGE
+    5-WB
+    6-nse
+
+Routing:
+    1-muskingum
+
+RUN:
+    1-RunModel
+
+
+Calibration:
+    1-RunCalibration
+
+statistical_tools:
+    1-IDW
+    2-ISDW
+
+Wrapper:
+    1-Dist_model_lake
+    2-Dist_model
