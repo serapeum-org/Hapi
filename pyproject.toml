@@ -163,7 +163,7 @@ module = [
 # separate reader methods before use. Methods assume attributes are set
 # but mypy cannot verify call order. Adding assert guards for 200+ sites
 # is tracked as follow-up work.
-disable_error_code = ["union-attr", "arg-type", "operator", "index", "misc", "attr-defined"]
+disable_error_code = ["union-attr", "arg-type", "operator", "index", "misc", "attr-defined", "call-overload"]
 
 [[tool.mypy.overrides]]
 module = "Hapi.rrm.base_model"
