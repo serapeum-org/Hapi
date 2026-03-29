@@ -99,6 +99,7 @@ nav:
       - api/routing.md
       - api/run.md
       - api/wrapper.md
+      - api/distrrm.md
       - api/hbv.md
       - api/hbv-bergestrom92.md
       - api/hbv-lake.md

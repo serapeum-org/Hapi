@@ -1,4 +1,4 @@
-# Distributed Rainfall runoff model
+# Calibration
 
-## DistributedRRM
-::: Hapi.rrm.distrrm.DistributedRRM
+## Calibration
+::: Hapi.calibration.Calibration
