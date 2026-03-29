@@ -1,5 +1,6 @@
 site_name: Hapi
 site_url: https://serapieum-of-alex.github.io/Hapi/
+repo_url: https://github.com/Serapieum-of-alex/Hapi
 site_description: Hapi is a Python package for distributed hydrological modeling using HBV96
 theme:
   name: material
