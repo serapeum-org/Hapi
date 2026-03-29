@@ -3495,7 +3495,7 @@ class to run the model.</p>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
                 <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="c1"># no of time steps =length of time series +1</span>
@@ -3568,7 +3568,7 @@ class to run the model.</p>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
                 <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
@@ -3642,7 +3642,7 @@ class to run the model.</p>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
                 <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
@@ -3910,7 +3910,7 @@ class to run the model.</p>
             <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span>
                 <span class="n">path</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -7229,7 +7229,7 @@ resulting array is not a numpy ndarray.</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
@@ -8747,7 +8747,7 @@ the given snow/maxbas configuration.</p>
         <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span>
             <span class="n">path</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -9386,7 +9386,7 @@ numpy ndarray.</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="c1"># no of time steps =length of time series +1</span>
@@ -9973,7 +9973,7 @@ resulting array is not a numpy ndarray.</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
