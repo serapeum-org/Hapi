@@ -499,6 +499,7 @@ class HBVBergestrom92(BaseConceptualModel):
         Examples:
             >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
             >>> import numpy as np
+            >>> np.random.seed(42)
             >>> model = HBVBergestrom92()
             >>> n = 10
             >>> prec = np.random.uniform(0, 20, n)
