@@ -1,59 +1,75 @@
-"""Routing File contains all Routing functions.
+"""Routing module for hydrograph routing in the Hapi hydrological model.
 
-1- Muskingum cunge
-2- triangular (MAXBAS) routing function
+This module provides channel routing methods used to translate and
+attenuate flood hydrographs as they travel through the river network.
+It includes:
+
+1. Muskingum-Cunge routing (iterative and vectorized variants).
+2. Triangular (MAXBAS) routing using transfer function weights.
 """
+from __future__ import annotations
 
-from typing import Union
 import numpy as np
 
 
 class Routing:
-    """Routing class contains routing method.
+    """Routing methods for translating and attenuating discharge hydrographs.
 
-    Methods
-    -------
-    1- Muskingum
-    2- Muskingum_V
-    3- TriangularRouting1
-        functions :
-        1- CalculateWeights
-    4- TriangularRouting2
-        functions
-        1- Tf
+    This class provides static methods for two families of routing
+    approaches:
+
+    - **Muskingum routing**: classical linear channel routing using the
+      Muskingum storage equation, available in both iterative
+      (`Muskingum`) and vectorized (`Muskingum_V`) forms.
+    - **Triangular routing**: MAXBAS-based transfer-function routing
+      that distributes discharge over a triangular weighting kernel.
+      Two variants are provided: `TriangularRouting1` supports
+      fractional MAXBAS values; `TriangularRouting2` uses integer
+      MAXBAS values.
     """
 
     def __init__(self):
-        """Routing model does not need any parameters to be instantiated."""
+        """Initialize the Routing instance.
+
+        The Routing class uses only static methods, so no parameters
+        are required for instantiation.
+        """
         pass
 
     @staticmethod
     def Muskingum(inflow, Qinitial, k, x, dt):
-        """Muskingum.
+        """Route an inflow hydrograph using the Muskingum method.
 
-        Parameters
-        ----------
-        inflow: [numpy array]
-            time series of inflow hydrograph
-        Qinitial: [numeric]
-            initial value for outflow
-        k: [numeric]
-            travelling time (hours)
-        x: [numeric]
-            surface nonlinearity coefficient (0,0.5)
-        dt: [numeric]
-            delta t
+        Applies the Muskingum linear storage routing equation to
+        translate and attenuate an inflow time series. The three
+        Muskingum coefficients (c1, c2, c3) are derived from the
+        travel time ``k``, the weighting factor ``x``, and the time
+        step ``dt``.
 
-        Returns
-        -------
-        outflow: [numpy array]
-            time series of routed hydrograph
+        Args:
+            inflow (numpy.ndarray): Time series of inflow discharge
+                values.
+            Qinitial (float): Initial outflow value at the first time
+                step.
+            k (float): Channel travel time in the same units as
+                ``dt`` (typically hours).
+            x (float): Weighting factor for inflow versus storage,
+                ranging from 0 (maximum attenuation) to 0.5 (no
+                attenuation).
+            dt (float): Computational time step in the same units as
+                ``k``.
 
-        Examples
-        --------
-        >>> q = [] # discharge time series
-        >>> time_resolution = 1  # hourly time step
-        >>> q_routed = Routing.Muskingum(q, q[0], k, x, time_resolution)
+        Returns:
+            numpy.ndarray: Routed outflow hydrograph with the same
+            length as ``inflow``, rounded to four decimal places.
+
+        Examples:
+            >>> import numpy as np
+            >>> from Hapi.routing import Routing
+            >>> inflow = np.array([0, 1, 3, 7, 10, 9, 6, 3, 1, 0])
+            >>> q_routed = Routing.Muskingum(
+            ...     inflow, Qinitial=0, k=2, x=0.2, dt=1
+            ... )
         """
         c1 = (dt - 2 * k * x) / (2 * k * (1 - x) + dt)
         c2 = (dt + 2 * k * x) / (2 * k * (1 - x) + dt)
@@ -75,38 +91,42 @@ class Routing:
     @staticmethod
     def Muskingum_V(
         inflow: np.ndarray,
-        Qinitial: Union[int, float],
-        k: Union[int, float],
-        x: Union[int, float],
-        dt: Union[int, float],
+        Qinitial: int | float,
+        k: int | float,
+        x: int | float,
+        dt: int | float,
     ) -> np.ndarray:
-        """Muskingum_V.
+        """Route an inflow hydrograph using a vectorized Muskingum method.
 
-            Vectorized version of Muskingum
+        This is a performance-optimized variant of `Muskingum` that
+        pre-computes the c1 and c2 terms in a vectorized manner before
+        applying the recursive c3 correction. Negative outflow values
+        that would result from the c3 term are suppressed.
 
-        Parameters
-        ----------
-        inflow: [numpy array]
-            time series of inflow hydrograph
-        Qinitial: [numeric]
-            initial value for outflow
-        k: [numeric]
-            travelling time (hours)
-        x: [numeric]
-            surface nonlinearity coefficient (0,0.5)
-        dt: [numeric]
-            delta t
+        Args:
+            inflow (numpy.ndarray): Time series of inflow discharge
+                values.
+            Qinitial (int | float): Initial outflow value at the
+                first time step.
+            k (int | float): Channel travel time in the same
+                units as ``dt`` (typically hours).
+            x (int | float): Weighting factor for inflow versus
+                storage, ranging from 0 (maximum attenuation) to 0.5
+                (no attenuation).
+            dt (int | float): Computational time step in the
+                same units as ``k``.
 
-        Returns
-        -------
-        outflow:
-            [numpy array] time series of routed hydrograph
+        Returns:
+            numpy.ndarray: Routed outflow hydrograph with the same
+            length as ``inflow``.
 
-        Examples
-        --------
-        >>> q = [] # discharge time series
-        >>> time_resolution = 1  # hourly time step
-        >>> q_routed = Routing.Muskingum_V(q, q[0], k, x, time_resolution)
+        Examples:
+            >>> import numpy as np
+            >>> from Hapi.routing import Routing
+            >>> inflow = np.array([0, 1, 3, 7, 10, 9, 6, 3, 1, 0])
+            >>> q_routed = Routing.Muskingum_V(
+            ...     inflow, Qinitial=0, k=2, x=0.2, dt=1
+            ... )
         """
         c1 = (dt - 2 * k * x) / (2 * k * (1 - x) + dt)
         c2 = (dt + 2 * k * x) / (2 * k * (1 - x) + dt)
@@ -128,25 +148,27 @@ class Routing:
 
     @staticmethod
     def Tf(maxbas):
-        """Tf.
+        """Generate triangular transfer-function weights.
 
-            Transfer function weight generator in a shape of a triangle.
+        Builds a normalized weight array shaped as a triangle with a
+        rising limb for the first half and a falling limb for the
+        second half. The weights sum to 1 and are used by
+        `TriangularRouting2` to distribute discharge across
+        ``maxbas`` time steps.
 
-        Parameters
-        ----------
-        maxbas: [integer]
-            number of time steps that the triangular routing function
-            is going to divide the discharge into, based on the weights
-            generated from this function, min value is 1 and default value is 1
+        Args:
+            maxbas (int): Number of time steps over which to spread
+                the discharge. Must be >= 1.
 
-        Returns
-        -------
-        wi: [numpy array]
-            array of normalised weights
+        Returns:
+            numpy.ndarray: Array of normalized weights with length
+            ``maxbas`` that sum to 1.0.
 
-        Examples
-        --------
-        >>> ws = Routing.Tf(5)
+        Examples:
+            >>> from Hapi.routing import Routing
+            >>> weights = Routing.Tf(5)
+            >>> print(weights.sum())
+            1.0
         """
 
         wi = []
@@ -166,28 +188,32 @@ class Routing:
 
     @staticmethod
     def TriangularRouting2(q, maxbas=1):
-        """Triangular Routing.
+        """Route discharge using a triangular transfer function (integer MAXBAS).
 
-            The function implements the transfer function using a triangular function (considers only integer values of
-            Maxbas parameter)
+        Convolves the input discharge time series with a triangular
+        weighting kernel whose width is determined by ``maxbas``. Only
+        integer values of ``maxbas`` are supported; the value is
+        rounded to the nearest integer internally. Weights are
+        generated by `Tf`.
 
-        Parameters
-        ----------
-        q: [numpy array]
-            time series of discharge hydrographs
-        maxbas: [integer]
-            number of time steps that the triangular routing function
-            is going to divide the discharge into, based on the weights
-            generated from this function, min value is 1 and default value is 1
+        Args:
+            q (numpy.ndarray): Time series of discharge values to be
+                routed.
+            maxbas (int): Number of time steps for the triangular
+                routing kernel. Must be >= 1. Defaults to 1.
 
-        Returns
-        -------
-        q_r: [numpy array]
-            time series of routed hydrograph
+        Returns:
+            numpy.ndarray: Routed discharge time series with the same
+            length as ``q``.
 
-        Examples
-        --------
-        >>> q_sim = Routing.TriangularRouting2(np.array(q_sim), parameters[-1])
+        Raises:
+            AssertionError: If ``maxbas`` is less than 1.
+
+        Examples:
+            >>> import numpy as np
+            >>> from Hapi.routing import Routing
+            >>> q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])
+            >>> q_routed = Routing.TriangularRouting2(q, maxbas=3)
         """
         # input data validation
         assert maxbas >= 1, "Maxbas value has to be larger than 1"
@@ -203,28 +229,34 @@ class Routing:
         q_temp = np.float32(q)
         for w_i in w:
             q_r += q_temp * w_i
-            q_temp = np.insert(q_temp, 0, 0.0)[:-1]
+            q_temp = np.insert(q_temp, 0, 0.0)[:-1]  # type: ignore[assignment]
 
         return q_r
 
     @staticmethod
     def CalculateWeights(MAXBAS):
-        """Calculate Weights.
+        """Calculate triangular routing weights for a given MAXBAS value.
 
-            - calculate the MAXBAS Weights based on a MAXBAX number The MAXBAS is a HBV parameter that
-            controls the routing.
-            - It is important to mention that this function allows to obtain weights
-            not only for interger values but from decimals values as well.
+        Computes normalized weights based on the area under an
+        equilateral-triangle transfer function. Unlike `Tf`, this
+        method supports fractional (non-integer) MAXBAS values by
+        computing exact trapezoidal areas under the triangle curve.
 
-        Parameters
-        ----------
-        MAXBAS: [Numeric]
+        Args:
+            MAXBAS (float): The MAXBAS routing parameter controlling
+                the number of time steps over which discharge is
+                distributed. Can be an integer or a decimal value.
 
-        Examples
-        --------
-        >>> maxbasW = Routing.CalculateWeights(5)
-        >>> print(maxbasW)
-        >>> 0.0800    0.2400    0.3600    0.2400    0.0800
+        Returns:
+            numpy.ndarray: Array of normalized routing weights. The
+            length is ``floor(MAXBAS)`` for integer values, or
+            ``floor(MAXBAS) + 1`` for non-integer values.
+
+        Examples:
+            >>> from Hapi.routing import Routing
+            >>> weights = Routing.CalculateWeights(5)
+            >>> print(weights)
+            [0.08 0.24 0.36 0.24 0.08]
         """
         yant = 0
         Total = 0  # Just to verify how far from the unit is the result
@@ -291,19 +323,33 @@ class Routing:
 
     @staticmethod
     def TriangularRouting1(Q, MAXBAS):
-        """TriangularRouting1.
+        """Route discharge using triangular weights (fractional MAXBAS).
 
-        calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV
-        model (considers float values of Maxbas parameter).
+        Distributes the input hydrograph over time using MAXBAS
+        triangular weights computed by `CalculateWeights`. Unlike
+        `TriangularRouting2`, this method supports fractional
+        (non-integer) MAXBAS values.
 
-        Examples
-        --------
-            [Qout,maxbasW]=RoutingMAXBAS(Q,5);
-            where:
-            Qout = output hydrograph
-            maxbasW = MAXBAS weight
-            Q = input hydrograph
-            5 = MAXBAS parameter value.
+        The routing is performed by constructing a weighted discharge
+        matrix and summing along the anti-diagonals to produce the
+        output hydrograph.
+
+        Args:
+            Q (numpy.ndarray): Input discharge time series to be
+                routed.
+            MAXBAS (float): The MAXBAS routing parameter. Can be an
+                integer or a decimal value. Controls the number of
+                time steps over which the discharge is spread.
+
+        Returns:
+            numpy.ndarray: Routed output hydrograph with the same
+            length as ``Q``.
+
+        Examples:
+            >>> import numpy as np
+            >>> from Hapi.routing import Routing
+            >>> Q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])
+            >>> q_out = Routing.TriangularRouting1(Q, MAXBAS=5)
         """
         # CALCULATE MAXBAS WEIGHTS
         maxbasW = Routing.CalculateWeights(MAXBAS)

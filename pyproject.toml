@@ -31,7 +31,7 @@ dependencies = [
     "numpy >=2.1.3",
     "pandas >=2.2.3",
     "PyYAML >=6.0.2",
-    "pyramids-gis >=0.6.0",
+    "pyramids-gis >=0.6.0,!=0.9.0",
     "requests >=2.31.0",
     "scipy >=1.11.4",
     "serapeum-utils >=0.2.0",
@@ -54,7 +54,8 @@ dev = [
     "pip",
     "jupyterlab",
     "jupyter",
-    "commitizen >=4.8.4"
+    "commitizen >=4.8.4",
+    "mypy >=1.0"
 ]
 
 docs = [
@@ -132,6 +133,52 @@ style = [
     ["text", ""],
     ["disabled", "fg:#858585 italic"]
 ]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+exclude = [
+    "tests/",
+    "examples/",
+    "docs/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "Hapi.catchment",
+    "Hapi.run",
+    "Hapi.calibration",
+    "Hapi.wrapper",
+]
+# These modules use a builder pattern: attributes are typed X | None in
+# __init__ and populated by separate read_*() methods before use. Methods
+# assume attributes are non-None but mypy cannot verify call order.
+# Fix: add assert-based narrowing helpers (e.g. _require_spatial_data())
+# that return non-None types, then remove these suppressions one by one.
+# Error count without overrides: ~257 across these 4 modules.
+disable_error_code = [
+    "union-attr",    # .attr on X | None (159 sites)
+    "attr-defined",  # .attr on None (11 sites)
+    "arg-type",      # passing X | None where X expected (13 sites)
+    "misc",          # slice index, None not callable (13 sites)
+    "operator",      # arithmetic on X | None (4 sites)
+    "index",         # indexing X | None (2 sites)
+    "call-overload", # numpy overload mismatches on X | None (2 sites)
+]
+
+[[tool.mypy.overrides]]
+module = "Hapi.rrm.base_model"
+disable_error_code = ["empty-body"]
+
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

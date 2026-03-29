@@ -1,7 +1,14 @@
-"""Created on Sun Apr 29 17:17:54 2018.
+"""Wrapper module for connecting rainfall-runoff model components.
 
-@author: Mostafa
+This module provides the Wrapper class that connects the distributed
+rainfall-runoff model execution with spatial routing schemes. It
+supports multiple configurations including Muskingum routing,
+triangular routing, and lake integration.
 """
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -9,87 +16,77 @@ from Hapi.routing import Routing as routing
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
 from Hapi.rrm.hbv_lake import HBVLake
 
+if TYPE_CHECKING:
+    from Hapi.catchment import Catchment, Lake
+
 
 class Wrapper:
-    """Wrapper.
+    """Connects rainfall-runoff model components with spatial routing.
 
-    The class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi
-    and for FW1.
+    The Wrapper class connects different components together including
+    the lumped run of the distributed model with the spatial routing
+    for Hapi and for FW1 (triangular routing).
 
-    Methods
-    -------
-        1- HapiModel
-        2- RRMWithlake
-        3- FW1
-        4- FW1Withlake
-        5- Lumped
+    Methods:
+        RRMModel: Run distributed RRM with Muskingum spatial routing.
+        RRMWithlake: Run distributed RRM with lake and Muskingum
+            spatial routing.
+        FW1: Run distributed RRM with triangular routing.
+        FW1Withlake: Run distributed RRM with lake and triangular
+            routing.
+        Lumped: Run a lumped conceptual model with optional routing.
     """
 
     def __init__(self):
-        """Run the whole setup."""
+        """Initialize the Wrapper class."""
         pass
 
     @staticmethod
-    def RRMModel(Model, ll_temp=None, q_0=None):
-        """RRMModel.
+    def RRMModel(Model: Catchment, ll_temp=None, q_0=None):
+        """Run the distributed rainfall-runoff model with spatial routing.
 
-            HapiModel connect two modules :
-            1- The distributed rainfall runoff: model runs separately for each cell
-            2- The Spatial routing scheme (routing is following river network)
+        Connects two modules:
 
-        Parameters
-        ----------
-        Model
-            DEM: [gdal.dataset]
-                DEM raster file of the catchment (clipped to the catchment only)
-            flow_acc: [gdal.dataset]
-                flow accumulation raster file of the catchment (clipped to the catchment only)
-            flow_direct: [gdal.dataset]
-                flow Direction raster file of the catchment (clipped to the catchment only)
-            sp_prec: [numpy array]
-                3d array of the precipitation data, sp_prec should
-                have the same 2d dimension of raster input
-            sp_et: [numpy array]
-                3d array of the evapotranspiration data, sp_et should
-                have the same 2d dimension of raster input
-            sp_temp: [numpy array]
-                3d array of the temperature data, sp_temp should
-                have the same 2d dimension of raster input
-            sp_par: [numpy array]
-                number of 2d arrays of the catchment properties spatially
-                distributed in 2d and the third dimension is the number of parameters,
-                sp_pars should have the same 2d dimension of raster input
-            p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            kub: [float]
-                upper bound of K value (traveling time in muskingum routing method)
-            klb: [float]
-                Lower bound of K value (traveling time in muskingum routing method)
-            init_st: [list]
-                initial state variables values [sp, sm, uz, lz, wc]. default=None
-            ll_temp: [numpy array]
-                3d array of the long term average temperature data
-            q_0: [float]
-                initial discharge m3/s
+        1. The distributed rainfall-runoff model that runs separately
+           for each cell.
+        2. The spatial routing scheme that routes flow following the
+           river network.
 
-        Returns
-        -------
-        state_variables:
-            [numpy ndarray] 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-        qlz:
-            [numpy ndarray] 3D array of the lower zone discharge
-        quz:
-            [numpy ndarray] 3D array of the upper zone discharge
-        qout:
-            [numpy array] 1D timeseries of discharge at the outlet of the catchment
-            of unit m3/sec
-        quz_routed:
-            [numpy ndarray] 3D array of the upper zone discharge  accumulated and
-            routed at each time step
-        qlz_translated:
-            [numpy ndarray] 3D array of the lower zone discharge translated at each time step
+        The method stores results directly on the Model object,
+        including ``quz``, ``qlz``, ``qout``, ``quz_routed``, and
+        ``qlz_translated`` arrays.
+
+        Args:
+            Model: Catchment model object containing:
+
+                - DEM (gdal.dataset): DEM raster clipped to the
+                  catchment.
+                - flow_acc (gdal.dataset): Flow accumulation raster
+                  clipped to the catchment.
+                - flow_direct (gdal.dataset): Flow direction raster
+                  clipped to the catchment.
+                - sp_prec (numpy.ndarray): 3D precipitation array
+                  with the same 2D dimensions as the raster input.
+                - sp_et (numpy.ndarray): 3D evapotranspiration array
+                  with the same 2D dimensions as the raster input.
+                - sp_temp (numpy.ndarray): 3D temperature array with
+                  the same 2D dimensions as the raster input.
+                - sp_par (numpy.ndarray): 3D array of spatially
+                  distributed catchment parameters.
+                - p2 (list): Unoptimized parameters where p2[0] is
+                  tfac (1 for hourly, 0.25 for 15 min, 24 for daily)
+                  and p2[1] is catchment area in km2.
+                - kub (float): Upper bound of K value for Muskingum
+                  routing.
+                - klb (float): Lower bound of K value for Muskingum
+                  routing.
+                - init_st (list): Initial state variable values
+                  [sp, sm, uz, lz, wc].
+
+            ll_temp (numpy.ndarray, optional): 3D array of long-term
+                average temperature data. Defaults to None.
+            q_0 (float, optional): Initial discharge in m3/s.
+                Defaults to None.
         """
         # run the rainfall runoff model separately
         distrrm.run_lumped_model(Model)
@@ -100,26 +97,36 @@ class Wrapper:
         # Model.qout = Model.qout[:-1]
 
     @staticmethod
-    def RRMWithlake(Model, Lake, ll_temp=None, q_0=None):
-        """RRMWithlake.
+    def RRMWithlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
+        """Run the distributed RRM with lake simulation and routing.
 
-            RRMWithlake connects three modules the lake, the distributed
-            ranfall-runoff module and spatial routing module
+        Connects three modules: the lake module, the distributed
+        rainfall-runoff module, and the spatial routing module. The
+        lake discharge is simulated using HBVLake, routed via
+        Muskingum, and added to the downstream cell before spatial
+        routing.
 
-        Parameters
-        ----------
-        Model : [Catchment object]
-            DESCRIPTION.
-        Lake : TYPE
-            DESCRIPTION.
-        ll_temp : TYPE, optional
-            DESCRIPTION. The default is None.
-        q_0 : TYPE, optional
-            DESCRIPTION. The default is None.
+        Args:
+            Model: Catchment model object containing the distributed
+                model configuration, parameters, and spatial data.
+            Lake: Lake object containing:
 
-        Returns
-        -------
-        None.
+                - MeteoData (numpy.ndarray): 2D array with columns
+                  for precipitation, evapotranspiration, temperature,
+                  and long-term average temperature.
+                - Parameters (numpy.ndarray): Lake model parameters.
+                - CatArea (float): Lake catchment area in km2.
+                - LakeArea (float): Lake surface area in km2.
+                - StageDischargeCurve (numpy.ndarray): Stage-discharge
+                  relationship.
+                - InitialCond (list): Initial condition values.
+                - OutflowCell (tuple): Row and column indices of the
+                  lake outflow cell.
+
+            ll_temp (numpy.ndarray, optional): 3D array of long-term
+                average temperature data. Defaults to None.
+            q_0 (float, optional): Initial discharge in m3/s.
+                Defaults to None.
         """
 
         plake = Lake.MeteoData[:, 0]
@@ -174,24 +181,24 @@ class Wrapper:
         # Model.qout = Model.qout[:-1]
 
     @staticmethod
-    def FW1(Model, ll_temp=None, q_0=None):
-        """FW1.
+    def FW1(Model: Catchment, ll_temp=None, q_0=None):
+        """Run the distributed RRM with triangular function-1 routing.
 
-        FW1 connects two module :
-            1- The distributed rainfall-runoff module
-            2- Triangular function-1 routing method
-        Parameters
-        ----------
-        Model : TYPE
-            DESCRIPTION.
-        ll_temp : TYPE, optional
-            DESCRIPTION. The default is None.
-        q_0 : TYPE, optional
-            DESCRIPTION. The default is None.
+        Connects two modules:
 
-        Returns
-        -------
-        None.
+        1. The distributed rainfall-runoff module.
+        2. The triangular function-1 (MAXBAS) routing method.
+
+        The output discharge is computed as the sum of routed upper
+        zone and unrouted lower zone discharge across all cells.
+
+        Args:
+            Model: Catchment model object containing the distributed
+                model configuration, parameters, and spatial data.
+            ll_temp (numpy.ndarray, optional): 3D array of long-term
+                average temperature data. Defaults to None.
+            q_0 (float, optional): Initial discharge in m3/s.
+                Defaults to None.
         """
 
         # subcatchment
@@ -211,28 +218,38 @@ class Wrapper:
         Model.qout = Model.qout[:-1]
 
     @staticmethod
-    def FW1Withlake(Model, Lake, ll_temp=None, q_0=None):
-        """FW1Withlake.
+    def FW1Withlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
+        """Run the distributed RRM with lake and triangular routing.
 
-        FW1 connects two module :
-            1- The distributed rainfall-runoff module
-            2- Triangular function-1 routing method
-            3- Lake module
+        Connects three modules:
 
-        Parameters
-        ----------
-        Model : TYPE
-            DESCRIPTION.
-        Lake : TYPE
-            DESCRIPTION.
-        ll_temp : TYPE, optional
-            DESCRIPTION. The default is None.
-        q_0 : TYPE, optional
-            DESCRIPTION. The default is None.
+        1. The distributed rainfall-runoff module.
+        2. The triangular function-1 (MAXBAS) routing method.
+        3. The lake simulation module.
 
-        Returns
-        -------
-        None.
+        The lake discharge is simulated using HBVLake, routed via
+        Muskingum, and combined with the subcatchment discharge that
+        has been routed using the triangular function.
+
+        Args:
+            Model: Catchment model object containing the distributed
+                model configuration, parameters, and spatial data.
+            Lake: Lake object containing:
+
+                - MeteoData (numpy.ndarray): 2D array with columns
+                  for precipitation, evapotranspiration, temperature,
+                  and long-term average temperature.
+                - Parameters (numpy.ndarray): Lake model parameters.
+                - CatArea (float): Lake catchment area in km2.
+                - LakeArea (float): Lake surface area in km2.
+                - StageDischargeCurve (numpy.ndarray): Stage-discharge
+                  relationship.
+                - InitialCond (list): Initial condition values.
+
+            ll_temp (numpy.ndarray, optional): 3D array of long-term
+                average temperature data. Defaults to None.
+            q_0 (float, optional): Initial discharge in m3/s.
+                Defaults to None.
         """
 
         plake = Lake.MeteoData[:, 0]
@@ -256,7 +273,7 @@ class Wrapper:
 
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.muskingum(
+        Lake.QlakeR = routing.Muskingum_V(
             Lake.Qlake,
             Lake.Qlake[0],
             Lake.Parameters[11],
@@ -267,7 +284,7 @@ class Wrapper:
         # subcatchment
         distrrm.run_lumped_model(Model)
 
-        distrrm.DistMAXBAS(Model)
+        distrrm.DistMaxbas1(Model)
 
         qlz1 = np.array(
             [
@@ -289,48 +306,56 @@ class Wrapper:
         Model.qout = qout[:-1] + Lake.QlakeR
 
     @staticmethod
-    def Lumped(Model, Routing=0, RoutingFn=[]):
-        """Lumped.
+    def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: Callable | None = None):
+        """Run a lumped conceptual model with optional routing.
 
-        Parameters
-        ----------
-        Model: [function]
-            conceptual model and it should contain a function called simulate
-            data: [numpy array]
-                meteorological data as array with the first column as precipitation
-                second as evapotranspiration, third as temperature and forth column as
-                long term average temperature
-            parameters: [numpy array]
-                conceptual model parameters as array
-            p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            init_st: [list]
-                initial state variables values [sp, sm, uz, lz, wc].
-        Routing: [0 or 1]
-            to decide wether t route the generated discharge hydrograph or not
-        RoutingFn: [function]
-            function to route the dischrge hydrograph.
+        Executes a lumped rainfall-runoff model (e.g., HBV) to
+        compute the upper and lower zone discharge, then optionally
+        routes the combined discharge using the provided routing
+        function.
 
-        Returns
-        -------
-        st: [numpy array]
-            3d array of the 5 state variable data for each cell
-        q_lz: [numpy array]
-            1d array of the calculated discharge.
+        The discharge is converted from mm/timestep to m3/s using
+        the catchment area and conversion factor. Results are stored
+        on the Model object as ``quz``, ``qlz``, ``Qsim``, and
+        ``state_variables``.
 
-        Examples
-        --------
-        >>> p2=[24, 1530]
-        >>> #[sp,sm,uz,lz,wc]
-        >>> init_st=[0,5,5,5,0]
-        >>> snow=0
+        Args:
+            Model: Lumped model object containing:
+
+                - data (numpy.ndarray): 2D meteorological data array
+                  with columns for precipitation,
+                  evapotranspiration, temperature, and long-term
+                  average temperature.
+                - Parameters (numpy.ndarray): Conceptual model
+                  parameters.
+                - LumpedModel: Conceptual model instance with a
+                  ``simulate`` method.
+                - InitialCond (list): Initial state variable values
+                  [sp, sm, uz, lz, wc].
+                - q_init (float): Initial discharge value.
+                - Snow (int): Flag to include snow module (0 or 1).
+                - CatArea (float): Catchment area in km2.
+                - conversion_factor (float): Time step conversion
+                  factor (1 for hourly, 0.25 for 15 min, 24 for
+                  daily).
+                - Maxbas (bool): Whether to use MAXBAS triangular
+                  routing.
+                - dt (float): Time step duration.
+
+            Routing (int, optional): Flag to enable routing. Set to
+                0 to disable, nonzero to enable. Defaults to 0.
+            RoutingFn (callable): Routing function to apply to the
+                discharge hydrograph. Must be callable.
+
+        Raises:
+            AssertionError: If ``RoutingFn`` is not callable when
+                routing is enabled.
         """
         ### input data validation
-        assert callable(
-            RoutingFn
-        ), "routing function should be of type callable (function that takes arguments)"
+        if Routing != 0:
+            assert callable(
+                RoutingFn
+            ), "routing function should be of type callable (function that takes arguments)"
 
         # data
         p = Model.data[:, 0]

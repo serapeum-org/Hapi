@@ -21,12 +21,11 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-
       - name: Build and publish to PyPI
         uses: Serapieum-of-alex/github-actions/actions/release/pypi@pypi-release/v1
         with:
           pypi-username: __token__
           pypi-password: ${{ secrets.PYPI_PUBLISH }}
           package-manager: 'pixi'
-          install-groups: 'groups: dev'
+          install-groups: 'dev'
           verify-lock: 'false'

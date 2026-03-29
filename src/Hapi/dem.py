@@ -1,30 +1,50 @@
-"""DEM related functions."""
-from typing import Dict
+"""Digital Elevation Model module for the Hapi package.
+
+This module provides the `DEM` class, which extends
+``pyramids.dataset.Dataset`` with flow-direction utilities used by
+the distributed rainfall-runoff modelling pipeline.
+"""
+from __future__ import annotations
+
 import numpy as np
 from pyramids.dataset import Dataset
 
 
 class DEM(Dataset):
-    """DEM."""
+    """Digital Elevation Model dataset with flow-direction helpers.
+
+    ``DEM`` wraps a GDAL-backed raster dataset (via
+    ``pyramids.dataset.Dataset``) and adds methods that convert
+    standard 8-direction flow codes (1, 2, 4, 8, 16, 32, 64, 128)
+    into downstream-cell indices and upstream-cell lookup tables.
+
+    Args:
+        src: A GDAL dataset or a file path to a DEM raster that can
+            be opened by ``pyramids.dataset.Dataset``.
+    """
 
     def __init__(self, src):
         super().__init__(src)
 
     def flow_direction_index(self) -> np.ndarray:
-        """flow_direction_index.
+        """Convert flow-direction codes into downstream-cell indices.
 
-            flow_direction_index takes flow direction raster and converts codes for the 8 directions
-            (1,2,4,8,16,32,64,128) into indices of the Downstream cell.
+        Reads the flow-direction band from the underlying raster and
+        maps each of the eight D8 direction codes
+        (1, 2, 4, 8, 16, 32, 64, 128) to the row/column index of the
+        downstream neighbour cell.
 
-        flow_direct:
-            [gdal.dataset] flow direction raster obtained from catchment delineation
-            it only contains values [1,2,4,8,16,32,64,128]
+        Returns:
+            numpy.ndarray: A 3-D array of shape ``(rows, cols, 2)``.
+                The first layer (``[:, :, 0]``) holds the row index
+                and the second layer (``[:, :, 1]``) holds the column
+                index of the downstream cell.  Cells with no valid
+                flow direction are set to ``NaN``.
 
-        Returns
-        -------
-        [numpy array]:
-            with the same dimensions of the raster and 2 layers
-            first layer for rows index and second rows for column index
+        Raises:
+            ValueError: If the flow-direction raster contains values
+                other than 1, 2, 4, 8, 16, 32, 64, or 128 (excluding
+                the no-data value).
         """
         # check flow direction input raster
         no_val = self.no_data_value[0]
@@ -72,23 +92,18 @@ class DEM(Dataset):
 
         return fd_cell
 
-    def flow_direction_table(self) -> Dict:
-        """Flow Direction Table.
+    def flow_direction_table(self) -> dict:
+        """Build an upstream-cell lookup table from flow directions.
 
-            - flow_direction_table takes flow direction indices created by FlowDirectِِIndex function and creates a
-            dictionary with the cells' indices as a key and indices of directly upstream cells as values
-            (list of tuples).
+        Uses ``flow_direction_index`` to determine downstream
+        neighbours, then inverts the relationship so that each cell
+        maps to the list of cells that flow directly into it.
 
-
-            flow_direct:
-                [gdal.dataset] flow direction raster obtained from catchment delineation
-                it only contains values [1,2,4,8,16,32,64,128]
-
-        Returns
-        -------
-        flowAccTable:
-            [Dict] dictionary with the cells indices as a key and indices of directly
-            upstream cells as values (list of tuples)
+        Returns:
+            dict[str, list[tuple[int, int]]]: A dictionary keyed by
+                ``"row,col"`` strings.  Each value is a list of
+                ``(row, col)`` tuples identifying the cells whose
+                flow direction points directly into the key cell.
         """
         flow_direction_index = self.flow_direction_index()
 
@@ -109,7 +124,7 @@ class DEM(Dataset):
                     celli_content.append(flow_direction_index[i, j, 0])
                     cellj_content.append(flow_direction_index[i, j, 1])
 
-        flow_acc_table = {}
+        flow_acc_table: dict[str, list[tuple[int, int]]] = {}
         # for each cell store the directly giving cells
         for i in range(rows):
             for j in range(cols):

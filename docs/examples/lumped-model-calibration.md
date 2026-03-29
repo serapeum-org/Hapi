@@ -1,18 +1,14 @@
-*****
-Lumped Model Calibration
-*****
+# Lumped Model Calibration
 
 To calibrate the HBV lumped model inside Hapi you need to follow the same steps of running the lumped model with few extra steps to define the requirement of the calibration algorithm.
 
 
-.. code-block:: py
-	:linenos:
-
+```python
 	import pandas as pd
 	import datetime as dt
 	import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 	from Hapi.calibration import Calibration
-	from Hapi.rrm.routing import Routing
+	from Hapi.routing import Routing
 	from Hapi.run import Run
 	import statista.metrics as metrics
 
@@ -62,12 +58,10 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	OF=metrics.rmse
 
 	Coello.read_objective_function(metrics.rmse, OF_args)
-
+```
 - after defining all the components of the lumped model, we have to define the calibration arguments
 
-.. code-block:: py
-	:linenos:
-
+```python
 	ApiObjArgs = dict(hms=100, hmcr=0.95, par=0.65, dbw=2000, fileout=1, xinit =0,
 	                      filename=Path + "/Lumped_History"+str(dt.datetime.now())[0:10]+".txt")
 
@@ -80,15 +74,14 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start=False)
 
 	OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
-
+```
 
 - Run Calibration
 
-.. code-block:: py
-	:linenos:
-
+```python
 	cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
 
 	print("Objective Function = " + str(round(cal_parameters[0],2)))
 	print("Parameters are " + str(cal_parameters[1]))
 	print("Time = " + str(round(cal_parameters[2]['time']/60,2)) + " min")
+```

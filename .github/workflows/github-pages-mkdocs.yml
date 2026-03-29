@@ -4,6 +4,10 @@ permissions:
   contents: write
   pages: write
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 on:
   push:
     branches:
@@ -30,7 +34,7 @@ jobs:
       with:
         trigger: 'pull_request'
         package-manager: 'pixi'
-        install-groups: "groups: docs"
+        install-groups: "docs"
         deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
 
   deploy-main:
@@ -44,7 +48,7 @@ jobs:
       with:
         trigger: 'main'
         package-manager: 'pixi'
-        install-groups: "groups: docs"
+        install-groups: "docs"
         deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
 
   deploy-release:
@@ -60,6 +64,6 @@ jobs:
       with:
         trigger: 'release'
         package-manager: 'pixi'
-        install-groups: "groups: docs"
+        install-groups: "docs"
         deploy-token: ${{ secrets.ACTIONS_DEPLOY_TOKEN }}
         mike-alias: 'latest'

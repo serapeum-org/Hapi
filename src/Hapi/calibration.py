@@ -1,13 +1,14 @@
-"""Calibration.
+"""Calibration module for the Hapi hydrological modeling framework.
 
-calibration contains functions to to connect the parameter spatial distribution
-function with the with both component of the spatial representation of the hydrological
-process (conceptual model & spatial routing) to calculate the performance of predicted
-runoff at known locations based on given performance function
-
-@author: Mostafa
+The calibration module connects the parameter spatial distribution function
+with both components of the spatial representation of the hydrological
+process (conceptual model and spatial routing) to calculate the performance
+of predicted runoff at known locations based on a given performance function.
 """
-from typing import Any, Optional, List
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from Oasis.harmonysearch import HSapi
@@ -18,16 +19,17 @@ from Hapi.wrapper import Wrapper
 
 
 class Calibration(Catchment):
-    """Calibration.
+    """Calibration class for distributed hydrological model parameter optimization.
 
-    Calibration class contains to connect the parameter spatial distribution
-    function with both components of the spatial representation of the
-    hydrological process (conceptual model & spatial routing) to calculate the
-    performance of predicted runoff at known locations based on given
-    performance function
+    The Calibration class connects the parameter spatial distribution function
+    with both components of the spatial representation of the hydrological
+    process (conceptual model and spatial routing) to calculate the
+    performance of predicted runoff at known locations based on a given
+    performance function.
 
-    The calibration class is subclass from the Catchment superclass, so you
-    need to create the Catchment object first to be able to run the calibration
+    The Calibration class is a subclass of the Catchment superclass, so you
+    need to create the Catchment object first to be able to run the
+    calibration.
     """
 
     def __init__(
@@ -36,29 +38,24 @@ class Calibration(Catchment):
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: Optional[str] = "Lumped",
-        temporal_resolution: Optional[str] = "Daily",
-        routing_method: Optional[str] = "Muskingum",
+        spatial_resolution: str | None = "Lumped",
+        temporal_resolution: str | None = "Daily",
+        routing_method: str | None = "Muskingum",
     ):
-        """Calibration.
+        """Initialize the Calibration object.
 
-        to instantiate the Calibration object, you need to provide the following
-        arguments
-
-        Parameters
-        ----------
-        name : [str]
-            Name of the Catchment.
-        start : [str]
-            starting date.
-        end : [str]
-            end date.
-        fmt: [str], optional
-            format of the given date. The default is "%Y-%m-%d".
-        spatial_resolution: [str], optional
-            Lumped or 'Distributed'. The default is 'Lumped'.
-        temporal_resolution: [str], optional
-            "Hourly" or "Daily". The default is "Daily".
+        Args:
+            name (Any): Name of the Catchment.
+            start (str): Starting date as a string.
+            end (str): End date as a string.
+            fmt (str, optional): Format of the given date.
+                Default is "%Y-%m-%d".
+            spatial_resolution (str, optional): Spatial resolution mode,
+                either "Lumped" or "Distributed". Default is "Lumped".
+            temporal_resolution (str, optional): Temporal resolution mode,
+                either "Hourly" or "Daily". Default is "Daily".
+            routing_method (str, optional): Routing method name.
+                Default is "Muskingum".
         """
         super().__init__(
             name,
@@ -69,24 +66,24 @@ class Calibration(Catchment):
             temporal_resolution,
             routing_method,
         )
+        self.objective_function: Callable[..., Any] | None = None
+        self.OFArgs: list | None = None
+        self.OFvalue: float | None = None
 
-    def read_objective_function(self, objective_function: callable, args):
-        """read_objective_function.
+    def read_objective_function(self, objective_function: Callable[..., Any], args):
+        """Read and store the objective function and its arguments.
 
-        read_objective_function method takes the objective function and any arguments
-        that are needed to be passed to the objective function.
+        Takes the objective function and any additional arguments that
+        need to be passed to the objective function during calibration.
 
-        Parameters
-        ----------
-        objective_function : [function]
-            callable function to calculate any kind of metric to be used in the
-            calibration.
-        args: [positional/keyword arguments]
-            any kind of argument you want to pass to your objective function.
+        Args:
+            objective_function (callable): A callable function to calculate
+                any kind of metric to be used in the calibration.
+            args: Any positional or keyword arguments to pass to the
+                objective function. If None, defaults to an empty list.
 
-        Returns
-        -------
-        None.
+        Raises:
+            AssertionError: If objective_function is not callable.
         """
         # check objective_function
         assert callable(
@@ -101,22 +98,33 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def extract_discharge(self, factor: List = None):
-        """extractDischarge.
+    def extract_discharge(
+        self,
+        calculate_metrics: bool = True,
+        frame_work_1: bool = False,
+        factor: list | None = None,
+        only_outlet: bool = False,
+    ):
+        """Extract the simulated discharge hydrograph at gauge locations.
 
-        extractDischarge method extracts the discharge hydrograph in the
-        Q
+        Extracts discharge values from the total routed discharge array
+        (``self.Qtot``) at each gauge location and stores them in
+        ``self.Qsim``. Optionally applies a multiplication factor per
+        gauge.
 
-        Parameters
-        ----------
-        factor: [list/None]
-            list of factor if you want to multiply the simulated discharge by
-            a factor you have to provide a list of the factor (as many factors
-            as the number of gauges). The default is False.
-
-        Returns
-        -------
-        None.
+        Args:
+            calculate_metrics (bool, optional): Whether to calculate
+                performance metrics. Not used in this override but
+                kept for signature compatibility. Default is True.
+            frame_work_1 (bool, optional): True if the routing
+                function is Maxbas. Not used in this override but
+                kept for signature compatibility. Default is False.
+            factor (list, optional): List of multiplication factors for
+                the simulated discharge, one per gauge. If None, no
+                scaling is applied. Default is None.
+            only_outlet (bool, optional): True to extract discharge
+                only at the outlet cell. Not used in this override but
+                kept for signature compatibility. Default is False.
         """
         self.Qsim = np.zeros((self.TS - 1, len(self.GaugesTable)))
         # error = 0
@@ -142,74 +150,49 @@ class Calibration(Catchment):
         # return error
 
     def run_calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """Run Calibration.
+        """Run the calibration algorithm for the distributed hydrological model.
 
-            - This function runs the calibration algorithm for the conceptual distributed
-            hydrological model
+        Executes the Harmony Search optimization algorithm to calibrate
+        parameters for the conceptual distributed hydrological model.
+        The method distributes parameters spatially using ``SpatialVarFun``,
+        runs the RRM model via ``Wrapper.RRMModel``, and evaluates
+        performance using the stored objective function.
 
-        Parameters
-        ----------
-        SpatialVarFun: [function]
+        The following attributes must be set on the instance before calling
+        this method:
 
-        OptimizationArgs: [Dict]
+            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
+            - ``FlowDirArr``: Flow direction array.
+            - ``rows``, ``cols``: Grid dimensions.
+            - ``LB``, ``UB``: Lower and upper parameter bounds.
+            - ``objective_function``: Objective function for evaluation.
+            - ``QGauges``, ``GaugesTable``: Observed discharge data and
+              gauge metadata.
 
-        printError: [bool]
-            Default is None.
+        Args:
+            SpatialVarFun: Spatial variable function object with a
+                ``Function`` method that distributes parameters and a
+                ``Par3d`` attribute holding the 3D parameter array, plus
+                ``no_parameters`` and ``no_elem`` attributes.
+            OptimizationArgs: A list of three elements:
+                - ``OptimizationArgs[0]`` (dict): Harmony Search API
+                  objective arguments (e.g., HMS, HMCR, PAR).
+                - ``OptimizationArgs[1]``: Parallel type for the
+                  optimizer.
+                - ``OptimizationArgs[2]`` (dict): Solver arguments with
+                  keys ``"store_sol"``, ``"display_opts"``,
+                  ``"store_hst"``, and ``"hot_start"``.
+            printError: If not 0, prints the error value and parameters
+                at each iteration. Default is None.
 
-        Parameters that should be defined before running the function.
-            ConceptualModel:
-                [function] conceptual model and it should contain a function called simulate
+        Returns:
+            tuple: Optimization result tuple containing:
+                - res[0]: The optimal objective function value.
+                - res[1]: The optimal parameter set.
 
-            Basic_inputs:
-                1-p2:
-                    [List] list of unoptimized parameters
-                    p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                    p2[1] = catchment area in km2
-                2-init_st:
-                    [list] initial values for the state variables [sp,sm,uz,lz,wc] in mm
-                3-UB:
-                    [Numeric] upper bound of the values of the parameters
-                4-LB:
-                    [Numeric] Lower bound of the values of the parameters
-            Q_obs:
-                [Numeric] Observed values of discharge
-
-            lumpedParNo:
-                [int] nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            lumpedParPos:
-                [List] list of order or position of the lumped parameter among all
-                the parameters of the lumped model (order starts from 0 to the length
-                of the model parameters), default is [] (empty), the following order
-                of parameters is used for the lumped HBV model used
-                [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-                c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            objective_function:
-                [function] objective function to calculate the performance of the model
-                and to be used in the calibration
-            *args:
-                other arguments needed on the objective function
-
-        Returns
-        -------
-        st: [4D array]
-            state variables
-        q_out: [1D array]
-            calculated Discharge at the outlet of the catchment
-        q_uz: [3D array]
-            Distributed discharge for each cell
-
-        Example:
-        ----------
-        >>> prec_path = "meteodata/4000/calib/prec"
-        >>> evap_path = "meteodata/4000/calib/evap"
-        >>> temp_path = "meteodata/4000/calib/temp"
-        >>> flow_acc_path = "GIS/4000/acc4000.tif"
-        >>> flow_direction_path = "GIS/4000/fd4000.tif"
-        >>> ParPath = "meteodata/4000/parameters.txt"
-        >>> p2 = [1, 227.31]
-        >>> st, q_out, q_uz_routed = RunModel(prec_path, evap_path, temp_path, DemPath,
-        >>>                                   flow_acc_path,flow_direction_path,ParPath,p2)
+        Raises:
+            AssertionError: If input dimensions are inconsistent or if
+                optimization arguments are not dictionaries.
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -326,66 +309,45 @@ class Calibration(Catchment):
         return res
 
     def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """FW1Calibration.
+        """Run calibration using the FW1 (Focussed Width-1) routing scheme.
 
-        this function runs the calibration algorithm for the conceptual distributed
-        hydrological model
+        Executes the Harmony Search optimization algorithm to calibrate
+        parameters for the conceptual distributed hydrological model using
+        the FW1 routing approach via ``Wrapper.FW1``.
 
-        Parameters
-        ----------
-        ConceptualModel: [function]
-            conceptual model and it should contain a function called simulate
+        The following attributes must be set on the instance before calling
+        this method:
 
-        2-Basic_inputs:
-            1-p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            2-init_st: [list]
-                initial values for the state variables [sp,sm,uz,lz,wc] in mm
-            3-UB: [Numeric]
-                upper bound of the values of the parameters
-            4-LB: [Numeric]
-                Lower bound of the values of the parameters
-        3-Q_obs: [Numeric]
-            Observed values of discharge
+            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
+            - ``rows``, ``cols``: Grid dimensions.
+            - ``LB``, ``UB``: Lower and upper parameter bounds.
+            - ``objective_function``: Objective function for evaluation.
+            - ``QGauges``, ``GaugesTable``: Observed discharge data and
+              gauge metadata.
 
-        6-lumpedParNo: [int]
-            nomber of lumped parameters, you have to enter the value of
-            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-        7-lumpedParPos: [List]
-            list of order or position of the lumped parameter among all
-            the parameters of the lumped model (order starts from 0 to the length
-            of the model parameters), default is [] (empty), the following order
-            of parameters is used for the lumped HBV model used
-            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-        8-objective_function: [function]
-            objective function to calculate the performance of the model
-            and to be used in the calibration
-        9-*args:
-            other arguments needed on the objective function
+        Args:
+            SpatialVarFun: Spatial variable function object with a
+                ``Function`` method that distributes parameters and a
+                ``Par3d`` attribute holding the 3D parameter array.
+            OptimizationArgs: A list of three elements:
+                - ``OptimizationArgs[0]`` (dict): Harmony Search API
+                  objective arguments (e.g., HMS, HMCR, PAR).
+                - ``OptimizationArgs[1]``: Parallel type for the
+                  optimizer.
+                - ``OptimizationArgs[2]`` (dict): Solver arguments with
+                  keys ``"store_sol"``, ``"display_opts"``,
+                  ``"store_hst"``, and ``"hot_start"``.
+            printError: If not 0, prints the error value and parameters
+                at each iteration. Default is None.
 
-        Returns
-        -------
-        st: [4D array]
-            state variables
-        q_out: [1D array]
-            calculated Discharge at the outlet of the catchment
-        q_uz: [3D array]
-            Distributed discharge for each cell
+        Returns:
+            tuple: Optimization result tuple containing:
+                - res[0]: The optimal objective function value.
+                - res[1]: The optimal parameter set.
 
-        Example
-        -------
-        prec_path = prec_path="meteodata/4000/calib/prec"
-        evap_path = evap_path="meteodata/4000/calib/evap"
-        temp_path = temp_path="meteodata/4000/calib/temp"
-        flow_acc_path = "GIS/4000/acc4000.tif"
-        flow_direction_path = "GIS/4000/fd4000.tif"
-        ParPath = "meteodata/4000/"+"parameters.txt"
-        p2=[1, 227.31]
-        st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
-                                          flow_acc_path,flow_direction_path,ParPath,p2)
+        Raises:
+            AssertionError: If input dimensions are inconsistent or if
+                optimization arguments are not dictionaries.
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -486,68 +448,50 @@ class Calibration(Catchment):
         return res
 
     def lumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
-        """runCalibration.
+        """Run the calibration algorithm for the lumped hydrological model.
 
-        this function runs the calibration algorithm for the Lumped conceptual hydrological model
+        Executes the Harmony Search optimization algorithm to calibrate
+        parameters for the lumped conceptual hydrological model. The
+        method runs the model via ``Wrapper.Lumped`` and evaluates
+        performance using the stored objective function. Muskingum
+        routing constraints are enforced as inequality constraints.
 
-        Parameters
-        ----------
-        ConceptualModel:
-            [function] conceptual model and it should contain a function called simulate
-        data:
-            [numpy array] meteorological data as array with the first column as precipitation
-            second as evapotranspiration, third as temperature and forth column as
-            long term average temperature
-        Basic_inputs:
-            1-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            2-init_st:
-                [list] initial values for the state variables [sp,sm,uz,lz,wc] in mm
-            3-UB:
-                [Numeric] upper bound of the values of the parameters
-            4-LB:
-                [Numeric] Lower bound of the values of the parameters
-        Q_obs:
-            [Numeric] Observed values of discharge
+        The following attributes must be set on the instance before calling
+        this method:
 
-        lumpedParNo:
-            [int] nomber of lumped parameters, you have to enter the value of
-            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-        lumpedParPos:
-            [List] list of order or position of the lumped parameter among all
-            the parameters of the lumped model (order starts from 0 to the length
-            of the model parameters), default is [] (empty), the following order
-            of parameters is used for the lumped HBV model used
-            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-        objective_function:
-            [function] objective function to calculate the performance of the model
-            and to be used in the calibration
-        *args:
-            other arguments needed on the objective function
+            - ``LB``, ``UB``: Lower and upper parameter bounds.
+            - ``objective_function``: Objective function for evaluation.
+            - ``OFArgs``: Arguments for the objective function.
+            - ``QGauges``: Observed discharge DataFrame.
+            - ``dt``: Time step duration.
 
-        Returns
-        -------
-        st: [4D array]
-            state variables
-        q_out: [1D array]
-            calculated Discharge at the outlet of the catchment
-        q_uz: [3D array]
-            Distributed discharge for each cell
+        Args:
+            Basic_inputs (dict): Dictionary containing:
+                - ``"Route"`` (int): Routing flag (1 to enable routing).
+                - ``"RoutingFn"`` (callable): Routing function to use.
+                - ``"InitialValues"`` (list, optional): Initial parameter
+                  values for the optimizer. Defaults to an empty list if
+                  not provided.
+            OptimizationArgs: A list of three elements:
+                - ``OptimizationArgs[0]`` (dict): Harmony Search API
+                  objective arguments (e.g., HMS, HMCR, PAR).
+                - ``OptimizationArgs[1]``: Parallel type for the
+                  optimizer.
+                - ``OptimizationArgs[2]`` (dict): Solver arguments with
+                  keys ``"store_sol"``, ``"display_opts"``,
+                  ``"store_hst"``, and ``"hot_start"``.
+            printError: If not 0, prints the error value and constraint
+                values at each iteration. Default is None.
 
-        Examples
-        --------
-            prec_path = prec_path="meteodata/4000/calib/prec"
-            evap_path = evap_path="meteodata/4000/calib/evap"
-            temp_path = temp_path="meteodata/4000/calib/temp"
-            flow_acc_path = "GIS/4000/acc4000.tif"
-            flow_direction_path = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/"+"parameters.txt"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
-                                              flow_acc_path,flow_direction_path,ParPath,p2)
+        Returns:
+            tuple: Optimization result tuple containing:
+                - res[0]: The optimal objective function value.
+                - res[1]: The optimal parameter set.
+
+        Raises:
+            AssertionError: If ``Basic_inputs`` is missing required keys
+                ``"Route"`` or ``"RoutingFn"``, or if optimization
+                arguments are not dictionaries.
         """
         # basic inputs
         # check if all inputs are included

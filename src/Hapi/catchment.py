@@ -1,12 +1,24 @@
-"""Catchment."""
+"""Catchment module for the Hapi hydrological modeling framework.
 
-__name__ = "catchment"
+This module provides the Catchment and Lake classes for reading
+meteorological and spatial inputs, running distributed hydrological
+models, extracting discharge, and saving results. The Catchment class
+is the base class that reads all inputs required by the model
+(rainfall, temperature, ET, flow accumulation, flow direction,
+parameters, and gauge data). It supports both lumped and distributed
+spatial modes with daily or hourly temporal resolutions.
+
+The Lake class provides similar functionality for simulating a lake
+as a lumped model using a rating curve, where the lake and its
+upstream sub-catchments are treated as one lumped model.
+"""
+from __future__ import annotations
 
 import datetime as dt
 import inspect
 import math
 import os
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 import geopandas as gpd
 import matplotlib.dates as dates
@@ -22,34 +34,21 @@ from pyramids.dataset import Dataset
 
 from Hapi.dem import DEM
 
+if TYPE_CHECKING:
+    import matplotlib.animation
+    from Hapi.rrm.base_model import BaseConceptualModel
+
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
 
 class Catchment:
-    """Catchment.
+    """Catchment for reading meteorological/spatial inputs and running the model.
 
-        The class includes methods to read the meteorological and Spatial inputs of the distributed hydrological model.
-        Catchment class also reads the data of the gauges, it is a superclass that has the run subclass,
-        so you need to build the catchment object and hand it as an input to the Run class to run the model.
-
-    Methods
-    -------
-        1-readRainfall
-        2-readTemperature
-        3-readET
-        4-readFlowAcc
-        5-readFlowDir
-        6-ReadFlowPathLength
-        7-readParameters
-        8-readLumpedModel
-        9-readLumpedInputs
-        10-readGaugeTable
-        11-readDischargeGauges
-        12-readParametersBounds
-        13-extractDischarge
-        14-plotHydrograph
-        15-PlotDistributedQ
-        16-saveResults
+    The Catchment class includes methods to read the meteorological and
+    spatial inputs of the distributed hydrological model. It also reads the
+    data of the gauges. It is a superclass that has the Run subclass, so you
+    need to build the Catchment object and hand it as an input to the Run
+    class to run the model.
     """
 
     def __init__(
@@ -58,30 +57,30 @@ class Catchment:
         start_data: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: Optional[str] = "Lumped",
-        temporal_resolution: Optional[str] = "Daily",
-        routing_method: Optional[str] = "Muskingum",
+        spatial_resolution: str | None = "Lumped",
+        temporal_resolution: str | None = "Daily",
+        routing_method: str | None = "Muskingum",
     ):
-        """Catchment.
+        """Initialize a Catchment instance.
 
-        Parameters
-        ----------
-        name : [str]
-            Name of the Catchment.
-        start_data : [str]
-            starting date.
-        end : [str]
-            end date.
-        fmt: [str], optional
-            format of the given date. The default is "%Y-%m-%d".
-        spatial_resolution: [str, optional]
-            Lumped or 'Distributed'. The default is 'Lumped'.
-        temporal_resolution : TYPE, optional
-            "Hourly" or "Daily". The default is "Daily".
+        Args:
+            name (str): Name of the Catchment.
+            start_data (str): Starting date.
+            end (str): End date.
+            fmt (str, optional): Format of the given date.
+                Default is "%Y-%m-%d".
+            spatial_resolution (str, optional): "Lumped" or
+                "Distributed". Default is "Lumped".
+            temporal_resolution (str, optional): "Hourly" or "Daily".
+                Default is "Daily".
+            routing_method (str, optional): Routing method name.
+                Default is "Muskingum".
 
-        Returns
-        -------
-        None.
+        Raises:
+            ValueError: If `spatial_resolution` is not "lumped" or
+                "distributed".
+            ValueError: If `temporal_resolution` is not "daily" or
+                "hourly".
         """
         self.name = name
         self.start = dt.datetime.strptime(start_data, fmt)
@@ -113,100 +112,91 @@ class Catchment:
             self.conversion_factor = 24
 
         self.routing_method = routing_method
-        self.Parameters = None
-        self.data = None
-        self.Prec = None
-        self.TS = None
-        self.Temp = None
-        self.ET = None
-        self.ll_temp = None
-        self.QGauges = None
-        self.Snow = None
-        self.Maxbas = None
-        self.LumpedModel = None
-        self.CatArea = None
-        self.InitialCond = None
-        self.q_init = None
-        self.GaugesTable = None
-        self.UB = None
-        self.LB = None
-        self.cols = None
-        self.rows = None
-        self.NoDataValue = None
-        self.FlowAccArr = None
-        self.no_elem = None
-        self.acc_val = None
-        self.Outlet = None
-        self.CellSize = None
-        self.px_area = None
-        self.px_tot_area = None
-        self.FlowDirArr = None
-        self.FDT = None
-        self.FPLArr = None
-        (
-            self.DEM,
-            self.BankfullDepth,
-            self.RiverWidth,
-            self.RiverRoughness,
-            self.FloodPlainRoughness,
-        ) = (None, None, None, None, None)
-        self.qout, self.Qtot = None, None
-        self.quz_routed, self.qlz_translated, self.state_variables = None, None, None
-        self.anim = None
-        self.quz, self.qlz = None, None
-        self.Qsim = None
-        self.Metrics = None
+        self.Parameters: np.ndarray | list | None = None
+        self.data: np.ndarray | None = None
+        self.Prec: np.ndarray | None = None
+        self.TS: int | None = None
+        self.Temp: np.ndarray | None = None
+        self.ET: np.ndarray | None = None
+        self.ll_temp: np.ndarray | float | None = None
+        self.QGauges: pd.DataFrame | None = None
+        self.Snow: int | None = None
+        self.Maxbas: bool | None = None
+        self.LumpedModel: BaseConceptualModel | None = None
+        self.CatArea: float | int | None = None
+        self.InitialCond: list | None = None
+        self.q_init: float | None = None
+        self.GaugesTable: gpd.GeoDataFrame | pd.DataFrame | None = None
+        self.UB: np.ndarray | None = None
+        self.LB: np.ndarray | None = None
+        self.cols: int | None = None
+        self.rows: int | None = None
+        self.NoDataValue: float | None = None
+        self.FlowAccArr: np.ndarray | None = None
+        self.no_elem: int | None = None
+        self.acc_val: list[int] | None = None
+        self.Outlet: tuple | None = None
+        self.CellSize: float | None = None
+        self.px_area: float | None = None
+        self.px_tot_area: float | None = None
+        self.FlowDirArr: np.ndarray | None = None
+        self.FDT: dict | None = None
+        self.FPLArr: np.ndarray | None = None
+        self.DEM: np.ndarray | None = None
+        self.BankfullDepth: np.ndarray | None = None
+        self.RiverWidth: np.ndarray | None = None
+        self.RiverRoughness: np.ndarray | None = None
+        self.FloodPlainRoughness: np.ndarray | None = None
+        self.qout: np.ndarray | None = None
+        self.Qtot: np.ndarray | None = None
+        self.quz_routed: np.ndarray | None = None
+        self.qlz_translated: np.ndarray | None = None
+        self.state_variables: np.ndarray | None = None
+        self.anim: matplotlib.animation.FuncAnimation | None = None
+        self.quz: np.ndarray | None = None
+        self.qlz: np.ndarray | None = None
+        self.Qsim: np.ndarray | None = None
+        self.Metrics: pd.DataFrame | None = None
 
     def read_rainfall(
         self,
         path: str,
-        start: str = None,
-        end: str = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
+        file_name_data_fmt: str | None = None,
         extension: str = ".tif",
     ):
-        r"""readRainfall.
+        r"""Read rainfall rasters into a 3D numpy array.
 
-        Parameters
-        ----------
-        path: [str]
-            A path to the Folder contains precipitation rasters.
-        fmt: [str]
-            format of the given date
-        start: [str]
-            start date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        end: [str]
-            end date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        regex_string: [str]
-            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
-            2}.\d{2}".
-            >>> fname = "MSWEP_YYYY.MM.DD.tif"
-            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
-            - or
-            >>> fname = "MSWEP_YYYY_M_D.tif"
-            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
-            - if there is a number at the beginning of the name
-            >>> fname = "1_MSWEP_YYYY_M_D.tif"
-            >>> regex_string = r"\d+"
-        date: [bool]. Default is True.
-            True if the number in the file name is a date.
-        file_name_data_fmt : [str]
-            if the files names' have a date and you want to read them ordered .Default is None
-            >>> "MSWEP_YYYY.MM.DD.tif"
-            >>> file_name_data_fmt = "%Y.%m.%d"
-        extension: [str]
-            the extension of the files you want to read from the given path. Default is ".tif".
+        Args:
+            path (str): Path to the folder containing precipitation
+                rasters.
+            start (str, optional): Start date to read a specific
+                period only. If not given, all rasters in the path
+                will be read. Default is None.
+            end (str, optional): End date to read a specific period
+                only. If not given, all rasters in the path will be
+                read. Default is None.
+            fmt (str, optional): Format of the given date. Default
+                is "%Y-%m-%d".
+            regex_string (str, optional): A regex string to locate
+                the date in the file names. Default is
+                r"\d{4}.\d{2}.\d{2}".
+            date (bool, optional): True if the number in the file
+                name is a date. Default is True.
+            file_name_data_fmt (str, optional): Date format in file
+                names for ordered reading. Default is None.
+            extension (str, optional): The extension of the files to
+                read from the given path. Default is ".tif".
 
-
-        Returns
-        -------
-        prec: [array attribute]
-            array containing the spatial rainfall values
+        Raises:
+            FileNotFoundError: If the path does not exist or the
+                folder is empty.
+            TypeError: If the resulting precipitation array is not a
+                numpy ndarray.
         """
         if self.Prec is None:
             # data type
@@ -241,55 +231,46 @@ class Catchment:
     def read_temperature(
         self,
         path: str,
-        ll_temp: Union[list, np.ndarray] = None,
-        start: str = None,
-        end: str = None,
+        ll_temp: list | np.ndarray | None = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
+        file_name_data_fmt: str | None = None,
         extension: str = ".tif",
     ):
-        r"""readTemperature.
+        r"""Read temperature rasters into a 3D numpy array.
 
-        Parameters
-        ----------
-        path: [str]
-            A path to the Folder contains temperature rasters.
-        fmt: [str]
-            format of the given date
-        start: [str]
-            start date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        end: [str]
-            end date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        ll_temp: [list/ ndarray]
-            long-term temperature
-        regex_string: [str]
-            a regex string that we can use to locate the date in the file names. Default is r"\d{4}.\d{
-            2}.\d{2}".
-            >>> fname = "MSWEP_YYYY.MM.DD.tif"
-            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
-            - or
-            >>> fname = "MSWEP_YYYY_M_D.tif"
-            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
-            - if there is a number at the beginning of the name
-            >>> fname = "1_MSWEP_YYYY_M_D.tif"
-            >>> regex_string = r"\d+"
-        date: [bool]
-            True if the number in the file name is a date. Default is True.
-        file_name_data_fmt : [str]
-            if the files names' have a date, and you want to read them ordered .Default is None
-            >>> "MSWEP_YYYY.MM.DD.tif"
-            >>> file_name_data_fmt = "%Y.%m.%d"
-        extension: [str]
-            the extension of the files you want to read from the given path. Default is ".tif".
+        Args:
+            path (str): Path to the folder containing temperature
+                rasters.
+            ll_temp (list | np.ndarray, optional): Long-term
+                average temperature array. If None, it is computed
+                from the mean of the temperature data. Default is
+                None.
+            start (str, optional): Start date to read a specific
+                period only. If not given, all rasters in the path
+                will be read. Default is None.
+            end (str, optional): End date to read a specific period
+                only. If not given, all rasters in the path will be
+                read. Default is None.
+            fmt (str, optional): Format of the given date. Default
+                is "%Y-%m-%d".
+            regex_string (str, optional): A regex string to locate
+                the date in the file names. Default is
+                r"\d{4}.\d{2}.\d{2}".
+            date (bool, optional): True if the number in the file
+                name is a date. Default is True.
+            file_name_data_fmt (str, optional): Date format in file
+                names for ordered reading. Default is None.
+            extension (str, optional): The extension of the files to
+                read from the given path. Default is ".tif".
 
-        Returns
-        -------
-        Temp: [array attribute]
-            array containing the spatial temperature values
+        Raises:
+            AssertionError: If the path does not exist or the
+                resulting array is not a numpy ndarray.
+            Exception: If the folder is empty.
         """
         if self.Temp is None:
             # data type
@@ -329,52 +310,41 @@ class Catchment:
     def read_et(
         self,
         path: str,
-        start: str = None,
-        end: str = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
+        file_name_data_fmt: str | None = None,
         extension: str = ".tif",
     ):
-        r"""readET.
+        r"""Read evapotranspiration rasters into a 3D numpy array.
 
-        Parameters
-        ----------
-        path : [String]
-            path to the Folder contains Evapotranspiration rasters.
-        fmt: [str]
-            format of the given date
-        start: [str]
-            start date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        end: [str]
-            end date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        regex_string: [str]
-            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
-            2}.\d{2}".
-            >>> fname = "MSWEP_YYYY.MM.DD.tif"
-            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
-            - or
-            >>> fname = "MSWEP_YYYY_M_D.tif"
-            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
-            - if there is a number at the beginning of the name
-            >>> fname = "1_MSWEP_YYYY_M_D.tif"
-            >>> regex_string = r"\d+"
-        date: [bool]
-            True if the number in the file name is a date. Default is True.
-        file_name_data_fmt : [str]
-            if the files names' have a date and you want to read them ordered .Default is None
-            >>> "MSWEP_YYYY.MM.DD.tif"
-            >>> file_name_data_fmt = "%Y.%m.%d"
-        extension: [str]
-            the extension of the files you want to read from the given path. Default is ".tif".
+        Args:
+            path (str): Path to the folder containing
+                evapotranspiration rasters.
+            start (str, optional): Start date to read a specific
+                period only. If not given, all rasters in the path
+                will be read. Default is None.
+            end (str, optional): End date to read a specific period
+                only. If not given, all rasters in the path will be
+                read. Default is None.
+            fmt (str, optional): Format of the given date. Default
+                is "%Y-%m-%d".
+            regex_string (str, optional): A regex string to locate
+                the date in the file names. Default is
+                r"\d{4}.\d{2}.\d{2}".
+            date (bool, optional): True if the number in the file
+                name is a date. Default is True.
+            file_name_data_fmt (str, optional): Date format in file
+                names for ordered reading. Default is None.
+            extension (str, optional): The extension of the files to
+                read from the given path. Default is ".tif".
 
-        Returns
-        -------
-        ET: [array attribute]
-            array containing the spatial Evapotranspiration values
+        Raises:
+            AssertionError: If the path does not exist or the
+                resulting array is not a numpy ndarray.
+            Exception: If the folder is empty.
         """
         if self.ET is None:
             # data type
@@ -404,26 +374,20 @@ class Catchment:
             logger.debug("Potential Evapotranspiration data are read successfully")
 
     def read_flow_acc(self, path: str):
-        """readFlowAcc.
+        """Read flow accumulation raster and compute cell properties.
 
-        Parameters
-        ----------
-        path : [String]
-            path to the Flow Accumulation raster of the catchment
-            (it should include the raster name and extension).
+        Reads the flow accumulation raster, extracts the number of rows,
+        columns, NoDataValue, number of domain cells, outlet location,
+        cell size, and pixel area.
 
-        Returns
-        -------
-        flow_acc: [array attribute]
-            array containing the spatial Evapotranspiration values
-        rows: [integer]
-            number of rows in the flow acc array
-        cols:[integer]
-            number of columns in the flow acc array
-        NoDataValue:[numeric]
-            the NoDataValue
-        no_elem : [integer]
-            number of cells in the domain
+        Args:
+            path (str): Path to the flow accumulation raster file
+                (must include the raster name and .tif extension).
+
+        Raises:
+            TypeError: If `path` is not a string.
+            AssertionError: If the path does not exist or does not
+                end with ".tif".
         """
         # data type
         if not isinstance(path, str):
@@ -438,6 +402,8 @@ class Catchment:
         assert os.path.exists(path), path + " you have provided does not exist"
 
         flow_acc = gdal.Open(path)
+        if flow_acc is None:
+            raise FileNotFoundError(f"GDAL could not open: {path}")
         [self.rows, self.cols] = flow_acc.ReadAsArray().shape
         # check flow accumulation input raster
         self.NoDataValue = flow_acc.GetRasterBand(1).GetNoDataValue()
@@ -452,8 +418,8 @@ class Catchment:
                 if math.isclose(self.FlowAccArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FlowAccArr[i, j] = np.nan
 
-        self.no_elem = np.size(self.FlowAccArr[:, :]) - np.count_nonzero(
-            (self.FlowAccArr[np.isnan(self.FlowAccArr)])
+        self.no_elem = int(np.size(self.FlowAccArr[:, :]) - np.count_nonzero(
+            (self.FlowAccArr[np.isnan(self.FlowAccArr)]))
         )
         self.acc_val = [
             int(self.FlowAccArr[i, j])
@@ -496,21 +462,18 @@ class Catchment:
         logger.debug("Flow Accmulation input is read successfully")
 
     def read_flow_dir(self, path: str):
-        """Read Flow Direction.
+        """Read the flow direction raster and build the flow direction table.
 
-            reads the flow direction raster.
+        Args:
+            path (str): Path to the flow direction raster file (must
+                include the raster name and .tif extension).
 
-        Parameters
-        ----------
-        path : [str]
-            path to the flow direction raster.
-
-        Returns
-        -------
-        FlowDirArr: [array].
-            array of the flow direction raster
-        FDT: [dictionary]
-            flow direction table
+        Raises:
+            AssertionError: If `path` is not a string or does not
+                exist.
+            ValueError: If the file does not have a ".tif" extension.
+            AssertionError: If the raster contains values other than
+                1, 2, 4, 8, 16, 32, 64, 128.
         """
         # data type
         assert isinstance(path, str), "path input should be string type"
@@ -524,6 +487,8 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         flow_dir = gdal.Open(path)
+        if flow_dir is None:
+            raise FileNotFoundError(f"GDAL could not open: {path}")
 
         [rows, cols] = flow_dir.ReadAsArray().shape
         self.FlowDirArr = flow_dir.ReadAsArray().astype(float)
@@ -553,27 +518,19 @@ class Catchment:
         logger.debug("Flow Direction input is read successfully")
 
     def read_flow_path_length(self, path: str):
-        """Read Flow path Length method.
+        """Read the flow path length raster.
 
-            reads the flow path length.
+        Reads the flow path length raster and extracts rows, columns,
+        NoDataValue, and the number of domain cells.
 
-        Parameters
-        ----------
-        path : [str]
-            path to the file.
+        Args:
+            path (str): Path to the flow path length raster file
+                (must include the raster name and .tif extension).
 
-        Returns
-        -------
-        FPLArr : [array]
-            flow path length array
-        rows : [integer]
-            number of rows in the flow acc array
-        cols : [integer]
-            number of columns in the flow acc array
-        NoDataValue : [numeric]
-            the NoDataValue
-        no_elem : [integer]
-            number of cells in the domain
+        Raises:
+            AssertionError: If `path` is not a string or does not
+                exist.
+            ValueError: If the file does not have a ".tif" extension.
         """
         # data type
         assert isinstance(path, str), "path input should be string type"
@@ -587,6 +544,8 @@ class Catchment:
         assert os.path.exists(path), path + " you have provided does not exist"
 
         fpl = gdal.Open(path)
+        if fpl is None:
+            raise FileNotFoundError(f"GDAL could not open: {path}")
         [self.rows, self.cols] = fpl.ReadAsArray().shape
         self.FPLArr = fpl.ReadAsArray()
         self.NoDataValue = fpl.GetRasterBand(1).GetNoDataValue()
@@ -596,9 +555,9 @@ class Catchment:
                 if math.isclose(self.FPLArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FPLArr[i, j] = np.nan
         # check flow accumulation input raster
-        self.no_elem = np.size(self.FPLArr[:, :]) - np.count_nonzero(
+        self.no_elem = int(np.size(self.FPLArr[:, :]) - np.count_nonzero(
             (self.FPLArr[np.isnan(self.FPLArr)])
-        )
+        ))
 
         logger.debug("Flow path length input is read successfully")
 
@@ -610,50 +569,58 @@ class Catchment:
         river_roughness_file: str,
         floodplain_roughness_file: str,
     ):
-        """ReadRiverGeometry.
+        """Read river geometry rasters for hydraulic routing.
 
-        Parameters
-        ----------
-        dem_file
-        bankfull_depth_file
-        river_width_file
-        river_roughness_file
-        floodplain_roughness_file
+        Reads the DEM, bankfull depth, river width, river roughness,
+        and floodplain roughness rasters required for hydraulic
+        routing computations.
 
-        Returns
-        -------
-        None
+        Args:
+            dem_file (str): Path to the DEM raster file.
+            bankfull_depth_file (str): Path to the bankfull depth
+                raster file.
+            river_width_file (str): Path to the river width raster
+                file.
+            river_roughness_file (str): Path to the river roughness
+                raster file.
+            floodplain_roughness_file (str): Path to the floodplain
+                roughness raster file.
         """
-        self.DEM = gdal.Open(dem_file).ReadAsArray()
-        self.BankfullDepth = gdal.Open(bankfull_depth_file).ReadAsArray()
-        self.RiverWidth = gdal.Open(river_width_file).ReadAsArray()
-        self.RiverRoughness = gdal.Open(river_roughness_file).ReadAsArray()
-        self.FloodPlainRoughness = gdal.Open(floodplain_roughness_file).ReadAsArray()
+        for name, fpath in [
+            ("DEM", dem_file),
+            ("BankfullDepth", bankfull_depth_file),
+            ("RiverWidth", river_width_file),
+            ("RiverRoughness", river_roughness_file),
+            ("FloodPlainRoughness", floodplain_roughness_file),
+        ]:
+            ds = gdal.Open(fpath)
+            if ds is None:
+                raise FileNotFoundError(
+                    f"GDAL could not open {name} file: {fpath}"
+                )
+            setattr(self, name, ds.ReadAsArray())
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
-        """read_parameters.
+        """Read model parameter rasters or a CSV parameter file.
 
-            read_parameters method reads the parameters' raster
+        For distributed mode, reads parameter rasters from a folder.
+        For lumped mode, reads parameters from a CSV file.
 
-        Parameters
-        ----------
-        path: [str]
-            path to the folder where the raster exists.
-        snow: [integer]
-            False if you don't want to run the snow-related processes and 1 if there is snow.
-            in the case of 1 (simulate snow processes), parameters related to snow simulation
-            have to be provided. The default is 0.
-        maxbas: [bool], optional
-            True if the routing is Maxbas. The default is False.
+        Args:
+            path (str): Path to the folder containing parameter
+                rasters (distributed mode) or to a CSV file (lumped
+                mode).
+            snow (bool, optional): Whether to simulate snow
+                processes. If True, snow-related parameters must be
+                provided. Default is False.
+            maxbas (bool, optional): True if the routing method is
+                Maxbas. Default is False.
 
-        Returns
-        -------
-        Parameters: [array].
-            3d array containing the parameters
-        Snow: [integer]
-            0/1
-        Maxbas: [bool]
-            True/False
+        Raises:
+            FileNotFoundError: If the path does not exist.
+            ValueError: If `snow` is not a boolean or if the number
+                of parameters does not match the expected count for
+                the given snow/maxbas configuration.
         """
         if self.spatial_resolution.lower() == "distributed":
             # data type
@@ -743,32 +710,27 @@ class Catchment:
     def read_lumped_model(
         self,
         lumped_model,
-        catchment_area: Union[float, int],
+        catchment_area: float | int,
         initial_condition: list,
         q_init=None,
     ):
-        """readLumpedModel.
+        """Read and set up a lumped conceptual model.
 
-        Parameters
-        ----------
-        lumped_model : [module]
-            HBV module.
-        catchment_area : [numeric]
-            Catchment area (km2).
-        initial_condition : [list]
-            list of the initial condition [SnowPack, SoilMoisture, Upper Zone,
-                                         Lower Zone, Water Content].
-        q_init: [numeric], optional
-            initial discharge. The default is None.
+        Args:
+            lumped_model: A class representing the lumped conceptual
+                model (e.g., HBV).
+            catchment_area (float | int): Catchment area in
+                km2.
+            initial_condition (list): List of 5 initial condition
+                values: [SnowPack, SoilMoisture, Upper Zone,
+                Lower Zone, Water Content].
+            q_init (float, optional): Initial discharge. Default is
+                None.
 
-        Returns
-        -------
-        LumpedModel: [module].
-            the lumped conceptual model.
-        q_init : [numeric]
-            initial discharge.
-        InitialCond : [list]
-            initial conditions.
+        Raises:
+            ValueError: If `lumped_model` is not a class or if
+                `initial_condition` does not contain exactly 5
+                values.
         """
 
         if not inspect.isclass(lumped_model):
@@ -795,26 +757,22 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def read_lumped_inputs(self, path: str, ll_temp: Union[list, np.ndarray] = None):
-        """readLumpedInputs. readLumpedInputs method read the meteorological data of lumped mode.
+    def read_lumped_inputs(self, path: str, ll_temp: list | np.ndarray | None = None):
+        """Read meteorological inputs for lumped mode.
 
-        [precipitation, Evapotranspiration, temperature, long-term average temperature]
+        Reads precipitation, evapotranspiration, temperature, and
+        optionally long-term average temperature from a CSV file.
 
-        Parameters
-        ----------
-        path : [string]
-            Path to the input file, data has to be in the order of
-            [date, precipitation, ET, Temp].
-        ll_temp: [bool], optional
-            average long-term temperature, if None it is calculated inside the
-            code. The default is None.
+        Args:
+            path (str): Path to the input CSV file. Data columns must
+                be in the order [date, precipitation, ET, Temp].
+            ll_temp (list | np.ndarray, optional): Average
+                long-term temperature. If None, it is calculated as
+                the mean of the temperature column. Default is None.
 
-        Returns
-        -------
-        data: [array].
-            meteorological data.
-        ll_temp: [array]
-            average long-term temperature.
+        Raises:
+            ValueError: If the input data does not have 3 or 4
+                columns (excluding the date index).
         """
         self.data = pd.read_csv(path, header=0, delimiter=",", index_col=0)
         self.data = self.data.values
@@ -833,25 +791,19 @@ class Catchment:
     def read_gauge_table(
         self, path: str, flow_acc_file: str = "", fmt: str = "%Y-%m-%d"
     ):
-        """readGaugeTable. readGaugeTable reads the table where the data about the gauges are listed.
+        """Read the gauge table listing gauge locations and properties.
 
-        [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
-        mandatory to enter, to locate the gauges and be able to extract the
-        discharge at the corresponding cells.
+        Reads gauge data including coordinates (x, y), area ratio, and
+        weight. The coordinates are mandatory to locate the gauges and
+        extract discharge at the corresponding cells.
 
-        Parameters
-        ----------
-        path: [str]
-            Path to the gauge file.
-        flow_acc_file: [str], optional
-            Path to the Flow acc raster. The default is ''.
-        fmt: [str]
-            Default is "%Y-%m-%d"
-
-        Returns
-        -------
-        hm_gauges: [dataframe]
-            the table of the gauges.
+        Args:
+            path (str): Path to the gauge file (CSV or GeoJSON).
+            flow_acc_file (str, optional): Path to the flow
+                accumulation raster used to map gauge coordinates to
+                array indices. Default is "".
+            fmt (str, optional): Date format for start/end columns
+                in the gauge table. Default is "%Y-%m-%d".
         """
         # read the gauge table
         if path.endswith(".geojson"):
@@ -871,6 +823,10 @@ class Catchment:
         if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
             flow_acc = gdal.Open(flow_acc_file)
+            if flow_acc is None:
+                raise FileNotFoundError(
+                    f"GDAL could not open: {flow_acc_file}"
+                )
             # calculate the nearest cell to each station
             dataset = Dataset(flow_acc)
             loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
@@ -885,39 +841,40 @@ class Catchment:
         column: str = "id",
         fmt: str = "%Y-%m-%d",
         split: bool = False,
-        start_date: str = "",
-        end_date: str = "",
+        start_date: str | dt.datetime = "",
+        end_date: str | dt.datetime = "",
         readfrom: str = "",
     ):
-        """read_discharge_gauges.
+        """Read gauge discharge data from CSV files.
 
-        read_discharge_gauges method read the gauge discharge data, discharge of each gauge has to be stored separately
-        in a file, and the name of the file has to be stored in the Gauges table you entered using the method
-        "readGaugeTable" under the column "id", the file should contain the date at the first column.
+        For distributed mode, each gauge's discharge must be stored in a
+        separate CSV file. File names must match the "id" column in the
+        gauge table (read via ``read_gauge_table``). For lumped mode, a
+        single CSV file with the discharge data is expected.
 
-        Parameters
-        ----------
-        path: [str]
-            path to the gauge discharge data.
-        delimiter: [str], optional
-            the delimiter between the date and the discharge column. The default is ",".
-        column: [str], optional
-            the name of the column where you stored the files' names. The default is 'id'.
-        fmt: [str], optional
-            date format. The default is "%Y-%m-%d".
-        split: bool, optional
-            True if you want to split the data between two dates. The default is False.
-        start_date: [str], optional
-            start date. The default is ''.
-        end_date: [str], optional
-            end date. The default is ''.
-        readfrom: [str]
-            Default is "".
+        Args:
+            path (str): Path to the gauge discharge data directory
+                (distributed) or file (lumped).
+            delimiter (str, optional): Delimiter between the date and
+                the discharge column. Default is ",".
+            column (str, optional): Name of the column in the gauge
+                table containing the file names. Default is "id".
+            fmt (str, optional): Date format in the discharge files.
+                Default is "%Y-%m-%d".
+            split (bool, optional): True to subset the data between
+                `start_date` and `end_date`. Default is False.
+            start_date (str, optional): Start date for subsetting.
+                Default is "".
+            end_date (str, optional): End date for subsetting.
+                Default is "".
+            readfrom (str, optional): Number of rows to skip when
+                reading the CSV. Default is "".
 
-        Returns
-        -------
-        GaugesTable: [dataframe].
-            dataframe containing the discharge data
+        Raises:
+            FileNotFoundError: If the discharge file does not exist
+                (lumped mode).
+            AssertionError: If the gauge table has not been read yet
+                (distributed mode).
         """
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
@@ -970,34 +927,28 @@ class Catchment:
 
     def read_parameters_bound(
         self,
-        upper_bound: Union[list, np.ndarray],
-        lower_bound: Union[list, np.ndarray],
+        upper_bound: list | np.ndarray,
+        lower_bound: list | np.ndarray,
         snow: bool = False,
         maxbas: bool = False,
     ):
-        """readParametersBounds. readParametersBounds method reads the lower and upper boundaries for each parameter.
+        """Read the lower and upper parameter bounds for calibration.
 
-        Parameters
-        ----------
-        upper_bound : [list]
-            upper bound.
-        lower_bound : [list]
-            lower bound.
-        snow : [integer]
-            0 if you don't want to run the snow-related processes and 1 if there is snow.
-            in case of 1 (simulate snow processes), parameters related to snow simulation
-            have to be provided. The default is 0.
-        maxbas: [bool]
-            True if the parameters have maxbas.
+        Args:
+            upper_bound (list | np.ndarray): Upper bound values
+                for each parameter.
+            lower_bound (list | np.ndarray): Lower bound values
+                for each parameter.
+            snow (bool, optional): Whether to simulate snow
+                processes. If True, snow-related parameters must be
+                bounded. Default is False.
+            maxbas (bool, optional): True if the parameters include
+                maxbas. Default is False.
 
-        Returns
-        -------
-        UB: [list]
-            upper bound.
-        LB: [list]
-            lower bound.
-        Snow: [integer]
-            Snow
+        Raises:
+            AssertionError: If the lengths of `upper_bound` and
+                `lower_bound` are not equal.
+            ValueError: If `snow` is not a boolean.
         """
         assert len(upper_bound) == len(
             lower_bound
@@ -1017,32 +968,26 @@ class Catchment:
     def extract_discharge(
         self, calculate_metrics=True, frame_work_1=False, factor=None, only_outlet=False
     ):
-        """extractDischarge.
+        """Extract and sum discharge at gauge locations.
 
-        extractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the
-        location of the gauges.
+        Extracts and sums the discharge from the routed upper zone and
+        translated lower zone arrays at each gauge location. Optionally
+        computes performance metrics (RMSE, NSE, NSEhf, KGE, WB,
+        Pearson-CC, R2) between simulated and observed hydrographs.
 
-        Parameters
-        ----------
-        calculate_metrics : bool, optional
-            True if you want to calculate the performance metrics. The default is True.
-        frame_work_1: [bool], optional
-            True if the routing function is Maxbas. The default is False.
-        factor : [list/None]
-            list of factor if you want to multiply the simulated discharge by
-            a factor you have to provide a list of the factor (as many factors
-            as the number of gauges). The default is False.
-        only_outlet: [bool]
-            True to extract the discharge only at the outlet.
+        Args:
+            calculate_metrics (bool, optional): Whether to calculate
+                performance metrics. Default is True.
+            frame_work_1 (bool, optional): True if the routing
+                function is Maxbas. Default is False.
+            factor (list, optional): List of multiplication factors
+                for simulated discharge at each gauge. Must have the
+                same length as the number of gauges. Default is None.
+            only_outlet (bool, optional): True to extract discharge
+                only at the outlet cell. Default is False.
 
-        Returns
-        -------
-        q_sim : [dataframe]
-            dataframe containing the discharge time series of the cells where
-            the gauges are located.
-        Metrics : [dataframe]
-            data frame containing the following metrics ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC',
-            'R2'] calculated between the simulated hydrographs and the gauge data.
+        Raises:
+            ValueError: If the gauge table has not been read yet.
         """
         if self.GaugesTable is None:
             raise ValueError("please read the gauges' table first.")
@@ -1126,67 +1071,55 @@ class Catchment:
 
     def plot_hydrograph(
         self,
-        start_date: str,
-        end_date: str,
+        start_date: str | dt.datetime,
+        end_date: str | dt.datetime,
         gauge: int,
-        hapi_color: Union[tuple, str] = "#004c99",
-        gauge_color: Union[tuple, str] = "#DC143C",
+        hapi_color: tuple | str = "#004c99",
+        gauge_color: tuple | str = "#DC143C",
         line_width: int = 3,
         hapi_order: int = 1,
         gauge_order: int = 0,
         label_font_size: int = 10,
-        x_major_fmt: str = "%Y-%m-%d",
+        x_major_fmt: str | dates.DateFormatter = "%Y-%m-%d",
         n_ticks: int = 5,
         title: str = "",
         x_axis_fmt: str = "%d\n%m",
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        r"""Plot Hydrograph.
+        r"""Plot simulated and observed hydrographs for a given gauge.
 
-            plot the simulated and gauge hydrograph.
+        Args:
+            start_date (str): Starting date for the plot.
+            end_date (str): End date for the plot.
+            gauge (int): Index of the gauge in the GaugesTable.
+            hapi_color (tuple | str, optional): Color of the
+                simulated hydrograph. Default is "#004c99".
+            gauge_color (tuple | str, optional): Color of the
+                observed gauge hydrograph. Default is "#DC143C".
+            line_width (int, optional): Line width for the
+                hydrographs. Default is 3.
+            hapi_order (int, optional): Z-order of the simulated
+                hydrograph to control layering. Default is 1.
+            gauge_order (int, optional): Z-order of the observed
+                hydrograph to control layering. Default is 0.
+            label_font_size (int, optional): Font size for axis tick
+                labels. Default is 10.
+            x_major_fmt (str, optional): Format for x-axis major
+                tick labels. Default is "%Y-%m-%d".
+            n_ticks (int, optional): Maximum number of x-axis ticks.
+                Default is 5.
+            title (str, optional): Title of the plot. Default is "".
+            x_axis_fmt (str, optional): Format for x-axis minor
+                tick labels. Default is "%d\n%m".
+            label (str, optional): Label for the simulated
+                hydrograph in the legend. Default is "".
+            fmt (str, optional): Date format for parsing
+                `start_date` and `end_date`. Default is "%Y-%m-%d".
 
-        Parameters
-        ----------
-        start_date: [str]
-            starting date.
-        end_date: [str]
-            end date.
-        gauge: [integer]
-            order if the gauge in the GaugeTable.
-        hapi_color: [str], optional
-            color of the Simulated hydrograph. The default is "#004c99".
-        gauge_color: [str], optional
-            color of the gauge. The default is "#DC143C".
-        line_width: [numeric], optional
-            line width. The default is 3.
-        hapi_order: [integer], optional
-            the order of the simulated hydrograph to control which hydrograph
-            is in the front. The default is 1.
-        gauge_order: TYPE, optional
-            the order of the simulated hydrograph to control which hydrograph
-            is in the front. The default is 0.
-        label_font_size: numeric, optional
-            label size. The default is 10.
-        x_major_fmt: [str], optional
-            format of the x-axis labels. The default is '%Y-%m-%d'.
-        n_ticks: [integer], optional
-            number of x-axis ticks. The default is 5.
-        title: [str]
-            Default is "".
-        x_axis_fmt: [str]
-            Default is "%d\n%m".
-        label: [str]
-            Default is "".
-        fmt:[str]
-            Default is "%Y-%m-%d".
-
-        Returns
-        -------
-        fig: TYPE
-            DESCRIPTION.
-        ax: [matplotlib axes]
-            you can control the figure from the axes.
+        Returns:
+            tuple: A tuple of (fig, ax) where fig is the matplotlib
+                Figure and ax is the matplotlib Axes object.
         """
         start_date = dt.datetime.strptime(start_date, fmt)
         end_date = dt.datetime.strptime(end_date, fmt)
@@ -1270,99 +1203,49 @@ class Catchment:
 
     def plot_distributed_results(
         self,
-        start: str,
-        end: str,
+        start: str | dt.datetime,
+        end: str | dt.datetime,
         fmt: str = "%Y-%m-%d",
         option: int = 1,
         gauges: bool = False,
         **kwargs,
     ):
-        """plotDistributedResults.
+        """Animate distributed model results or meteorological inputs.
 
-        plotDistributedResults animate the time series of the meteorological inputs and the result calculated by the
-        model like the total discharge, upper zone, and lower zone discharge and the state variables.
+        Creates an animation of the time series of meteorological inputs
+        or model results (discharge, state variables) over the spatial
+        domain.
 
-        Parameters
-        ----------
-        start: [str]
-            starting date
-        end: [str]
-            end date
-        fmt: [str]
-            format of the given date. The default is "%Y-%m-%d"
-        option : [str]
-            1- Total discharge, 2-Upper zone discharge, 3-ground water,
-            4-Snowpack state variable, 5-Soil moisture, 6-Upper zone,
-            7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
-            11-Temperature. The default is 1.
-        gauges: [str]
-            gauge name. The default is False
-        **kwargs :
-            possible keyword args
-            TicksSpacing: [integer], optional
-                Spacing in the color bar ticks. The default is 2.
-            Figsize: [tuple], optional
-                figure size. The default is (8,8).
-            PlotNumbers: [bool], optional
-                True to plot the values on top of each cell. The default is True.
-            NumSize: integer, optional
-                size of the numbers plotted on top of each cell. The default is 8.
-            title: [str], optional
-                title of the plot. The default is 'Total Discharge'.
-            title_size: [integer], optional
-                title size. The default is 15.
-            Backgroundcolorthreshold: [float/integer], optional
-                threshold value if the value of the cell is greater, the plotted
-                numbers will be black and if smaller the plotted number will be white
-                if None given the maxvalue/2 will be considered. The default is None.
-            textcolors: TYPE, optional
-                Two colors to be used to plot the values i top of each cell. The default is ("white","black").
-            cbarlabel: str, optional
-                label of the color bar. The default is 'Discharge m3/s'.
-            cbarlabelsize: integer, optional
-                size of the color bar label. The default is 12.
-            Cbarlength: [float], optional
-                ratio to control the height of the colorbar. The default is 0.75.
-            Interval: [integer], optional
-                number to control the speed of the animation. The default is 200.
-            cmap: [str], optional
-                color style. The default is 'coolwarm_r'.
-            Textloc: [list], optional
-                location of the date text. The default is [0.1,0.2].
-            Gaugecolor: [str], optional
-                color of the points. The default is 'red'.
-            Gaugesize: [integer], optional
-                size of the points. The default is 100.
-            ColorScale: integer, optional
-                there are 5 options to change the scale of the colors. The default is 1.
-                1- ColorScale 1 is the normal scale
-                2- ColorScale 2 is the power scale
-                3- ColorScale 3 is the SymLogNorm scale
-                4- ColorScale 4 is the PowerNorm scale
-                5- ColorScale 5 is the BoundaryNorm scale
-                ------------------------------------------------------------------
-                gamma: [float], optional
-                    value needed for option 2 . The default is 1./2..
-                linthresh: [float], optional
-                    value needed for option 3. The default is 0.0001.
-                linscale: [float], optional
-                    value needed for option 3. The default is 0.001.
-                midpoint: [float], optional
-                    value needed for option 5. The default is 0.
-                ------------------------------------------------------------------
-            orientation: [string], optional
-                orintation of the colorbar horizontal/vertical. The default is 'vertical'.
-            rotation: [number], optional
-                rotation of the colorbar label. The default is -90.
-            **kwargs: [dict]
-                keys:
-                    Points : [dataframe].
-                        dataframe contains two columns 'cell_row', and cell_col to
-                        plot the point at this location
+        Args:
+            start (str): Starting date for the animation.
+            end (str): End date for the animation.
+            fmt (str, optional): Format of the given date. Default
+                is "%Y-%m-%d".
+            option (int, optional): Variable to animate. Options are:
+                1 - Total discharge, 2 - Upper zone discharge,
+                3 - Ground water, 4 - Snow pack, 5 - Soil moisture,
+                6 - Upper zone, 7 - Lower zone, 8 - Water content,
+                9 - Precipitation, 10 - ET, 11 - Temperature.
+                Default is 1.
+            gauges (bool, optional): Whether to plot gauge locations
+                on the animation. Default is False.
+            **kwargs: Additional keyword arguments passed to
+                ``ArrayGlyph.animate``. Common options include:
+                TicksSpacing (int), Figsize (tuple),
+                PlotNumbers (bool), NumSize (int), title (str),
+                title_size (int), Backgroundcolorthreshold (float),
+                textcolors (tuple), cbarlabel (str),
+                cbarlabelsize (int), Cbarlength (float),
+                Interval (int), cmap (str), Textloc (list),
+                Gaugecolor (str), Gaugesize (int),
+                ColorScale (int), orientation (str),
+                rotation (float), Points (DataFrame).
 
-        Returns
-        -------
-        animation.FuncAnimation.
+        Returns:
+            matplotlib.animation.FuncAnimation: The animation object.
+
+        Raises:
+            ValueError: If `option` is not between 1 and 11.
         """
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
@@ -1457,37 +1340,42 @@ class Catchment:
         self,
         flow_acc_path: str = "",
         result: int = 1,
-        start: str = "",
-        end: str = "",
+        start: str | dt.datetime = "",
+        end: str | dt.datetime = "",
         path: str = "",
         prefix: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """save_results. saveResults save the results into rasters.
+        """Save model results to raster files or CSV.
 
-        Parameters
-        ----------
-        flow_acc_path : [path]
-            Path to Flow acc raster.
-        result: [integer], optional
-            1 for the total discharge, 2 for the upper zone discharge, 3 for
-            the lower zone discharge, 4 for the snow pack, 5 for the soil
-            moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
-            The default is 1.
-        start: [str], optional
-            start date. The default is ''.
-        end: [str], optional
-            end date. The default is ''.
-        path: [str], optional
-            path to the directory where you want to save the results. The default is ''.
-        prefix: [str], optional
-            prefix to add to the name of the result files. The default is ''.
-        fmt: [str], optional
-            format of the date. The default is "%Y-%m-%d".
+        For distributed mode, saves results as GeoTIFF rasters. For
+        lumped mode, saves results as a CSV file.
 
-        Returns
-        -------
-        None.
+        Args:
+            flow_acc_path (str, optional): Path to the flow
+                accumulation raster (required for distributed mode).
+                Default is "".
+            result (int, optional): Type of result to save:
+                1 - Total discharge, 2 - Upper zone discharge,
+                3 - Lower zone discharge, 4 - Snow pack,
+                5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
+                8 - Water content. For lumped mode, 5 saves all
+                variables. Default is 1.
+            start (str, optional): Start date for the output period.
+                If empty, uses the first index. Default is "".
+            end (str, optional): End date for the output period. If
+                empty, uses the last index. Default is "".
+            path (str, optional): Path to the output directory
+                (distributed) or file (lumped). Default is "".
+            prefix (str, optional): Prefix for the output file
+                names. Default is "".
+            fmt (str, optional): Date format for parsing `start` and
+                `end`. Default is "%Y-%m-%d".
+
+        Raises:
+            Exception: If `flow_acc_path` is not provided in
+                distributed mode.
+            ValueError: If `result` is not a valid option.
         """
         if start == "":
             start = self.Index[0]
@@ -1509,6 +1397,10 @@ class Catchment:
                 )
 
             src = gdal.Open(flow_acc_path)
+            if src is None:
+                raise FileNotFoundError(
+                    f"GDAL could not open: {flow_acc_path}"
+                )
 
             if prefix == "":
                 prefix = "Result_"
@@ -1575,18 +1467,13 @@ class Catchment:
 
 
 class Lake:
-    """Lake.
+    """Lake simulation using a lumped model with a rating curve.
 
-        Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model, using a
-        rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than
-        result in a discharge input to the lake, the discharge input is going to change the volume of the water in
-        the lake, and from the volume-outflow curve the outflow can be obtained.
-
-    Methods
-    -------
-        1- readMeteoData
-        2- readParameters
-        3- readLumpedModel
+    The Lake class reads meteorological inputs and a lumped model module to
+    simulate a lake. The lake and its upstream sub-catchments are treated as
+    one lumped model that produces a discharge input to the lake. The
+    discharge input changes the volume of the water in the lake, and the
+    outflow is obtained from the volume-outflow (stage-discharge) curve.
     """
 
     def __init__(
@@ -1597,28 +1484,20 @@ class Lake:
         temporal_resolution: str = "Daily",
         split: bool = False,
     ):
-        """Lake. Lake class for lake simulation.
+        """Initialize a Lake instance for lake simulation.
 
-        Parameters
-        ----------
-        start: [str], optional
-            start date. The default is ''.
-        end: [str], optional
-            end date. The default is ''.
-        fmt: [str], optional
-            date format. The default is "%Y-%m-%d".
-        temporal_resolution: [str], optional
-            "Daily" ot "Hourly". The default is "Daily".
-        split : bool, optional
-            true if you want to split the date between two dates. The default is False.
-
-        Returns
-        -------
-        None.
+        Args:
+            start (str, optional): Start date. Default is "".
+            end (str, optional): End date. Default is "".
+            fmt (str, optional): Date format. Default is "%Y-%m-%d".
+            temporal_resolution (str, optional): "Daily" or "Hourly".
+                Default is "Daily".
+            split (bool, optional): True to subset the data between
+                the start and end dates. Default is False.
         """
 
-        self.OutflowCell = None
-        self.Snow = None
+        self.OutflowCell: list | None = None
+        self.Snow: int | None = None
         self.Split = split
         self.start = dt.datetime.strptime(start, fmt)
         self.end = dt.datetime.strptime(end, fmt)
@@ -1630,33 +1509,26 @@ class Lake:
         else:
             assert False, "Error"
 
-        self.MeteoData = None
-        self.Parameters = None
-        self.LumpedModel, self.CatArea, self.LakeArea, self.InitialCond = (
-            None,
-            None,
-            None,
-            None,
-        )
-        self.StageDischargeCurve = None
+        self.MeteoData: np.ndarray | None = None
+        self.Parameters: list | None = None
+        self.LumpedModel: BaseConceptualModel | None = None
+        self.CatArea: float | None = None
+        self.LakeArea: float | None = None
+        self.InitialCond: list | None = None
+        self.StageDischargeCurve: np.ndarray | None = None
 
     def read_meteo_data(self, path: str, fmt: str):
-        """readMeteoData. readMeteoData reads the meteorological data for the lake.
+        """Read meteorological data for the lake simulation.
 
-        [rainfall, ET, temperature]
+        Reads rainfall, evapotranspiration, and temperature data from a
+        CSV file.
 
-        Parameters
-        ----------
-        path : [str]
-            path to the meteo data file, containing the data in the following
-            order [date, rainfall, ET, temperature].
-        fmt : [str]
-            date format.
-
-        Returns
-        -------
-        MeteoData: [array].
-            array containing the meteorological data
+        Args:
+            path (str): Path to the meteorological data CSV file.
+                Columns must be in the order [date, rainfall, ET,
+                temperature].
+            fmt (str): Date format string used to parse the date
+                index.
         """
 
         df = pd.read_csv(path, index_col=0)
@@ -1670,16 +1542,10 @@ class Lake:
         logger.debug("Lake Meteo data are read successfully")
 
     def read_parameters(self, path):
-        """readParameters. readParameters method reads the lake parameters.
+        """Read lake model parameters from a text file.
 
-        Parameters
-        ----------
-        path : [str]
-            path to the parameter file.
-
-        Returns
-        -------
-        Parameters: [array].
+        Args:
+            path (str): Path to the parameter text file.
         """
         self.Parameters = np.loadtxt(path).tolist()
         logger.debug("Lake Parameters are read successfully")
@@ -1694,41 +1560,27 @@ class Lake:
         stage_discharge_curve,
         snow,
     ):
-        """readLumpedModel.
+        """Read and set up a lumped model for lake simulation.
 
-        readLumpedModel reads the lumped model module
+        Args:
+            lumped_model: A class representing the lumped conceptual
+                model (e.g., HBV).
+            catchment_area (float): Catchment area in km2.
+            lake_area (float): Area of the lake in km2.
+            initial_condition (list): Initial conditions list
+                containing [Snow Pack, Soil Moisture, Upper Zone,
+                Lower Zone, Water Content, Lake volume].
+            outflow_cell (list): Indices of the cell where the lake
+                hydrograph is to be added.
+            stage_discharge_curve (np.ndarray): Volume-outflow
+                (stage-discharge) curve array.
+            snow (int): 0 to skip snow processes, 1 to simulate
+                snow. If 1, snow-related parameters must be
+                provided.
 
-        Parameters
-        ----------
-        lumped_model : [module]
-            lumped conceptual model.
-        catchment_area : [numeric]
-            catchment area in mk2.
-        lake_area : [numeric]
-            area of the lake in km2.
-        initial_condition : [list]
-            initial condition [Snow Pack, Soil Moisture, Upper Zone, Lower Zone,
-                               Water Content, Lake volume].
-        outflow_cell : [list]
-            indexes of the cell where the lake hydrograph is going to be added.
-        stage_discharge_curve : [array]
-            volume-outflow curve.
-        snow : [integer]
-            0 if you don't want to run the snow-related processes and 1 if there is snow.
-            in case of 1 (simulate snow processes) parameters related to snow simulation
-             have to be provided. The default is 0.
-
-        Returns
-        -------
-        LumpedModel : [module]
-            HBV module.
-        CatArea : [numeric]
-            Catchment area (km2).
-        InitialCond : [list]
-            list of the initial condition [SnowPack, SoilMoisture, Upper Zone, Lower Zone, Water Content].
-        Snow : [integer]
-            0/1
-        StageDischargeCurve: [array]
+        Raises:
+            ValueError: If `lumped_model` is not a class.
+            AssertionError: If `initial_condition` is not a list.
         """
         if not inspect.isclass(lumped_model):
             raise ValueError(

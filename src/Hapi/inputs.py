@@ -1,10 +1,20 @@
-"""Rainfall-runoff Inputs."""
+"""Rainfall-runoff Inputs.
+
+The inputs module provides the `Inputs` class for preparing meteorological
+and parameter raster data for distributed hydrological modeling. It handles
+alignment of rasters to a source DEM, extraction of HBV model parameters
+from global datasets, creation of lumped inputs from distributed data, and
+renaming of raster files with date-based ordering.
+
+The module relies on the ``pyramids`` library for raster I/O and
+manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
+locate pre-downloaded global parameter sets (Beck et al., 2016).
+"""
+from __future__ import annotations
 
 import datetime as dt
 import os
 from pathlib import Path
-from typing import Union
-
 import pandas as pd
 from geopandas import GeoDataFrame
 from pyramids.datacube import Datacube
@@ -33,63 +43,59 @@ PARAMETERS_LIST = [
 
 
 class Inputs:
-    """Rainfall-runoff Inputs class.
+    """Rainfall-runoff inputs preparation for distributed hydrological models.
 
-        Inputs class contains methods to prepare the inputs for the distributed
-        hydrological model
+    The Inputs class provides methods to prepare meteorological and parameter
+    raster data so they align with a reference DEM. It supports extracting
+    HBV model parameter boundaries, computing lumped inputs from distributed
+    rasters, and renaming files with date-based ordering.
 
-    Methods
-    -------
-        1- prepareInputs
-        2- extractParametersBoundaries
-        3- extractParameters
-        4- createLumpedInputs
-        5- renameFiles
-        8- ListAttributes
+    Attributes:
+        source_dem: Path to the reference DEM raster used for spatial
+            alignment (coordinate system, rows, columns, resolution).
+
+    Examples:
+        >>> from Hapi.inputs import Inputs
+        >>> inp = Inputs("data/dem.tif")
     """
 
     def __init__(self, src: str):
-        """Rainfall Inputs.
+        """Initialize the Inputs instance with a reference DEM path.
 
-        Parameters
-        ----------
-        src: [str]
-            path to the spatial information source raster to get the spatial information
-            (coordinate system, no of rows & columns) A_path should include the name of the raster
-            and the extension like "data/dem.tif".
+        Args:
+            src: Path to the spatial information source raster used to
+                obtain the coordinate system, number of rows and columns,
+                and resolution. The path should include the file name and
+                extension (e.g., ``"data/dem.tif"``).
         """
         self.source_dem = src
 
     def prepare_inputs(
-        self, inputs_dir: Union[str, Path], outputs_dir: Union[str, Path]
+        self, inputs_dir: str | Path, outputs_dir: str | Path
     ):
-        """prepareInputs.
+        """Align and crop input rasters to match the source DEM.
 
-        this function prepares downloaded raster data to have the same alignment and
-        nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
-        and returns a folder with the output rasters with a name "New_Rasters"
+        Reads all rasters from ``inputs_dir``, aligns them to the source
+        DEM's spatial properties (CRS, resolution, extent, nodata value),
+        crops them to the DEM footprint, and writes the results to
+        ``outputs_dir``.
 
-        Parameters
-        ----------
-        inputs_dir: [str/Path]
-            path of the folder of the rasters you want to adjust their no of rows, columns and resolution (alignment)
-            like a source raster.
-        outputs_dir: [str]
-            name to create a folder to store resulted rasters.
+        Args:
+            inputs_dir: Path to the folder containing the rasters to be
+                aligned and cropped to match the source DEM.
+            outputs_dir: Path to the output folder where the aligned
+                rasters will be saved.
 
-        Example
-        -------
-        Ex1:
-            >>> dem_path = "01GIS/inputs/4000/acc4000.tif"
-            >>> prec_in_path = "02Precipitation/CHIRPS/Daily/"
-            >>> In = Inputs(dem_path)
-            >>> In.prepare_inputs(prec_in_path, "prec")
-        Ex2:
-            >>> dem_path="01GIS/inputs/4000/acc4000.tif"
-            >>> output_path="00inputs/meteodata/4000/"
-            >>> evap_in_path="03Weather_Data/evap/"
-            >>> In = Inputs(dem_path)
-            >>> Inputs.prepare_inputs(evap_in_path, f"{output_path}/evap")
+        Raises:
+            FileNotFoundError: If ``inputs_dir`` does not exist.
+
+        Examples:
+            >>> from Hapi.inputs import Inputs
+            >>> inp = Inputs("GIS/inputs/acc4000.tif")
+            >>> inp.prepare_inputs(
+            ...     "Precipitation/CHIRPS/Daily/",
+            ...     "outputs/prec",
+            ... )
         """
         if not isinstance(outputs_dir, str):
             print("output_folder input should be string type")
@@ -107,26 +113,31 @@ class Inputs:
 
     @staticmethod
     def extract_parameters_boundaries(basin: GeoDataFrame):
-        """extractParametersBoundaries.
+        """Extract upper and lower parameter boundaries for a catchment.
 
-        extractParametersBoundaries
+        Reads the global maximum and minimum HBV parameter rasters from
+        the directory specified by the ``HAPI_DATA_DIR`` environment
+        variable, clips them to the given basin polygon, and returns the
+        max/min statistics for each parameter.
 
-        Parameters
-        ----------
-        basin: [GeoDataFrame]
-            catchment polygon, make sure that the geodataframe contains one row only, if not merge all the polygons
-            in the shapefile first.
+        The 18 HBV parameters are:
+        ``tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, etf, lp, k0, k1,
+        k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
 
-        Returns
-        -------
-        ub: [list]
-            list of the upper bound of the parameters.
-        lb: [list]
-            list of the lower bound of the parameters.
+        Args:
+            basin: A GeoDataFrame containing the catchment polygon. Must
+                contain exactly one row; merge all polygons first if the
+                shapefile has multiple features.
 
-        the parameters are
-            ["tt", "sfcf","cfmax","cwh","cfr","fc","beta",
-             "lp","k0","k1","k2","uzl","perc", "maxbas"]
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by parameter name with
+                columns ``"ub"`` (upper bound) and ``"lb"`` (lower bound).
+
+        Raises:
+            ValueError: If the ``HAPI_DATA_DIR`` environment variable is
+                not set.
+            FileNotFoundError: If the parameter data directory or the
+                ``max``/``min`` subdirectories do not exist.
         """
         data_dir = Inputs._check_data_dir()
         max_dir = data_dir / "max"
@@ -166,53 +177,61 @@ class Inputs:
 
     def extract_parameters(
         self,
-        gdf: Union[GeoDataFrame, str],
+        gdf: GeoDataFrame | str,
         scenario: str,
         as_raster: bool = False,
         save_to: str = "",
     ):
-        """extract_parameters.
+        """Extract HBV parameter values or rasters for a catchment.
 
-        extractParameters method extracts the parameter raster at the location
-        of the source raster, there are 12 set of parameters 10 sets of parameters
-        (Beck et al., (2016)) and the max, min and average of all sets
+        Retrieves one of 12 global HBV parameter sets (Beck et al., 2016)
+        from the directory specified by the ``HAPI_DATA_DIR`` environment
+        variable. When ``as_raster`` is False, computes zonal statistics
+        (min, max, mean, std) over the catchment polygon. When
+        ``as_raster`` is True, aligns and crops the parameter rasters to
+        the source DEM and saves them to ``save_to``.
 
+        Reference:
+            Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo,
+            Diego G. Miralles, T. R. M. & Jaap Schellekens, and
+            L. A. B. (2016). Global-scale regionalization of hydrologic
+            model parameters. Water Resources Research, 3599-3622.
+            doi:10.1002/2015WR018247.
 
-        Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo, Diego G. Miralles,
-        T. R. M. & Jaap Schellekens, and L. A. B. (2016) Global-scale
-        regionalization of hydrologic model parameters-Supporting materials
-        3599–3622. doi:10.1002/2015WR018247.Received
+        The 18 HBV parameters are:
+        ``tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, etf, lp, k0, k1,
+        k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
 
-        Parameters
-        ----------
-        gdf: [GeoDataFrame]
-            geodataframe of catchment polygon, make sure that the geodataframe contains
-            one row only, if not merge all the polygons in the shapefile first.
-        scenario: [str]
-            name of the parameter set, there are 12 sets of parameters
-            ["1","2","3","4","5","6","7","8","9","10","avg","max","min"]
-        as_raster: [bool]
-            Default is False.
-        save_to: [str]
-            path to a directory where you want to save the raster's.
+        Args:
+            gdf: A GeoDataFrame of the catchment polygon. Must contain
+                one row; merge all polygons first if the shapefile has
+                multiple features. Can be None when ``as_raster`` is True.
+            scenario: Name of the parameter set. One of ``"1"`` through
+                ``"10"``, ``"avg"``, ``"max"``, or ``"min"``.
+            as_raster: If True, save aligned parameter rasters to
+                ``save_to`` instead of returning statistics. Default is
+                False.
+            save_to: Path to the directory where aligned parameter rasters
+                will be saved. Only used when ``as_raster`` is True.
 
-        Returns
-        -------
-        Parameters : [list]
-            list of the upper bound of the parameters.
+        Returns:
+            pandas.DataFrame: When ``as_raster`` is False, a DataFrame
+                indexed by parameter name with columns ``"min"``,
+                ``"max"``, ``"mean"``, and ``"std"``. Returns None when
+                ``as_raster`` is True.
 
-
-        the parameters are
-            ["tt", rfcf,"sfcf","cfmax","cwh","cfr","fc","beta",'etf'
-             "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum',
-             'x_muskingum']
+        Raises:
+            ValueError: If the ``HAPI_DATA_DIR`` environment variable is
+                not set.
+            FileNotFoundError: If the parameter data directory does not
+                exist.
         """
         data_dir = self._check_data_dir()
         parameters_path = data_dir / scenario
 
         if not as_raster:
             dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
-            gdf = gdf.to_crs(crs=dataset.crs)
+            gdf = gdf.to_crs(crs=dataset.crs)  # type: ignore[union-attr]
 
             stats = pd.DataFrame(columns=["min", "max", "mean", "std"])
             for i in range(len(PARAMETERS_LIST)):
@@ -232,52 +251,48 @@ class Inputs:
         path: str,
         regex_string=r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
-        file_name_data_fmt: str = None,
-        start: str = None,
-        end: str = None,
+        file_name_data_fmt: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
         fmt: str = "%Y-%m-%d",
         extension: str = ".tif",
     ) -> list:
-        """create_lumped_inputs.
+        """Create lumped inputs by averaging distributed raster values.
 
-        create_lumped_inputs method generates lumped parameters from distributed parameters by taking the average
+        Reads a time series of rasters from the given directory, computes
+        the spatial mean of each raster, and returns the averages as a
+        list. This is used to convert distributed meteorological or
+        parameter data into lumped (catchment-average) values.
 
-        Parameters
-        ----------
-        path: [str]
-            path to folder that contains the parameter rasters.
-        regex_string: [str]
-            a regex string that we can use to locate the date in the file names.Default is
-            r"d{4}.d{2}.d{2}".
-            >>> fname = 'MSWEP_YYYY.MM.DD.tif'
-            >>> regex_string = r'd{4}.d{2}.d{2}'
-            - or
-            >>> fname = 'MSWEP_YYYY_M_D.tif'
-            >>> regex_string = r'd{4}_d{1}_d{1}'
-            - if there is a number at the beginning of the name
-            >>> fname = '1_MSWEP_YYYY_M_D.tif'
-            >>> regex_string = r'd+'
-        date: [bool]
-            True if the number in the file name is a date. Default is True.
-        file_name_data_fmt : [str]
-            if the files' names have a date, and you want to read them ordered .Default is None
-            >>> "MSWEP_YYYY.MM.DD.tif"
-            >>> file_name_data_fmt = "%Y.%m.%d"
-        start: [str]
-            start date if you want to read the input raster for a specific period only and not all rasters,
-            if not given all rasters in the given path will be read.
-        end: [str]
-            end date if you want to read the input temperature for a specific period only,
-            if not given all rasters in the given path will be read.
-        fmt: [str]
-            format of the given date in the start/end parameter.
-        extension: [str]
-            the extension of the files you want to read from the given path. Default is ".tif".
+        Args:
+            path: Path to the folder containing the raster files.
+            regex_string: A regex pattern to locate the date (or ordering
+                number) within each file name. Default is
+                ``r"\\d{4}.\\d{2}.\\d{2}"``.
+            date: If True, the number extracted from file names is
+                interpreted as a date. Default is True.
+            file_name_data_fmt: The date format string matching dates in
+                the file names (e.g., ``"%Y.%m.%d"``). Default is None.
+            start: Start date to filter the rasters. If not provided, all
+                rasters in the directory are read.
+            end: End date to filter the rasters. If not provided, all
+                rasters in the directory are read.
+            fmt: Format of the ``start`` and ``end`` date strings.
+                Default is ``"%Y-%m-%d"``.
+            extension: File extension to filter by. Default is ``".tif"``.
 
-        Returns
-        -------
-        List:
-            list containing the average values of the distributed parameters.
+        Returns:
+            list: A list of float values, each being the spatial mean of
+                the corresponding raster in chronological order.
+
+        Examples:
+            >>> from Hapi.inputs import Inputs
+            >>> avg = Inputs.create_lumped_inputs(
+            ...     "tests/rrm/data/coello/prec",
+            ...     regex_string=r"\\d{4}.\\d{2}.\\d{2}",
+            ...     date=True,
+            ...     file_name_data_fmt="%Y.%m.%d",
+            ... )
         """
         cube = Datacube.read_multiple_files(
             path,
@@ -303,26 +318,29 @@ class Inputs:
     def rename_files(
         path: str, prefix: str = "", fmt: str = "%Y.%m.%d", freq: str = "daily"
     ):
-        """renameFiles.
+        """Rename raster files with a sequential order prefix based on date.
 
-        renameFiles method takes the path to a folder where you want to put a number
-        at the beginning of the raster names indicating the order of the raster based on
-        its date
+        Reads all ``.tif`` files in the given directory, extracts dates
+        from their names, sorts them chronologically, and renames each
+        file with a leading index number indicating its temporal order.
 
-        Parameters
-        ----------
-        path : [str]
-            path where the rasters are stored.
-        prefix: [str]
-            any string you want to add to the raster names, (i.e., the dataset name precipitation_ecmwf). Default is "".
-        fmt: [String], optional
-            the format of the date. The default is '%Y.%m.%d'.
-        freq: [str]
-            Default is "daily".
+        The new file name format is:
+        ``{order}_{prefix}_{date_string}.tif``
 
-        Returns
-        -------
-        files in the Path are going to have a new name including the order at the beginning of the name.
+        Args:
+            path: Path to the directory containing the raster files.
+            prefix: An optional string to include in the new file names,
+                such as a dataset identifier (e.g.,
+                ``"precipitation_ecmwf"``). Default is ``""``.
+            fmt: The date format in the original file names. Default is
+                ``"%Y.%m.%d"``.
+            freq: The temporal frequency of the data, which controls the
+                date format in the new file names. One of ``"daily"``,
+                ``"hourly"``, or any other value for minute-level.
+                Default is ``"daily"``.
+
+        Raises:
+            FileNotFoundError: If ``path`` does not exist.
         """
         if not os.path.exists(path):
             raise FileNotFoundError("The directory you have entered does not exist")
@@ -369,11 +387,24 @@ class Inputs:
 
     @staticmethod
     def _check_data_dir() -> Path:
-        data_dir = os.getenv("HAPI_DATA_DIR")
-        if data_dir is None:
+        """Validate and return the HAPI parameter data directory.
+
+        Reads the ``HAPI_DATA_DIR`` environment variable and verifies
+        that the directory exists on disk.
+
+        Returns:
+            Path: The resolved path to the HAPI data directory.
+
+        Raises:
+            ValueError: If the ``HAPI_DATA_DIR`` environment variable
+                is not set.
+            FileNotFoundError: If the directory specified by
+                ``HAPI_DATA_DIR`` does not exist.
+        """
+        data_dir_env: str | None = os.getenv("HAPI_DATA_DIR")
+        if data_dir_env is None:
             raise ValueError("HAPI_DATA_DIR environment variable is not set")
-        else:
-            data_dir = Path(data_dir)
-            if not data_dir.exists():
-                raise FileNotFoundError(f"{data_dir} does not exist")
+        data_dir: Path = Path(data_dir_env)
+        if not data_dir.exists():
+            raise FileNotFoundError(f"{data_dir} does not exist")
         return data_dir

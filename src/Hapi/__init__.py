@@ -1,20 +1,4 @@
-"""Hapi."""
-
-from importlib.metadata import PackageNotFoundError  # type: ignore
-from importlib.metadata import version
-
-
-try:
-    __version__ = version(__name__)
-except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
-
-__author__ = "Mostafa Farrag"
-__email__ = "moah.farag@gmail.com"
-__docformat__ = "restructuredtext"
-
-
-__doc__ = """
+"""
 Hapi - Hydrological library for Python
 =====================================================================
 
@@ -30,5 +14,14 @@ Here are just a few of the things that pandas does well:
   - Easy calibration of the model using Harmony search method and Genetic Algorithms
   - flexible GIS function to process rasters interpolate values and georeference
    calculated discharge values to the correct place
-
 """
+from __future__ import annotations
+
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version
+
+
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "unknown"

@@ -1,0 +1,132 @@
+site_name: Hapi
+site_url: https://serapieum-of-alex.github.io/Hapi/
+repo_url: https://github.com/Serapieum-of-alex/Hapi
+site_description: Hapi is a Python package for distributed hydrological modeling using HBV96
+theme:
+  name: material
+  language: en
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+  - media: "(prefers-color-scheme)"
+    toggle:
+      icon: material/brightness-auto
+      name: Switch to light mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: teal
+    accent: purple
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: lime
+    toggle:
+      icon: material/weather-night
+      name: Switch to system preference
+
+use_directory_urls: false
+not_in_nav: |
+  LICENSE.md
+plugins:
+  - search
+  - mkdocs-jupyter
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_source: true
+            show_signature_annotations: true
+            heading_level: 3
+            show_category_heading: false
+            group_by_category: false
+            inherited_members: false
+            docstring_style: google
+  - table-reader
+  - tags
+  - mike:
+      # These fields are all optional; the defaults are as below...
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ''
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      permalink: "#"
+      toc_depth: 1-4
+      anchorlink: true
+
+nav:
+  - Home: index.md
+  - Installation:
+      - dev/Installation.md
+  - API Reference:
+      - api/catchment.md
+      - api/dem.md
+      - api/calibration.md
+      - api/inputs.md
+      - api/routing.md
+      - api/run.md
+      - api/wrapper.md
+      - api/distrrm.md
+      - api/hbv.md
+      - api/hbv-bergestrom92.md
+      - api/hbv-lake.md
+      - api/rrm-parameters.md
+  - Examples:
+      - examples/distributed-model-calib.md
+      - examples/distributed-model-run.md
+      - examples/gis-inputs.md
+      - examples/hbv.md
+      - examples/lumped-model-calibration.md
+      - examples/lumped-model-run.md
+      - examples/meteo-inputs.md
+      - examples/muskingum.md
+      - examples/parameters.md
+  - Change logs: change-log.md
+
+extra:
+  version:
+    provider: mike
+  version_selector: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

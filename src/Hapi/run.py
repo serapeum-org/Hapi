@@ -1,14 +1,12 @@
-"""RUN.
+"""Run module for the Hapi hydrological model.
 
-RUN contains functions to connect the parameter spatial distribution
-function with both components of the spatial representation of the hydrological
-process (conceptual model & spatial routing) to calculate the predicted
-runoff at known locations based on given performance function
-
-Created on Sun Jun 24 21:02:34 2018
-
-@author: Mostafa
+The run module connects the parameter spatial distribution function with
+both components of the spatial representation of the hydrological process
+(conceptual model and spatial routing) to calculate the predicted runoff
+at known locations based on a given performance function.
 """
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -22,42 +20,45 @@ from Hapi.wrapper import Wrapper
 class Run(Catchment):
     """Run the catchment model.
 
-        Run sub-class validate the spatial data and hand it to the wrapper class, It is
-        a sub-class from the catchment class, so you need to create the Catchment
-        object first to run the model
+    The Run sub-class validates the spatial data and hands it to the
+    Wrapper class. It is a sub-class of the Catchment class, so you
+    need to create the Catchment object first to run the model.
 
-    Methods
-    -------
-        1- RunHapi
-        2- runHAPIwithLake
-        3- runFW1
-        4- RunFW1withLake
-        5- runLumped
+    Methods:
+        RunHapi: Run the distributed hydrological model.
+        runHAPIwithLake: Run the distributed model with a lake component.
+        runFW1: Run the FW1 distributed model.
+        RunFW1withLake: Run the FW1 model with a lake component.
+        runLumped: Run the lumped conceptual model.
     """
 
     def __init__(self):
-        self.Qsim = None
-        pass
+        self.Qsim: np.ndarray | pd.DataFrame | None = None
 
     def RunHapi(self):
-        """Run Model.
+        """Run the distributed hydrological model.
 
-        Returns
-        -------
-        state_variables: [numpy attribute]
-            4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-        qlz: [numpy attribute]
-            3D array of the lower zone discharge
-        quz: [numpy attribute]
-            3D array of the upper zone discharge
-        qout: [numpy attribute]
-            1D timeseries of discharge at the outlet of the catchment
-            of unit m3/sec
-        quz_routed: [numpy attribute]
-            3D array of the upper zone discharge  accumulated and
-            routed at each time step
-        qlz_translated: [numpy attribute]
-            3D array of the lower zone discharge translated at each time step
+        Validates that all input arrays (precipitation, evapotranspiration,
+        temperature, parameters, and flow direction) have consistent
+        dimensions, then executes the rainfall-runoff model via the
+        Wrapper.
+
+        The following instance attributes are set after execution:
+
+        - ``state_variables``: 4D array (rows, cols, time, states) where
+          states are [sp, wc, sm, uz, lv].
+        - ``qlz``: 3D array of the lower zone discharge.
+        - ``quz``: 3D array of the upper zone discharge.
+        - ``qout``: 1D timeseries of discharge at the catchment outlet
+          in m3/sec.
+        - ``quz_routed``: 3D array of the upper zone discharge
+          accumulated and routed at each time step.
+        - ``qlz_translated``: 3D array of the lower zone discharge
+          translated at each time step.
+
+        Raises:
+            AssertionError: If input data arrays have inconsistent
+                row counts, column counts, or temporal lengths.
         """
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
@@ -88,9 +89,16 @@ class Run(Catchment):
         print("Model Run has finished")
 
     def RunFloodModel(self):
-        """Run flood model.
+        """Run the flood model.
 
-        - This function runs the conceptual distributed hydrological model
+        Runs the conceptual distributed hydrological model with
+        additional validation for river geometry inputs (bankfull depth,
+        river width, river roughness, and flood plain roughness).
+
+        Raises:
+            AssertionError: If meteorological input arrays, parameter
+                arrays, or river geometry arrays have inconsistent
+                dimensions.
         """
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
@@ -136,18 +144,23 @@ class Run(Catchment):
         # print("1D model Run has finished")
 
     def runHAPIwithLake(self, Lake):
-        """Run model with lake.
+        """Run the distributed model with a lake component.
 
-            - This function runs the conceptual distributed hydrological model
+        Validates that all input arrays have consistent dimensions and
+        that the lake meteorological data matches the simulation period,
+        then executes the rainfall-runoff model with lake routing via
+        the Wrapper.
 
-        Returns
-        -------
-        st: [4D array]
-            state variables.
-        q_out: [1D array]
-            calculated Discharge at the outlet of the catchment.
-        q_uz: [3D array]
-            Distributed discharge for each cell.
+        Args:
+            Lake: Lake object containing lake configuration and
+                meteorological data. Must have a ``MeteoData`` attribute
+                with shape ``(time_steps, >= 3)`` where columns are
+                rain, ET, and temperature.
+
+        Raises:
+            AssertionError: If input data arrays have inconsistent
+                dimensions or if the lake meteorological data length
+                does not match the distributed raster data length.
         """
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
@@ -185,18 +198,21 @@ class Run(Catchment):
         print("Model Run has finished")
 
     def runFW1(self):
-        """Run DistwithLake.
+        """Run the FW1 distributed hydrological model.
 
-            This function runs the conceptual distributed hydrological model
+        Validates that all input arrays have consistent dimensions,
+        then executes the FW1 model via the Wrapper.
 
-        Returns
-        -------
-        st: [4D array]
-            state variables
-        q_out: [1D array]
-            calculated Discharge at the outlet of the catchment
-        q_uz: [3D array]
-            Distributed discharge for each cell
+        The following instance attributes are set after execution:
+
+        - ``st``: 4D array of state variables.
+        - ``q_out``: 1D array of calculated discharge at the catchment
+          outlet.
+        - ``q_uz``: 3D array of distributed discharge for each cell.
+
+        Raises:
+            AssertionError: If input data arrays have inconsistent
+                row counts, column counts, or temporal lengths.
         """
         assert (
             np.shape(self.Prec)[0] == self.rows
@@ -220,53 +236,39 @@ class Run(Catchment):
         print("Model Run has finished")
 
     def RunFW1withLake(self, Lake):
-        """RunDistwithLake.
+        """Run the FW1 distributed model with a lake component.
 
-        this function runs the conceptual distributed hydrological model
+        Validates that all input arrays have consistent dimensions and
+        that the lake meteorological data matches the simulation period,
+        then executes the FW1 model with lake routing via the Wrapper.
 
-        Parameters
-        ----------
-        1-Paths:
-            1-prec_path:
-                [String] path to the Folder contains precipitation rasters
-            2-evap_path:
-                [String] path to the Folder contains Evapotranspiration rasters
-            3-temp_path:
-                [String] path to the Folder contains Temperature rasters
-            4-flow_acc_path:
-                [String] path to the Flow Accumulation raster of the catchment (it should
-                include the raster name and extension)
-            5-flow_direction_path:
-                [String] path to the Flow Direction raster of the catchment (it should
-                include the raster name and extension)
-        7-ParPath:
-            [String] path to the Folder contains parameters rasters of the catchment
-        8-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
+        Args:
+            Lake: Lake object containing lake configuration and
+                meteorological data. Must have a ``MeteoData`` attribute
+                with shape ``(time_steps, >= 3)`` where columns are
+                rain, ET, and temperature.
 
-        Returns
-        -------
-        st: [4D array]
-            state variables
-        q_out: [1D array]
-            calculated Discharge at the outlet of the catchment
-        q_uz: [3D array]
-            Distributed discharge for each cell
+        Note:
+            The following catchment attributes should be set before
+            calling this method:
 
-        Example
-        -------
-        prec_path = prec_path="meteodata/4000/calib/prec"
-        evap_path = evap_path="meteodata/4000/calib/evap"
-        temp_path = temp_path="meteodata/4000/calib/temp"
-        DemPath = "GIS/4000/dem4000.tif"
-        flow_acc_path = "GIS/4000/acc4000.tif"
-        flow_direction_path = "GIS/4000/fd4000.tif"
-        ParPath = "meteodata/4000/parameters"
-        p2=[1, 227.31]
-        st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
-                                          flow_acc_path,flow_direction_path,ParPath,p2)
+            - ``prec_path``: Path to the folder containing precipitation
+              rasters.
+            - ``evap_path``: Path to the folder containing
+              evapotranspiration rasters.
+            - ``temp_path``: Path to the folder containing temperature
+              rasters.
+            - ``flow_acc_path``: Path to the flow accumulation raster.
+            - ``flow_direction_path``: Path to the flow direction raster.
+            - ``ParPath``: Path to the folder containing parameter
+              rasters.
+            - ``p2``: List of unoptimized parameters where ``p2[0]``
+              is tfac and ``p2[1]`` is catchment area in km2.
+
+        Raises:
+            AssertionError: If input data arrays have inconsistent
+                dimensions or if the lake meteorological data length
+                does not match the distributed raster data length.
         """
         # input data validation
 
@@ -302,53 +304,45 @@ class Run(Catchment):
         Route: int = 0,
         RoutingFn=None,
     ):
-        """Run lumped model.
+        """Run the lumped conceptual model.
 
-            - This function runs lumped conceptual model
+        Executes a lumped conceptual hydrological model, optionally
+        routing the generated discharge hydrograph. The simulated
+        discharge is stored in ``self.Qsim`` as a pandas DataFrame
+        indexed by the simulation date range.
 
-        Parameters
-        ----------
-        Route: [0 or 1]
-            to decide wether t route the generated discharge hydrograph or not
-        RoutingFn: [function]
-            function to route the dischrge hydrograph.
+        Args:
+            Route: Flag to decide whether to route the generated
+                discharge hydrograph. Use 0 for no routing or 1 to
+                enable routing. Defaults to 0.
+            RoutingFn: Function to route the discharge hydrograph.
+                If None, an empty list is used. Defaults to None.
 
-        Parameters that should be defined before calling the function
-            ConceptualModel: [function]
-                conceptual model and it should contain a function called simulate
-            data: [numpy array]
-                meteorological data as array with the first column as precipitation
-                second as evapotranspiration, third as temperature and forth column as
-                long term average temperature
-            parameters: [numpy array]
-                conceptual model parameters as array
-            p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            init_st: [list]
-                initial state variables values [sp, sm, uz, lz, wc].
+        Note:
+            The following attributes should be defined before calling
+            this method:
 
-        Returns
-        -------
-        st: [numpy array]
-            3d array of the 5 state variable data for each cell
-        q_lz: [numpy array]
-            1d array of the calculated discharge.
-
-        Examples
-        --------
-        >>> p2 = [24, 1530]
-        >>> #[sp,sm,uz,lz,wc]
-        >>> init_st = [0,5,5,5,0]
-        >>> snow = 0
+            - ``LumpedModel``: Conceptual model containing a
+              ``simulate`` method.
+            - ``data``: Numpy array of meteorological data with
+              columns for precipitation, evapotranspiration,
+              temperature, and long-term average temperature.
+            - ``Parameters``: Numpy array of conceptual model
+              parameters.
+            - ``CatArea``: Catchment area in km2.
+            - ``conversion_factor``: Time conversion factor
+              (e.g., 24 for daily).
+            - ``InitialCond``: List of initial state variable
+              values [sp, sm, uz, lz, wc].
+            - ``Snow``: Whether to use the snow subroutine (0 or 1).
+            - ``q_init``: Initial discharge value.
         """
-        if RoutingFn is None:
-            RoutingFn = []
+        if RoutingFn is None and Route != 0:
+            raise ValueError("RoutingFn must be a callable when Route != 0")
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
-            ind = pd.date_range(self.startdate, self.enddate, freq="h")
+            ind = pd.date_range(self.start, self.end, freq="h")
 
         Qsim = pd.DataFrame(index=ind)
 

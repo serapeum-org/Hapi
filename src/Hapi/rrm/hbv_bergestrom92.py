@@ -1,29 +1,31 @@
-"""Lumped Conceptual HBV model.
+"""HBV Bergestrom 1992 Lumped Conceptual Hydrological Model.
 
-HBV is lumped conceptual model consists of precipitation, snow melt,
-soil moisture and response subroutine to convert precipitation into o runoff,
-where state variables are updated each time step to represent a specific
-hydrologic behaviour the catchment
+The ``Hapi.rrm.hbv_bergestrom92`` module implements the HBV-96 lumped
+conceptual model based on Bergstrom (1992), using two reservoirs with
+three linear responses: surface runoff, interflow, and baseflow.
 
-This version was edited based on a Master Thesis on "Spatio-temporal simulation
-of catchment response based on dynamic weighting of hydrological models" on april 2018
+The HBV model consists of precipitation, snow melt, soil moisture, and
+response subroutines that convert precipitation into runoff. State
+variables are updated each time step to represent specific hydrologic
+behaviour of the catchment.
 
-- Model inputs are Precipitation, evapotranspiration and temperature, initial
-    state variables, and initial discharge.
-- Model output is Qalculated dicharge at time t+1
-- Model equations are solved using explicit scheme
-- model structure uses 15 parameters if the catchment has snow
-    [tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, e_corr, lp, c_flux, k, k1,
-    alpha, perc]
+This version was edited based on a Master Thesis on
+"Spatio-temporal simulation of catchment response based on dynamic
+weighting of hydrological models" in April 2018.
 
-    otherwise it uses 10 parameters
-    [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
-
-this HBV is based on Bergstrom, 1992 two reservoirs with three linear responses
-surface runoff, interflow and baseflow
+Model characteristics:
+    - Inputs: precipitation, evapotranspiration, temperature, initial
+      state variables, and initial discharge.
+    - Output: calculated discharge at time t+1.
+    - Equations are solved using an explicit scheme.
+    - Uses 15 parameters if the catchment has snow:
+      ``[tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, e_corr, lp,
+      k, k1, k2, uzl, perc]``
+    - Uses 10 parameters otherwise:
+      ``[rfcf, fc, beta, e_corr, lp, k, k1, k2, uzl, perc]``
 """
+from __future__ import annotations
 
-from typing import Tuple
 import numpy as np
 
 from Hapi.rrm.base_model import BaseConceptualModel
@@ -33,34 +35,69 @@ DEF_q0 = 0
 
 
 class HBVBergestrom92(BaseConceptualModel):
+    """HBV Bergestrom 1992 lumped conceptual hydrological model.
+
+    This class implements the HBV-96 model variant based on
+    Bergstrom (1992), featuring two groundwater reservoirs (upper and
+    lower zones) with three linear outflow equations for surface
+    runoff, interflow, and baseflow.
+
+    The model inherits from
+    :class:`~Hapi.rrm.base_model.BaseConceptualModel` and implements
+    the ``precipitation``, ``snow``, ``soil``, ``response``,
+    ``routing``, and ``simulate`` methods.
+
+    Examples:
+        >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+        >>> model = HBVBergestrom92()
+    """
 
     def __init__(self):
-        """HBV model constructor."""
+        """Initialize the HBVBergestrom92 model."""
         pass
 
     @staticmethod
-    def precipitation(prec, temp, tt, rfcf, sfcf):
-        """Precipitaiton routine of the HBV96 model. If the temperature is lower than TT [degree C], all the precipitation is considered as snow. If the temperature is higher than tt, all the precipitation is considered as rainfall.
+    def precipitation(prec, temp, tt, rfcf, sfcf):  # type: ignore[override]
+        """Partition precipitation into rainfall and snowfall.
 
-        Parameters
-        ----------
-        temp : float
-            Measured temperature [C]
-        tt : float
-            Lower temperature treshold [C]
-        prec : float
-            Precipitation [mm]
-        rfcf : float
-            Rainfall corrector factor
-        sfcf : float
-            Snowfall corrector factor
+        If the temperature is lower than or equal to the threshold
+        ``tt``, all precipitation is considered snowfall. If the
+        temperature is higher than ``tt``, all precipitation is
+        considered rainfall. Correction factors are applied to each
+        component.
 
-        Returns
-        -------
-        rf : float
-            Rainfall [mm]
-        sf : float
-            Snowfall [mm]
+        Args:
+            prec (float): Precipitation [mm].
+            temp (float): Measured temperature [C].
+            tt (float): Lower temperature threshold [C].
+            rfcf (float): Rainfall correction factor [-].
+            sfcf (float): Snowfall correction factor [-].
+
+        Returns:
+            tuple[float, float]: A tuple of ``(rf, sf)`` where:
+                - **rf** (*float*): Rainfall [mm].
+                - **sf** (*float*): Snowfall [mm].
+
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> rf, sf = HBVBergestrom92.precipitation(
+            ...     prec=10.0, temp=-2.0, tt=0.0, rfcf=1.0, sfcf=0.8
+            ... )
+            >>> rf
+            0.0
+            >>> sf
+            8.0
+
+            When temperature exceeds the threshold, all precipitation
+            becomes rainfall:
+
+            >>> rf, sf = HBVBergestrom92.precipitation(
+            ...     prec=10.0, temp=5.0, tt=0.0, rfcf=1.0, sfcf=0.8
+            ... )
+            >>> rf
+            10.0
+            >>> sf
+            0.0
         """
         # if temp <= lower temp threshold
         if temp <= tt:
@@ -76,47 +113,58 @@ class HBVBergestrom92(BaseConceptualModel):
         return rf, sf
 
     @staticmethod
-    def snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
-        """Snow routine. The snow pack consists of two states: Water Content (wc) and Snow Pack (sp). The first corresponds to the liquid part of the water in the snow, while the latter corresponds to the solid part. If the temperature is higher than the melting point, the snow pack will melt and the solid snow will become liquid. In the opposite case, the liquid part of the snow will refreeze, and turn into solid. The water that cannot be stored by the solid part of the snow pack will drain into the soil as part of infiltration.
+    def snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):  # type: ignore[override]
+        """Compute snow accumulation, melt, and infiltration.
 
-            All precipitation simulated to be snow, i.e., falling when the temperature
-            is below TT, is multiplied by a snowfall correction factor, SFCF [-].
+        The snow pack consists of two states: water content (``wc``)
+        and snow pack (``sp``). The water content corresponds to the
+        liquid part of the water in the snow, while the snow pack
+        corresponds to the solid part.
 
-            Snowmelt is calculated with the degree-day method (cfmax). Meltwater and
-            rainfall is retained within the snowpack until it exceeds a certain
-            fraction, CWH [%] of the water equivalent of the snow
+        If the temperature is higher than the melting point, the snow
+        pack will melt and the solid snow will become liquid. In the
+        opposite case, the liquid part of the snow will refreeze and
+        turn into solid. The water that cannot be stored by the solid
+        part of the snow pack will drain into the soil as
+        infiltration.
 
-            Liquid water within the snowpack refreezes using cfr
+        Snowmelt is calculated with the degree-day method using
+        ``cfmax``. Meltwater and rainfall are retained within the
+        snowpack until they exceed the fraction ``cwh`` of the water
+        equivalent of the snow. Liquid water within the snowpack
+        refreezes using ``cfr``.
 
-        Parameters
-        ----------
-        cfmax : float
-            Day degree factor
-        temp : float
-            Temperature [C]
-        tt : float
-            Temperature treshold for Melting [C]
-        cfr : float
-            Refreezing factor
-        cwh : float
-            Capacity for water holding in snow pack [%]
-        rf : float
-            Rainfall [mm]
-        sf : float
-            Snowfall [mm]
-        wc_old : float
-            Water content in previous state [mm]
-        sp_old : float
-            snow pack in previous state [mm]
+        Args:
+            temp (float): Temperature [C].
+            rf (float): Rainfall [mm].
+            sf (float): Snowfall [mm].
+            wc_old (float): Water content in previous state [mm].
+            sp_old (float): Snow pack in previous state [mm].
+            tt (float): Temperature threshold for melting [C].
+            cfmax (float): Day degree factor [mm/C/timestep].
+            cfr (float): Refreezing factor [-].
+            cwh (float): Capacity for water holding in snow pack
+                as a fraction [-].
 
-        Returns
-        -------
-        in : float
-            Infiltration [mm]
-        wc_new : float
-            Liquid Water content in the snow[mm]
-        sp_new : float
-            Snowpack in posterior state [mm]
+        Returns:
+            tuple[float, float, float]: A tuple of
+                ``(inf, wc_new, sp_new)`` where:
+                - **inf** (*float*): Infiltration into the soil [mm].
+                - **wc_new** (*float*): New liquid water content in
+                  the snow [mm].
+                - **sp_new** (*float*): New snow pack state [mm].
+
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> inf, wc_new, sp_new = HBVBergestrom92.snow(
+            ...     temp=5.0, rf=3.0, sf=0.0, wc_old=2.0,
+            ...     sp_old=10.0, tt=0.0, cfmax=3.0, cfr=0.05,
+            ...     cwh=0.1,
+            ... )
+            >>> sp_new
+            0.0
+            >>> inf > 0
+            True
         """
         # if temp > melting threshold
         if temp > tt:
@@ -158,45 +206,51 @@ class HBVBergestrom92(BaseConceptualModel):
         return inf, wc_new, sp_new
 
     @staticmethod
-    def soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
-        """Soil routine of the HBV-96 model. The model checks for the amount of water that can infiltrate the soil, coming from the liquid precipitation and the snow pack melting. A part of the water will be stored as soil moisture, while other will become runoff, and routed to the upper zone tank.
+    def soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):  # type: ignore[override]
+        """Compute soil moisture balance and upper zone recharge.
 
-            - Actual evaporation from the soil box equals the potential evaporation if SM/FC is above LP [%] while a
-            linear reduction is used when SM/FC is below LP.
-            - Groundwater recharge (r) is added to the upper groundwater box (UZ [mm])
-            - PERC [mm d-1]defines the maximum percolation rate from the upper to the lower groundwater box (LZ [mm])
+        The model checks the amount of water that can infiltrate the
+        soil from liquid precipitation and snow pack melting. A part
+        of the water is stored as soil moisture, while the rest
+        becomes runoff routed to the upper zone tank.
 
-        Parameters
-        ----------
-        fc : float
-            Filed capacity
-        beta : float
-            Shape coefficient for effective precipitation separation
-        etf : float
-            Total potential evapotranspiration
-        temp : float
-            Temperature
-        tm : float
-            Average long term temperature
-        e_corr : float
-            Evapotranspiration corrector factor
-        lp : float _soil
-            wilting point
-        _in : float
-            actual infiltration
-        ep : float
-            actual evapotranspiration
-        sm_old : float
-            Previous soil moisture value
-        uz_old : float
-            Previous Upper zone value
+        Actual evaporation from the soil box equals the potential
+        evaporation if ``SM/FC`` is above ``LP``, while a linear
+        reduction is used when ``SM/FC`` is below ``LP``.
+        Groundwater recharge is added to the upper groundwater box.
 
-        Returns
-        -------
-        sm_new : float
-            New value of soil moisture
-        uz_int_1 : float
-            New value of direct runoff into upper zone
+        Args:
+            temp (float): Temperature [C].
+            inf (float): Actual infiltration [mm].
+            ep (float): Potential evapotranspiration [mm].
+            sm_old (float): Previous soil moisture value [mm].
+            uz_old (float): Previous upper zone value [mm].
+            tm (float): Average long term temperature [C].
+            fc (float): Field capacity [mm].
+            beta (float): Shape coefficient for effective
+                precipitation separation [-].
+            e_corr (float): Evapotranspiration correction factor [-].
+            lp (float): Wilting point as a fraction of field
+                capacity [-].
+
+        Returns:
+            tuple[float, float]: A tuple of
+                ``(sm_new, uz_int_1)`` where:
+                - **sm_new** (*float*): New soil moisture value [mm].
+                - **uz_int_1** (*float*): New value of direct runoff
+                  into the upper zone [mm].
+
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> sm_new, uz_int_1 = HBVBergestrom92.soil(
+            ...     temp=20.0, inf=5.0, ep=3.0, sm_old=50.0,
+            ...     uz_old=10.0, tm=18.0, fc=200.0, beta=2.0,
+            ...     e_corr=1.0, lp=0.9,
+            ... )
+            >>> sm_new > 0
+            True
+            >>> uz_int_1 > uz_old
+            True
         """
         # recharge to the upper zone
         r = ((sm_old / fc) ** beta) * inf
@@ -228,43 +282,56 @@ class HBVBergestrom92(BaseConceptualModel):
         return sm_new, uz_int_1
 
     @staticmethod
-    def response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
-        """Response.
+    def response(lz_old, uz_int_1, perc, k, k1, k2, uzl):  # type: ignore[override]
+        """Compute the runoff response from upper and lower zones.
 
-            The response routine of the HBV-96 model.
-            The response routine is in charge of transforming the current values of
-            upper and lower zone into discharge. This routine also controls the
-            recharge of the lower zone tank (baseflow). The transformation of units
-            also occurs in this point.
-            - PERC [mm d-1]defines the maximum percolation rate from the upper to the
-            lower groundwater box (SLZ [mm])
-            - Runoff from the groundwater boxes is computed as the sum of two or three
-            linear outflow equatins depending on whether UZ is above a threshold value,
-            UZL [mm], or not
+        The response routine transforms the current values of upper
+        and lower zone storages into discharge. It also controls the
+        recharge of the lower zone tank (baseflow).
 
-        Parameters
-        ----------
-        perc : float
-            Percolation value [mm/hr]
-        k : float
-            direct runoff recession coefficient
-        k1 : float
-            Upper zone recession coefficient
-        k2 : float
-            Lower zone recession coefficient
-        uzl: float
-            Upper zone threshold value
-        lz_old : float
-            Previous lower zone value [mm]
-        uz_int_1 : float
-            Previous upper zone value before percolation [mm]
+        ``perc`` defines the maximum percolation rate from the upper
+        to the lower groundwater box. Runoff from the groundwater
+        boxes is computed as the sum of two or three linear outflow
+        equations depending on whether the upper zone storage is
+        above the threshold value ``uzl``.
 
-        Returns
-        -------
-        q_uz:[float]
-            upper zone discharge (mm/timestep) for both surface runoff & interflow
-        q_2:[float]
-            Lower zone discharge (mm/timestep).
+        Args:
+            lz_old (float): Previous lower zone value [mm].
+            uz_int_1 (float): Previous upper zone value before
+                percolation [mm].
+            perc (float): Percolation value [mm/timestep].
+            k (float): Direct runoff (surface) recession
+                coefficient [-].
+            k1 (float): Upper zone (interflow) recession
+                coefficient [-].
+            k2 (float): Lower zone (baseflow) recession
+                coefficient [-].
+            uzl (float): Upper zone threshold value [mm].
+
+        Returns:
+            tuple[float, float, float, float]: A tuple of
+                ``(q_uz, q_lz, uz_new, lz_new)`` where:
+                - **q_uz** (*float*): Upper zone discharge
+                  (surface runoff + interflow) [mm/timestep].
+                - **q_lz** (*float*): Lower zone discharge
+                  (baseflow) [mm/timestep].
+                - **uz_new** (*float*): New upper zone storage [mm].
+                - **lz_new** (*float*): New lower zone storage [mm].
+
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> q_uz, q_lz, uz_new, lz_new = HBVBergestrom92.response(
+            ...     lz_old=30.0, uz_int_1=20.0, perc=1.0, k=0.005,
+            ...     k1=0.03, k2=0.015, uzl=10.0,
+            ... )
+            >>> q_uz > 0
+            True
+            >>> q_lz > 0
+            True
+            >>> uz_new >= 0
+            True
+            >>> lz_new >= 0
+            True
         """
         # upper zone
         # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min
@@ -300,7 +367,30 @@ class HBVBergestrom92(BaseConceptualModel):
 
     @staticmethod
     def tf(maxbas):
-        """Transfer function weight generator."""
+        """Generate transfer function weights for triangular routing.
+
+        Computes a set of normalized weights based on a triangular
+        transfer function. The weights grow linearly for the first
+        half of the ``maxbas`` interval and recede linearly for the
+        second half.
+
+        Args:
+            maxbas (int): Number of time steps for the triangular
+                transfer function.
+
+        Returns:
+            numpy.ndarray: Normalized weights for the transfer
+                function, summing to 1.0.
+
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> import numpy as np
+            >>> w = HBVBergestrom92.tf(3)
+            >>> np.isclose(w.sum(), 1.0)
+            True
+            >>> len(w)
+            3
+        """
         wi = []
         for x in range(1, maxbas + 1):
             if x <= maxbas / 2.0:
@@ -315,16 +405,32 @@ class HBVBergestrom92(BaseConceptualModel):
         return wi
 
     def routing(self, q, maxbas=1):
-        """Routing.
+        """Apply triangular transfer function routing to discharge.
 
-        This function implements the transfer function using a triangular function.
+        Routes the discharge signal through a triangular transfer
+        function defined by the ``maxbas`` parameter. The transfer
+        function weights are generated by :meth:`tf`.
 
-        Parameters
-        ----------
-        q: [array]
-            discharge array
-        maxbas: [int]
-            maxbas parameter value.
+        Args:
+            q (numpy.ndarray): Discharge array [mm/timestep].
+            maxbas (int): Transfer function length in time steps.
+                Must be >= 1. Defaults to 1.
+
+        Returns:
+            numpy.ndarray: Routed discharge array with the same
+                shape as ``q``.
+
+        Raises:
+            AssertionError: If ``maxbas`` is less than 1.
+
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> import numpy as np
+            >>> model = HBVBergestrom92()
+            >>> q = np.array([0.0, 1.0, 2.0, 3.0, 2.0, 1.0])
+            >>> q_r = model.routing(q, maxbas=1)
+            >>> len(q_r) == len(q)
+            True
         """
         assert maxbas >= 1, "Maxbas value has to be larger than 1"
         # Get integer part of maxbas
@@ -344,44 +450,71 @@ class HBVBergestrom92(BaseConceptualModel):
 
     def simulate(
         self, prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Simulate.
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Run the HBV Bergestrom92 model simulation.
 
-            Run the HBV model for the number of steps (n) in precipitation.
-            The results are (n+1) simulation of discharge as the model calculates the step n+1.
+        Executes the HBV model for the number of time steps in the
+        precipitation input. The model sequentially calls the
+        precipitation, snow, soil, and response routines at each
+        time step, updating state variables accordingly.
 
+        Args:
+            prec (array_like): Average precipitation [mm/timestep],
+                array of length ``n``.
+            temp (array_like): Average temperature [C], array of
+                length ``n``.
+            et (array_like): Potential evapotranspiration
+                [mm/timestep], array of length ``n``.
+            ll_temp (array_like): Long term average temperature [C],
+                array of length ``n``.
+            par (array_like): Parameter vector. When ``snow=1``,
+                expects 15 parameters:
+                ``[tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta,
+                e_corr, lp, k, k1, k2, uzl, perc]``.
+                When ``snow=0``, expects 10 parameters:
+                ``[rfcf, fc, beta, e_corr, lp, k, k1, k2, uzl,
+                perc]``.
+            init_st (array_like, optional): Initial model states
+                ``[sp, sm, uz, lz, wc]`` in mm. Defaults to
+                ``[0.0, 10.0, 10.0, 10.0, 0.0]``.
+            q_init (float, optional): Initial discharge value. If
+                not specified, it is computed from initial states
+                and parameters.
+            snow (int): Flag indicating whether snow processes are
+                active. Use ``1`` for snow, ``0`` for no snow.
+                Defaults to 0.
 
-        Parameters
-        ----------
-        prec : array_like [n]
-            Average precipitation [mm/h]
-        temp : array_like [n]
-            Average temperature [C]
-        et : array_like [n]
-            Potential Evapotranspiration [mm/h]
-        par : array_like [18]
-            Parameter vector, set up as:
-            [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1,
-            alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
-        init_st : array_like [5], optional
-            Initial model states, [sp, sm, uz, lz, wc].
-            If unspecified,
-            [0.0, 30.0, 30.0, 30.0, 0.0] mm
-        ll_temp : array_like [n], optional
-            Long term average temptearature.
-            If unspecified, calculated from temp.
-        q_init : float, optional
-            Initial discharge value.
-            If unspecified set to 10.0
-        snow: [int]
-            1 if snow is considered 0 if not.
+        Returns:
+            tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]:
+                A tuple of ``(q_uz, q_lz, st)`` where:
+                - **q_uz** (*numpy.ndarray*): Upper zone discharge
+                  (surface runoff + interflow) for ``n+1`` time
+                  steps [mm/timestep].
+                - **q_lz** (*numpy.ndarray*): Lower zone discharge
+                  (baseflow) for ``n+1`` time steps [mm/timestep].
+                - **st** (*numpy.ndarray*): Model states array of
+                  shape ``(n+1, 5)`` with columns
+                  ``[sp, sm, uz, lz, wc]`` in mm.
 
-        Returns
-        -------
-        q_sim : array_like [n]
-            Discharge for the n time steps of the precipitation vector [m3/s]
-        st : array_like [n, 5]
-            Model states for the complete time series [mm]
+        Examples:
+            >>> from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> import numpy as np
+            >>> np.random.seed(42)
+            >>> model = HBVBergestrom92()
+            >>> n = 10
+            >>> prec = np.random.uniform(0, 20, n)
+            >>> temp = np.random.uniform(15, 30, n)
+            >>> et = np.random.uniform(0, 5, n)
+            >>> ll_temp = np.full(n, 20.0)
+            >>> par = [1.0, 200.0, 2.0, 1.0, 0.9, 0.005, 0.03,
+            ...        0.015, 10.0, 1.0]
+            >>> q_uz, q_lz, st = model.simulate(
+            ...     prec, temp, et, ll_temp, par, snow=0,
+            ... )
+            >>> q_uz.shape == (n + 1,)
+            True
+            >>> st.shape == (n + 1, 5)
+            True
         """
         st = np.zeros([len(prec) + 1, 5], dtype=np.float32)
         q_0 = np.zeros([len(prec) + 1], dtype=np.float32)

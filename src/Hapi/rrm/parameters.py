@@ -1,10 +1,12 @@
-"""Parameters.
+"""Hapi.rrm.parameters module.
 
-The module contains functions that are responsible for distributing parameters spatially
-(totally distributed, totally distributed with some parameters lumped, all parameters are lumped, hydrologic
-response units) and also save generated parameters into rasters.
+This module contains functions responsible for distributing parameters
+spatially (totally distributed, totally distributed with some parameters
+lumped, all parameters lumped, hydrologic response units) and saving
+generated parameters into rasters.
 """
-from typing import List
+from __future__ import annotations
+
 import datetime as dt
 import math
 import os
@@ -14,21 +16,11 @@ from pyramids.dataset import Dataset
 
 
 class Parameters:
-    """Parameters.
+    """Parameter distribution class for hydrological model calibration.
 
-        parameter class is used to distribute the values of the parameter vector in the calibration
-        process into the 3D array, considering if some of the parameters are lumped parameters, if you want to
-        distribute the parameters in HRUs.
-
-    Methods
-    -------
-        - par3d
-        - par3dLumped
-        - par2dLumpedK1_lake
-        - HRU
-        - HRU_HAND
-        - ParametersNumber
-        - saveParameters
+    The Parameters class distributes values from a parameter vector during
+    the calibration process into a 3D array, handling lumped parameters
+    and hydrologic response units (HRUs).
     """
 
     def __init__(
@@ -36,7 +28,7 @@ class Parameters:
         raster,
         no_parameters: int,
         no_lumped_par: int = 0,
-        lumped_par_pos: List[int] = None,
+        lumped_par_pos: list[int] | None = None,
         lake: bool = False,
         snow: bool = False,
         hru: bool = False,
@@ -45,47 +37,50 @@ class Parameters:
         k_lower_bound: int = 50,
         muskingum: bool = False,
     ):
-        """Parameters.
+        """Initialize the Parameters class.
 
-            To initiate the Parameters class, you have to provide the Flow Acc raster.
+        To initiate the Parameters class, you have to provide the Flow Acc
+        raster.
 
-        Parameters
-        ----------
-        raster : [gdal.dataset]
-            raster to get the spatial information of the catchment
-            (DEM, flow accumulation or flow direction raster)
-        no_parameters : [integer]
-            Number of parameters in the HBV model.
-        no_lumped_par : [integer], optional
-            Number of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-        lumped_par_pos : [integer], optional
-            list of order or position of the lumped parameter among all
-            the parameters of the lumped model (order starts from 0 to the length
-            of the model parameters), default is [] (empty), the following order
-            of parameters is used for the lumped HBV model used
-            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-        lake : [integer], optional
-            0 if there is no lake and 1 if there is a lake. The default is 0.
-        snow : [integer]
-            0 if you don't want to run the snow-related processes and 1 if there is snow.
-            in case of 1 (simulate snow processes) parameters related to snow simulation
-             have to be provided. The default is 0.
-        hru: [integer], optional
-            if the parameters will consider using HRUs. The default is 0.
-        function: [integer], optional
-            function you use to distribute parameters. The default is 1.
-        k_upper_bound: [numeric], optional
-            upper bound of K value (traveling time in muskingum routing method). Default is 1 hour
-        k_lower_bound: [numeric], optional
-            Lower bound of K value (traveling time in muskingum routing method). Default is 0.5 hour (30 min)
-        muskingum: [bool], optional
-            if the routing function is muskingum. The default is False.
+        Args:
+            raster: A gdal.Dataset raster to get the spatial information
+                of the catchment (DEM, flow accumulation or flow direction
+                raster).
+            no_parameters: Number of parameters in the HBV model.
+            no_lumped_par: Number of lumped parameters. You have to enter
+                the value of the lumped parameter at the end of the list.
+                Defaults to 0 (no lumped parameters).
+            lumped_par_pos: List of the order or position of lumped
+                parameters among all the parameters of the lumped model
+                (order starts from 0 to the length of the model
+                parameters). Defaults to None (empty). The following
+                order of parameters is used for the lumped HBV model:
+                [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta,
+                e_corr, etf, lp, c_flux, k, k1, alpha, perc, pcorr,
+                Kmuskingum, Xmuskingum].
+            lake: True if there is a lake, False otherwise.
+                Defaults to False.
+            snow: True to run the snow-related processes, False otherwise.
+                When True, parameters related to snow simulation have to
+                be provided. Defaults to False.
+            hru: True if the parameters will consider using HRUs.
+                Defaults to False.
+            function: Function to use for distributing parameters.
+                Defaults to 1.
+            k_upper_bound: Upper bound of K value (traveling time in
+                muskingum routing method). Defaults to 1 hour.
+            k_lower_bound: Lower bound of K value (traveling time in
+                muskingum routing method). Defaults to 50.
+            muskingum: True if the routing function is muskingum.
+                Defaults to False.
 
-        Returns
-        -------
-        None.
+        Raises:
+            AssertionError: If `raster` is not a gdal.Dataset, if
+                `no_parameters` is not an integer, if `no_lumped_par` is
+                not an integer, or if the length of `lumped_par_pos` does
+                not match `no_lumped_par`.
+            ValueError: If `lumped_par_pos` is not a list when
+                `no_lumped_par` >= 1.
         """
         if lumped_par_pos is None:
             lumped_par_pos = []
@@ -145,7 +140,7 @@ class Parameters:
             )
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(
+            self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(  # type: ignore[assignment]
                 (self.raster_A[np.isnan(self.raster_A)])
             )
 
@@ -181,7 +176,7 @@ class Parameters:
         elif function == 2:
             self.Function = self.par3d
         elif function == 3:
-            self.Function = self.par2d_lumped_k1_lake
+            self.Function = self.par2d_lumped_k1_lake  # type: ignore[assignment]
         elif function == 4:
             self.Function = self.hydrologic_response_units
         # to overwrite any choice user choose if the is HRUs
@@ -193,56 +188,22 @@ class Parameters:
         pass
 
     def par3d(self, par_g):  # , kub=1,klb=0.5, Maskingum=True
-        """par3d.
+        """Distribute parameters horizontally across grid cells.
 
-        par3d method takes a list of parameters [saved as one column or generated as 1D list from optimization
-        algorithm] and distribute them horizontally on number of cells given by a raster.
+        Takes a list of parameters (saved as one column or generated as a
+        1D list from an optimization algorithm) and distributes them
+        horizontally on the number of cells given by a raster.
 
-        Parameters
-        ----------
-        par_g : [list]
-            list of parameters
+        Args:
+            par_g: 1D list or numpy array of parameters. For totally
+                distributed parameters, the length should be
+                ``no_elem * no_parameters``. For lumped parameters, the
+                lumped parameter values should be appended at the end.
 
-        Returns
-        -------
-        par_3d : [3d array]
-            3D array of the parameters distributed horizontally on the cells
-
-        Examples
-        --------
-        EX1:totally distributed parameters
-            raster=gdal.Open("dem.tif")
-            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            no_lumped_par=0
-            lumped_par_pos=[]
-            par_g=np.random.random(no_elem*(no_parameters-no_lumped_par))
-
-            tot_dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
-
-        EX2: One Lumped Parameter [K1]
-            raster=gdal.Open("dem.tif")
-            given values of parameters are of this order
-            [fc, beta, etf, lp, c_flux, k, alpha, perc, pcorr, Kmuskingum, Xmuskingum,k1]
-            K1 is lumped so its value is inserted at the end and its order should
-            be after K
-
-            no_lumped_par=1
-            lumped_par_pos=[6]
-            par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
-            # insert the value of k1 at the end
-            par_g=np.append(par_g,0.005)
-
-            dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
-
-        EX3:Two Lumped Parameter [K1, Perc]
-            raster=gdal.Open("dem.tif")
-            no_lumped_par=2
-            lumped_par_pos=[6,8]
-            par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
-            par_g=np.append(par_g,0.005)
-            par_g=np.append(par_g,0.006)
-
-            dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+        Raises:
+            AssertionError: If the length of `par_g` does not match the
+                expected number of parameters based on the number of
+                elements and lumped parameters.
         """
         # input data validation
         # data type
@@ -271,7 +232,7 @@ class Parameters:
 
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
-        self.Par2d = np.ones((self.no_parameters, self.no_elem))
+        self.Par2d = np.ones((self.no_parameters, self.no_elem))  # type: ignore[assignment]
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(self.no_elem):
@@ -314,32 +275,19 @@ class Parameters:
         #              )
 
     def par3d_lumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
-        r"""par3dLumped method.
+        r"""Distribute lumped parameters horizontally across grid cells.
 
-            takes a list of parameters [saved as one column or generated as 1D list from
-            optimization algorithm] and distribute them horizontally on number of cells given by a raster.
+        Takes a list of parameters (saved as one column or generated as a
+        1D list from an optimization algorithm) and distributes them
+        horizontally on the number of cells given by a raster, where all
+        parameters are lumped (same value for every cell).
 
-        Parameters
-        ----------
-        par_g : [list]
-            list of parameters
+        Args:
+            par_g: 1D list or numpy array of lumped parameters.
+                The length should equal ``no_parameters``.
 
-        Returns
-        -------
-        par_3d: [3d array]
-            3D array of the parameters distributed horizontally on the cells
-
-        Example
-        -------
-        EX1:Lumped parameters
-            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-
-        >>> from Hapi.rrm.parameters import Parameters as dp
-        >>> raster = gdal.Open("soil_classes.tif")
-        >>> no_parameters = 12
-        >>> lumped_par_pos = []
-        >>> par_g = np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
-        >>> tot_dist_par = dp.par3d_lumped(par_g, raster, no_parameters, lumped_par_pos, kub=1, klb=0.5)
+        Raises:
+            ValueError: If `par_g` is not a numpy ndarray or a list.
         """
         # input data validation
         # data type
@@ -367,22 +315,24 @@ class Parameters:
 
     @staticmethod
     def calculate_k(x, position, upper_bound, lower_bound):
-        """calculateK.
+        """Calculate K parameter for Muskingum routing.
 
-        calculateK method takes value of x parameter and generate 100 random value of k parameters between upper &
-        lower constraint then the output will be the value coresponding to the giving position.
+        Takes the value of x parameter and generates 100 random values of
+        the K parameter between the upper and lower constraints, then
+        returns the value corresponding to the given position.
 
-        Parameters
-        ----------
-        x : [numeric]
-            weighting coefficient to determine the linearity of the water surface
-            (one of the parameters of muskingum routing method)
-        position : [integer]
-            random position between upper and lower bounds of the k parameter
-        upper_bound : [numeric]
-            upper bound for k parameter
-        lower_bound : [numeric]
-            Lower bound for k parameter
+        Args:
+            x: Weighting coefficient to determine the linearity of the
+                water surface (one of the parameters of the Muskingum
+                routing method).
+            position: Random position between upper and lower bounds of
+                the K parameter.
+            upper_bound: Upper bound for the K parameter.
+            lower_bound: Lower bound for the K parameter.
+
+        Returns:
+            The K parameter value corresponding to the given position
+            within the constrained range.
         """
         # k has to be smaller than this constraint
         constraint1 = 0.5 * 1 / (1 - x)
@@ -400,38 +350,29 @@ class Parameters:
         return k
 
     def par2d_lumped_k1_lake(self, par_g, no_parameters_lake):  # ,kub,klb
-        """par2d_lumpedK1_lake.
+        """Distribute parameters with a lumped K1 and lake parameters.
 
-        method takes a list of parameters and distribute them horizontally on number of cells given by a raster.
+        Takes a list of parameters and distributes them horizontally on
+        the number of cells given by a raster. All parameters are
+        distributed except the lower zone coefficient (K1), which is
+        lumped and appended at the end of the parameter list. Lake
+        parameters are extracted from the end of the parameter list.
 
-        Parameters
-        ----------
-        par_g : [list]
-            list of parameters
-        no_parameters_lake : [integer]
-            no of lake parameters
-
-        Returns
-        -------
-        Par3d: [3d array]
-            3D array of the parameters distributed horizontally on the cells
-        lake_par: [list]
-            list of the lake parameters.
-
-        Example:
-        ----------
-        a list of 155 value,all parameters are distributed except lower zone coefficient
-        (is written at the end of the list) each cell(14 cells) has 11 parameter plus lower zone
-        (12 parameters) function will take each 11 parameter and assing them to a specific cell
-        then assign the last value (lower zone parameter) to all cells
-        14*11=154 + 1 = 155
+        Args:
+            par_g: 1D list or numpy array of parameters. Each cell's
+                distributed parameters are listed sequentially, followed
+                by the lumped K1 value, followed by lake parameters at
+                the end. For example, with 14 cells and 11 distributed
+                parameters: ``14 * 11 = 154 + 1 (K1) = 155``.
+            no_parameters_lake: Number of lake parameters to extract
+                from the end of `par_g`.
         """
         # parameters in array
         # remove a place for the lumped parameter (k1) lower zone coefficient
         no_parameters = self.no_parameters - 1
 
         # create a 2d array [no_parameters, no_cells]
-        self.Par2d = np.ones((no_parameters, self.no_elem))
+        self.Par2d = np.ones((no_parameters, self.no_elem))  # type: ignore[assignment]
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
@@ -468,47 +409,28 @@ class Parameters:
         # return self.Par3d, lake_par
 
     def hydrologic_response_units(self, par_g):  # ,kub=1,klb=0.5
-        """HRU.
+        """Distribute parameters using Hydrologic Response Units (HRUs).
 
-            method takes a list of parameters [saved as one column or generated as 1D list from optimization algorithm]
-            and distribute them horizontally on number of cells given by a raster the input raster should be classified
-            raster (by numbers) into class to be used to define the HRUs.
+        Takes a list of parameters (saved as one column or generated as a
+        1D list from an optimization algorithm) and distributes them
+        horizontally on the number of cells given by a raster. The input
+        raster should be a classified raster (by numbers) into classes to
+        define the HRUs. Each HRU receives the same set of generated
+        parameters.
 
-        Parameters
-        ----------
-        par_g:
-            [list] list of parameters
+        Args:
+            par_g: 1D list or numpy array of parameters. For HRU without
+                lumped parameters, the length should be
+                ``no_elem * no_parameters``. For HRU with lumped
+                parameters, the lumped parameter values should be
+                appended at the end.
 
-        Returns
-        -------
-        par_3d:
-            3D array of the parameters distributed horizontally on the cells
-
-        Examples
-        --------
-        EX1:HRU without lumped parameters
-            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-        >>> raster = gdal.Open("soil_types.tif")
-        >>> no_lumped_par = 0
-        >>> lumped_par_pos = []
-        >>> par_g = np.random.random(no_elem*(no_parameters-no_lumped_par))
-        >>> par_hru = HRU(par_g, raster, no_parameters, no_lumped_par, lumped_par_pos, kub=1,klb=0.5)
-
-
-        EX2: HRU with one lumped parameters
-            given values of parameters are of this order
-            [fc, beta, etf, lp, c_flux, k, alpha, perc, pcorr, Kmuskingum, Xmuskingum,k1]
-            K1 is lumped so its value is inserted at the end and its order should
-            be after K
-
-        >>> raster = gdal.Open("soil_types.tif")
-        >>> no_lumped_par = 1
-        >>> lumped_par_pos = [6]
-        >>> par_g = np.random.random(no_elem* (no_parameters-no_lumped_par))
-        >>> # insert the value of k1 at the end
-        >>> par_g = np.append(par_g,0.005)
-
-        >>> par_hru = HRU(par_g, raster, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5)
+        Raises:
+            ValueError: If `par_g` is not a numpy ndarray or a list, or
+                if the length of `par_g` does not match the expected
+                number of parameters.
+            AssertionError: If there are lumped parameters and the length
+                of `par_g` does not match the expected total.
         """
         # input data validation
         # data type
@@ -578,30 +500,30 @@ class Parameters:
 
     @staticmethod
     def hru_hand(dem, flow_direction, flow_path_length, river):
-        """hru_hand.
+        """Calculate Height Above Nearest Drainage (HAND) for HRU classification.
 
-        hru_hand this function calculates inputs for the hand (height above nearest drainage) method for land use
-        classification.
+        Calculates inputs for the HAND method for land use
+        classification by tracing flow direction from each cell to the
+        nearest river reach, then computing the elevation difference
+        and the flow path distance.
 
-        Parameters
-        ----------
-        dem: [gdal.dataset]
-            raster to get the spatial information of the catchment (DEM raster)
-        flow_direction: [gdal.dataset]
-            flow direction  raster to get the spatial information of the catchment
-        flow_path_length: [gdal.dataset]
-            raster to get the spatial information of the catchment
-        river: [gdal.dataset]
-            raster to get the spatial information of the catchment
+        Args:
+            dem: A gdal.Dataset of the DEM raster.
+            flow_direction: A gdal.Dataset of the flow direction raster.
+            flow_path_length: A gdal.Dataset of the flow path length
+                raster.
+            river: A gdal.Dataset of the river location raster, where
+                cells with value 1 indicate river presence.
 
+        Returns:
+            A tuple of two numpy ndarrays:
+                - hand: Height above nearest drainage for each cell.
+                - dist_to_nearest_drain: Distance to nearest drainage
+                  for each cell.
 
-        Returns
-        -------
-        hand: [numpy ndarray]
-            Height above nearest drainage
-
-        dist_to_nearest_drain: [numpy ndarray]
-            Distance to nearest drainage
+        Raises:
+            ValueError: If the catchment boundaries contain anomalies
+                (e.g., after cropping with a polygon).
         """
         # Use DEM raster information to run all loops
         dem_a = dem.ReadAsArray()
@@ -683,27 +605,20 @@ class Parameters:
         return hand, dist_to_nearest_drain
 
     def parameters_number(self):
-        """parameters_number.
+        """Calculate the total number of parameters for the optimization.
 
-            ParametersNO method calculates the nomber of parameters that the optimization algorithm is going top search
-            for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of
-            parameters are the same as the no of parameters of the conceptual model)
+        Calculates the number of parameters that the optimization
+        algorithm will search for. Use this only in case of totally
+        distributed catchment parameters. In case of lumped parameters,
+        the number of parameters is the same as the number of parameters
+        of the conceptual model.
 
-        Parameters
-        ----------
-        The Parameters object should have the following attributes before tyring so use the saveParameters function
-        self
-            raster : [gdal.dataset]
-                raster to get the spatial information of the catchment
-                (DEM, flow accumulation or flow direction raster)
-            no_parameters : [integer]
-                no of parameters of the cell according to the rainfall runoff model
-            no_lumped_par : [integer]
-                nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            HRUs : [0 or 1]
-                0 to define that no hydrologic response units (HRUs), 1 to define that
-                HRUs are used
+        The result is stored in the ``ParametersNO`` attribute.
+
+        Note:
+            The Parameters object should have the following attributes
+            before calling this method: ``raster``, ``no_parameters``,
+            ``no_lumped_par``, and ``HRUs``.
         """
         if not self.HRUs:
             if self.no_lumped_par > 0:
@@ -725,54 +640,22 @@ class Parameters:
                 self.ParametersNO = self.no_elem * self.no_parameters
 
     def save_parameters(self, path):
-        """SaveParameters.
+        """Save distributed parameters as raster files.
 
-            saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given
-            function and save them as a rasters.
+        Takes the generated 3D parameter array and saves each parameter
+        layer as a separate GeoTIFF raster file.
 
-        Parameters
-        ----------
-        The DistParameters object should have the following attributes before tyring so use the saveParameters function
-        self:
-             DistParFn:
-                 [function] function to distribute the parameters (all functions are
-                 in Hapi.DistParameters )
-             raster:
-                 [gdal.dataset] raster to get the spatial information
-             Par
-                 [list or numpy ndarray] parameters as 1D array or list
-             no_parameters:
-                 [int] number of the parameters in the conceptual model
-             snow:
-                 [integer] number to define whether to take parameters of
-                 the conceptual model with snow subroutine or without
-             kub:
-                 [numeric] upper bound for k parameter in muskingum function
-             klb:
-                 [numeric] lower bound for k parameter in muskingum function
-        path:
-              [string] path to the folder you want to save the parameters in
-              default value is None (parameters are going to be saved in the
-              current directory)
+        Args:
+            path: Path to the folder where the parameter rasters will
+                be saved.
 
-        Returns
-        -------
-        Rasters for parameters of the distributed model
+        Raises:
+            AssertionError: If `path` is not a string or does not exist.
 
-        Examples
-        --------
-        >>> from Hapi.rrm.parameters import Parameters as DP
-        >>> DemPath = "GIS/4000/dem4000.tif"
-        >>> raster = gdal.Open(DemPath)
-        >>> ParPath = "par15_7_2018.txt"
-        >>> par = np.loadtxt(ParPath)
-        >>> klb = 0.5
-        >>> kub = 1
-        >>> no_parameters = 12
-        >>> DistParFn = DP.par3d_lumped
-        >>> Path = "parameters/"
-        >>> snow = 0
-        >>> DP.save_parameters(DistParFn, raster, par, no_parameters, snow, kub, klb, path)
+        Note:
+            The Parameters object should have the following attributes
+            set before calling this method: ``DistParFn``, ``raster``,
+            ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.
         """
         assert isinstance(path, str), "path should be of type string"
         assert os.path.exists(path), f"{path} you have provided does not exist"

@@ -1,27 +1,20 @@
-*****
-GIS Inputs
-*****
+# GIS Inputs
 
 In order to determine the direction of the flow Hapi used the D8 `flow direction` and `flow accumulation` rasters. Since the avialable DEMs are in resolution of few tens of meters (30 or 90 m) and usually hydrological models are build to represent units much bigger than that so we need to get the River network from these fine resolution DEMs first and then burn the river into courser resolution (i.e. 5km ) that we want to use as a resolution for our distributed hydrological model.
 
-  .. image:: /img/flowdirection.png
-    :width: 400pt
+![Flow Direction](../img/flowdirection.png){ width="400" }
 
-  .. image:: /img/UZ.png
-    :width: 400pt
+![Upper Zone](../img/UZ.png){ width="400" }
 
 
-Burning the River into the DEM
-########
+# Burning the River into the DEM
 
 1- Create suitable Flow accumulation
 After deriving the the flow accumulation form the fine resolution DEM (30 or 90 m)
 use the raster calulator tool in ArcMap/QGIS to obtain a raster of the cells that has accumulation more than 6 times the acumulation in the corse resolution
 
-lets say you want to build the hydrological model for 5km resolution DEM and you have a 100x100 m2 DEM [(5000x5000) / (30x30)] / 30 and use the resulted number in the raster calculator
-``
-"Flow_acc" > 75000
-``
+##### lets say you want to build the hydrological model for 5km resolution DEM and you have a 100x100 m2 DEM [(5000x5000) / (30x30)] / 30 and use the resulted number in the raster calculator
+##### "Flow_acc" > 75000
 output will be the raster `acc75000.tif`
 
 2- Create Stream Links
