@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 import pandas as pd
 from geopandas import GeoDataFrame
-from pyramids.datacube import Datacube
+from pyramids.multidataset import MultiDataset as Datacube
 from pyramids.dataset import Dataset
 
 PARAMETERS_LIST = [
@@ -105,7 +105,7 @@ class Inputs:
             raise FileNotFoundError(f"{inputs_dir} does not exist")
 
         cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
-        cube.open_datacube()
+        cube.open_multi_dataset()
         cube.align(mask)
         cube.crop(mask, inplace=True)
         path = [f"{outputs_dir}/{file.split('/')[-1]}" for file in cube.files]
@@ -305,7 +305,7 @@ class Inputs:
             file_name_data_fmt=file_name_data_fmt,
             extension=extension,
         )
-        cube.open_datacube()
+        cube.open_multi_dataset()
         avg = []
         for i in range(cube.time_length):
             dataset = cube.iloc(i)
