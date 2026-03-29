@@ -159,11 +159,21 @@ module = [
     "Hapi.calibration",
     "Hapi.wrapper",
 ]
-# Attributes are initialized as X | None in __init__ and populated by
-# separate reader methods before use. Methods assume attributes are set
-# but mypy cannot verify call order. Adding assert guards for 200+ sites
-# is tracked as follow-up work.
-disable_error_code = ["union-attr", "arg-type", "operator", "index", "misc", "attr-defined", "call-overload"]
+# These modules use a builder pattern: attributes are typed X | None in
+# __init__ and populated by separate read_*() methods before use. Methods
+# assume attributes are non-None but mypy cannot verify call order.
+# Fix: add assert-based narrowing helpers (e.g. _require_spatial_data())
+# that return non-None types, then remove these suppressions one by one.
+# Error count without overrides: ~257 across these 4 modules.
+disable_error_code = [
+    "union-attr",    # .attr on X | None (159 sites)
+    "attr-defined",  # .attr on None (11 sites)
+    "arg-type",      # passing X | None where X expected (13 sites)
+    "misc",          # slice index, None not callable (13 sites)
+    "operator",      # arithmetic on X | None (4 sites)
+    "index",         # indexing X | None (2 sites)
+    "call-overload", # numpy overload mismatches on X | None (2 sites)
+]
 
 [[tool.mypy.overrides]]
 module = "Hapi.rrm.base_model"
