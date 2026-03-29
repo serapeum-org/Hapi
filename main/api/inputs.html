@@ -2089,7 +2089,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inputs_dir</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
         <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span><span class="n">inputs_dir</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="n">cube</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
         <span class="n">cube</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">outputs_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">files</span><span class="p">]</span>
@@ -2289,7 +2289,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="n">avg</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">time_length</span><span class="p">):</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">iloc</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -2818,7 +2818,7 @@ the corresponding raster in chronological order.</p>
         <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
         <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
     <span class="n">avg</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">time_length</span><span class="p">):</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">iloc</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -3596,7 +3596,7 @@ rasters will be saved.</p>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inputs_dir</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
     <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span><span class="n">inputs_dir</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">cube</span><span class="o">.</span><span class="n">open_datacube</span><span class="p">()</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
     <span class="n">cube</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
     <span class="n">cube</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">outputs_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">files</span><span class="p">]</span>
