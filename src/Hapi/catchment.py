@@ -120,7 +120,7 @@ class Catchment:
         self.ET: np.ndarray | None = None
         self.ll_temp: np.ndarray | float | None = None
         self.QGauges: pd.DataFrame | None = None
-        self.Snow: bool | None = None
+        self.Snow: int | None = None
         self.Maxbas: bool | None = None
         self.LumpedModel: BaseConceptualModel | None = None
         self.CatArea: float | int | None = None

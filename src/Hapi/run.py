@@ -322,17 +322,20 @@ class Run(Catchment):
             The following attributes should be defined before calling
             this method:
 
-            - ``ConceptualModel``: Conceptual model containing a
+            - ``LumpedModel``: Conceptual model containing a
               ``simulate`` method.
-            - ``data``: Numpy array of meteorological data with columns
-              for precipitation, evapotranspiration, temperature, and
-              long-term average temperature.
-            - ``parameters``: Numpy array of conceptual model
+            - ``data``: Numpy array of meteorological data with
+              columns for precipitation, evapotranspiration,
+              temperature, and long-term average temperature.
+            - ``Parameters``: Numpy array of conceptual model
               parameters.
-            - ``p2``: List of unoptimized parameters where ``p2[0]``
-              is tfac and ``p2[1]`` is catchment area in km2.
-            - ``init_st``: List of initial state variable values
-              [sp, sm, uz, lz, wc].
+            - ``CatArea``: Catchment area in km2.
+            - ``conversion_factor``: Time conversion factor
+              (e.g., 24 for daily).
+            - ``InitialCond``: List of initial state variable
+              values [sp, sm, uz, lz, wc].
+            - ``Snow``: Whether to use the snow subroutine (0 or 1).
+            - ``q_init``: Initial discharge value.
         """
         if RoutingFn is None and Route != 0:
             raise ValueError("RoutingFn must be a callable when Route != 0")
