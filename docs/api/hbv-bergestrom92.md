@@ -1,4 +1,4 @@
 # HBV rainfall runoff model
 
-## HBV
+## HBVBergestrom92
 ::: Hapi.rrm.hbv_bergestrom92.HBVBergestrom92

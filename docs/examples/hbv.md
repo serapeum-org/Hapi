@@ -10,7 +10,7 @@ The HBV model [Bergström, 1992] is usually run with daily time steps, but highe
 
 HBV model consists of three main components:
 
-- Snow Subroutine :ref:`snow`
+- [Snow Subroutine](#snow)
 
 - Soil Moisture
 
@@ -39,8 +39,6 @@ the 15 parameter by order are [`tt`,`rfcf`,`sfcf`,`cfmax`,`cwh`,`cfr`,`fc`,`beta
 
 [Bergström, 1992]
 
-.. _snow:
-
 # Snow
 
 The snow routine controls snow accumulation and melt. The precipitation accumulates as snow when the air temperature drops below a temperature threshold value (TT). snow accumulation is adjusted by a free parameter, Sfcf, the snowfall correction factor.
@@ -48,13 +46,13 @@ The snow routine controls snow accumulation and melt. The precipitation accumula
 If temperature is TT, precipitation occurs as snowfall, and is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold TT) or through snow refreezing (if temperatures are below threshold TT).
 
 Melting starts with temperatures above the threshold, TT, according to a simple degree-day
-##### 
+
 Snow MELT = Cfmax * (T - TT) ; temp > TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
 
 where: Snow MELT & Snow Refreezing are in (mm/day)
 Cfmax = degree-day factor (mm/°C · day)
-##### TT = temperature threshold (C).
+**TT = temperature threshold (C).**
 The maximum capacity of liquid water the snow can hold (holding water capacity WHC) has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.
 
 The snow routine of the HBV model has primarily five free parameters that have to be estimated by calibration:
@@ -70,14 +68,14 @@ The soil moisture accounting routine computes an index of the wetness of the ent
 
 LP controls the shape of the reduction curve for potential evaporation. At soil moisture values below LP the actual evapotranspiration will be reduced.
 
-##### To accounts for temperature anomalies a correction factor based on mean daily air temperatures and long term averages is used.
+**To accounts for temperature anomalies a correction factor based on mean daily air temperatures and long term averages is used.**
 Ea = (1 + (T - Tm) * ETF)*Ep
 where:
 Ea is calculated actual evapotranspiration
 Ecorr is evapotranspiration correction factor
 T is temperature (C)
 Tm is monthly long term average temperature (C)
-##### Ep is monthly long term average potential evapotranspiration
+**Ep is monthly long term average potential evapotranspiration**
 ![Beta](../img/Evapotranspiration.png)
 
 # Runoff response

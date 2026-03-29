@@ -2,11 +2,9 @@
 
 In order to determine the direction of the flow Hapi used the D8 `flow direction` and `flow accumulation` rasters. Since the avialable DEMs are in resolution of few tens of meters (30 or 90 m) and usually hydrological models are build to represent units much bigger than that so we need to get the River network from these fine resolution DEMs first and then burn the river into courser resolution (i.e. 5km ) that we want to use as a resolution for our distributed hydrological model.
 
-  .. image:: /img/flowdirection.png
-    :width: 400pt
+![Flow Direction](../img/flowdirection.png){ width="400" }
 
-  .. image:: /img/UZ.png
-    :width: 400pt
+![Upper Zone](../img/UZ.png){ width="400" }
 
 
 # Burning the River into the DEM

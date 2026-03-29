@@ -60,34 +60,33 @@ pip install HAPI-Nile=={release}
 
 ## From sources
 
-The sources for HapiSM can be downloaded from the `Github repo`_.
+The sources for HapiSM can be downloaded from the
+[Github repo](https://github.com/Serapieum-of-alex/Hapi).
 
 You can either clone the public repository:
 
 ```shell
-$ git clone git://github.com/MAfarrag/HapiSM
+$ git clone git://github.com/Serapieum-of-alex/Hapi
 ```
-Or download the `tarball`_:
+Or download the [tarball](https://github.com/Serapieum-of-alex/Hapi/tarball/master):
 
 ```shell
-$ curl -OJL https://github.com/MAfarrag/HapiSM/tarball/master
+$ curl -OJL https://github.com/Serapieum-of-alex/Hapi/tarball/master
 ```
 Once you have a copy of the source, you can install it with:
 
 ```shell
 $ python setup.py install
 ```
-.. _Github repo: https://github.com/MAfarrag/HapiSM
-.. _tarball: https://github.com/MAfarrag/HapiSM/tarball/master
 
 
 To install directly from GitHub (from the HEAD of the master branch):
 
-+ `pip install git+https://github.com/MAfarrag/HAPI.git`
++ `pip install git+https://github.com/Serapieum-of-alex/Hapi.git`
 
 or from Github from a specific release:
 
-+ `pip install git+https://github.com/MAfarrag/HAPI.git@{release}`
++ `pip install git+https://github.com/Serapieum-of-alex/Hapi.git@{release}`
 
 Now you should be able to start this environment's Python with `python`, try
 `import Hapi` to see if the package is installed.
@@ -103,15 +102,15 @@ of you clone. This will not move a copy to your Python installation directory, b
 instead create a link in your Python installation pointing to the folder you installed
 it from, such that any changes you make there are directly reflected in your install.
 
-+ `git clone https://github.com/MAfarrag/HAPI.git`
++ `git clone https://github.com/Serapieum-of-alex/Hapi.git`
 + `cd Hapi`
 + `activate Hapi`
 + `pip install -e .`
 
 Alternatively, if you want to avoid using `git` and simply want to test the latest
 version from the `master` branch, you can replace the first line with downloading
-a zip archive from GitHub: https://github.com/MAfarrag/HAPI/archive/master.zip
-[libraries.io](https://libraries.io/github/MAfarrag/HAPI).
+a zip archive from GitHub: https://github.com/Serapieum-of-alex/Hapi/archive/master.zip
+[libraries.io](https://libraries.io/github/Serapieum-of-alex/Hapi).
 
 ## Install using pip
 
@@ -123,7 +122,7 @@ use the conda package manager:
 conda install numpy scipy gdal netcdf4 pyproj
 ```
 
-you can check [libraries.io](https://libraries.io/github/MAfarrag/HAPI). to check versions of the libraries
+you can check [libraries.io](https://libraries.io/github/Serapieum-of-alex/Hapi). to check versions of the libraries
 
 
 Then install a release {release} of Hapi (available from release 2018.1) with pip:

@@ -73,16 +73,16 @@ The ERA-Interim data assimilation and forecast suite produces:
 • four analyses per day, at 00, 06, 12 and 18 UTC;
 • two 10-day forecasts per day, initialized from analyses at 00 and 12 UTC
 
-- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at  `http://data.ecmwf.int/data <http://data.ecmwf.intdata>`_.
+- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at [http://data.ecmwf.int/data](http://data.ecmwf.int/data).
 
 - The ERA-Interim Archive is part of ECMWF’s Meteorological Archive and Retrieval System (MARS), which is accessible to registered users
 - The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine
 
 
 so inorder to be able to use the following code to download ECMWF data you need to
-- register and setup your account in the `ECMWF website <https://apps.ecmwf.int/registration/>`_.
+- register and setup your account on the [ECMWF website](https://apps.ecmwf.int/registration/).
 
--  Install ECMWF key `instruction are here <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key>`_.
+- Install ECMWF key — [instructions here](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key).
 
 - ERA-Interim data set has a lot of meteorological variables which you can download
 - You need to provide the name of the variable using the `Variables` object
@@ -94,7 +94,7 @@ Vars = Variables('daily')
 Vars.__str__()
 ```
 
-For the information about the ECMWF data `https://apps.ecmwf.int/codes/grib/param-db/ <https://apps.ecmwf.int/codes/grib/param-db/>`_.
+For information about ECMWF data, see [https://apps.ecmwf.int/codes/grib/param-db/](https://apps.ecmwf.int/codes/grib/param-db/).
 
 ```python
 StartDate = '2009-01-01'

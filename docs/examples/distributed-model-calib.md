@@ -1,10 +1,10 @@
 # Distributed Hydrological Model
 After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment
 
-```py
+```python
 import numpy as np
 import datetime as dt
-import gdal
+from osgeo import gdal
 from Hapi.calibration import Calibration
 import Hapi.rrm.hbv_bergestrom92 as HBV
 
@@ -56,7 +56,7 @@ from Hapi.rrm.distparameters import DistParameters as DP
 
 - The `DistParameters` distribute the parameter vector on the cells following some sptial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in aditional map)
 
-```py
+```python
 raster = gdal.Open(FlowAccPath)
 #-------------
 # for lumped catchment parameters
@@ -76,7 +76,7 @@ SpatialVarFun.ParametersNO
 ```
 ## Define the objective function
 
-```py
+```python
 
 coordinates = Coello.GaugesTable[['id','x','y','weight']][:]
 
@@ -102,7 +102,7 @@ def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
 to see all options import Optimizer class and check the documentation of the
 method setOption
 
-```python
+```pythonthon
 
 ApiObjArgs = dict(hms=50, hmcr=0.95, par=0.65, dbw=2000, fileout=1,
                   filename=SaveTo + "/Coello_"+str(dt.datetime.now())[0:10]+".txt")
@@ -120,13 +120,13 @@ OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 ```
 ## Run Calibration algorithm
 
-```py
+```python
 cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs,printError=0)
 
 ```
 ## Save results
 
-```py
+```python
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.saveParameters(SaveTo)
 ```

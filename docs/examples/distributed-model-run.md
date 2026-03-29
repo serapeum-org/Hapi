@@ -271,9 +271,7 @@ Anim = Coello.plotDistributedResults(plotstart, plotend, Figsize=(9,9), Option =
                             TicksSpacing = 5,Interval = 200, Gauges=True, cmap='inferno', Textloc=[0.1,0.2],
                             Gaugecolor='red',ColorScale = 1, IDcolor='blue', IDsize=25)
 ```
-.. only:: html
-
-   .. figure:: /img/anim.gif
+![Animation](../img/anim.gif)
 
 
 - to save the animation

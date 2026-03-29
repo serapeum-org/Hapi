@@ -74,9 +74,14 @@ plugins:
       javascript_dir: js
 
 markdown_extensions:
+  - attr_list
+  - md_in_html
   - admonition
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.highlight
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -120,3 +125,7 @@ extra:
   version:
     provider: mike
   version_selector: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

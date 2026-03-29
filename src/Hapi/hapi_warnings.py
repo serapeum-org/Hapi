@@ -4,8 +4,7 @@ The ``hapi_warnings`` module provides custom warning types used
 throughout the Hapi package and helper functions to suppress
 specific warning categories during runtime.
 
-Examples
---------
+Examples:
     >>> from Hapi.hapi_warnings import InstabilityWarning
     >>> import warnings
     >>> warnings.warn(
