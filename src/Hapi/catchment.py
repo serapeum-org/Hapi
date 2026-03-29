@@ -402,6 +402,8 @@ class Catchment:
         assert os.path.exists(path), path + " you have provided does not exist"
 
         flow_acc = gdal.Open(path)
+        if flow_acc is None:
+            raise FileNotFoundError(f"GDAL could not open: {path}")
         [self.rows, self.cols] = flow_acc.ReadAsArray().shape
         # check flow accumulation input raster
         self.NoDataValue = flow_acc.GetRasterBand(1).GetNoDataValue()
@@ -485,6 +487,8 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         flow_dir = gdal.Open(path)
+        if flow_dir is None:
+            raise FileNotFoundError(f"GDAL could not open: {path}")
 
         [rows, cols] = flow_dir.ReadAsArray().shape
         self.FlowDirArr = flow_dir.ReadAsArray().astype(float)
@@ -540,6 +544,8 @@ class Catchment:
         assert os.path.exists(path), path + " you have provided does not exist"
 
         fpl = gdal.Open(path)
+        if fpl is None:
+            raise FileNotFoundError(f"GDAL could not open: {path}")
         [self.rows, self.cols] = fpl.ReadAsArray().shape
         self.FPLArr = fpl.ReadAsArray()
         self.NoDataValue = fpl.GetRasterBand(1).GetNoDataValue()
@@ -580,11 +586,19 @@ class Catchment:
             floodplain_roughness_file (str): Path to the floodplain
                 roughness raster file.
         """
-        self.DEM = gdal.Open(dem_file).ReadAsArray()
-        self.BankfullDepth = gdal.Open(bankfull_depth_file).ReadAsArray()
-        self.RiverWidth = gdal.Open(river_width_file).ReadAsArray()
-        self.RiverRoughness = gdal.Open(river_roughness_file).ReadAsArray()
-        self.FloodPlainRoughness = gdal.Open(floodplain_roughness_file).ReadAsArray()
+        for name, fpath in [
+            ("DEM", dem_file),
+            ("BankfullDepth", bankfull_depth_file),
+            ("RiverWidth", river_width_file),
+            ("RiverRoughness", river_roughness_file),
+            ("FloodPlainRoughness", floodplain_roughness_file),
+        ]:
+            ds = gdal.Open(fpath)
+            if ds is None:
+                raise FileNotFoundError(
+                    f"GDAL could not open {name} file: {fpath}"
+                )
+            setattr(self, name, ds.ReadAsArray())
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
         """Read model parameter rasters or a CSV parameter file.
@@ -809,6 +823,10 @@ class Catchment:
         if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
             flow_acc = gdal.Open(flow_acc_file)
+            if flow_acc is None:
+                raise FileNotFoundError(
+                    f"GDAL could not open: {flow_acc_file}"
+                )
             # calculate the nearest cell to each station
             dataset = Dataset(flow_acc)
             loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
@@ -1379,6 +1397,10 @@ class Catchment:
                 )
 
             src = gdal.Open(flow_acc_path)
+            if src is None:
+                raise FileNotFoundError(
+                    f"GDAL could not open: {flow_acc_path}"
+                )
 
             if prefix == "":
                 prefix = "Result_"
