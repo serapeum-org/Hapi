@@ -334,8 +334,8 @@ class Run(Catchment):
             - ``init_st``: List of initial state variable values
               [sp, sm, uz, lz, wc].
         """
-        if RoutingFn is None:
-            RoutingFn = []
+        if RoutingFn is None and Route != 0:
+            raise ValueError("RoutingFn must be a callable when Route != 0")
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:

@@ -7,6 +7,7 @@ triangular routing, and lake integration.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -305,7 +306,7 @@ class Wrapper:
         Model.qout = qout[:-1] + Lake.QlakeR
 
     @staticmethod
-    def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: list = []):
+    def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: Callable | None = None):
         """Run a lumped conceptual model with optional routing.
 
         Executes a lumped rainfall-runoff model (e.g., HBV) to
@@ -351,9 +352,10 @@ class Wrapper:
                 routing is enabled.
         """
         ### input data validation
-        assert callable(
-            RoutingFn
-        ), "routing function should be of type callable (function that takes arguments)"
+        if Routing != 0:
+            assert callable(
+                RoutingFn
+            ), "routing function should be of type callable (function that takes arguments)"
 
         # data
         p = Model.data[:, 0]
