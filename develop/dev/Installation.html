@@ -642,6 +642,8 @@
       
         
       
+        
+      
     
     
     
@@ -757,7 +759,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall runoff model
+    Calibration
   
 
     
@@ -870,6 +872,34 @@
     
   
     Wrapper
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/distrrm.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
   
 
     
@@ -1519,25 +1549,24 @@ or from Github). To install a release of Hapi from the PyPI (available from rele
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>HAPI-Nile<span class="o">=={</span>release<span class="o">}</span>
 </code></pre></div>
 <h2 id="from-sources"><a class="toclink" href="#from-sources">From sources</a><a class="headerlink" href="#from-sources" title="Permanent link">#</a></h2>
-<p>The sources for HapiSM can be downloaded from the <code>Github repo</code>_.</p>
+<p>The sources for HapiSM can be downloaded from the
+<a href="https://github.com/Serapieum-of-alex/Hapi">Github repo</a>.</p>
 <p>You can either clone the public repository:</p>
-<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>git://github.com/MAfarrag/HapiSM
+<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>git://github.com/Serapieum-of-alex/Hapi
 </code></pre></div>
-Or download the <code>tarball</code>_:</p>
-<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>curl<span class="w"> </span>-OJL<span class="w"> </span>https://github.com/MAfarrag/HapiSM/tarball/master
+Or download the <a href="https://github.com/Serapieum-of-alex/Hapi/tarball/master">tarball</a>:</p>
+<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>curl<span class="w"> </span>-OJL<span class="w"> </span>https://github.com/Serapieum-of-alex/Hapi/tarball/master
 </code></pre></div>
 Once you have a copy of the source, you can install it with:</p>
-<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>install
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>install
 </code></pre></div>
-.. _Github repo: https://github.com/MAfarrag/HapiSM
-.. _tarball: https://github.com/MAfarrag/HapiSM/tarball/master</p>
 <p>To install directly from GitHub (from the HEAD of the master branch):</p>
 <ul>
-<li><code>pip install git+https://github.com/MAfarrag/HAPI.git</code></li>
+<li><code>pip install git+https://github.com/Serapieum-of-alex/Hapi.git</code></li>
 </ul>
 <p>or from Github from a specific release:</p>
 <ul>
-<li><code>pip install git+https://github.com/MAfarrag/HAPI.git@{release}</code></li>
+<li><code>pip install git+https://github.com/Serapieum-of-alex/Hapi.git@{release}</code></li>
 </ul>
 <p>Now you should be able to start this environment's Python with <code>python</code>, try
 <code>import Hapi</code> to see if the package is installed.</p>
@@ -1549,22 +1578,22 @@ of you clone. This will not move a copy to your Python installation directory, b
 instead create a link in your Python installation pointing to the folder you installed
 it from, such that any changes you make there are directly reflected in your install.</p>
 <ul>
-<li><code>git clone https://github.com/MAfarrag/HAPI.git</code></li>
+<li><code>git clone https://github.com/Serapieum-of-alex/Hapi.git</code></li>
 <li><code>cd Hapi</code></li>
 <li><code>activate Hapi</code></li>
 <li><code>pip install -e .</code></li>
 </ul>
 <p>Alternatively, if you want to avoid using <code>git</code> and simply want to test the latest
 version from the <code>master</code> branch, you can replace the first line with downloading
-a zip archive from GitHub: https://github.com/MAfarrag/HAPI/archive/master.zip
-<a href="https://libraries.io/github/MAfarrag/HAPI">libraries.io</a>.</p>
+a zip archive from GitHub: https://github.com/Serapieum-of-alex/Hapi/archive/master.zip
+<a href="https://libraries.io/github/Serapieum-of-alex/Hapi">libraries.io</a>.</p>
 <h2 id="install-using-pip"><a class="toclink" href="#install-using-pip">Install using pip</a><a class="headerlink" href="#install-using-pip" title="Permanent link">#</a></h2>
 <p>Besides the recommended conda environment setup described above, you can also install
 Hapi with <code>pip</code>. For the more difficult to install Python dependencies, it is best to
 use the conda package manager:</p>
 <div class="highlight"><pre><span></span><code>conda<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>scipy<span class="w"> </span>gdal<span class="w"> </span>netcdf4<span class="w"> </span>pyproj
 </code></pre></div>
-<p>you can check <a href="https://libraries.io/github/MAfarrag/HAPI">libraries.io</a>. to check versions of the libraries</p>
+<p>you can check <a href="https://libraries.io/github/Serapieum-of-alex/Hapi">libraries.io</a>. to check versions of the libraries</p>
 <p>Then install a release {release} of Hapi (available from release 2018.1) with pip:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>HAPI-Nile<span class="o">=={</span>release<span class="o">}</span>
 <span class="sb">````</span>
@@ -1687,6 +1716,10 @@ To<span class="w"> </span>check<span class="w"> </span>it<span class="w"> </span
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

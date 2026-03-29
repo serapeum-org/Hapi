@@ -513,6 +513,8 @@
       
         
       
+        
+      
     
     
     
@@ -628,7 +630,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall runoff model
+    Calibration
   
 
     
@@ -741,6 +743,34 @@
     
   
     Wrapper
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/distrrm.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
   
 
     
@@ -1440,7 +1470,7 @@
 <p>After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">gdal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">Hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBV</span>
 
@@ -1527,18 +1557,18 @@
 </ul>
 <p>to see all options import Optimizer class and check the documentation of the
 method setOption</p>
-<div class="highlight"><pre><span></span><code><span class="n">ApiObjArgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hms</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">hmcr</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span> <span class="n">dbw</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">fileout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                  <span class="n">filename</span><span class="o">=</span><span class="n">SaveTo</span> <span class="o">+</span> <span class="s2">&quot;/Coello_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code>ApiObjArgs = dict(hms=50, hmcr=0.95, par=0.65, dbw=2000, fileout=1,
+                  filename=SaveTo + &quot;/Coello_&quot;+str(dt.datetime.now())[0:10]+&quot;.txt&quot;)
 
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="p">)):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i</span><span class="p">]]))</span>
+for i in range(len(ApiObjArgs)):
+    print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
 
-<span class="n">pll_type</span> <span class="o">=</span> <span class="s1">&#39;POA&#39;</span>
-<span class="n">pll_type</span> <span class="o">=</span> <span class="kc">None</span>
+pll_type = &#39;POA&#39;
+pll_type = None
 
-<span class="n">ApiSolveArgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">store_sol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">display_opts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">store_hst</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">hot_start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True,hot_start=False)
 
-<span class="n">OptimizationArgs</span><span class="o">=</span><span class="p">[</span><span class="n">ApiObjArgs</span><span class="p">,</span> <span class="n">pll_type</span><span class="p">,</span> <span class="n">ApiSolveArgs</span><span class="p">]</span>
+OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 </code></pre></div>
 <h2 id="run-calibration-algorithm"><a class="toclink" href="#run-calibration-algorithm">Run Calibration algorithm</a><a class="headerlink" href="#run-calibration-algorithm" title="Permanent link">#</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">runCalibration</span><span class="p">(</span><span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span><span class="n">printError</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1646,6 +1676,10 @@ method setOption</p>
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

@@ -513,6 +513,8 @@
       
         
       
+        
+      
     
     
     
@@ -628,7 +630,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall runoff model
+    Calibration
   
 
     
@@ -741,6 +743,34 @@
     
   
     Wrapper
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/distrrm.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
   
 
     
@@ -1342,7 +1372,7 @@
 • two 10-day forecasts per day, initialized from analyses at 00 and 12 UTC</p>
 <ul>
 <li>
-<p>Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at  <code>http://data.ecmwf.int/data &lt;http://data.ecmwf.intdata&gt;</code>_.</p>
+<p>Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at <a href="http://data.ecmwf.int/data">http://data.ecmwf.int/data</a>.</p>
 </li>
 <li>
 <p>The ERA-Interim Archive is part of ECMWF’s Meteorological Archive and Retrieval System (MARS), which is accessible to registered users</p>
@@ -1350,10 +1380,10 @@
 <li>The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine</li>
 </ul>
 <p>so inorder to be able to use the following code to download ECMWF data you need to
-- register and setup your account in the <code>ECMWF website &lt;https://apps.ecmwf.int/registration/&gt;</code>_.</p>
+- register and setup your account on the <a href="https://apps.ecmwf.int/registration/">ECMWF website</a>.</p>
 <ul>
 <li>
-<p>Install ECMWF key <code>instruction are here &lt;https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key&gt;</code>_.</p>
+<p>Install ECMWF key — <a href="https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key">instructions here</a>.</p>
 </li>
 <li>
 <p>ERA-Interim data set has a lot of meteorological variables which you can download</p>
@@ -1365,7 +1395,7 @@
 <span class="n">Vars</span> <span class="o">=</span> <span class="n">Variables</span><span class="p">(</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span>
 <span class="n">Vars</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
 </code></pre></div>
-<p>For the information about the ECMWF data <code>https://apps.ecmwf.int/codes/grib/param-db/ &lt;https://apps.ecmwf.int/codes/grib/param-db/&gt;</code>_.</p>
+<p>For information about ECMWF data, see <a href="https://apps.ecmwf.int/codes/grib/param-db/">https://apps.ecmwf.int/codes/grib/param-db/</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">StartDate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-01&#39;</span>
 <span class="n">EndDate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-10&#39;</span>
 <span class="n">Time</span> <span class="o">=</span> <span class="s1">&#39;daily&#39;</span>
@@ -1479,6 +1509,10 @@
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

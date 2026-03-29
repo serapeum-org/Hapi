@@ -513,6 +513,8 @@
       
         
       
+        
+      
     
     
     
@@ -628,7 +630,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall runoff model
+    Calibration
   
 
     
@@ -741,6 +743,34 @@
     
   
     Wrapper
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/distrrm.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
   
 
     
@@ -1283,10 +1313,8 @@
 
 <h1 id="gis-inputs"><a class="toclink" href="#gis-inputs">GIS Inputs</a><a class="headerlink" href="#gis-inputs" title="Permanent link">#</a></h1>
 <p>In order to determine the direction of the flow Hapi used the D8 <code>flow direction</code> and <code>flow accumulation</code> rasters. Since the avialable DEMs are in resolution of few tens of meters (30 or 90 m) and usually hydrological models are build to represent units much bigger than that so we need to get the River network from these fine resolution DEMs first and then burn the river into courser resolution (i.e. 5km ) that we want to use as a resolution for our distributed hydrological model.</p>
-<p>.. image:: /img/flowdirection.png
-    :width: 400pt</p>
-<p>.. image:: /img/UZ.png
-    :width: 400pt</p>
+<p><img alt="Flow Direction" src="../img/flowdirection.png" width="400" /></p>
+<p><img alt="Upper Zone" src="../img/UZ.png" width="400" /></p>
 <h1 id="burning-the-river-into-the-dem"><a class="toclink" href="#burning-the-river-into-the-dem">Burning the River into the DEM</a><a class="headerlink" href="#burning-the-river-into-the-dem" title="Permanent link">#</a></h1>
 <p>1- Create suitable Flow accumulation
 After deriving the the flow accumulation form the fine resolution DEM (30 or 90 m)
@@ -1431,6 +1459,10 @@ output will be the raster `DEM_Burn.tif`
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

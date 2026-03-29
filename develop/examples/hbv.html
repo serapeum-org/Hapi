@@ -513,6 +513,8 @@
       
         
       
+        
+      
     
     
     
@@ -628,7 +630,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall runoff model
+    Calibration
   
 
     
@@ -741,6 +743,34 @@
     
   
     Wrapper
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/distrrm.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
   
 
     
@@ -1290,7 +1320,7 @@ to route the water downstream, All runoff that is generated in a cell in one of 
 <p>HBV model consists of three main components:</p>
 <ul>
 <li>
-<p>Snow Subroutine :ref:<code>snow</code></p>
+<p><a href="#snow">Snow Subroutine</a></p>
 </li>
 <li>
 <p>Soil Moisture</p>
@@ -1315,33 +1345,31 @@ to correct for systematic errors before entering the model.</p>
 the 15 parameter by order are [<code>tt</code>,<code>rfcf</code>,<code>sfcf</code>,<code>cfmax</code>,<code>cwh</code>,<code>cfr</code>,<code>fc</code>,<code>beta</code>,<code>etf</code>,<code>lp</code>,<code>k0</code>,<code>k1</code>,<code>k2</code>,<code>uzl</code>,<code>perc</code>]. Two parameters are added for the correction of the rainfall values <code>rfcf</code> and for the correction of the calculated evapotranspiration values <code>Etf</code>, and in case the catchment does not have a snow then the HBV model used 10 parameter (excluding the first 5 parameters)</p>
 <p><img alt="HBV Buckets" src="../img/HBV_buckets.png" /></p>
 <p>[Bergström, 1992]</p>
-<p>.. _snow:</p>
 <h1 id="snow"><a class="toclink" href="#snow">Snow</a><a class="headerlink" href="#snow" title="Permanent link">#</a></h1>
 <p>The snow routine controls snow accumulation and melt. The precipitation accumulates as snow when the air temperature drops below a temperature threshold value (TT). snow accumulation is adjusted by a free parameter, Sfcf, the snowfall correction factor.</p>
 <p>If temperature is TT, precipitation occurs as snowfall, and is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold TT) or through snow refreezing (if temperatures are below threshold TT).</p>
 <p>Melting starts with temperatures above the threshold, TT, according to a simple degree-day</p>
-<h5 id="_1"><a class="toclink" href="#_1"></a><a class="headerlink" href="#_1" title="Permanent link">#</a></h5>
 <p>Snow MELT = Cfmax * (T - TT) ; temp &gt; TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp &lt; TT</p>
 <p>where: Snow MELT &amp; Snow Refreezing are in (mm/day)
-Cfmax = degree-day factor (mm/°C · day)</p>
-<h5 id="tt-temperature-threshold-c"><a class="toclink" href="#tt-temperature-threshold-c">TT = temperature threshold (C).</a><a class="headerlink" href="#tt-temperature-threshold-c" title="Permanent link">#</a></h5>
-<p>The maximum capacity of liquid water the snow can hold (holding water capacity WHC) has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.</p>
+Cfmax = degree-day factor (mm/°C · day)
+<strong>TT = temperature threshold (C).</strong>
+The maximum capacity of liquid water the snow can hold (holding water capacity WHC) has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.</p>
 <p>The snow routine of the HBV model has primarily five free parameters that have to be estimated by calibration:
 <code>tt</code>,<code>sfcf</code>,<code>cfmax</code>,<code>cwh</code>,<code>cfr</code>.</p>
 <h1 id="soil-moisture"><a class="toclink" href="#soil-moisture">Soil moisture</a><a class="headerlink" href="#soil-moisture" title="Permanent link">#</a></h1>
 <p>The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA (power parameter) determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit.</p>
 <p><img alt="Beta" src="../img/Beta.png" /></p>
 <p>LP controls the shape of the reduction curve for potential evaporation. At soil moisture values below LP the actual evapotranspiration will be reduced.</p>
-<h5 id="to-accounts-for-temperature-anomalies-a-correction-factor-based-on-mean-daily-air-temperatures-and-long-term-averages-is-used"><a class="toclink" href="#to-accounts-for-temperature-anomalies-a-correction-factor-based-on-mean-daily-air-temperatures-and-long-term-averages-is-used">To accounts for temperature anomalies a correction factor based on mean daily air temperatures and long term averages is used.</a><a class="headerlink" href="#to-accounts-for-temperature-anomalies-a-correction-factor-based-on-mean-daily-air-temperatures-and-long-term-averages-is-used" title="Permanent link">#</a></h5>
-<p>Ea = (1 + (T - Tm) * ETF)*Ep
+<p><strong>To accounts for temperature anomalies a correction factor based on mean daily air temperatures and long term averages is used.</strong>
+Ea = (1 + (T - Tm) * ETF)<em>Ep
 where:
 Ea is calculated actual evapotranspiration
 Ecorr is evapotranspiration correction factor
 T is temperature (C)
-Tm is monthly long term average temperature (C)</p>
-<h5 id="ep-is-monthly-long-term-average-potential-evapotranspiration"><a class="toclink" href="#ep-is-monthly-long-term-average-potential-evapotranspiration">Ep is monthly long term average potential evapotranspiration</a><a class="headerlink" href="#ep-is-monthly-long-term-average-potential-evapotranspiration" title="Permanent link">#</a></h5>
-<p><img alt="Beta" src="../img/Evapotranspiration.png" /></p>
+Tm is monthly long term average temperature (C)
+</em><em>Ep is monthly long term average potential evapotranspiration</em>*
+<img alt="Beta" src="../img/Evapotranspiration.png" /></p>
 <h1 id="runoff-response"><a class="toclink" href="#runoff-response">Runoff response</a><a class="headerlink" href="#runoff-response" title="Permanent link">#</a></h1>
 <p>The runoff response routine transforms excess water from the soil moisture routine to discharge. The routine consists of two reservoirs with three free parameters: three recession coefficients, <code>K0</code>, <code>K1</code> and <code>K2</code>, a threshold <code>UZL</code>, and a constant percolation rate, <code>PERC</code>.</p>
 <h1 id="lake"><a class="toclink" href="#lake">Lake</a><a class="headerlink" href="#lake" title="Permanent link">#</a></h1>
@@ -1452,6 +1480,10 @@ Lakes have a significant impact on the dynamics of runoff process and the routin
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>
