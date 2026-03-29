@@ -50,13 +50,13 @@ Coello.readDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 ```
-## -Spatial Variability Object
+## Spatial Variability Object
 
-from Hapi.rrm.distparameters import DistParameters as DP
-
-- The `DistParameters` distribute the parameter vector on the cells following some sptial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in aditional map)
+- The `DistParameters` distribute the parameter vector on the cells following some spatial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in an additional map)
 
 ```python
+from Hapi.rrm.distparameters import DistParameters as DP
+
 raster = gdal.Open(FlowAccPath)
 #-------------
 # for lumped catchment parameters
