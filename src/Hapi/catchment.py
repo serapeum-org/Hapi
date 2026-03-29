@@ -29,7 +29,7 @@ import statista.descriptors as metrics
 from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from osgeo import gdal
-from pyramids.datacube import Datacube
+from pyramids.multidataset import MultiDataset as Datacube
 from pyramids.dataset import Dataset
 
 from Hapi.dem import DEM
@@ -219,7 +219,7 @@ class Catchment:
                 file_name_data_fmt=file_name_data_fmt,
                 extension=extension,
             )
-            cube.open_datacube()
+            cube.open_multi_dataset()
             self.Prec = np.moveaxis(cube.values, 0, -1)
             self.TS = self.Prec.shape[2] + 1
             # no of time steps =length of time series +1
@@ -292,7 +292,7 @@ class Catchment:
                 file_name_data_fmt=file_name_data_fmt,
                 extension=extension,
             )
-            cube.open_datacube()
+            cube.open_multi_dataset()
             self.Temp = np.moveaxis(cube.values, 0, -1)
             assert isinstance(
                 self.Temp, np.ndarray
@@ -366,7 +366,7 @@ class Catchment:
                 file_name_data_fmt=file_name_data_fmt,
                 extension=extension,
             )
-            cube.open_datacube()
+            cube.open_multi_dataset()
             self.ET = np.moveaxis(cube.values, 0, -1)
             assert isinstance(
                 self.ET, np.ndarray
@@ -634,7 +634,7 @@ class Catchment:
             cube = Datacube.read_multiple_files(
                 path, with_order=True, regex_string=r"\d+", date=False
             )
-            cube.open_datacube()
+            cube.open_multi_dataset()
             self.Parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
