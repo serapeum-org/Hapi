@@ -1141,7 +1141,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Hydrological Model
+    Distributed Hydrological Model Calibration
   
 
     
@@ -1169,7 +1169,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Hydrological Model Calibration
+    Distributed Hydrological Model
   
 
     
@@ -1973,7 +1973,10 @@ need to create the Catchment object first to run the model.</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the catchment model.</span>
 
 <span class="sd">    The Run sub-class validates the spatial data and hands it to the</span>
@@ -2278,17 +2281,20 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">            The following attributes should be defined before calling</span>
 <span class="sd">            this method:</span>
 
-<span class="sd">            - ``ConceptualModel``: Conceptual model containing a</span>
+<span class="sd">            - ``LumpedModel``: Conceptual model containing a</span>
 <span class="sd">              ``simulate`` method.</span>
-<span class="sd">            - ``data``: Numpy array of meteorological data with columns</span>
-<span class="sd">              for precipitation, evapotranspiration, temperature, and</span>
-<span class="sd">              long-term average temperature.</span>
-<span class="sd">            - ``parameters``: Numpy array of conceptual model</span>
+<span class="sd">            - ``data``: Numpy array of meteorological data with</span>
+<span class="sd">              columns for precipitation, evapotranspiration,</span>
+<span class="sd">              temperature, and long-term average temperature.</span>
+<span class="sd">            - ``Parameters``: Numpy array of conceptual model</span>
 <span class="sd">              parameters.</span>
-<span class="sd">            - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
-<span class="sd">              is tfac and ``p2[1]`` is catchment area in km2.</span>
-<span class="sd">            - ``init_st``: List of initial state variable values</span>
-<span class="sd">              [sp, sm, uz, lz, wc].</span>
+<span class="sd">            - ``CatArea``: Catchment area in km2.</span>
+<span class="sd">            - ``conversion_factor``: Time conversion factor</span>
+<span class="sd">              (e.g., 24 for daily).</span>
+<span class="sd">            - ``InitialCond``: List of initial state variable</span>
+<span class="sd">              values [sp, sm, uz, lz, wc].</span>
+<span class="sd">            - ``Snow``: Whether to use the snow subroutine (0 or 1).</span>
+<span class="sd">            - ``q_init``: Initial discharge value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">RoutingFn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Route</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;RoutingFn must be a callable when Route != 0&quot;</span><span class="p">)</span>
@@ -3275,17 +3281,20 @@ If None, an empty list is used. Defaults to None.</p>
   <p>The following attributes should be defined before calling
 this method:</p>
 <ul>
-<li><code>ConceptualModel</code>: Conceptual model containing a
+<li><code>LumpedModel</code>: Conceptual model containing a
   <code>simulate</code> method.</li>
-<li><code>data</code>: Numpy array of meteorological data with columns
-  for precipitation, evapotranspiration, temperature, and
-  long-term average temperature.</li>
-<li><code>parameters</code>: Numpy array of conceptual model
+<li><code>data</code>: Numpy array of meteorological data with
+  columns for precipitation, evapotranspiration,
+  temperature, and long-term average temperature.</li>
+<li><code>Parameters</code>: Numpy array of conceptual model
   parameters.</li>
-<li><code>p2</code>: List of unoptimized parameters where <code>p2[0]</code>
-  is tfac and <code>p2[1]</code> is catchment area in km2.</li>
-<li><code>init_st</code>: List of initial state variable values
-  [sp, sm, uz, lz, wc].</li>
+<li><code>CatArea</code>: Catchment area in km2.</li>
+<li><code>conversion_factor</code>: Time conversion factor
+  (e.g., 24 for daily).</li>
+<li><code>InitialCond</code>: List of initial state variable
+  values [sp, sm, uz, lz, wc].</li>
+<li><code>Snow</code>: Whether to use the snow subroutine (0 or 1).</li>
+<li><code>q_init</code>: Initial discharge value.</li>
 </ul>
 </details>
 
@@ -3338,7 +3347,10 @@ this method:</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">RoutingFn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -3361,17 +3373,20 @@ this method:</p>
 <span class="sd">        The following attributes should be defined before calling</span>
 <span class="sd">        this method:</span>
 
-<span class="sd">        - ``ConceptualModel``: Conceptual model containing a</span>
+<span class="sd">        - ``LumpedModel``: Conceptual model containing a</span>
 <span class="sd">          ``simulate`` method.</span>
-<span class="sd">        - ``data``: Numpy array of meteorological data with columns</span>
-<span class="sd">          for precipitation, evapotranspiration, temperature, and</span>
-<span class="sd">          long-term average temperature.</span>
-<span class="sd">        - ``parameters``: Numpy array of conceptual model</span>
+<span class="sd">        - ``data``: Numpy array of meteorological data with</span>
+<span class="sd">          columns for precipitation, evapotranspiration,</span>
+<span class="sd">          temperature, and long-term average temperature.</span>
+<span class="sd">        - ``Parameters``: Numpy array of conceptual model</span>
 <span class="sd">          parameters.</span>
-<span class="sd">        - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
-<span class="sd">          is tfac and ``p2[1]`` is catchment area in km2.</span>
-<span class="sd">        - ``init_st``: List of initial state variable values</span>
-<span class="sd">          [sp, sm, uz, lz, wc].</span>
+<span class="sd">        - ``CatArea``: Catchment area in km2.</span>
+<span class="sd">        - ``conversion_factor``: Time conversion factor</span>
+<span class="sd">          (e.g., 24 for daily).</span>
+<span class="sd">        - ``InitialCond``: List of initial state variable</span>
+<span class="sd">          values [sp, sm, uz, lz, wc].</span>
+<span class="sd">        - ``Snow``: Whether to use the snow subroutine (0 or 1).</span>
+<span class="sd">        - ``q_init``: Initial discharge value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">RoutingFn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Route</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;RoutingFn must be a callable when Route != 0&quot;</span><span class="p">)</span>

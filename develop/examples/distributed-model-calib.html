@@ -27,7 +27,7 @@
     
     
       
-        <title>Distributed Hydrological Model - Hapi</title>
+        <title>Distributed Hydrological Model Calibration - Hapi</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#distributed-hydrological-model" class="md-skip">
+        <a href="#distributed-hydrological-model-calibration" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Distributed Hydrological Model
+              Distributed Hydrological Model Calibration
             
           </span>
         </div>
@@ -1003,7 +1003,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Hydrological Model
+    Distributed Hydrological Model Calibration
   
 
     
@@ -1021,7 +1021,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Hydrological Model
+    Distributed Hydrological Model Calibration
   
 
     
@@ -1047,54 +1047,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#-spatial-variability-object" class="md-nav__link">
+  <a href="#1-catchment-object" class="md-nav__link">
     <span class="md-ellipsis">
       
-        -Spatial Variability Object
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#define-the-objective-function" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Define the objective function
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#calibration-algorithm-arguments" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Calibration algorithm Arguments
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-calibration-algorithm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run Calibration algorithm
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Save results
+        1- Catchment Object
       
     </span>
   </a>
@@ -1124,7 +1080,7 @@
   <span class="md-ellipsis">
     
   
-    Distributed Hydrological Model Calibration
+    Distributed Hydrological Model
   
 
     
@@ -1395,54 +1351,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#-spatial-variability-object" class="md-nav__link">
+  <a href="#1-catchment-object" class="md-nav__link">
     <span class="md-ellipsis">
       
-        -Spatial Variability Object
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#define-the-objective-function" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Define the objective function
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#calibration-algorithm-arguments" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Calibration algorithm Arguments
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-calibration-algorithm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run Calibration algorithm
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Save results
+        1- Catchment Object
       
     </span>
   </a>
@@ -1466,116 +1378,280 @@
 
 
 
-<h1 id="distributed-hydrological-model"><a class="toclink" href="#distributed-hydrological-model">Distributed Hydrological Model</a><a class="headerlink" href="#distributed-hydrological-model" title="Permanent link">#</a></h1>
-<p>After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">Hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBV</span>
+<h1 id="distributed-hydrological-model-calibration"><a class="toclink" href="#distributed-hydrological-model-calibration">Distributed Hydrological Model Calibration</a><a class="headerlink" href="#distributed-hydrological-model-calibration" title="Permanent link">#</a></h1>
+<p>The calibration of the Distributed rainfall runoff model follows the same steps of running the model with extra steps to define the calibration algorithm arguments</p>
+<h2 id="1-catchment-object"><a class="toclink" href="#1-catchment-object">1- Catchment Object</a><a class="headerlink" href="#1-catchment-object" title="Permanent link">#</a></h2>
+<ul>
+<li>Import the Catchment object which is the main object in the distributed model, to read and check the input data,  and when the model finish the simulation it stores the results and do the visualization</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">statista.descriptors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metrics</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s1">&#39;Lumped&#39;</span><span class="p">,</span>
+                 <span class="n">TemporalResolution</span> <span class="o">=</span> <span class="s2">&quot;Daily&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        =============================================================================</span>
+<span class="sd">            Catchment(name, StartDate, EndDate, fmt=&quot;%Y-%m-%d&quot;, SpatialResolution = &#39;Lumped&#39;,</span>
+<span class="sd">                             TemporalResolution = &quot;Daily&quot;)</span>
+<span class="sd">        =============================================================================</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : [str]</span>
+<span class="sd">            Name of the Catchment.</span>
+<span class="sd">        StartDate : [str]</span>
+<span class="sd">            starting date.</span>
+<span class="sd">        EndDate : [str]</span>
+<span class="sd">            end date.</span>
+<span class="sd">        fmt : [str], optional</span>
+<span class="sd">            format of the given date. The default is &quot;%Y-%m-%d&quot;.</span>
+<span class="sd">        SpatialResolution : TYPE, optional</span>
+<span class="sd">            Lumped or &#39;Distributed&#39; . The default is &#39;Lumped&#39;.</span>
+<span class="sd">        TemporalResolution : TYPE, optional</span>
+<span class="sd">            &quot;Hourly&quot; or &quot;Daily&quot;. The default is &quot;Daily&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+- To instantiate the object you need to provide the <code>name</code>, <code>statedate</code>, <code>enddate</code>, and the <code>SpatialResolution</code></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
 
-<span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/distributed/coello&quot;</span>
+<span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
+<span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
+
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">&quot;Distributed&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h1 id="read-meteorological-inputs"><a class="toclink" href="#read-meteorological-inputs">Read Meteorological Inputs</a><a class="headerlink" href="#read-meteorological-inputs" title="Permanent link">#</a></h1>
+<ul>
+<li>First define the directory where the data exist</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/distributed/coello&quot;</span>
 <span class="n">PrecPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/prec&quot;</span>
 <span class="n">Evap_Path</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/evap&quot;</span>
 <span class="n">TempPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/temp&quot;</span>
 <span class="n">FlowAccPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/GIS/acc4000.tif&quot;</span>
 <span class="n">FlowDPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/GIS/fd4000.tif&quot;</span>
-<span class="n">CalibPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/calibration&quot;</span>
-<span class="n">SaveTo</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/results&quot;</span>
-
-<span class="n">AreaCoeff</span> <span class="o">=</span> <span class="mi">1530</span>
-<span class="c1">#[sp,sm,uz,lz,wc]</span>
-<span class="n">InitialCond</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">Snow</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="c1"># Create the model object and read the input data</span>
-
-<span class="n">Sdate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-01&#39;</span>
-<span class="n">Edate</span> <span class="o">=</span> <span class="s1">&#39;2011-12-31&#39;</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Sdate</span><span class="p">,</span> <span class="n">Edate</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">&quot;Distributed&quot;</span><span class="p">)</span>
-
-<span class="c1"># Meteorological &amp; GIS Data</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">readRainfall</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">)</span>
+<span class="n">ParPathRun</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/Parameter set-Avg/&quot;</span>
+</code></pre></div>
+- Then use the each method in the object to read the coresponding data</p>
+<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">readRainfall</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">)</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">readTemperature</span><span class="p">(</span><span class="n">TempPath</span><span class="p">)</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">readET</span><span class="p">(</span><span class="n">Evap_Path</span><span class="p">)</span>
-
 <span class="n">Coello</span><span class="o">.</span><span class="n">readFlowAcc</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">)</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">readFlowDir</span><span class="p">(</span><span class="n">FlowDPath</span><span class="p">)</span>
+</code></pre></div>
+- To read the parameters you need to provide whether you need to consider the snow subroutine or not</p>
+<div class="highlight"><pre><span></span><code><span class="n">Snow</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">readParameters</span><span class="p">(</span><span class="n">ParPathRun</span><span class="p">,</span> <span class="n">Snow</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="2-lumped-model"><a class="toclink" href="#2-lumped-model">2- Lumped Model</a><a class="headerlink" href="#2-lumped-model" title="Permanent link">#</a></h2>
+<ul>
+<li>Get the Lumpde conceptual model you want to couple it with the distributed routing module which in our case HBV
+    and define the initial condition, and catchment area.</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="kn">import</span> <span class="n">HBVBergestrom92</span> <span class="k">as</span> <span class="n">HBV</span>
 
-<span class="c1"># Lumped Model</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedModel</span><span class="p">(</span><span class="n">HBV</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
-
-<span class="c1"># Gauges Data</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">readGaugeTable</span><span class="p">(</span><span class="n">Path</span><span class="o">+</span><span class="s2">&quot;/stations/gauges.csv&quot;</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">GaugesPath</span> <span class="o">=</span> <span class="n">Path</span><span class="o">+</span><span class="s2">&quot;/stations/&quot;</span>
+<span class="n">CatchmentArea</span> <span class="o">=</span> <span class="mi">1530</span>
+<span class="n">InitialCond</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedModel</span><span class="p">(</span><span class="n">HBV</span><span class="p">,</span> <span class="n">CatchmentArea</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
+</code></pre></div>
+- If the Inpus are consistent in dimensions you will get a the following message</p>
+<p><img alt="check_inputs" src="../img/check_inputs.PNG" /></p>
+<ul>
+<li>to check the performance of the model we need to read the gauge hydrographs</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">readGaugeTable</span><span class="p">(</span><span class="s2">&quot;Hapi/Data/00inputs/Discharge/stations/gauges.csv&quot;</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="n">GaugesPath</span> <span class="o">=</span> <span class="s2">&quot;Hapi/Data/00inputs/Discharge/stations/&quot;</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">readDischargeGauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="-spatial-variability-object"><a class="toclink" href="#-spatial-variability-object">-Spatial Variability Object</a><a class="headerlink" href="#-spatial-variability-object" title="Permanent link">#</a></h2>
-<p>from Hapi.rrm.distparameters import DistParameters as DP</p>
+<h2 id="3-run-object"><a class="toclink" href="#3-run-object">3-Run Object</a><a class="headerlink" href="#3-run-object" title="Permanent link">#</a></h2>
 <ul>
-<li>The <code>DistParameters</code> distribute the parameter vector on the cells following some sptial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in aditional map)</li>
+<li>The <code>Run</code> object connects all the components of the simulation together, the <code>Catchment</code> object, the <code>Lake</code> object and the <code>distributedrouting</code> object</li>
+<li>import the Run object and use the <code>Catchment</code> object as a parameter to the <code>Run</code> object, then call the RunHapi method to start the simulation</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">raster</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="c1">#-------------</span>
-<span class="c1"># for lumped catchment parameters</span>
-<span class="n">no_parameters</span> <span class="o">=</span> <span class="mi">12</span>
-<span class="n">klb</span> <span class="o">=</span> <span class="mf">0.5</span>
-<span class="n">kub</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="c1">#------------</span>
-<span class="n">no_lumped_par</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">lumped_par_pos</span> <span class="o">=</span> <span class="p">[</span><span class="mi">7</span><span class="p">]</span>
-
-<span class="n">SpatialVarFun</span> <span class="o">=</span> <span class="n">DP</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">no_parameters</span><span class="p">,</span> <span class="n">no_lumped_par</span><span class="o">=</span><span class="n">no_lumped_par</span><span class="p">,</span>
-                   <span class="n">lumped_par_pos</span><span class="o">=</span><span class="n">lumped_par_pos</span><span class="p">,</span><span class="n">Function</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Klb</span><span class="o">=</span><span class="n">klb</span><span class="p">,</span> <span class="n">Kub</span><span class="o">=</span><span class="n">kub</span><span class="p">)</span>
-<span class="c1"># calculate no of parameters that optimization algorithm is going to generate</span>
-<span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">ParametersNO</span>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">RunHapi</span><span class="p">(</span><span class="n">Coello</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="define-the-objective-function"><a class="toclink" href="#define-the-objective-function">Define the objective function</a><a class="headerlink" href="#define-the-objective-function" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">coordinates</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">,</span><span class="s1">&#39;weight&#39;</span><span class="p">]][:]</span>
-
-<span class="c1"># define the objective function and its arguments</span>
-<span class="n">OF_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">coordinates</span><span class="p">]</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="n">Qobs</span><span class="p">,</span> <span class="n">Qout</span><span class="p">,</span> <span class="n">q_uz_routed</span><span class="p">,</span> <span class="n">q_lz_trans</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">):</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">extractDischarge</span><span class="p">()</span>
-    <span class="n">all_errors</span><span class="o">=</span><span class="p">[]</span>
-    <span class="c1"># error for all internal stations</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)):</span>
-        <span class="n">all_errors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span><span class="p">(</span><span class="n">Qobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">Qobs</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">Coello</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:,</span><span class="n">i</span><span class="p">])))</span> <span class="c1">#*coordinates.loc[coordinates.index[i],&#39;weight&#39;]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
-        <span class="n">error</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">error</span>
-
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_objective_function</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">OF_args</span><span class="p">)</span>
+- the result of the simulation will be stored as attributes in the Catchment object as follow</p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Outputs:</span>
+<span class="sd">    1-statevariables: [numpy attribute]</span>
+<span class="sd">        4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]</span>
+<span class="sd">    2-qlz: [numpy attribute]</span>
+<span class="sd">        3D array of the lower zone discharge</span>
+<span class="sd">    3-quz: [numpy attribute]</span>
+<span class="sd">        3D array of the upper zone discharge</span>
+<span class="sd">    4-qout: [numpy attribute]</span>
+<span class="sd">        1D timeseries of discharge at the outlet of the catchment</span>
+<span class="sd">        of unit m3/sec</span>
+<span class="sd">    5-quz_routed: [numpy attribute]</span>
+<span class="sd">        3D array of the upper zone discharge  accumulated and</span>
+<span class="sd">        routed at each time step</span>
+<span class="sd">    6-qlz_translated: [numpy attribute]</span>
+<span class="sd">        3D array of the lower zone discharge translated at each time step</span>
+<span class="sd">&quot;&quot;&quot;</span>
 </code></pre></div>
-<h2 id="calibration-algorithm-arguments"><a class="toclink" href="#calibration-algorithm-arguments">Calibration algorithm Arguments</a><a class="headerlink" href="#calibration-algorithm-arguments" title="Permanent link">#</a></h2>
+<h2 id="4-extract-hydrographs"><a class="toclink" href="#4-extract-hydrographs">4-Extract Hydrographs</a><a class="headerlink" href="#4-extract-hydrographs" title="Permanent link">#</a></h2>
 <ul>
-<li>Create the options dictionary all the optimization parameters should be passed to the optimization object inside the option dictionary:</li>
+<li>The final step is to extract the simulated Hydrograph from the cells at the location of the gauges to compare</li>
+<li>The <code>extractDischarge</code> method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the <code>FlowAcc</code> raster</li>
 </ul>
-<p>to see all options import Optimizer class and check the documentation of the
-method setOption</p>
-<div class="highlight"><pre><span></span><code>ApiObjArgs = dict(hms=50, hmcr=0.95, par=0.65, dbw=2000, fileout=1,
-                  filename=SaveTo + &quot;/Coello_&quot;+str(dt.datetime.now())[0:10]+&quot;.txt&quot;)
+<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">extractDischarge</span><span class="p">(</span><span class="n">Factor</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[</span><span class="s1">&#39;area ratio&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
-for i in range(len(ApiObjArgs)):
-    print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
-
-pll_type = &#39;POA&#39;
-pll_type = None
-
-ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True,hot_start=False)
-
-OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
+    <span class="n">gaugeid</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------------------------------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gauge - &quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">gaugeid</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMSE= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NSE= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;NSE&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NSEhf= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;NSEhf&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;KGE= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;KGE&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WB= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;WB&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pearson CC= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Pearson-CC&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;R2 = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
 </code></pre></div>
-<h2 id="run-calibration-algorithm"><a class="toclink" href="#run-calibration-algorithm">Run Calibration algorithm</a><a class="headerlink" href="#run-calibration-algorithm" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">runCalibration</span><span class="p">(</span><span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span><span class="n">printError</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+- The <code>extractDischarge</code> will print the performance metics</p>
+<h2 id="5-visualization"><a class="toclink" href="#5-visualization">5-Visualization</a><a class="headerlink" href="#5-visualization" title="Permanent link">#</a></h2>
+<ul>
+<li>Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs</li>
+<li>Call the <code>plotHydrograph</code> method and provide the period you want to visualize with the order of the gauge</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="n">gaugei</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">plotstart</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
+<span class="n">plotend</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
+
+<span class="n">Coello</span><span class="o">.</span><span class="n">plotHydrograph</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">gaugei</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="save-results"><a class="toclink" href="#save-results">Save results</a><a class="headerlink" href="#save-results" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Parameters</span><span class="p">,</span> <span class="n">kub</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Kub</span><span class="p">,</span> <span class="n">klb</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Klb</span><span class="p">)</span>
-<span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">saveParameters</span><span class="p">(</span><span class="n">SaveTo</span><span class="p">)</span>
+<img alt="hydrograph" src="../img/hydrograph.png" /></p>
+<h2 id="6-animation"><a class="toclink" href="#6-animation">6-Animation</a><a class="headerlink" href="#6-animation" title="Permanent link">#</a></h2>
+<ul>
+<li>the best way to visualize time series of distributed data is through visualization, for theis reason, The <code>Catchment</code> object has <code>plotDistributedResults</code> method which can animate all the results of the model</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=============================================================================</span>
+<span class="sd">AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,</span>
+<span class="sd">       NumSize= 8, Title = &#39;Total Discharge&#39;,titlesize = 15, Backgroundcolorthreshold=None,</span>
+<span class="sd">       cbarlabel = &#39;Discharge m3/s&#39;, cbarlabelsize = 12, textcolors=(&quot;white&quot;,&quot;black&quot;),</span>
+<span class="sd">       Cbarlength = 0.75, Interval = 200,cmap=&#39;coolwarm_r&#39;, Textloc=[0.1,0.2],</span>
+<span class="sd">       Gaugecolor=&#39;red&#39;,Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,</span>
+<span class="sd">       linscale=0.001, midpoint=0, orientation=&#39;vertical&#39;, rotation=-90,IDcolor = &quot;blue&quot;,</span>
+<span class="sd">          IDsize =10, **kwargs)</span>
+<span class="sd">=============================================================================</span>
+<span class="sd">Parameters</span>
+<span class="sd">----------</span>
+<span class="sd">Arr : [array]</span>
+<span class="sd">    the array you want to animate.</span>
+<span class="sd">Time : [dataframe]</span>
+<span class="sd">    dataframe contains the date of values.</span>
+<span class="sd">NoElem : [integer]</span>
+<span class="sd">    Number of the cells that has values.</span>
+<span class="sd">TicksSpacing : [integer], optional</span>
+<span class="sd">    Spacing in the colorbar ticks. The default is 2.</span>
+<span class="sd">Figsize : [tuple], optional</span>
+<span class="sd">    figure size. The default is (8,8).</span>
+<span class="sd">PlotNumbers : [bool], optional</span>
+<span class="sd">    True to plot the values intop of each cell. The default is True.</span>
+<span class="sd">NumSize : integer, optional</span>
+<span class="sd">    size of the numbers plotted intop of each cells. The default is 8.</span>
+<span class="sd">Title : [str], optional</span>
+<span class="sd">    title of the plot. The default is &#39;Total Discharge&#39;.</span>
+<span class="sd">titlesize : [integer], optional</span>
+<span class="sd">    title size. The default is 15.</span>
+<span class="sd">Backgroundcolorthreshold : [float/integer], optional</span>
+<span class="sd">    threshold value if the value of the cell is greater, the plotted</span>
+<span class="sd">    numbers will be black and if smaller the plotted number will be white</span>
+<span class="sd">    if None given the maxvalue/2 will be considered. The default is None.</span>
+<span class="sd">textcolors : TYPE, optional</span>
+<span class="sd">    Two colors to be used to plot the values i top of each cell. The default is (&quot;white&quot;,&quot;black&quot;).</span>
+<span class="sd">cbarlabel : str, optional</span>
+<span class="sd">    label of the color bar. The default is &#39;Discharge m3/s&#39;.</span>
+<span class="sd">cbarlabelsize : integer, optional</span>
+<span class="sd">    size of the color bar label. The default is 12.</span>
+<span class="sd">Cbarlength : [float], optional</span>
+<span class="sd">    ratio to control the height of the colorbar. The default is 0.75.</span>
+<span class="sd">Interval : [integer], optional</span>
+<span class="sd">    number to controlthe speed of the animation. The default is 200.</span>
+<span class="sd">cmap : [str], optional</span>
+<span class="sd">    color style. The default is &#39;coolwarm_r&#39;.</span>
+<span class="sd">Textloc : [list], optional</span>
+<span class="sd">    location of the date text. The default is [0.1,0.2].</span>
+<span class="sd">Gaugecolor : [str], optional</span>
+<span class="sd">    color of the points. The default is &#39;red&#39;.</span>
+<span class="sd">Gaugesize : [integer], optional</span>
+<span class="sd">    size of the points. The default is 100.</span>
+<span class="sd">IDcolor : [str]</span>
+<span class="sd">    the ID of the Point.The default is &quot;blue&quot;.</span>
+<span class="sd">IDsize : [integer]</span>
+<span class="sd">    size of the ID text. The default is 10.</span>
+<span class="sd">ColorScale : integer, optional</span>
+<span class="sd">    there are 5 options to change the scale of the colors. The default is 1.</span>
+<span class="sd">    1- ColorScale 1 is the normal scale</span>
+<span class="sd">    2- ColorScale 2 is the power scale</span>
+<span class="sd">    3- ColorScale 3 is the SymLogNorm scale</span>
+<span class="sd">    4- ColorScale 4 is the PowerNorm scale</span>
+<span class="sd">    5- ColorScale 5 is the BoundaryNorm scale</span>
+<span class="sd">    ------------------------------------------------------------------</span>
+<span class="sd">    gamma : [float], optional</span>
+<span class="sd">        value needed for option 2 . The default is 1./2..</span>
+<span class="sd">    linthresh : [float], optional</span>
+<span class="sd">        value needed for option 3. The default is 0.0001.</span>
+<span class="sd">    linscale : [float], optional</span>
+<span class="sd">        value needed for option 3. The default is 0.001.</span>
+<span class="sd">    midpoint : [float], optional</span>
+<span class="sd">        value needed for option 5. The default is 0.</span>
+<span class="sd">    ------------------------------------------------------------------</span>
+<span class="sd">orientation : [string], optional</span>
+<span class="sd">    orintation of the colorbar horizontal/vertical. The default is &#39;vertical&#39;.</span>
+<span class="sd">rotation : [number], optional</span>
+<span class="sd">    rotation of the colorbar label. The default is -90.</span>
+<span class="sd">**kwargs : [dict]</span>
+<span class="sd">    keys:</span>
+<span class="sd">        Points : [dataframe].</span>
+<span class="sd">            dataframe contains two columns &#39;cell_row&#39;, and cell_col to</span>
+<span class="sd">            plot the point at this location</span>
+
+<span class="sd">Returns</span>
+<span class="sd">-------</span>
+<span class="sd">animation.FuncAnimation.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+</code></pre></div>
+- choose the period of time you want to animate and the result (total discharge, upper zone discharge, soil moisture,...)</p>
+<p><div class="highlight"><pre><span></span><code><span class="n">plotstart</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
+<span class="n">plotend</span> <span class="o">=</span> <span class="s2">&quot;2009-02-01&quot;</span>
+
+<span class="n">Anim</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">plotDistributedResults</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">Figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">9</span><span class="p">),</span> <span class="n">Option</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">threshold</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">PlotNumbers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">TicksSpacing</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span><span class="n">Interval</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">Gauges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;inferno&#39;</span><span class="p">,</span> <span class="n">Textloc</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.2</span><span class="p">],</span>
+                            <span class="n">Gaugecolor</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span><span class="n">ColorScale</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">IDcolor</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">IDsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+</code></pre></div>
+<img alt="Animation" src="../img/anim.gif" /></p>
+<ul>
+<li>
+<p>to save the animation</p>
+<ul>
+<li>Please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system</li>
+<li>
+<p>Copy the content of the folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
+or</p>
+</li>
+<li>
+<p>define the path where the downloaded folder "ffmpeg-static" exist to matplotlib using the following lines</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;animation.ffmpeg_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;path where you saved the ffmpeg.exe/ffmpeg.exe&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">Path</span> <span class="o">=</span> <span class="n">SaveTo</span> <span class="o">+</span> <span class="s2">&quot;anim.gif&quot;</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">saveAnimation</span><span class="p">(</span><span class="n">VideoFormat</span><span class="o">=</span><span class="s2">&quot;gif&quot;</span><span class="p">,</span><span class="n">Path</span><span class="o">=</span><span class="n">Path</span><span class="p">,</span><span class="n">SaveFrames</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div></p>
+<h2 id="7-save-the-result-into-rasters"><a class="toclink" href="#7-save-the-result-into-rasters">7-Save the result into rasters</a><a class="headerlink" href="#7-save-the-result-into-rasters" title="Permanent link">#</a></h2>
+<ul>
+<li>To save the results as rasters provide the period and the path</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">StartDate</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
+<span class="n">EndDate</span> <span class="o">=</span> <span class="s2">&quot;2010-04-20&quot;</span>
+<span class="n">Prefix</span> <span class="o">=</span> <span class="s1">&#39;Qtot_&#39;</span>
+
+<span class="n">Coello</span><span class="o">.</span><span class="n">saveResults</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">,</span> <span class="n">Result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">StartDate</span><span class="o">=</span><span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="o">=</span><span class="n">EndDate</span><span class="p">,</span> <span class="n">Path</span><span class="o">=</span><span class="s2">&quot;F:/02Case studies/Coello/Hapi/Model/results/&quot;</span><span class="p">,</span> <span class="n">Prefix</span><span class="o">=</span><span class="n">Prefix</span><span class="p">)</span>
 </code></pre></div>
 
 
@@ -1629,13 +1705,13 @@ OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
         
         
           
-          <a href="distributed-model-run.html" class="md-footer__link md-footer__link--next" aria-label="Next: Distributed Hydrological Model Calibration">
+          <a href="distributed-model-run.html" class="md-footer__link md-footer__link--next" aria-label="Next: Distributed Hydrological Model">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Distributed Hydrological Model Calibration
+                Distributed Hydrological Model
               </div>
             </div>
             <div class="md-footer__button md-icon">
