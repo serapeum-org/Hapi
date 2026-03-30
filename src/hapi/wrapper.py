@@ -12,12 +12,12 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from Hapi.routing import Routing as routing
-from Hapi.rrm.distrrm import DistributedRRM as distrrm
-from Hapi.rrm.hbv_lake import HBVLake
+from hapi.routing import Routing as routing
+from hapi.rrm.distrrm import DistributedRRM as distrrm
+from hapi.rrm.hbv_lake import HBVLake
 
 if TYPE_CHECKING:
-    from Hapi.catchment import Catchment, Lake
+    from hapi.catchment import Catchment, Lake
 
 
 class Wrapper:

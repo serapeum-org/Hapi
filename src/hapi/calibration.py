@@ -14,8 +14,8 @@ import numpy as np
 from Oasis.harmonysearch import HSapi
 from Oasis.optimization import Optimization
 
-from Hapi.catchment import Catchment
-from Hapi.wrapper import Wrapper
+from hapi.catchment import Catchment
+from hapi.wrapper import Wrapper
 
 
 class Calibration(Catchment):

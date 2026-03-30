@@ -65,7 +65,7 @@ class Routing:
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.routing import Routing
+            >>> from hapi.routing import Routing
             >>> inflow = np.array([0, 1, 3, 7, 10, 9, 6, 3, 1, 0])
             >>> q_routed = Routing.Muskingum(
             ...     inflow, Qinitial=0, k=2, x=0.2, dt=1
@@ -122,7 +122,7 @@ class Routing:
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.routing import Routing
+            >>> from hapi.routing import Routing
             >>> inflow = np.array([0, 1, 3, 7, 10, 9, 6, 3, 1, 0])
             >>> q_routed = Routing.Muskingum_V(
             ...     inflow, Qinitial=0, k=2, x=0.2, dt=1
@@ -165,7 +165,7 @@ class Routing:
             ``maxbas`` that sum to 1.0.
 
         Examples:
-            >>> from Hapi.routing import Routing
+            >>> from hapi.routing import Routing
             >>> weights = Routing.Tf(5)
             >>> print(weights.sum())
             1.0
@@ -210,7 +210,7 @@ class Routing:
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.routing import Routing
+            >>> from hapi.routing import Routing
             >>> q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])
             >>> q_routed = Routing.TriangularRouting2(q, maxbas=3)
         """
@@ -252,7 +252,7 @@ class Routing:
             ``floor(MAXBAS) + 1`` for non-integer values.
 
         Examples:
-            >>> from Hapi.routing import Routing
+            >>> from hapi.routing import Routing
             >>> weights = Routing.CalculateWeights(5)
             >>> print(weights)
             [0.08 0.24 0.36 0.24 0.08]
@@ -345,7 +345,7 @@ class Routing:
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.routing import Routing
+            >>> from hapi.routing import Routing
             >>> Q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])
             >>> q_out = Routing.TriangularRouting1(Q, MAXBAS=5)
         """

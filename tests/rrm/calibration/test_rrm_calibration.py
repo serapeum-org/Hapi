@@ -3,9 +3,9 @@ import datetime as dt
 import numpy as np
 import statista.descriptors as metrics
 
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
 
 def test_read_parameters_bounds(

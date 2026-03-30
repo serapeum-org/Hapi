@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from Hapi.rrm.hbv import HBV
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
-from Hapi.rrm.hbv_lake import HBVLake
+from hapi.rrm.hbv import HBV
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+from hapi.rrm.hbv_lake import HBVLake
 
 
 @pytest.fixture()

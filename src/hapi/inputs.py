@@ -56,7 +56,7 @@ class Inputs:
             alignment (coordinate system, rows, columns, resolution).
 
     Examples:
-        >>> from Hapi.inputs import Inputs
+        >>> from hapi.inputs import Inputs
         >>> inp = Inputs("data/dem.tif")
     """
 
@@ -91,7 +91,7 @@ class Inputs:
             FileNotFoundError: If ``inputs_dir`` does not exist.
 
         Examples:
-            >>> from Hapi.inputs import Inputs
+            >>> from hapi.inputs import Inputs
             >>> inp = Inputs("GIS/inputs/acc4000.tif")
             >>> inp.prepare_inputs(
             ...     "Precipitation/CHIRPS/Daily/",
@@ -287,7 +287,7 @@ class Inputs:
                 the corresponding raster in chronological order.
 
         Examples:
-            >>> from Hapi.inputs import Inputs
+            >>> from hapi.inputs import Inputs
             >>> avg = Inputs.create_lumped_inputs(
             ...     "tests/rrm/data/coello/prec",
             ...     regex_string=r"\\d{4}.\\d{2}.\\d{2}",

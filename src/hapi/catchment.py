@@ -32,12 +32,12 @@ from osgeo import gdal
 from pyramids.dataset import Dataset
 from pyramids.multidataset import MultiDataset as Datacube
 
-from Hapi.dem import DEM
+from hapi.dem import DEM
 
 if TYPE_CHECKING:
     import matplotlib.animation
 
-    from Hapi.rrm.base_model import BaseConceptualModel
+    from hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 

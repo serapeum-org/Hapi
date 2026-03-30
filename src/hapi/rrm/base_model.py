@@ -1,6 +1,6 @@
 """Base class for conceptual rainfall-runoff models.
 
-The ``Hapi.rrm.base_model`` module defines the abstract base class
+The ``hapi.rrm.base_model`` module defines the abstract base class
 :class:`BaseConceptualModel` from which all conceptual hydrological
 models in the Hapi framework inherit. The class prescribes a common
 interface of subroutines that every model must implement:
@@ -17,9 +17,9 @@ interface of subroutines that every model must implement:
 - **simulate** -- run the full model over a precipitation time series.
 
 Concrete implementations include
-:class:`~Hapi.rrm.hbv.HBV`,
-:class:`~Hapi.rrm.hbv_bergestrom92.HBVBergestrom92`, and
-:class:`~Hapi.rrm.hbv_lake.HBVLake`.
+:class:`~hapi.rrm.hbv.HBV`,
+:class:`~hapi.rrm.hbv_bergestrom92.HBVBergestrom92`, and
+:class:`~hapi.rrm.hbv_lake.HBVLake`.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ class BaseConceptualModel(ABC):
     Examples:
         Subclass ``BaseConceptualModel`` to create a custom model:
 
-        >>> from Hapi.rrm.hbv import HBV
+        >>> from hapi.rrm.hbv import HBV
         >>> model = HBV()
         >>> rf, sf = model.precipitation(
         ...     temp=10.0, ltt=0.0, utt=2.0, prec=15.0,
@@ -97,7 +97,7 @@ class BaseConceptualModel(ABC):
             in mm.
 
         Examples:
-            >>> from Hapi.rrm.hbv import HBV
+            >>> from hapi.rrm.hbv import HBV
             >>> rf, sf = HBV.precipitation(
             ...     temp=10.0, ltt=0.0, utt=2.0, prec=15.0,
             ...     rfcf=1.0, sfcf=1.0,
@@ -139,7 +139,7 @@ class BaseConceptualModel(ABC):
             [mm], and ``sp_new`` is the updated snow pack [mm].
 
         Examples:
-            >>> from Hapi.rrm.hbv import HBV
+            >>> from hapi.rrm.hbv import HBV
             >>> inf, wc_new, sp_new = HBV.snow(
             ...     cfmax=0.1, temp=5.0, ttm=0.0, cfr=0.05,
             ...     cwh=0.1, rf=2.0, sf=0.0,
@@ -200,7 +200,7 @@ class BaseConceptualModel(ABC):
             zone [mm].
 
         Examples:
-            >>> from Hapi.rrm.hbv import HBV
+            >>> from hapi.rrm.hbv import HBV
             >>> sm_new, uz_int_1 = HBV.soil(
             ...     fc=200.0, beta=2.0, etf=0.1, temp=20.0,
             ...     tm=18.0, e_corr=1.0, lp=0.3, c_flux=0.01,
@@ -244,7 +244,7 @@ class BaseConceptualModel(ABC):
             storage [mm].
 
         Examples:
-            >>> from Hapi.rrm.hbv import HBV
+            >>> from hapi.rrm.hbv import HBV
             >>> q_0, q_1, uz_new, lz_new = HBV.response(
             ...     perc=0.5, alpha=0.5, k=0.01, k1=0.001,
             ...     lz_old=20.0, uz_int_1=15.0,
@@ -275,7 +275,7 @@ class BaseConceptualModel(ABC):
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.rrm.hbv import HBV
+            >>> from hapi.rrm.hbv import HBV
             >>> model = HBV()
             >>> q = np.array([0.0, 0.0, 5.0, 3.0, 1.0, 0.0])
             >>> q_routed = model.routing(q, maxbas=3)
@@ -330,7 +330,7 @@ class BaseConceptualModel(ABC):
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.rrm.hbv import HBV
+            >>> from hapi.rrm.hbv import HBV
             >>> model = HBV()
             >>> par = np.array([
             ...     1.0, 200.0, 2.0, 0.1, 0.3, 0.01,

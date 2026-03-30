@@ -1,7 +1,7 @@
 import numpy as np
 from osgeo import gdal
 
-from Hapi.dem import DEM
+from hapi.dem import DEM
 
 
 def test_flow_direction_index(coello_df_4000: gdal.Dataset):

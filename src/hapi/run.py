@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-from Hapi.catchment import Catchment
+from hapi.catchment import Catchment
 
-# from Hapi.hm.saintvenant import SaintVenant
-from Hapi.wrapper import Wrapper
+# from hapi.hm.saintvenant import SaintVenant
+from hapi.wrapper import Wrapper
 
 
 class Run(Catchment):

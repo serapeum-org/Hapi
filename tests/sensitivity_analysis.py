@@ -2,10 +2,10 @@ import pandas as pd
 import statista.descriptors as metrics
 from statista.sensitivity import Sensitivity as SA
 
-from Hapi.catchment import Catchment
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+from hapi.catchment import Catchment
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 # %% Paths
 Parameterpath = "examples/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"

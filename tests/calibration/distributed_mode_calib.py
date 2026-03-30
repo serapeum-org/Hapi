@@ -11,9 +11,9 @@ import numpy as np
 import statista.descriptors as metrics
 from osgeo import gdal
 
-from Hapi.calibration import Calibration
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
-from Hapi.rrm.parameters import Parameters as DP
+from hapi.calibration import Calibration
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
+from hapi.rrm.parameters import Parameters as DP
 
 # %% Paths
 Path = Comp + "/data/distributed/coello"

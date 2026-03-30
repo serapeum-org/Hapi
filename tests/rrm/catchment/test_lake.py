@@ -2,8 +2,8 @@ import datetime as dt
 
 import numpy as np
 
-from Hapi.catchment import Lake
-from Hapi.rrm.hbv_lake import HBVLake
+from hapi.catchment import Lake
+from hapi.rrm.hbv_lake import HBVLake
 
 
 def test_lake():
