@@ -34,8 +34,8 @@ Coello.read_parameters(Parameterpath, Snow)
 # %% observed flow
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Routing
-# RoutingFn = Routing.TriangularRouting2
-RoutingFn = Routing.Muskingum_V
+# RoutingFn = Routing.triangular_routing_2
+RoutingFn = Routing.muskingum_v
 Route = 1
 ### run the model
 Run.runLumped(Coello, Route, RoutingFn)

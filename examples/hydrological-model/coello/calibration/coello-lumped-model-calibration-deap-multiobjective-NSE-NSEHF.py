@@ -61,7 +61,7 @@ Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 parameters = []
 # Routing
 Route = 1
-RoutingFn = Routing.TriangularRouting1
+RoutingFn = Routing.triangular_routing_1
 
 # outlet discharge
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")

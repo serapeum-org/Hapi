@@ -46,7 +46,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	parameters = []
 	# Routing
 	Route = 1
-	RoutingFn = Routing.TriangularRouting1
+	RoutingFn = Routing.triangular_routing_1
 
 	Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues = parameters)
 

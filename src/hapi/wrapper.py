@@ -148,7 +148,7 @@ class Wrapper:
         )
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.Muskingum_V(
+        Lake.QlakeR = routing.muskingum_v(
             Lake.Qlake,
             Lake.Qlake[0],
             Lake.Parameters[11],
@@ -160,7 +160,7 @@ class Wrapper:
         distrrm.run_lumped_model(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
-        qlake = routing.Muskingum_V(
+        qlake = routing.muskingum_v(
             Lake.QlakeR,
             Lake.QlakeR[0],
             Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
@@ -270,7 +270,7 @@ class Wrapper:
 
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.Muskingum_V(
+        Lake.QlakeR = routing.muskingum_v(
             Lake.Qlake,
             Lake.Qlake[0],
             Lake.Parameters[11],

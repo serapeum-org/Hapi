@@ -37,8 +37,8 @@ Coello.read_parameters(Parameterpath, Snow, maxbas=Maxbas)
 # %% ### Observed flow
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Routing
-# RoutingFn = Routing.TriangularRouting2
-RoutingFn = Routing.TriangularRouting1
+# RoutingFn = Routing.triangular_routing_2
+RoutingFn = Routing.triangular_routing_1
 Route = 1
 # %% ### Run The Model
 # Coello.Parameters = [1.0171762638840873,

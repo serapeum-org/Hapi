@@ -45,7 +45,7 @@ def test_lumped_calibration(
     parameters = []
     # Routing
     Route = 1
-    RoutingFn = Routing.TriangularRouting1
+    RoutingFn = Routing.triangular_routing_1
 
     Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 
