@@ -173,10 +173,10 @@ class Routing:
         wi = []
         for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
             if (
-                x <= (maxbas) / 2.0
+                x <= maxbas / 2.0
             ):  # x <= 1.5  # half of values will form the rising limb and half falling limb
                 # Growing transfer    # rising limb
-                wi.append((x) / (maxbas + 2.0))
+                wi.append(x / (maxbas + 2.0))
             else:
                 # Receding transfer    # falling limb
                 wi.append(1.0 - (x + 1) / (maxbas + 2.0))

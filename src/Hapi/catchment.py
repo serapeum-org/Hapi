@@ -1316,26 +1316,6 @@ class Catchment:
 
         return anim
 
-    # def save_animation(self, video_format="gif", path="", save_frames=20):
-    #     """saveAnimation. saveAnimation.
-    #
-    #     Parameters
-    #     ----------
-    #     video_format : [str], optional
-    #         possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
-    #     path : [str], optional
-    #         path inclusinf the video format. The default is ''.
-    #     save_frames : [integer], optional
-    #         speed of the video. The default is 20.
-    #
-    #     Returns
-    #     -------
-    #     None.
-    #     """
-    #     Vis.SaveAnimation(
-    #         self.anim, VideoFormat=video_format, Path=path, SaveFrames=save_frames
-    #     )
-
     def save_results(
         self,
         flow_acc_path: str = "",

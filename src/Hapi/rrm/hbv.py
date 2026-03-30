@@ -445,9 +445,9 @@ class HBV(BaseConceptualModel):
         """
         wi = []
         for x in range(1, maxbas + 1):
-            if x <= (maxbas) / 2.0:
+            if x <= maxbas / 2.0:
                 # Growing transfer
-                wi.append((x) / (maxbas + 2.0))
+                wi.append(x / (maxbas + 2.0))
             else:
                 # Receding transfer
                 wi.append(1.0 - (x + 1) / (maxbas + 2.0))
