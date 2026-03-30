@@ -1,5 +1,5 @@
 [project]
-name = "HAPI-Nile"
+name = "hapi-nile"
 version = "1.7.0"
 description = "Distributed hydrological-model"
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -200,7 +200,7 @@ channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
 
 [tool.pixi.pypi-dependencies]
-HAPI-Nile = { path = ".", editable = true }
+hapi-nile = { path = ".", editable = true }
 
 [tool.pixi.tasks]
 main = { cmd = "pytest -vvv --cov=src/Hapi -sv -m 'not plot and not fig_share' --cov-report=xml", description = "Run the main test suite" }
