@@ -1,5 +1,6 @@
 import numpy as np
 from osgeo import gdal
+
 from Hapi.dem import DEM
 
 

@@ -128,7 +128,6 @@ class Wrapper:
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
         """
-
         plake = Lake.MeteoData[:, 0]
         et = Lake.MeteoData[:, 1]
         t = Lake.MeteoData[:, 2]
@@ -200,7 +199,6 @@ class Wrapper:
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
         """
-
         # subcatchment
         distrrm.run_lumped_model(Model)
 
@@ -251,7 +249,6 @@ class Wrapper:
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
         """
-
         plake = Lake.MeteoData[:, 0]
         et = Lake.MeteoData[:, 1]
         t = Lake.MeteoData[:, 2]

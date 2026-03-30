@@ -28,6 +28,7 @@ Otherwise it uses 10 parameters::
 from __future__ import annotations
 
 import numpy as np
+
 from Hapi.rrm.base_model import BaseConceptualModel
 
 # HBV base model parameters
@@ -78,9 +79,6 @@ P_UB = [
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
 
-# Get random parameter set
-# def get_random_pars():
-#    return np.random.uniform(P_LB, P_UB)
 
 class HBV(BaseConceptualModel):
     """HBV-96 lumped conceptual rainfall-runoff model.
@@ -167,7 +165,6 @@ class HBV(BaseConceptualModel):
             >>> print(f"rainfall={rf}, snowfall={sf}")
             rainfall=5.0, snowfall=5.0
         """
-
         if temp <= ltt:  # if temp <= lower temp threshold
             rf = 0.0  # no rainfall all the precipitation will convert into snowfall
             sf = prec * sfcf
@@ -241,7 +238,6 @@ class HBV(BaseConceptualModel):
             >>> print(f"sp_new={sp_new:.2f}")
             sp_new=15.1
         """
-
         if temp > ttm:  # if temp > melting threshold
             # then either some snow will melt or the entire snow will melt
             if (
@@ -324,7 +320,6 @@ class HBV(BaseConceptualModel):
             >>> print(f"sm_new={sm_new:.2f}, uz_int_1={uz_int_1:.2f}")
             sm_new=101.13, uz_int_1=11.25
         """
-
         qdr = max(
             sm_old + inf - fc, 0
         )  # direct run off as soil moisture exceeded the field capacity
@@ -460,7 +455,6 @@ class HBV(BaseConceptualModel):
         # Normalise weights
         wi = np.array(wi) / np.sum(wi)
         return wi  # type: ignore[no-any-return]
-
 
     def routing(self, q, maxbas=1):
         """Route discharge through a triangular transfer function.

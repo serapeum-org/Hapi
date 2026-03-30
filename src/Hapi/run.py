@@ -33,6 +33,7 @@ class Run(Catchment):
     """
 
     def __init__(self):
+        """Initialize the Run class."""
         self.Qsim: np.ndarray | pd.DataFrame | None = None
 
     def RunHapi(self):

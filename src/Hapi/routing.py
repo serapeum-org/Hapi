@@ -170,7 +170,6 @@ class Routing:
             >>> print(weights.sum())
             1.0
         """
-
         wi = []
         for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
             if (
@@ -234,7 +233,7 @@ class Routing:
         return q_r
 
     @staticmethod
-    def CalculateWeights(MAXBAS):
+    def CalculateWeights(maxbas):
         """Calculate triangular routing weights for a given MAXBAS value.
 
         Computes normalized weights based on the area under an
@@ -243,7 +242,7 @@ class Routing:
         computing exact trapezoidal areas under the triangle curve.
 
         Args:
-            MAXBAS (float): The MAXBAS routing parameter controlling
+            maxbas (float): The MAXBAS routing parameter controlling
                 the number of time steps over which discharge is
                 distributed. Can be an integer or a decimal value.
 
@@ -261,10 +260,10 @@ class Routing:
         yant = 0
         Total = 0  # Just to verify how far from the unit is the result
 
-        TotalA = (MAXBAS * MAXBAS * np.sin(np.pi / 3)) / 2
-        IntPart = np.floor(MAXBAS)
-        RealPart = MAXBAS - IntPart
-        PeakPoint = MAXBAS % 2
+        TotalA = (maxbas * maxbas * np.sin(np.pi / 3)) / 2
+        IntPart = np.floor(maxbas)
+        RealPart = maxbas - IntPart
+        PeakPoint = maxbas % 2
         flag = 1  # 1 = "up"  ; 2 = down
 
         if RealPart > 0:  # even number 2,4,6,8,10
@@ -272,52 +271,51 @@ class Routing:
         else:  # odd number
             maxbasW = np.ones(int(IntPart))
 
-        for x in range(int(MAXBAS)):
-            if x < (MAXBAS / 2.0) - 1:
+        for x in range(int(maxbas)):
+            if x < (maxbas / 2.0) - 1:
                 # Integral of  x dx with slope of 60 degree Equilateral triangle
                 ynow = np.tan(np.pi / 3) * (x + 1)
                 # ' Area / Total Area
                 maxbasW[x] = ((ynow + yant) / 2) / TotalA
             else:  # The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2
                 if flag == 1:
-                    ynow = np.sin(np.pi / 3) * MAXBAS
+                    ynow = np.sin(np.pi / 3) * maxbas
                     if PeakPoint == 0:
                         maxbasW[x] = ((ynow + yant) / 2) / TotalA
                     else:
-                        A1 = ((ynow + yant) / 2) * (MAXBAS / 2.0 - x) / TotalA
+                        A1 = ((ynow + yant) / 2) * (maxbas / 2.0 - x) / TotalA
                         yant = ynow
-                        ynow = (MAXBAS * np.sin(np.pi / 3)) - (
-                            np.tan(np.pi / 3) * (x + 1 - MAXBAS / 2.0)
+                        ynow = (maxbas * np.sin(np.pi / 3)) - (
+                            np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
                         )
-                        A2 = ((ynow + yant) * (x + 1 - MAXBAS / 2.0) / 2) / TotalA
+                        A2 = ((ynow + yant) * (x + 1 - maxbas / 2.0) / 2) / TotalA
                         maxbasW[x] = A1 + A2
 
                     flag = 2
                 else:
                     # 'sum of the two height in the descending part of the triangle
-                    ynow = MAXBAS * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (
-                        x + 1 - MAXBAS / 2.0
-                    )
+                    ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
                     # Multiplying by the height of the trapezoidal and dividing by 2
                     maxbasW[x] = ((ynow + yant) / 2) / TotalA
 
             Total = Total + maxbasW[x]
             yant = ynow
 
-        x = int(MAXBAS)
+        x = int(maxbas)
         # x = x + 1
 
         if RealPart > 0:
-            if np.floor(MAXBAS) == 0:
-                MAXBAS = 1
+            if np.floor(maxbas) == 0:
+                maxbas = 1
                 maxbasW[x] = 1
-                NumberofWeights = 1
+                # NumberofWeights = 1
             else:
-                maxbasW[x] = (yant * (MAXBAS - (x)) / 2) / TotalA
+                maxbasW[x] = (yant * (maxbas - (x)) / 2) / TotalA
                 Total = Total + maxbasW[x]
-                NumberofWeights = x
+                # NumberofWeights = x
         else:
-            NumberofWeights = x - 1
+            # NumberofWeights = x - 1
+            pass
 
         return maxbasW
 

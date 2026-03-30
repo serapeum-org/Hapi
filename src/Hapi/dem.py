@@ -24,6 +24,7 @@ class DEM(Dataset):
     """
 
     def __init__(self, src):
+        """Initialize the DEM instance."""
         super().__init__(src)
 
     def flow_direction_index(self) -> np.ndarray:

@@ -1,5 +1,7 @@
 import datetime as dt
+
 import numpy as np
+
 from Hapi.catchment import Lake
 from Hapi.rrm.hbv_lake import HBVLake
 

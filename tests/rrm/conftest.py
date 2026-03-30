@@ -11,6 +11,7 @@ from Hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
+
 @pytest.fixture(scope="session")
 def hapi_data_dir() -> str:
     data_dir = os.getenv("HAPI_DATA_DIR")

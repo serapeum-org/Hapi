@@ -5,8 +5,8 @@ import datetime as dt
 import pandas as pd
 from osgeo import gdal
 
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.catchment import Catchment
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.run import Run
 
 # %% Paths

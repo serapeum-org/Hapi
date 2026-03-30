@@ -8,8 +8,8 @@ import numpy as np
 from osgeo import gdal
 from statista.descriptors import rmse
 
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.calibration import Calibration
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.rrm.parameters import Parameters as DP
 
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/

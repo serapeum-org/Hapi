@@ -255,7 +255,6 @@ class HBVLake(BaseConceptualModel):
             >>> qdr
             0
         """
-
         #    qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity
         qdr = 0
         _in = inf - qdr
@@ -453,7 +452,6 @@ class HBVLake(BaseConceptualModel):
             >>> len(w)
             3
         """
-
         wi = []
         for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
             if (
@@ -867,7 +865,6 @@ class HBVLake(BaseConceptualModel):
             >>> len(states)
             6
         """
-
         if init_st is None:  # If unspecified, [0.0, 30.0, 30.0, 30.0, 0.0] mm
             st = [DEF_ST]  # if not given take the default
         else:

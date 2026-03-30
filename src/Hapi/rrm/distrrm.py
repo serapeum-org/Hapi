@@ -28,6 +28,7 @@ class DistributedRRM:
     """
 
     def __init__(self):
+        """Distributed constructor."""
         pass
 
     @staticmethod
@@ -236,7 +237,6 @@ class DistributedRRM:
                 - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
                   array ``(rows, cols, TS)`` in m3/s.
         """
-
         Maxbas = Model.Parameters[:, :, -1]
 
         for x in range(Model.rows):

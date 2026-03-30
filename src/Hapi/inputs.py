@@ -15,10 +15,11 @@ from __future__ import annotations
 import datetime as dt
 import os
 from pathlib import Path
+
 import pandas as pd
 from geopandas import GeoDataFrame
-from pyramids.multidataset import MultiDataset as Datacube
 from pyramids.dataset import Dataset
+from pyramids.multidataset import MultiDataset as Datacube
 
 PARAMETERS_LIST = [
     "01_tt",
@@ -257,7 +258,7 @@ class Inputs:
         fmt: str = "%Y-%m-%d",
         extension: str = ".tif",
     ) -> list:
-        """Create lumped inputs by averaging distributed raster values.
+        r"""Create lumped inputs by averaging distributed raster values.
 
         Reads a time series of rasters from the given directory, computes
         the spatial mean of each raster, and returns the averages as a
