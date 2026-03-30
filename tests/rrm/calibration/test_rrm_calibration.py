@@ -8,7 +8,7 @@ from Hapi.routing import Routing
 from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
 
-def test_ReadParametersBounds(
+def test_read_parameters_bounds(
     coello_rrm_date: list,
     lower_bound: list,
     upper_bound: list,
@@ -23,7 +23,7 @@ def test_ReadParametersBounds(
     assert isinstance(Coello.Maxbas, bool)
 
 
-def test_LumpedCalibration(
+def test_lumped_calibration(
     coello_rrm_date: list,
     lumped_meteo_data_path: str,
     coello_AreaCoeff: float,
@@ -100,7 +100,7 @@ class TestDistributed:
         assert coello.routing_method == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
 
-    def test_read_objective_Fn(self, coello_start_date: str, coello_end_date: str):
+    def test_read_objective_fn(self, coello_start_date: str, coello_end_date: str):
         coello = Calibration(
             "coello",
             coello_start_date,
