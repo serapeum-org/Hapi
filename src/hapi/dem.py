@@ -10,6 +10,18 @@ import numpy as np
 from pyramids.dataset import Dataset
 
 
+D8_OFFSETS: dict[int, tuple[int, int]] = {
+    1: (0, 1),      # east
+    2: (1, 1),      # south-east
+    4: (1, 0),      # south
+    8: (1, -1),     # south-west
+    16: (0, -1),    # west
+    32: (-1, -1),   # north-west
+    64: (-1, 0),    # north
+    128: (-1, 1),   # north-east
+}
+
+
 class DEM(Dataset):
     """Digital Elevation Model dataset with flow-direction helpers.
 
@@ -60,36 +72,22 @@ class DEM(Dataset):
                 "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
             )
 
-        fd_cell = np.ones((rows, cols, 2)) * np.nan
+        fd_cell = np.full((rows, cols, 2), np.nan)
 
-        for i in range(rows):
-            for j in range(cols):
-                if fd[i, j] == 1:
-                    # index of the rows
-                    fd_cell[i, j, 0] = i
-                    # index of the column
-                    fd_cell[i, j, 1] = j + 1
-                elif fd[i, j] == 128:
-                    fd_cell[i, j, 0] = i - 1
-                    fd_cell[i, j, 1] = j + 1
-                elif fd[i, j] == 64:
-                    fd_cell[i, j, 0] = i - 1
-                    fd_cell[i, j, 1] = j
-                elif fd[i, j] == 32:
-                    fd_cell[i, j, 0] = i - 1
-                    fd_cell[i, j, 1] = j - 1
-                elif fd[i, j] == 16:
-                    fd_cell[i, j, 0] = i
-                    fd_cell[i, j, 1] = j - 1
-                elif fd[i, j] == 8:
-                    fd_cell[i, j, 0] = i + 1
-                    fd_cell[i, j, 1] = j - 1
-                elif fd[i, j] == 4:
-                    fd_cell[i, j, 0] = i + 1
-                    fd_cell[i, j, 1] = j
-                elif fd[i, j] == 2:
-                    fd_cell[i, j, 0] = i + 1
-                    fd_cell[i, j, 1] = j + 1
+        row_idx, col_idx = np.meshgrid(
+            np.arange(rows), np.arange(cols), indexing="ij"
+        )
+        d_row = np.full((rows, cols), np.nan)
+        d_col = np.full((rows, cols), np.nan)
+
+        for code, (dr, dc) in D8_OFFSETS.items():
+            mask = fd == code
+            d_row[mask] = dr
+            d_col[mask] = dc
+
+        valid = ~np.isnan(d_row)
+        fd_cell[valid, 0] = row_idx[valid] + d_row[valid]
+        fd_cell[valid, 1] = col_idx[valid] + d_col[valid]
 
         return fd_cell
 
