@@ -1,99 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/index.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/index.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/change-log.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/change-log.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/license.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/license.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/calibration.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/calibration.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/catchment.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/catchment.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/dem.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/dem.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/hbv-bergestrom92.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/hbv-bergestrom92.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/hbv-lake.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/hbv-lake.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/hbv.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/hbv.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/inputs.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/inputs.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/routing.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/routing.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/rrm-parameters.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/rrm-parameters.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/run.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/run.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/api/wrapper.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/api/wrapper.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/dev/Installation.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/dev/Installation.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/distributed-model-calib.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/distributed-model-calib.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/distributed-model-run.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/distributed-model-run.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/gis-inputs.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/gis-inputs.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/hbv.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/hbv.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/lumped-model-calibration.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/lumped-model-calibration.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/lumped-model-run.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/lumped-model-run.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/meteo-inputs.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/meteo-inputs.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/muskingum.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/muskingum.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Hapi/main/examples/parameters.html</loc>
-         <lastmod>2026-03-29</lastmod>
+         <loc>https://serapeum-org.github.io/Hapi/main/examples/parameters.html</loc>
+         <lastmod>2026-03-31</lastmod>
     </url>
 </urlset>
