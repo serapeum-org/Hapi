@@ -1,4 +1,4 @@
 # Catchment
 
 ## Catchment
-::: Hapi.catchment.Catchment
+::: hapi.catchment.Catchment

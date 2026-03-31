@@ -1,4 +1,4 @@
 # HBV rainfall runoff model
 
 ## HBV
-::: Hapi.rrm.hbv.HBV
+::: hapi.rrm.hbv.HBV
