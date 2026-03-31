@@ -55,8 +55,13 @@ class DEM(Dataset):
 
     ``DEM`` wraps a GDAL-backed raster dataset (via
     ``pyramids.dataset.Dataset``) and adds methods that convert
-    standard 8-direction flow codes (1, 2, 4, 8, 16, 32, 64, 128)
-    into downstream-cell indices and upstream-cell lookup tables.
+    D8 flow-direction codes into downstream-cell indices and
+    upstream-cell lookup tables.  Three encodings are supported:
+
+    - **ESRI** (default): powers-of-2 codes
+      (1, 2, 4, 8, 16, 32, 64, 128).
+    - **SAGA**: codes 0--7, starting East counter-clockwise.
+    - **GRASS**: codes 1--8, starting North clockwise.
 
     Args:
         src: A GDAL dataset or a file path to a DEM raster that can
