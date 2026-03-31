@@ -75,10 +75,10 @@ docs = [
 ]
 
 [project.urls]
-homepage = "https://github.com/Serapieum-of-alex/Hapi"
-repository = "https://github.com/Serapieum-of-alex/Hapi"
-documentation = "https://serapieum-of-alex.github.io/Hapi"
-Changelog = "https://github.com/Serapieum-of-alex/Hapi/blob/main/docs/change-log.md"
+homepage = "https://github.com/serapeum-org/Hapi"
+repository = "https://github.com/serapeum-org/Hapi"
+documentation = "https://serapeum-org.github.io/Hapi"
+Changelog = "https://github.com/serapeum-org/Hapi/blob/main/docs/change-log.md"
 
 [project.scripts]
 download-parameters = "hapi.parameters.parameters:main"
