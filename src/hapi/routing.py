@@ -258,66 +258,66 @@ class Routing:
             [0.08 0.24 0.36 0.24 0.08]
         """
         yant = 0
-        Total = 0  # Just to verify how far from the unit is the result
+        total = 0  # Just to verify how far from the unit is the result
 
-        TotalA = (maxbas * maxbas * np.sin(np.pi / 3)) / 2
-        IntPart = np.floor(maxbas)
-        RealPart = maxbas - IntPart
-        PeakPoint = maxbas % 2
+        total_area = (maxbas * maxbas * np.sin(np.pi / 3)) / 2
+        int_part = np.floor(maxbas)
+        real_part = maxbas - int_part
+        peak_point = maxbas % 2
         flag = 1  # 1 = "up"  ; 2 = down
 
-        if RealPart > 0:  # even number 2,4,6,8,10
-            maxbasW = np.ones(int(IntPart) + 1)  # if even add 1
+        if real_part > 0:  # even number 2,4,6,8,10
+            maxbas_w = np.ones(int(int_part) + 1)  # if even add 1
         else:  # odd number
-            maxbasW = np.ones(int(IntPart))
+            maxbas_w = np.ones(int(int_part))
 
         for x in range(int(maxbas)):
             if x < (maxbas / 2.0) - 1:
-                # Integral of  x dx with slope of 60 degree Equilateral triangle
+                # Integral of x dx with slope of 60 degree Equilateral triangle
                 ynow = np.tan(np.pi / 3) * (x + 1)
-                # ' Area / Total Area
-                maxbasW[x] = ((ynow + yant) / 2) / TotalA
+                # Area / total_area
+                maxbas_w[x] = ((ynow + yant) / 2) / total_area
             else:  # The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2
                 if flag == 1:
                     ynow = np.sin(np.pi / 3) * maxbas
-                    if PeakPoint == 0:
-                        maxbasW[x] = ((ynow + yant) / 2) / TotalA
+                    if peak_point == 0:
+                        maxbas_w[x] = ((ynow + yant) / 2) / total_area
                     else:
-                        A1 = ((ynow + yant) / 2) * (maxbas / 2.0 - x) / TotalA
+                        a1 = ((ynow + yant) / 2) * (maxbas / 2.0 - x) / total_area
                         yant = ynow
                         ynow = (maxbas * np.sin(np.pi / 3)) - (
                             np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
                         )
-                        A2 = ((ynow + yant) * (x + 1 - maxbas / 2.0) / 2) / TotalA
-                        maxbasW[x] = A1 + A2
+                        a2 = ((ynow + yant) * (x + 1 - maxbas / 2.0) / 2) / total_area
+                        maxbas_w[x] = a1 + a2
 
                     flag = 2
                 else:
                     # 'sum of the two height in the descending part of the triangle
                     ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
                     # Multiplying by the height of the trapezoidal and dividing by 2
-                    maxbasW[x] = ((ynow + yant) / 2) / TotalA
+                    maxbas_w[x] = ((ynow + yant) / 2) / total_area
 
-            Total = Total + maxbasW[x]
+            total = total + maxbas_w[x]
             yant = ynow
 
         x = int(maxbas)
         # x = x + 1
 
-        if RealPart > 0:
+        if real_part > 0:
             if np.floor(maxbas) == 0:
                 maxbas = 1
-                maxbasW[x] = 1
+                maxbas_w[x] = 1
                 # NumberofWeights = 1
             else:
-                maxbasW[x] = (yant * (maxbas - (x)) / 2) / TotalA
-                Total = Total + maxbasW[x]
+                maxbas_w[x] = (yant * (maxbas - (x)) / 2) / total_area
+                total = total + maxbas_w[x]
                 # NumberofWeights = x
         else:
             # NumberofWeights = x - 1
             pass
 
-        return maxbasW
+        return maxbas_w
 
     @staticmethod
     def triangular_routing_1(Q, MAXBAS):
