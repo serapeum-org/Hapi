@@ -4,10 +4,10 @@ import datetime as dt
 import pandas as pd
 import statista.descriptors as metrics
 
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 # %% Paths
 Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
@@ -43,7 +43,7 @@ Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 parameters = []
 # Routing
 Route = 1
-RoutingFn = Routing.TriangularRouting1
+RoutingFn = Routing.triangular_routing_1
 
 Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 # %%

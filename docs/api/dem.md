@@ -1,4 +1,4 @@
 # DEM
 
 ## DEM
-::: Hapi.dem.DEM
+::: hapi.dem.DEM

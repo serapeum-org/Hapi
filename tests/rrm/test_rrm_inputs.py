@@ -1,11 +1,10 @@
 from pathlib import Path
-from unittest.mock import patch
 
 import numpy as np
 from geopandas import GeoDataFrame
 from pyramids.multidataset import MultiDataset as Datacube
 
-from Hapi.inputs import Inputs
+from hapi.inputs import Inputs
 
 
 def test_prepare_inputs(

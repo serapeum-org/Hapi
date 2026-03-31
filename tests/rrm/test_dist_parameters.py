@@ -1,6 +1,7 @@
 import numpy as np
 from osgeo import gdal
-from Hapi.rrm.parameters import Parameters as DP
+
+from hapi.rrm.parameters import Parameters as DP
 
 
 def test_create_distparameters_instance(

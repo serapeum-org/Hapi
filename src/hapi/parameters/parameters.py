@@ -542,7 +542,7 @@ class Parameter:
 
 
 def main():
-    """Run the Hapi CLI for hydrological parameter operations.
+    r"""Run the Hapi CLI for hydrological parameter operations.
 
     This entry point provides three sub-commands:
 

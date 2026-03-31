@@ -12,12 +12,12 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from Hapi.routing import Routing as routing
-from Hapi.rrm.distrrm import DistributedRRM as distrrm
-from Hapi.rrm.hbv_lake import HBVLake
+from hapi.routing import Routing as routing
+from hapi.rrm.distrrm import DistributedRRM as distrrm
+from hapi.rrm.hbv_lake import HBVLake
 
 if TYPE_CHECKING:
-    from Hapi.catchment import Catchment, Lake
+    from hapi.catchment import Catchment, Lake
 
 
 class Wrapper:
@@ -128,7 +128,6 @@ class Wrapper:
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
         """
-
         plake = Lake.MeteoData[:, 0]
         et = Lake.MeteoData[:, 1]
         t = Lake.MeteoData[:, 2]
@@ -149,7 +148,7 @@ class Wrapper:
         )
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.Muskingum_V(
+        Lake.QlakeR = routing.muskingum_v(
             Lake.Qlake,
             Lake.Qlake[0],
             Lake.Parameters[11],
@@ -161,7 +160,7 @@ class Wrapper:
         distrrm.run_lumped_model(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
-        qlake = routing.Muskingum_V(
+        qlake = routing.muskingum_v(
             Lake.QlakeR,
             Lake.QlakeR[0],
             Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
@@ -200,7 +199,6 @@ class Wrapper:
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
         """
-
         # subcatchment
         distrrm.run_lumped_model(Model)
 
@@ -251,7 +249,6 @@ class Wrapper:
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
         """
-
         plake = Lake.MeteoData[:, 0]
         et = Lake.MeteoData[:, 1]
         t = Lake.MeteoData[:, 2]
@@ -273,7 +270,7 @@ class Wrapper:
 
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.Muskingum_V(
+        Lake.QlakeR = routing.muskingum_v(
             Lake.Qlake,
             Lake.Qlake[0],
             Lake.Parameters[11],

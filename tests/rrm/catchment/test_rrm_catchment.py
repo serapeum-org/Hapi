@@ -6,10 +6,10 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import DatetimeIndex
 
-from Hapi.catchment import Catchment
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+from hapi.catchment import Catchment
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 
 def test_create_catchment_instance(coello_rrm_date: list):
@@ -79,7 +79,7 @@ class TestLumped:
         coello.read_parameters(lumped_parameters_path, coello_Snow)
         # discharge gauges
         coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
-        routing_fn = Routing.Muskingum_V
+        routing_fn = Routing.muskingum_v
         route = 1
         Run.runLumped(coello, route, routing_fn)
 
@@ -106,7 +106,7 @@ class TestLumped:
         # discharge gauges
         Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         Route = 1
-        Run.runLumped(Coello, Route, Routing.Muskingum_V)
+        Run.runLumped(Coello, Route, Routing.muskingum_v)
         Coello.save_results(result=5, path=path)
 
     # # TODO: still not finished as it does not run the plotHydrograph method
@@ -127,7 +127,7 @@ class TestLumped:
     #     Coello.readParameters(lumped_parameters_path, coello_Snow)
     #     # discharge gauges
     #     Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
-    #     RoutingFn = Routing.Muskingum_V
+    #     RoutingFn = Routing.muskingum_v
     #     Route = 1
     #     Run.runLumped(Coello, Route, RoutingFn)
     #     assert len(Coello.Qsim) == 10 and Coello.Qsim.columns.to_list() == ["q"]

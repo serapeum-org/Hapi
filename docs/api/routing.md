@@ -1,4 +1,4 @@
 # Routing
 
 ## Routing
-::: Hapi.routing.Routing
+::: hapi.routing.Routing

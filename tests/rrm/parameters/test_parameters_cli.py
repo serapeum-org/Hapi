@@ -3,13 +3,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from Hapi.parameters.parameters import main
+from hapi.parameters.parameters import main
 
 
 @pytest.fixture
 def mock_parameter_class():
     """Mock the Parameter class methods."""
-    with patch("Hapi.parameters.parameters.Parameter") as MockParameter:
+    with patch("hapi.parameters.parameters.Parameter") as MockParameter:
         MockParameter.return_value = MagicMock()
         MockParameter.get_parameters.return_value = MagicMock()
         MockParameter.get_parameter_set.return_value = MagicMock()
@@ -65,7 +65,7 @@ def test_list_parameter_names(mock_parameter_class):
     """Test the list-parameter-names command."""
 
     with patch("sys.argv", ["parameters.py", "list-parameter-names"]), patch(
-        "Hapi.parameters.parameters.Parameter.list_parameter_names",
+        "hapi.parameters.parameters.Parameter.list_parameter_names",
         return_value=["01_tt", "02_rfcf", "03_sfcf"],
     ) as mock_list_names:
         main()

@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: Serapieum-of-alex/github-actions/actions/python-setup/pixi@pixi/v1
+        uses: serapeum-org/github-actions/actions/python-setup/pixi@pixi/v1
         with:
           environments: ${{ matrix.environment }}
           activate-environment: ${{ matrix.environment }}
@@ -35,7 +35,7 @@ jobs:
         run: |
           pixi run -e ${{ matrix.environment }} test-all
         env:
-          HAPI_DATA_DIR: ${{ github.workspace }}/src/Hapi/parameters
+          HAPI_DATA_DIR: ${{ github.workspace }}/src/hapi/parameters
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v5

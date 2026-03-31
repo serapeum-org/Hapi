@@ -14,9 +14,9 @@ import random
 import statista.descriptors as PC
 from deap import algorithms, base, creator, tools
 
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.calibration import Calibration
 from Hapi.routing import Routing
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.run import Run
 
 # %% Paths
@@ -58,7 +58,7 @@ Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 parameters = []
 # Routing
 Route = 1
-RoutingFn = Routing.TriangularRouting1
+RoutingFn = Routing.triangular_routing_1
 
 # outlet discharge
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")

@@ -7,9 +7,10 @@ import pytest
 from geopandas import GeoDataFrame
 from osgeo import gdal
 
-from Hapi.parameters.parameters import Parameter
+from hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
+
 
 @pytest.fixture(scope="session")
 def hapi_data_dir() -> str:

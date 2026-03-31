@@ -49,4 +49,4 @@ def coello_gauges_date_fmt() -> str:
 
 # @pytest.fixture(scope="module")
 # def coello_lumpedmodel_RoutingFn() -> (inflow: Any, Qinitial: Any, k: Any, x: Any, dt: Any):
-#     return Routing.Muskingum_V
+#     return Routing.muskingum_v

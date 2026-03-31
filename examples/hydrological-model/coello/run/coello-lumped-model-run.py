@@ -5,9 +5,9 @@ import matplotlib
 matplotlib.use("TkAgg")
 import statista.descriptors as PC
 
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
 from Hapi.routing import Routing
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.run import Run
 
 # %% data
@@ -37,8 +37,8 @@ Coello.read_parameters(parameter_path, Snow)
 Coello.read_discharge_gauges(path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %%  ### Routing
 
-# RoutingFn = Routing.TriangularRouting2
-RoutingFn = Routing.Muskingum_V
+# RoutingFn = Routing.triangular_routing_2
+RoutingFn = Routing.muskingum_v
 Route = 1
 # %% ### Run The Model
 # Coello.Parameters = [1.0171762638840873,

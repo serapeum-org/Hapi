@@ -1,4 +1,4 @@
 # Inputs
 
 ## Inputs
-::: Hapi.inputs.Inputs
+::: hapi.inputs.Inputs

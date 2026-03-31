@@ -15,10 +15,11 @@ from __future__ import annotations
 import datetime as dt
 import os
 from pathlib import Path
+
 import pandas as pd
 from geopandas import GeoDataFrame
-from pyramids.multidataset import MultiDataset as Datacube
 from pyramids.dataset import Dataset
+from pyramids.multidataset import MultiDataset as Datacube
 
 PARAMETERS_LIST = [
     "01_tt",
@@ -55,7 +56,7 @@ class Inputs:
             alignment (coordinate system, rows, columns, resolution).
 
     Examples:
-        >>> from Hapi.inputs import Inputs
+        >>> from hapi.inputs import Inputs
         >>> inp = Inputs("data/dem.tif")
     """
 
@@ -90,7 +91,7 @@ class Inputs:
             FileNotFoundError: If ``inputs_dir`` does not exist.
 
         Examples:
-            >>> from Hapi.inputs import Inputs
+            >>> from hapi.inputs import Inputs
             >>> inp = Inputs("GIS/inputs/acc4000.tif")
             >>> inp.prepare_inputs(
             ...     "Precipitation/CHIRPS/Daily/",
@@ -257,7 +258,7 @@ class Inputs:
         fmt: str = "%Y-%m-%d",
         extension: str = ".tif",
     ) -> list:
-        """Create lumped inputs by averaging distributed raster values.
+        r"""Create lumped inputs by averaging distributed raster values.
 
         Reads a time series of rasters from the given directory, computes
         the spatial mean of each raster, and returns the averages as a
@@ -286,7 +287,7 @@ class Inputs:
                 the corresponding raster in chronological order.
 
         Examples:
-            >>> from Hapi.inputs import Inputs
+            >>> from hapi.inputs import Inputs
             >>> avg = Inputs.create_lumped_inputs(
             ...     "tests/rrm/data/coello/prec",
             ...     regex_string=r"\\d{4}.\\d{2}.\\d{2}",

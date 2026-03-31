@@ -3,12 +3,12 @@ import datetime as dt
 import numpy as np
 import statista.descriptors as metrics
 
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
 
-def test_ReadParametersBounds(
+def test_read_parameters_bounds(
     coello_rrm_date: list,
     lower_bound: list,
     upper_bound: list,
@@ -23,7 +23,7 @@ def test_ReadParametersBounds(
     assert isinstance(Coello.Maxbas, bool)
 
 
-def test_LumpedCalibration(
+def test_lumped_calibration(
     coello_rrm_date: list,
     lumped_meteo_data_path: str,
     coello_AreaCoeff: float,
@@ -45,7 +45,7 @@ def test_LumpedCalibration(
     parameters = []
     # Routing
     Route = 1
-    RoutingFn = Routing.TriangularRouting1
+    RoutingFn = Routing.triangular_routing_1
 
     Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 
@@ -100,7 +100,7 @@ class TestDistributed:
         assert coello.routing_method == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
 
-    def test_read_objective_Fn(self, coello_start_date: str, coello_end_date: str):
+    def test_read_objective_fn(self, coello_start_date: str, coello_end_date: str):
         coello = Calibration(
             "coello",
             coello_start_date,

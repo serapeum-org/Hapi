@@ -2,10 +2,10 @@ import datetime as dt
 
 import statista.descriptors as metrics
 
-from Hapi.catchment import Catchment
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as hbv_lumped
-from Hapi.run import Run
+from hapi.catchment import Catchment
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as hbv_lumped
+from hapi.run import Run
 
 # %% Paths
 Comp = "examples"
@@ -34,8 +34,8 @@ Coello.read_parameters(Parameterpath, Snow)
 # %% observed flow
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Routing
-# RoutingFn = Routing.TriangularRouting2
-RoutingFn = Routing.Muskingum_V
+# RoutingFn = Routing.triangular_routing_2
+RoutingFn = Routing.muskingum_v
 Route = 1
 ### run the model
 Run.runLumped(Coello, Route, RoutingFn)

@@ -5,7 +5,7 @@ rainfall-runoff model (e.g., HBV) independently for each grid cell and
 then routes the resulting discharge between cells following the river
 network defined by a flow direction raster.
 
-The module belongs to the ``Hapi.rrm`` package and supports both
+The module belongs to the ``hapi.rrm`` package and supports both
 Muskingum and triangular (MAXBAS) routing strategies.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 from pyramids.dataset import Dataset
 
-from Hapi.routing import Routing as routing
+from hapi.routing import Routing as routing
 
 
 class DistributedRRM:
@@ -28,6 +28,7 @@ class DistributedRRM:
     """
 
     def __init__(self):
+        """Distributed constructor."""
         pass
 
     @staticmethod
@@ -145,7 +146,7 @@ class DistributedRRM:
                   depth array used for non-Muskingum methods.
         """
         #    # routing lake discharge with DS cell k & x and adding to cell Q
-        #    q_lake=Routing.Muskingum_V(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
+        #    q_lake=Routing.muskingum_v(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
         #    q_lake=np.append(q_lake,q_lake[-1])
         #    # both lake & Quz are in m3/s
         #    #new
@@ -197,7 +198,7 @@ class DistributedRRM:
                                 y_ind = Model.FDT[str(x) + "," + str(y)][i][1]
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
-                                q_uzi = q_uzi + routing.Muskingum_V(
+                                q_uzi = q_uzi + routing.muskingum_v(
                                     Model.quz_routed[x_ind, y_ind, :],
                                     Model.quz_routed[x_ind, y_ind, 0],
                                     Model.Parameters[x_ind, y_ind, 10],
@@ -236,13 +237,12 @@ class DistributedRRM:
                 - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
                   array ``(rows, cols, TS)`` in m3/s.
         """
-
         Maxbas = Model.Parameters[:, :, -1]
 
         for x in range(Model.rows):
             for y in range(Model.cols):
                 if not np.isnan(Model.FlowAccArr[x, y]):
-                    Model.quz[x, y, :] = routing.TriangularRouting1(
+                    Model.quz[x, y, :] = routing.triangular_routing_1(
                         Model.quz[x, y, :], Maxbas[x, y]
                     )
 
@@ -289,7 +289,7 @@ class DistributedRRM:
         for x in range(Model.rows):
             for y in range(Model.cols):
                 if not np.isnan(Model.FPLArr[x, y]):
-                    Model.quz[x, y, :] = routing.TriangularRouting2(
+                    Model.quz[x, y, :] = routing.triangular_routing_2(
                         Model.quz[x, y, :], NormalizedFPL[x, y]
                     )
 
@@ -476,7 +476,7 @@ class DistributedRRM:
         no_cells.sort()
 
         # routing lake discharge with DS cell k & x and adding to cell Q
-        q_lake = routing.Muskingum_V(
+        q_lake = routing.muskingum_v(
             q_lake,
             q_lake[0],
             sp_pars[lakecell[0], lakecell[1], 10],
@@ -510,7 +510,7 @@ class DistributedRRM:
                             y_ind = flow_acc[str(x) + "," + str(y)][i][1]
                             # sum the Q of the US cells (already routed for its cell)
                             # route first with there own k & xthen sum
-                            q_r = q_r + routing.Muskingum_V(
+                            q_r = q_r + routing.muskingum_v(
                                 quz_routed[x_ind, y_ind, :],
                                 quz_routed[x_ind, y_ind, 0],
                                 sp_pars[x_ind, y_ind, 10],

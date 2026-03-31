@@ -29,14 +29,15 @@ import statista.descriptors as metrics
 from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from osgeo import gdal
-from pyramids.multidataset import MultiDataset as Datacube
 from pyramids.dataset import Dataset
+from pyramids.multidataset import MultiDataset as Datacube
 
-from Hapi.dem import DEM
+from hapi.dem import DEM
 
 if TYPE_CHECKING:
     import matplotlib.animation
-    from Hapi.rrm.base_model import BaseConceptualModel
+
+    from hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
@@ -732,7 +733,6 @@ class Catchment:
                 `initial_condition` does not contain exactly 5
                 values.
         """
-
         if not inspect.isclass(lumped_model):
             raise ValueError(
                 "ConceptualModel should be a module or a python file contains functions "
@@ -1316,26 +1316,6 @@ class Catchment:
 
         return anim
 
-    # def save_animation(self, video_format="gif", path="", save_frames=20):
-    #     """saveAnimation. saveAnimation.
-    #
-    #     Parameters
-    #     ----------
-    #     video_format : [str], optional
-    #         possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
-    #     path : [str], optional
-    #         path inclusinf the video format. The default is ''.
-    #     save_frames : [integer], optional
-    #         speed of the video. The default is 20.
-    #
-    #     Returns
-    #     -------
-    #     None.
-    #     """
-    #     Vis.SaveAnimation(
-    #         self.anim, VideoFormat=video_format, Path=path, SaveFrames=save_frames
-    #     )
-
     def save_results(
         self,
         flow_acc_path: str = "",
@@ -1495,7 +1475,6 @@ class Lake:
             split (bool, optional): True to subset the data between
                 the start and end dates. Default is False.
         """
-
         self.OutflowCell: list | None = None
         self.Snow: int | None = None
         self.Split = split
@@ -1530,7 +1509,6 @@ class Lake:
             fmt (str): Date format string used to parse the date
                 index.
         """
-
         df = pd.read_csv(path, index_col=0)
         df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
 

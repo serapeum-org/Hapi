@@ -1,4 +1,4 @@
 # Calibration
 
 ## Calibration
-::: Hapi.calibration.Calibration
+::: hapi.calibration.Calibration

@@ -1,4 +1,4 @@
 # Parameters
 
 ## Parameters
-::: Hapi.rrm.parameters.Parameters
+::: hapi.rrm.parameters.Parameters

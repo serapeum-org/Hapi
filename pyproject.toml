@@ -1,5 +1,5 @@
 [project]
-name = "HAPI-Nile"
+name = "hapi-nile"
 version = "1.7.0"
 description = "Distributed hydrological-model"
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -75,15 +75,15 @@ docs = [
 ]
 
 [project.urls]
-homepage = "https://github.com/Serapieum-of-alex/Hapi"
-repository = "https://github.com/Serapieum-of-alex/Hapi"
-documentation = "https://serapieum-of-alex.github.io/Hapi"
-Changelog = "https://github.com/Serapieum-of-alex/Hapi/blob/main/docs/change-log.md"
+homepage = "https://github.com/serapeum-org/Hapi"
+repository = "https://github.com/serapeum-org/Hapi"
+documentation = "https://serapeum-org.github.io/Hapi"
+Changelog = "https://github.com/serapeum-org/Hapi/blob/main/docs/change-log.md"
 
 [project.scripts]
-download-parameters = "Hapi.parameters.parameters:main"
-download-parameter-set = "Hapi.parameters.parameters:main"
-list-parameter-names = "Hapi.parameters.parameters:main"
+download-parameters = "hapi.parameters.parameters:main"
+download-parameter-set = "hapi.parameters.parameters:main"
+list-parameter-names = "hapi.parameters.parameters:main"
 
 
 [build-system]
@@ -94,10 +94,10 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["Hapi", "Hapi.*"]
+include = ["hapi", "hapi.*"]
 
 [tool.setuptools.package-data]
-Hapi = ["*.yaml", "include/gdal/*.h"]
+hapi = ["*.yaml", "include/gdal/*.h"]
 
 [tool.flake8]
 ignore = ["E203", "E266", "E501", "W503", "E722", "C901", "E741", "E731"]
@@ -154,10 +154,10 @@ exclude = [
 
 [[tool.mypy.overrides]]
 module = [
-    "Hapi.catchment",
-    "Hapi.run",
-    "Hapi.calibration",
-    "Hapi.wrapper",
+    "hapi.catchment",
+    "hapi.run",
+    "hapi.calibration",
+    "hapi.wrapper",
 ]
 # These modules use a builder pattern: attributes are typed X | None in
 # __init__ and populated by separate read_*() methods before use. Methods
@@ -176,7 +176,7 @@ disable_error_code = [
 ]
 
 [[tool.mypy.overrides]]
-module = "Hapi.rrm.base_model"
+module = "hapi.rrm.base_model"
 disable_error_code = ["empty-body"]
 
 
@@ -200,12 +200,12 @@ channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
 
 [tool.pixi.pypi-dependencies]
-HAPI-Nile = { path = ".", editable = true }
+hapi-nile = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-main = { cmd = "pytest -vvv --cov=src/Hapi -sv -m 'not plot and not fig_share' --cov-report=xml", description = "Run the main test suite" }
-plot = { cmd = "pytest -vvv --cov=src/Hapi -sv -m 'plot' --cov-report=xml", description = "Run plot test suite" }
-test-all = { cmd = "pytest -vvv --cov=src/Hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing", description = "Run all test suite" }
+main = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'not plot and not fig_share' --cov-report=xml", description = "Run the main test suite" }
+plot = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'plot' --cov-report=xml", description = "Run plot test suite" }
+test-all = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing", description = "Run all test suite" }
 notebooks = { cmd = "pytest --nbval --nbval-lax --verbose examples/notebooks", description = "Check notebooks" }
 build-dist = { cmd = "python -m build", description = "Build sdist and wheel for PyPI" }
 publish-pypi = { cmd = "twine upload --non-interactive --repository pypi dist/*", depends-on = ["build-dist"], description = "Build and upload package to PyPI" }

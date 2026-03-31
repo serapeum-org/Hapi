@@ -4,9 +4,9 @@
 """
 Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
-import Hapi.rrm.hbv_bergestrom92 as HBV
-from Hapi.catchment import Catchment
-from Hapi.run import Run
+import hapi.rrm.hbv_bergestrom92 as HBV
+from hapi.catchment import Catchment
+from hapi.run import Run
 
 # %% Paths
 Path = Comp + "/data/distributed/coello"

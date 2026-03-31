@@ -1,6 +1,6 @@
 """HBV model with a lake function.
 
-The ``Hapi.rrm.hbv_lake`` module provides the ``HBVLake`` class, an
+The ``hapi.rrm.hbv_lake`` module provides the ``HBVLake`` class, an
 extension of the HBV-96 rainfall-runoff model that includes an explicit
 lake representation.  Inflow to the lake is computed using the standard
 HBV precipitation, snow, soil, and response routines.  Lake outflow is
@@ -20,7 +20,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline as interp11
 
-from Hapi.rrm.base_model import BaseConceptualModel
+from hapi.rrm.base_model import BaseConceptualModel
 
 # initial values for state variables
 # [sp, sm, uz, lz, wc]
@@ -48,7 +48,7 @@ class HBVLake(BaseConceptualModel):
 
     Examples:
         >>> import numpy as np
-        >>> from Hapi.rrm.hbv_lake import HBVLake, DEF_ST, DEF_q0
+        >>> from hapi.rrm.hbv_lake import HBVLake, DEF_ST, DEF_q0
         >>> model = HBVLake()
         >>> n = 10
         >>> prec = np.array([5.0] * n)
@@ -255,7 +255,6 @@ class HBVLake(BaseConceptualModel):
             >>> qdr
             0
         """
-
         #    qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity
         qdr = 0
         _in = inf - qdr
@@ -453,7 +452,6 @@ class HBVLake(BaseConceptualModel):
             >>> len(w)
             3
         """
-
         wi = []
         for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
             if (
@@ -700,7 +698,7 @@ class HBVLake(BaseConceptualModel):
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.rrm.hbv_lake import HBVLake, DEF_ST
+            >>> from hapi.rrm.hbv_lake import HBVLake, DEF_ST
             >>> model = HBVLake()
             >>> par = [200, 2.0, 0.01, 0.6, 0.5, 0.01, 0.05,
             ...        1.0, 1.0, 1.0, 1.0]
@@ -845,7 +843,7 @@ class HBVLake(BaseConceptualModel):
 
         Examples:
             >>> import numpy as np
-            >>> from Hapi.rrm.hbv_lake import HBVLake, DEF_ST, DEF_q0
+            >>> from hapi.rrm.hbv_lake import HBVLake, DEF_ST, DEF_q0
             >>> model = HBVLake()
             >>> n = 5
             >>> prec = np.array([4.0] * n)
@@ -867,7 +865,6 @@ class HBVLake(BaseConceptualModel):
             >>> len(states)
             6
         """
-
         if init_st is None:  # If unspecified, [0.0, 30.0, 30.0, 30.0, 0.0] mm
             st = [DEF_ST]  # if not given take the default
         else:

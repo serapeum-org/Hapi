@@ -1,13 +1,11 @@
-"""
-Hapi - Hydrological library for Python
-=====================================================================
+"""Hapi - Hydrological library for Python.
 
 **Hapi** is a Python package providing fast and flexible, way to build distributed
 hydrological model using lumped conceptual model
 
 Main Features
 -------------
-Here are just a few of the things that pandas does well:
+Here are just a few of the things that Hapi does well:
 
   - Easy handling of rasters data downloaded from global data and easy way to
     manipulate the data to arrange it to run the model
@@ -17,11 +15,9 @@ Here are just a few of the things that pandas does well:
 """
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version
-
+from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version(__name__)
+    __version__ = version("hapi-nile")
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
