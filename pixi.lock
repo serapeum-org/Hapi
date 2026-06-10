@@ -3277,7 +3277,7 @@ packages:
 - pypi: ./
   name: hapi-nile
   version: 1.7.0
-  sha256: a0f34eb45048860f5e13c6fb581aa76d2826c6b64435bfe5c4a5511308854269
+  sha256: f50403f1da17014cf154de4192b93bce2070099198856074f8120de4cdc31fb5
   requires_dist:
   - geopandas>=1.0.1
   - loguru>=0.7.2
@@ -3288,7 +3288,7 @@ packages:
   - requests>=2.31.0
   - scipy>=1.11.4
   - serapeum-utils>=0.2.0
-  - statista>=0.6.0
+  - statista>=0.8.0
   - oasis-optimization>=1.0.3
   - cleopatra>=0.17.0
   - matplotlib>=3.7.2
