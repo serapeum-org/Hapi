@@ -1026,10 +1026,10 @@ class Catchment:
                         metrics.wb(q_obs, q_sim), 3
                     )
                     self.Metrics.loc["Pearson-CC", gauge_id] = round(
-                        metrics.pearson_corre(q_obs, q_sim), 3
+                        metrics.pearson_corr_coeff(q_obs, q_sim), 3
                     )
                     self.Metrics.loc["R2", gauge_id] = round(
-                        metrics.R2(q_obs, q_sim), 3
+                        metrics.r2(q_obs, q_sim), 3
                     )
         elif frame_work_1 or only_outlet:
             self.Qsim = pd.DataFrame(index=self.Index)
