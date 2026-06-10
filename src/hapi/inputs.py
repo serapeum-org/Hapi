@@ -10,6 +10,7 @@ The module relies on the ``pyramids`` library for raster I/O and
 manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
 locate pre-downloaded global parameter sets (Beck et al., 2016).
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -19,7 +20,7 @@ from pathlib import Path
 import pandas as pd
 from geopandas import GeoDataFrame
 from pyramids.dataset import Dataset
-from pyramids.multidataset import MultiDataset as Datacube
+from pyramids.dataset import DatasetCollection as Datacube
 
 PARAMETERS_LIST = [
     "01_tt",
@@ -71,9 +72,7 @@ class Inputs:
         """
         self.source_dem = src
 
-    def prepare_inputs(
-        self, inputs_dir: str | Path, outputs_dir: str | Path
-    ):
+    def prepare_inputs(self, inputs_dir: str | Path, outputs_dir: str | Path):
         """Align and crop input rasters to match the source DEM.
 
         Reads all rasters from ``inputs_dir``, aligns them to the source
@@ -107,9 +106,11 @@ class Inputs:
 
         cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
         cube.open_multi_dataset()
-        cube.align(mask)
+        # in-place align/crop clear the collection's file list, so capture the names first
+        file_names = [Path(file).name for file in cube.files]
+        cube.align(mask, inplace=True)
         cube.crop(mask, inplace=True)
-        path = [f"{outputs_dir}/{file.split('/')[-1]}" for file in cube.files]
+        path = [f"{outputs_dir}/{name}" for name in file_names]
         cube.to_file(path)
 
     @staticmethod
@@ -146,7 +147,9 @@ class Inputs:
         file_path = data_dir / f"max/{PARAMETERS_LIST[0]}.tif"
 
         if not file_path.exists() or not max_dir.exists() or not min_dir.exists():
-            raise FileNotFoundError(f"check the following files{file_path}, {max_dir}, {min_dir} does not exist")
+            raise FileNotFoundError(
+                f"check the following files{file_path}, {max_dir}, {min_dir} does not exist"
+            )
 
         dataset = Dataset.read_file(str(file_path))
         basin = basin.to_crs(crs=dataset.crs)
@@ -154,18 +157,14 @@ class Inputs:
         # max values
         ub = list()
         for i in range(len(PARAMETERS_LIST)):
-            dataset = Dataset.read_file(
-                f"{data_dir}/max/{PARAMETERS_LIST[i]}.tif"
-            )
+            dataset = Dataset.read_file(f"{data_dir}/max/{PARAMETERS_LIST[i]}.tif")
             vals = dataset.stats(mask=basin)
             ub.append(vals.loc[vals.index[0], "max"])
 
         # min values
         lb = list()
         for i in range(len(PARAMETERS_LIST)):
-            dataset = Dataset.read_file(
-                f"{data_dir}/min/{PARAMETERS_LIST[i]}.tif"
-            )
+            dataset = Dataset.read_file(f"{data_dir}/min/{PARAMETERS_LIST[i]}.tif")
             vals = dataset.stats(mask=basin)
             lb.append(vals.loc[vals.index[0], "min"])
 

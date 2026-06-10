@@ -4,43 +4,43 @@ This module provides the `DEM` class, which extends
 ``pyramids.dataset.Dataset`` with flow-direction utilities used by
 the distributed rainfall-runoff modelling pipeline.
 """
+
 from __future__ import annotations
 
 import numpy as np
 from pyramids.dataset import Dataset
 
-
 D8_OFFSETS_ESRI: dict[int, tuple[int, int]] = {
-    1: (0, 1),      # east
-    2: (1, 1),      # south-east
-    4: (1, 0),      # south
-    8: (1, -1),     # south-west
-    16: (0, -1),    # west
-    32: (-1, -1),   # north-west
-    64: (-1, 0),    # north
-    128: (-1, 1),   # north-east
+    1: (0, 1),  # east
+    2: (1, 1),  # south-east
+    4: (1, 0),  # south
+    8: (1, -1),  # south-west
+    16: (0, -1),  # west
+    32: (-1, -1),  # north-west
+    64: (-1, 0),  # north
+    128: (-1, 1),  # north-east
 }
 
 D8_OFFSETS_SAGA: dict[int, tuple[int, int]] = {
-    0: (0, 1),      # east
-    1: (-1, 1),     # north-east
-    2: (-1, 0),     # north
-    3: (-1, -1),    # north-west
-    4: (0, -1),     # west
-    5: (1, -1),     # south-west
-    6: (1, 0),      # south
-    7: (1, 1),      # south-east
+    0: (0, 1),  # east
+    1: (-1, 1),  # north-east
+    2: (-1, 0),  # north
+    3: (-1, -1),  # north-west
+    4: (0, -1),  # west
+    5: (1, -1),  # south-west
+    6: (1, 0),  # south
+    7: (1, 1),  # south-east
 }
 
 D8_OFFSETS_GRASS: dict[int, tuple[int, int]] = {
-    1: (-1, 0),     # north
-    2: (-1, 1),     # north-east
-    3: (0, 1),      # east
-    4: (1, 1),      # south-east
-    5: (1, 0),      # south
-    6: (1, -1),     # south-west
-    7: (0, -1),     # west
-    8: (-1, -1),    # north-west
+    1: (-1, 0),  # north
+    2: (-1, 1),  # north-east
+    3: (0, 1),  # east
+    4: (1, 1),  # south-east
+    5: (1, 0),  # south
+    6: (1, -1),  # south-west
+    7: (0, -1),  # west
+    8: (-1, -1),  # north-west
 }
 
 D8_ENCODINGS: dict[str, dict[int, tuple[int, int]]] = {
@@ -63,18 +63,11 @@ class DEM(Dataset):
     - **SAGA**: codes 0--7, starting East counter-clockwise.
     - **GRASS**: codes 1--8, starting North clockwise.
 
-    Args:
-        src: A GDAL dataset or a file path to a DEM raster that can
-            be opened by ``pyramids.dataset.Dataset``.
+    Use ``DEM.read_file(path)`` to open a raster from disk, exactly
+    like ``pyramids.dataset.Dataset``.
     """
 
-    def __init__(self, src):
-        """Initialize the DEM instance."""
-        super().__init__(src)
-
-    def flow_direction_index(
-        self, encoding: str = "esri"
-    ) -> np.ndarray:
+    def flow_direction_index(self, encoding: str = "esri") -> np.ndarray:
         """Convert flow-direction codes into downstream-cell indices.
 
         Reads the flow-direction band from the underlying raster and
@@ -130,9 +123,7 @@ class DEM(Dataset):
 
         fd_cell = np.full((rows, cols, 2), np.nan)
 
-        row_idx, col_idx = np.meshgrid(
-            np.arange(rows), np.arange(cols), indexing="ij"
-        )
+        row_idx, col_idx = np.meshgrid(np.arange(rows), np.arange(cols), indexing="ij")
         d_row = np.full((rows, cols), np.nan)
         d_col = np.full((rows, cols), np.nan)
 

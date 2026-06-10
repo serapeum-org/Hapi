@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 from geopandas import GeoDataFrame
-from pyramids.multidataset import MultiDataset as Datacube
+from pyramids.dataset import DatasetCollection as Datacube
 
 from hapi.inputs import Inputs
 
@@ -144,16 +144,18 @@ def test_create_lumped_parameter():
         date=True,
         file_name_data_fmt="%Y.%m.%d",
     )
+    # exact spatial means of the valid (non-nodata) cells; pyramids >= 0.32 returns
+    # exact band statistics instead of the sampled values returned by older versions
     validation_values = [
         0.0,
-        0.3153739,
-        43.65052,
-        0.9195719,
-        8.736267,
-        6.411966,
-        21.155485,
-        1.027534,
-        4.1313076,
-        1.5406969,
+        0.2987198,
+        44.0648258,
+        0.9426745,
+        8.8650742,
+        6.4935942,
+        21.4244297,
+        1.0538575,
+        4.0846919,
+        1.5792784,
     ]
     assert np.isclose(lumped_data, validation_values, atol=0.001, rtol=0.001).all()

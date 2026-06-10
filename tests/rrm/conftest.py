@@ -5,7 +5,7 @@ import geopandas as gpd
 import numpy as np
 import pytest
 from geopandas import GeoDataFrame
-from osgeo import gdal
+from pyramids.dataset import Dataset
 
 from hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
@@ -80,8 +80,8 @@ def coello_acc_path() -> str:
 
 
 @pytest.fixture(scope="module")
-def coello_acc_raster() -> gdal.Dataset:
-    return gdal.Open("tests/rrm/data/coello/gis/acc4000.tif")
+def coello_acc_raster() -> Dataset:
+    return Dataset.read_file("tests/rrm/data/coello/gis/acc4000.tif")
 
 
 @pytest.fixture(scope="module")

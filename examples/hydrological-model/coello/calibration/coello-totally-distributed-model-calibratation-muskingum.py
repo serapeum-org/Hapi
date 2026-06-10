@@ -1,12 +1,12 @@
 import datetime as dt
 
 import numpy as np
-from osgeo import gdal
+from pyramids.dataset import Dataset
 from statista.descriptors import rmse
 
-from Hapi.calibration import Calibration
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
-from Hapi.rrm.parameters import Parameters as DP
+from hapi.calibration import Calibration
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
+from hapi.rrm.parameters import Parameters as DP
 
 # %% Paths
 Path = "examples/hydrological-model/data/distributed_model/"
@@ -54,7 +54,7 @@ function inside the calibration algorithm is written as following
 
 par_dist = SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 """
-raster = gdal.Open(FlowAccPath)
+raster = Dataset.read_file(FlowAccPath)
 # -------------
 # for lumped catchment parameters
 no_parameters = 12
