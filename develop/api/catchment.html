@@ -867,6 +867,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#hapi.catchment.Catchment.save_animation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_animation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#hapi.catchment.Catchment.save_results" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1807,6 +1818,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#hapi.catchment.Catchment.save_animation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_animation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#hapi.catchment.Catchment.save_results" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1895,8 +1917,7 @@ class to run the model.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  45</span>
-<span class="normal">  46</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  46</span>
 <span class="normal">  47</span>
 <span class="normal">  48</span>
 <span class="normal">  49</span>
@@ -3296,7 +3317,32 @@ class to run the model.</p>
 <span class="normal">1443</span>
 <span class="normal">1444</span>
 <span class="normal">1445</span>
-<span class="normal">1446</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1446</span>
+<span class="normal">1447</span>
+<span class="normal">1448</span>
+<span class="normal">1449</span>
+<span class="normal">1450</span>
+<span class="normal">1451</span>
+<span class="normal">1452</span>
+<span class="normal">1453</span>
+<span class="normal">1454</span>
+<span class="normal">1455</span>
+<span class="normal">1456</span>
+<span class="normal">1457</span>
+<span class="normal">1458</span>
+<span class="normal">1459</span>
+<span class="normal">1460</span>
+<span class="normal">1461</span>
+<span class="normal">1462</span>
+<span class="normal">1463</span>
+<span class="normal">1464</span>
+<span class="normal">1465</span>
+<span class="normal">1466</span>
+<span class="normal">1467</span>
+<span class="normal">1468</span>
+<span class="normal">1469</span>
+<span class="normal">1470</span>
+<span class="normal">1471</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3408,6 +3454,7 @@ class to run the model.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="p">:</span> <span class="n">ArrayGlyph</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qlz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3673,8 +3720,9 @@ class to run the model.</p>
                 <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[:,</span> <span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">)]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[:,</span> <span class="p">:])</span>
+            <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">)]))</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">acc_val</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
@@ -3810,9 +3858,10 @@ class to run the model.</p>
                 <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="c1"># check flow accumulation input raster</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[:,</span> <span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">)])</span>
-        <span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[:,</span> <span class="p">:])</span>
+            <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">)]))</span>
+        <span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Flow path length input is read successfully&quot;</span><span class="p">)</span>
 
@@ -3850,9 +3899,7 @@ class to run the model.</p>
         <span class="p">]:</span>
             <span class="n">ds</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;GDAL could not open </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> file: </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GDAL could not open </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> file: </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">())</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
@@ -4078,9 +4125,7 @@ class to run the model.</p>
             <span class="c1"># if hasattr(self, &#39;flow_acc&#39;):</span>
             <span class="n">flow_acc</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">flow_acc_file</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">flow_acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_file</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># calculate the nearest cell to each station</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">)</span>
             <span class="n">loc_arr</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_to_array_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)</span>
@@ -4485,15 +4530,15 @@ class to run the model.</p>
 <span class="sd">                on the animation. Default is False.</span>
 <span class="sd">            **kwargs: Additional keyword arguments passed to</span>
 <span class="sd">                ``ArrayGlyph.animate``. Common options include:</span>
-<span class="sd">                TicksSpacing (int), Figsize (tuple),</span>
-<span class="sd">                PlotNumbers (bool), NumSize (int), title (str),</span>
-<span class="sd">                title_size (int), Backgroundcolorthreshold (float),</span>
-<span class="sd">                textcolors (tuple), cbarlabel (str),</span>
-<span class="sd">                cbarlabelsize (int), Cbarlength (float),</span>
-<span class="sd">                Interval (int), cmap (str), Textloc (list),</span>
-<span class="sd">                Gaugecolor (str), Gaugesize (int),</span>
-<span class="sd">                ColorScale (int), orientation (str),</span>
-<span class="sd">                rotation (float), Points (DataFrame).</span>
+<span class="sd">                interval (int), text_colors (tuple),</span>
+<span class="sd">                text_loc (list), point_color (str),</span>
+<span class="sd">                point_size (int), pid_color (str), pid_size (int),</span>
+<span class="sd">                title_size (int), cmap (str), vmin (float),</span>
+<span class="sd">                vmax (float), color_scale (str), ticks_spacing (int),</span>
+<span class="sd">                cbar_label (str), cbar_label_size (int),</span>
+<span class="sd">                cbar_length (float), cbar_orientation (str),</span>
+<span class="sd">                display_cell_value (bool), num_size (int),</span>
+<span class="sd">                background_color_threshold (float).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            matplotlib.animation.FuncAnimation: The animation object.</span>
@@ -4511,47 +4556,47 @@ class to run the model.</p>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Plotting options are from 1 to 11&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Total Discharge&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Surface Flow&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ground Water Flow&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Snow Pack&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Soil Moisture&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Upper Zone&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Lower Zone&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Water Content&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Precipitation&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;ET&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Temperature&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -4560,15 +4605,42 @@ class to run the model.</p>
         <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">gauges</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;Points&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span>
+            <span class="c1"># animate expects a 3-column array: [value to display, cell row, cell column]</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[</span>
+                <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_row&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_col&quot;</span><span class="p">]</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+        <span class="c1"># animate iterates over the first dimension, so move the time axis to the front</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="c1"># anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="o">=</span> <span class="n">array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">anim</span>
 
         <span class="k">return</span> <span class="n">anim</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the animation created by `plot_distributed_results`.</span>
+
+<span class="sd">        The output format is determined by the file extension. GIF uses</span>
+<span class="sd">        PillowWriter; mov/avi/mp4 require FFmpeg to be installed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): Output file path. The extension determines the</span>
+<span class="sd">                format (gif, mov, avi, or mp4).</span>
+<span class="sd">            fps (int, optional): Frames per second. Default is 2.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If `plot_distributed_results` has not been called</span>
+<span class="sd">                yet, or if the file format is not supported.</span>
+<span class="sd">            FileNotFoundError: If a video format is requested but FFmpeg</span>
+<span class="sd">                is not installed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;There is no animation to save, call `plot_distributed_results` first&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -4632,9 +4704,7 @@ class to run the model.</p>
 
             <span class="n">src</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">flow_acc_path</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_path</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                 <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;Result_&quot;</span>
@@ -4893,8 +4963,7 @@ Default is "Muskingum".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 55</span>
-<span class="normal"> 56</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 56</span>
 <span class="normal"> 57</span>
 <span class="normal"> 58</span>
 <span class="normal"> 59</span>
@@ -4998,7 +5067,9 @@ Default is "Muskingum".</p>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
-<span class="normal">160</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start_data</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -5100,6 +5171,7 @@ Default is "Muskingum".</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="p">:</span> <span class="n">ArrayGlyph</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">quz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">qlz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -5583,15 +5655,15 @@ on the animation. Default is False.</p>
               <div class="doc-md-description">
                 <p>Additional keyword arguments passed to
 <code>ArrayGlyph.animate</code>. Common options include:
-TicksSpacing (int), Figsize (tuple),
-PlotNumbers (bool), NumSize (int), title (str),
-title_size (int), Backgroundcolorthreshold (float),
-textcolors (tuple), cbarlabel (str),
-cbarlabelsize (int), Cbarlength (float),
-Interval (int), cmap (str), Textloc (list),
-Gaugecolor (str), Gaugesize (int),
-ColorScale (int), orientation (str),
-rotation (float), Points (DataFrame).</p>
+interval (int), text_colors (tuple),
+text_loc (list), point_color (str),
+point_size (int), pid_color (str), pid_size (int),
+title_size (int), cmap (str), vmin (float),
+vmax (float), color_scale (str), ticks_spacing (int),
+cbar_label (str), cbar_label_size (int),
+cbar_length (float), cbar_orientation (str),
+display_cell_value (bool), num_size (int),
+background_color_threshold (float).</p>
               </div>
             </td>
             <td>
@@ -5762,7 +5834,11 @@ rotation (float), Points (DataFrame).</p>
 <span class="normal">1314</span>
 <span class="normal">1315</span>
 <span class="normal">1316</span>
-<span class="normal">1317</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
+<span class="normal">1317</span>
+<span class="normal">1318</span>
+<span class="normal">1319</span>
+<span class="normal">1320</span>
+<span class="normal">1321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -5792,15 +5868,15 @@ rotation (float), Points (DataFrame).</p>
 <span class="sd">            on the animation. Default is False.</span>
 <span class="sd">        **kwargs: Additional keyword arguments passed to</span>
 <span class="sd">            ``ArrayGlyph.animate``. Common options include:</span>
-<span class="sd">            TicksSpacing (int), Figsize (tuple),</span>
-<span class="sd">            PlotNumbers (bool), NumSize (int), title (str),</span>
-<span class="sd">            title_size (int), Backgroundcolorthreshold (float),</span>
-<span class="sd">            textcolors (tuple), cbarlabel (str),</span>
-<span class="sd">            cbarlabelsize (int), Cbarlength (float),</span>
-<span class="sd">            Interval (int), cmap (str), Textloc (list),</span>
-<span class="sd">            Gaugecolor (str), Gaugesize (int),</span>
-<span class="sd">            ColorScale (int), orientation (str),</span>
-<span class="sd">            rotation (float), Points (DataFrame).</span>
+<span class="sd">            interval (int), text_colors (tuple),</span>
+<span class="sd">            text_loc (list), point_color (str),</span>
+<span class="sd">            point_size (int), pid_color (str), pid_size (int),</span>
+<span class="sd">            title_size (int), cmap (str), vmin (float),</span>
+<span class="sd">            vmax (float), color_scale (str), ticks_spacing (int),</span>
+<span class="sd">            cbar_label (str), cbar_label_size (int),</span>
+<span class="sd">            cbar_length (float), cbar_orientation (str),</span>
+<span class="sd">            display_cell_value (bool), num_size (int),</span>
+<span class="sd">            background_color_threshold (float).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        matplotlib.animation.FuncAnimation: The animation object.</span>
@@ -5818,47 +5894,47 @@ rotation (float), Points (DataFrame).</p>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Plotting options are from 1 to 11&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Total Discharge&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Surface Flow&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ground Water Flow&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Snow Pack&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Soil Moisture&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Upper Zone&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Lower Zone&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Water Content&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Precipitation&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;ET&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Temperature&quot;</span>
     <span class="k">else</span><span class="p">:</span>
@@ -5867,12 +5943,16 @@ rotation (float), Points (DataFrame).</p>
     <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">gauges</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;Points&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span>
+        <span class="c1"># animate expects a 3-column array: [value to display, cell row, cell column]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_row&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_col&quot;</span><span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 
-    <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="c1"># animate iterates over the first dimension, so move the time axis to the front</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
     <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="c1"># anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)</span>
 
+    <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="o">=</span> <span class="n">array</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">anim</span>
 
     <span class="k">return</span> <span class="n">anim</span>
@@ -7064,9 +7144,7 @@ resulting array is not a numpy ndarray.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
@@ -7128,7 +7206,9 @@ resulting array is not a numpy ndarray.</p>
 <span class="normal">372</span>
 <span class="normal">373</span>
 <span class="normal">374</span>
-<span class="normal">375</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_et</span><span class="p">(</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_et</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -7289,9 +7369,7 @@ end with ".tif".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
@@ -7375,7 +7453,10 @@ end with ".tif".</p>
 <span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
-<span class="normal">463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read flow accumulation raster and compute cell properties.</span>
 
 <span class="sd">    Reads the flow accumulation raster, extracts the number of rows,</span>
@@ -7420,8 +7501,9 @@ end with ".tif".</p>
             <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[:,</span> <span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span>
-        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">)]))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[:,</span> <span class="p">:])</span>
+        <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">)]))</span>
     <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">acc_val</span> <span class="o">=</span> <span class="p">[</span>
         <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
@@ -7566,10 +7648,7 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">468</span>
 <span class="normal">469</span>
 <span class="normal">470</span>
 <span class="normal">471</span>
@@ -7620,7 +7699,10 @@ exist.</p>
 <span class="normal">516</span>
 <span class="normal">517</span>
 <span class="normal">518</span>
-<span class="normal">519</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the flow direction raster and build the flow direction table.</span>
 
 <span class="sd">    Args:</span>
@@ -7770,10 +7852,7 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">524</span>
 <span class="normal">525</span>
 <span class="normal">526</span>
 <span class="normal">527</span>
@@ -7812,7 +7891,11 @@ exist.</p>
 <span class="normal">560</span>
 <span class="normal">561</span>
 <span class="normal">562</span>
-<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the flow path length raster.</span>
 
 <span class="sd">    Reads the flow path length raster and extracts rows, columns,</span>
@@ -7850,9 +7933,10 @@ exist.</p>
             <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="c1"># check flow accumulation input raster</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[:,</span> <span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span>
-        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">)])</span>
-    <span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[:,</span> <span class="p">:])</span>
+        <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FPLArr</span><span class="p">)]))</span>
+    <span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Flow path length input is read successfully&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -7951,9 +8035,7 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">793</span>
 <span class="normal">794</span>
 <span class="normal">795</span>
 <span class="normal">796</span>
@@ -8031,9 +8113,7 @@ in the gauge table. Default is "%Y-%m-%d".</p>
         <span class="c1"># if hasattr(self, &#39;flow_acc&#39;):</span>
         <span class="n">flow_acc</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">flow_acc_file</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">flow_acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_file</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># calculate the nearest cell to each station</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">)</span>
         <span class="n">loc_arr</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_to_array_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)</span>
@@ -8143,9 +8223,7 @@ columns (excluding the date index).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">762</span>
 <span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
@@ -8172,7 +8250,9 @@ columns (excluding the date index).</p>
 <span class="normal">786</span>
 <span class="normal">787</span>
 <span class="normal">788</span>
-<span class="normal">789</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="normal">789</span>
+<span class="normal">790</span>
+<span class="normal">791</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read meteorological inputs for lumped mode.</span>
 
 <span class="sd">    Reads precipitation, evapotranspiration, temperature, and</span>
@@ -8337,9 +8417,7 @@ values.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">713</span>
 <span class="normal">714</span>
 <span class="normal">715</span>
 <span class="normal">716</span>
@@ -8384,7 +8462,9 @@ values.</p>
 <span class="normal">755</span>
 <span class="normal">756</span>
 <span class="normal">757</span>
-<span class="normal">758</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">lumped_model</span><span class="p">,</span>
     <span class="n">catchment_area</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
@@ -8564,9 +8644,7 @@ the given snow/maxbas configuration.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">606</span>
 <span class="normal">607</span>
 <span class="normal">608</span>
 <span class="normal">609</span>
@@ -8669,7 +8747,9 @@ the given snow/maxbas configuration.</p>
 <span class="normal">706</span>
 <span class="normal">707</span>
 <span class="normal">708</span>
-<span class="normal">709</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read model parameter rasters or a CSV parameter file.</span>
 
 <span class="sd">    For distributed mode, reads parameter rasters from a folder.</span>
@@ -9213,9 +9293,7 @@ numpy ndarray.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
@@ -9281,7 +9359,9 @@ numpy ndarray.</p>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rainfall</span><span class="p">(</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rainfall</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -9479,11 +9559,7 @@ roughness raster file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
 <span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
@@ -9516,7 +9592,9 @@ roughness raster file.</p>
 <span class="normal">599</span>
 <span class="normal">600</span>
 <span class="normal">601</span>
-<span class="normal">602</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dem_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bankfull_depth_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -9550,9 +9628,7 @@ roughness raster file.</p>
     <span class="p">]:</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;GDAL could not open </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> file: </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GDAL could not open </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> file: </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">())</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -9788,9 +9864,7 @@ resulting array is not a numpy ndarray.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
 <span class="normal">237</span>
@@ -9865,7 +9939,9 @@ resulting array is not a numpy ndarray.</p>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_temperature</span><span class="p">(</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_temperature</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">ll_temp</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -9943,6 +10019,161 @@ resulting array is not a numpy ndarray.</p>
                     <span class="bp">self</span><span class="o">.</span><span class="n">ll_temp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">avg</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Temperature data are read successfully&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hapi.catchment.Catchment.save_animation" class="doc doc-heading"><a href="#hapi.catchment.Catchment.save_animation" class="toclink">
+            <code class="highlight language-python"><span class="n">save_animation</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span></code>
+
+</a><a href="#hapi.catchment.Catchment.save_animation" class="headerlink" title="Permanent link">#</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Save the animation created by <code>plot_distributed_results</code>.</p>
+<p>The output format is determined by the file extension. GIF uses
+PillowWriter; mov/avi/mp4 require FFmpeg to be installed.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output file path. The extension determines the
+format (gif, mov, avi, or mp4).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>fps</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Frames per second. Default is 2.</p>
+              </div>
+            </td>
+            <td>
+                  <code>2</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>plot_distributed_results</code> has not been called
+yet, or if the file format is not supported.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a video format is requested but FFmpeg
+is not installed.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/hapi/catchment.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1323</span>
+<span class="normal">1324</span>
+<span class="normal">1325</span>
+<span class="normal">1326</span>
+<span class="normal">1327</span>
+<span class="normal">1328</span>
+<span class="normal">1329</span>
+<span class="normal">1330</span>
+<span class="normal">1331</span>
+<span class="normal">1332</span>
+<span class="normal">1333</span>
+<span class="normal">1334</span>
+<span class="normal">1335</span>
+<span class="normal">1336</span>
+<span class="normal">1337</span>
+<span class="normal">1338</span>
+<span class="normal">1339</span>
+<span class="normal">1340</span>
+<span class="normal">1341</span>
+<span class="normal">1342</span>
+<span class="normal">1343</span>
+<span class="normal">1344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save the animation created by `plot_distributed_results`.</span>
+
+<span class="sd">    The output format is determined by the file extension. GIF uses</span>
+<span class="sd">    PillowWriter; mov/avi/mp4 require FFmpeg to be installed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path (str): Output file path. The extension determines the</span>
+<span class="sd">            format (gif, mov, avi, or mp4).</span>
+<span class="sd">        fps (int, optional): Frames per second. Default is 2.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If `plot_distributed_results` has not been called</span>
+<span class="sd">            yet, or if the file format is not supported.</span>
+<span class="sd">        FileNotFoundError: If a video format is requested but FFmpeg</span>
+<span class="sd">            is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;There is no animation to save, call `plot_distributed_results` first&quot;</span>
+        <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -10145,34 +10376,7 @@ distributed mode.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1319</span>
-<span class="normal">1320</span>
-<span class="normal">1321</span>
-<span class="normal">1322</span>
-<span class="normal">1323</span>
-<span class="normal">1324</span>
-<span class="normal">1325</span>
-<span class="normal">1326</span>
-<span class="normal">1327</span>
-<span class="normal">1328</span>
-<span class="normal">1329</span>
-<span class="normal">1330</span>
-<span class="normal">1331</span>
-<span class="normal">1332</span>
-<span class="normal">1333</span>
-<span class="normal">1334</span>
-<span class="normal">1335</span>
-<span class="normal">1336</span>
-<span class="normal">1337</span>
-<span class="normal">1338</span>
-<span class="normal">1339</span>
-<span class="normal">1340</span>
-<span class="normal">1341</span>
-<span class="normal">1342</span>
-<span class="normal">1343</span>
-<span class="normal">1344</span>
-<span class="normal">1345</span>
-<span class="normal">1346</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1346</span>
 <span class="normal">1347</span>
 <span class="normal">1348</span>
 <span class="normal">1349</span>
@@ -10272,7 +10476,32 @@ distributed mode.</p>
 <span class="normal">1443</span>
 <span class="normal">1444</span>
 <span class="normal">1445</span>
-<span class="normal">1446</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
+<span class="normal">1446</span>
+<span class="normal">1447</span>
+<span class="normal">1448</span>
+<span class="normal">1449</span>
+<span class="normal">1450</span>
+<span class="normal">1451</span>
+<span class="normal">1452</span>
+<span class="normal">1453</span>
+<span class="normal">1454</span>
+<span class="normal">1455</span>
+<span class="normal">1456</span>
+<span class="normal">1457</span>
+<span class="normal">1458</span>
+<span class="normal">1459</span>
+<span class="normal">1460</span>
+<span class="normal">1461</span>
+<span class="normal">1462</span>
+<span class="normal">1463</span>
+<span class="normal">1464</span>
+<span class="normal">1465</span>
+<span class="normal">1466</span>
+<span class="normal">1467</span>
+<span class="normal">1468</span>
+<span class="normal">1469</span>
+<span class="normal">1470</span>
+<span class="normal">1471</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -10334,9 +10563,7 @@ distributed mode.</p>
 
         <span class="n">src</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">flow_acc_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_path</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GDAL could not open: </span><span class="si">{</span><span class="n">flow_acc_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
             <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;Result_&quot;</span>
