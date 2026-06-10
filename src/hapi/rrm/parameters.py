@@ -5,6 +5,7 @@ spatially (totally distributed, totally distributed with some parameters
 lumped, all parameters lumped, hydrologic response units) and saving
 generated parameters into rasters.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -703,5 +704,5 @@ class Parameters:
 
         for i in range(np.shape(self.Par3d)[2]):
             Dataset.dataset_like(
-                self.raster, self.Par3d[:, :, i], driver="geotiff", path=pnme[i]
+                Dataset(self.raster), self.Par3d[:, :, i], path=pnme[i]
             )

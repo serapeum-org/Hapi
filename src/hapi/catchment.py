@@ -12,6 +12,7 @@ The Lake class provides similar functionality for simulating a lake
 as a lumped model using a rating curve, where the lake and its
 upstream sub-catchments are treated as one lumped model.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -30,7 +31,7 @@ from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from osgeo import gdal
 from pyramids.dataset import Dataset
-from pyramids.multidataset import MultiDataset as Datacube
+from pyramids.dataset import DatasetCollection as Datacube
 
 from hapi.dem import DEM
 
@@ -154,6 +155,7 @@ class Catchment:
         self.qlz_translated: np.ndarray | None = None
         self.state_variables: np.ndarray | None = None
         self.anim: matplotlib.animation.FuncAnimation | None = None
+        self._animation_glyph: ArrayGlyph | None = None
         self.quz: np.ndarray | None = None
         self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
@@ -419,8 +421,9 @@ class Catchment:
                 if math.isclose(self.FlowAccArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FlowAccArr[i, j] = np.nan
 
-        self.no_elem = int(np.size(self.FlowAccArr[:, :]) - np.count_nonzero(
-            (self.FlowAccArr[np.isnan(self.FlowAccArr)]))
+        self.no_elem = int(
+            np.size(self.FlowAccArr[:, :])
+            - np.count_nonzero((self.FlowAccArr[np.isnan(self.FlowAccArr)]))
         )
         self.acc_val = [
             int(self.FlowAccArr[i, j])
@@ -556,9 +559,10 @@ class Catchment:
                 if math.isclose(self.FPLArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FPLArr[i, j] = np.nan
         # check flow accumulation input raster
-        self.no_elem = int(np.size(self.FPLArr[:, :]) - np.count_nonzero(
-            (self.FPLArr[np.isnan(self.FPLArr)])
-        ))
+        self.no_elem = int(
+            np.size(self.FPLArr[:, :])
+            - np.count_nonzero((self.FPLArr[np.isnan(self.FPLArr)]))
+        )
 
         logger.debug("Flow path length input is read successfully")
 
@@ -596,9 +600,7 @@ class Catchment:
         ]:
             ds = gdal.Open(fpath)
             if ds is None:
-                raise FileNotFoundError(
-                    f"GDAL could not open {name} file: {fpath}"
-                )
+                raise FileNotFoundError(f"GDAL could not open {name} file: {fpath}")
             setattr(self, name, ds.ReadAsArray())
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
@@ -824,9 +826,7 @@ class Catchment:
             # if hasattr(self, 'flow_acc'):
             flow_acc = gdal.Open(flow_acc_file)
             if flow_acc is None:
-                raise FileNotFoundError(
-                    f"GDAL could not open: {flow_acc_file}"
-                )
+                raise FileNotFoundError(f"GDAL could not open: {flow_acc_file}")
             # calculate the nearest cell to each station
             dataset = Dataset(flow_acc)
             loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
@@ -1231,15 +1231,15 @@ class Catchment:
                 on the animation. Default is False.
             **kwargs: Additional keyword arguments passed to
                 ``ArrayGlyph.animate``. Common options include:
-                TicksSpacing (int), Figsize (tuple),
-                PlotNumbers (bool), NumSize (int), title (str),
-                title_size (int), Backgroundcolorthreshold (float),
-                textcolors (tuple), cbarlabel (str),
-                cbarlabelsize (int), Cbarlength (float),
-                Interval (int), cmap (str), Textloc (list),
-                Gaugecolor (str), Gaugesize (int),
-                ColorScale (int), orientation (str),
-                rotation (float), Points (DataFrame).
+                interval (int), text_colors (tuple),
+                text_loc (list), point_color (str),
+                point_size (int), pid_color (str), pid_size (int),
+                title_size (int), cmap (str), vmin (float),
+                vmax (float), color_scale (str), ticks_spacing (int),
+                cbar_label (str), cbar_label_size (int),
+                cbar_length (float), cbar_orientation (str),
+                display_cell_value (bool), num_size (int),
+                background_color_threshold (float).
 
         Returns:
             matplotlib.animation.FuncAnimation: The animation object.
@@ -1257,47 +1257,47 @@ class Catchment:
             raise ValueError("Plotting options are from 1 to 11")
 
         if option == 1:
-            self.Qtot[self.FlowAccArr == self.NoDataValue, :] = np.nan
+            self.Qtot[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.Qtot[:, :, start_i:end_i]
             title = "Total Discharge"
         elif option == 2:
-            self.quz_routed[self.FlowAccArr == self.NoDataValue, :] = np.nan
+            self.quz_routed[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.quz_routed[:, :, start_i:end_i]
             title = "Surface Flow"
         elif option == 3:
-            self.qlz_translated[self.FlowAccArr == self.NoDataValue, :] = np.nan
+            self.qlz_translated[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
+            self.state_variables[np.isnan(self.FlowAccArr), :, 0] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
+            self.state_variables[np.isnan(self.FlowAccArr), :, 1] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
+            self.state_variables[np.isnan(self.FlowAccArr), :, 2] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
+            self.state_variables[np.isnan(self.FlowAccArr), :, 3] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
+            self.state_variables[np.isnan(self.FlowAccArr), :, 4] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
-            self.Prec[self.FlowAccArr == self.NoDataValue, :] = np.nan
+            self.Prec[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.Prec[:, :, start_i:end_i]
             title = "Precipitation"
         elif option == 10:
-            self.ET[self.FlowAccArr == self.NoDataValue, :] = np.nan
+            self.ET[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.ET[:, :, start_i:end_i]
             title = "ET"
         elif option == 11:
-            self.Temp[self.FlowAccArr == self.NoDataValue, :] = np.nan
+            self.Temp[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.Temp[:, :, start_i:end_i]
             title = "Temperature"
         else:
@@ -1306,15 +1306,42 @@ class Catchment:
         time = self.Index[start_i:end_i]
 
         if gauges:
-            kwargs["Points"] = self.GaugesTable
+            # animate expects a 3-column array: [value to display, cell row, cell column]
+            kwargs["points"] = self.GaugesTable[
+                ["id", "cell_row", "cell_col"]
+            ].to_numpy()
 
-        array = ArrayGlyph(arr)
+        # animate iterates over the first dimension, so move the time axis to the front
+        array = ArrayGlyph(np.moveaxis(arr, -1, 0))
         anim = array.animate(time, title=title, **kwargs)
-        # anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
+        self._animation_glyph = array
         self.anim = anim
 
         return anim
+
+    def save_animation(self, path: str, fps: int = 2):
+        """Save the animation created by `plot_distributed_results`.
+
+        The output format is determined by the file extension. GIF uses
+        PillowWriter; mov/avi/mp4 require FFmpeg to be installed.
+
+        Args:
+            path (str): Output file path. The extension determines the
+                format (gif, mov, avi, or mp4).
+            fps (int, optional): Frames per second. Default is 2.
+
+        Raises:
+            ValueError: If `plot_distributed_results` has not been called
+                yet, or if the file format is not supported.
+            FileNotFoundError: If a video format is requested but FFmpeg
+                is not installed.
+        """
+        if self._animation_glyph is None:
+            raise ValueError(
+                "There is no animation to save, call `plot_distributed_results` first"
+            )
+        self._animation_glyph.save_animation(path, fps=fps)
 
     def save_results(
         self,
@@ -1378,9 +1405,7 @@ class Catchment:
 
             src = gdal.Open(flow_acc_path)
             if src is None:
-                raise FileNotFoundError(
-                    f"GDAL could not open: {flow_acc_path}"
-                )
+                raise FileNotFoundError(f"GDAL could not open: {flow_acc_path}")
 
             if prefix == "":
                 prefix = "Result_"
