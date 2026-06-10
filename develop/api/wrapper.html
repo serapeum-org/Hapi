@@ -1704,8 +1704,7 @@ routing.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 23</span>
-<span class="normal"> 24</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 24</span>
 <span class="normal"> 25</span>
 <span class="normal"> 26</span>
 <span class="normal"> 27</span>
@@ -2071,7 +2070,8 @@ routing.</p>
 <span class="normal">387</span>
 <span class="normal">388</span>
 <span class="normal">389</span>
-<span class="normal">390</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="normal">390</span>
+<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
@@ -2110,12 +2110,12 @@ routing.</p>
 <span class="sd">        Args:</span>
 <span class="sd">            Model: Catchment model object containing:</span>
 
-<span class="sd">                - DEM (gdal.dataset): DEM raster clipped to the</span>
-<span class="sd">                  catchment.</span>
-<span class="sd">                - flow_acc (gdal.dataset): Flow accumulation raster</span>
-<span class="sd">                  clipped to the catchment.</span>
-<span class="sd">                - flow_direct (gdal.dataset): Flow direction raster</span>
-<span class="sd">                  clipped to the catchment.</span>
+<span class="sd">                - DEM (numpy.ndarray): DEM raster array clipped to</span>
+<span class="sd">                  the catchment.</span>
+<span class="sd">                - FlowAccArr (numpy.ndarray): Flow accumulation</span>
+<span class="sd">                  raster array clipped to the catchment.</span>
+<span class="sd">                - FlowDirArr (numpy.ndarray): Flow direction raster</span>
+<span class="sd">                  array clipped to the catchment.</span>
 <span class="sd">                - sp_prec (numpy.ndarray): 3D precipitation array</span>
 <span class="sd">                  with the same 2D dimensions as the raster input.</span>
 <span class="sd">                - sp_et (numpy.ndarray): 3D evapotranspiration array</span>
@@ -2545,8 +2545,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
-<span class="normal">183</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
@@ -2579,7 +2578,8 @@ Defaults to None.</p>
 <span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">216</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">FW1</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with triangular function-1 routing.</span>
 
@@ -2747,8 +2747,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
-<span class="normal">219</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
@@ -2832,7 +2831,8 @@ Defaults to None.</p>
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
-<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">303</span>
+<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">FW1Withlake</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with lake and triangular routing.</span>
 
@@ -3067,8 +3067,7 @@ routing is enabled.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
-<span class="normal">306</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
@@ -3152,7 +3151,8 @@ routing is enabled.</p>
 <span class="normal">387</span>
 <span class="normal">388</span>
 <span class="normal">389</span>
-<span class="normal">390</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">390</span>
+<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">Lumped</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a lumped conceptual model with optional routing.</span>
 
@@ -3299,12 +3299,12 @@ including <code>quz</code>, <code>qlz</code>, <code>qout</code>, <code>quz_route
               <div class="doc-md-description">
                 <p>Catchment model object containing:</p>
 <ul>
-<li>DEM (gdal.dataset): DEM raster clipped to the
-  catchment.</li>
-<li>flow_acc (gdal.dataset): Flow accumulation raster
-  clipped to the catchment.</li>
-<li>flow_direct (gdal.dataset): Flow direction raster
-  clipped to the catchment.</li>
+<li>DEM (numpy.ndarray): DEM raster array clipped to
+  the catchment.</li>
+<li>FlowAccArr (numpy.ndarray): Flow accumulation
+  raster array clipped to the catchment.</li>
+<li>FlowDirArr (numpy.ndarray): Flow direction raster
+  array clipped to the catchment.</li>
 <li>sp_prec (numpy.ndarray): 3D precipitation array
   with the same 2D dimensions as the raster input.</li>
 <li>sp_et (numpy.ndarray): 3D evapotranspiration array
@@ -3369,8 +3369,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
@@ -3420,7 +3419,8 @@ Defaults to None.</p>
 <span class="normal">92</span>
 <span class="normal">93</span>
 <span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">95</span>
+<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">RRMModel</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed rainfall-runoff model with spatial routing.</span>
 
@@ -3438,12 +3438,12 @@ Defaults to None.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        Model: Catchment model object containing:</span>
 
-<span class="sd">            - DEM (gdal.dataset): DEM raster clipped to the</span>
-<span class="sd">              catchment.</span>
-<span class="sd">            - flow_acc (gdal.dataset): Flow accumulation raster</span>
-<span class="sd">              clipped to the catchment.</span>
-<span class="sd">            - flow_direct (gdal.dataset): Flow direction raster</span>
-<span class="sd">              clipped to the catchment.</span>
+<span class="sd">            - DEM (numpy.ndarray): DEM raster array clipped to</span>
+<span class="sd">              the catchment.</span>
+<span class="sd">            - FlowAccArr (numpy.ndarray): Flow accumulation</span>
+<span class="sd">              raster array clipped to the catchment.</span>
+<span class="sd">            - FlowDirArr (numpy.ndarray): Flow direction raster</span>
+<span class="sd">              array clipped to the catchment.</span>
 <span class="sd">            - sp_prec (numpy.ndarray): 3D precipitation array</span>
 <span class="sd">              with the same 2D dimensions as the raster input.</span>
 <span class="sd">            - sp_et (numpy.ndarray): 3D evapotranspiration array</span>
@@ -3603,8 +3603,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 99</span>
-<span class="normal">100</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
 <span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
@@ -3682,7 +3681,8 @@ Defaults to None.</p>
 <span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
-<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">178</span>
+<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">RRMWithlake</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with lake simulation and routing.</span>
 
@@ -3789,9 +3789,9 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Wrapper class.&quot;&quot;&quot;</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
