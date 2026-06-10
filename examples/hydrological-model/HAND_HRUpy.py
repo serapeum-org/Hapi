@@ -2,6 +2,7 @@
 
 @author: Mostafa
 """
+
 # %links
 # from IPython import get_ipython  # to reset the variable explorer each time
 
@@ -18,13 +19,13 @@ os.chdir(
 
 # %library
 import numpy as np
-from osgeo import gdal
+from pyramids.dataset import Dataset
 from scipy.stats import norm
 
 # functions
-from Hapi.rrm.parameters import Parameters as DP
+from hapi.rrm.parameters import Parameters as DP
 
-# from Hapi.catchment import GISCatchment as gc
+# from hapi.catchment import GISCatchment as gc
 
 # import matplotlib.pyplot as plt
 
@@ -32,26 +33,26 @@ from Hapi.rrm.parameters import Parameters as DP
 # %% to modify the basins raster
 # path="C:/Users/Mostafa/Desktop/delineation/Clipped/proj/basins.tif"
 # pathout="mask.tif"
-# basins=gdal.Open(path)
+# basins=Dataset.read_file(path)
 # gc.DeleteBasins(basins,pathout)
 # %%
 path = "C:/Users/Mostafa/Desktop/delineation/HRU/HAND/"
-DEM = gdal.Open(path + "DEM.tif")
+DEM = Dataset.read_file(path + "DEM.tif")
 # dem_A=DEM.ReadAsArray()
 # no_val=np.float32(DEM.GetRasterBand(1).GetNoDataValue())
 # rows=DEM.RasterYSize
 # cols=DEM.RasterXSize
-FD = gdal.Open(path + "FD.tif")
+FD = Dataset.read_file(path + "FD.tif")
 # fd_A=fd.ReadAsArray()
 # fd_val=[int(fd_A[i,j]) for i in range(rows) for j in range(cols) if fd_A[i,j] != no_val]
-FPL = gdal.Open(path + "fpl.tif")
+FPL = Dataset.read_file(path + "fpl.tif")
 # fpl_A=FPL.ReadAsArray()
-River = gdal.Open(path + "river.tif")
+River = Dataset.read_file(path + "river.tif")
 # river_A=River.ReadAsArray()
 # slope
-Slope = gdal.Open(path + "slope.tif")
-Slope_A = Slope.ReadAsArray()
-no_val_slope = np.float32(Slope.GetRasterBand(1).GetNoDataValue())
+Slope = Dataset.read_file(path + "slope.tif")
+Slope_A = Slope.read_array(band=0)
+no_val_slope = np.float32(Slope.no_data_value[0])
 # %% calculate HAND and DTND
 HAND, DTND = DP.hru_hand(DEM, FD, FPL, River)
 # %% calculate the cdf for

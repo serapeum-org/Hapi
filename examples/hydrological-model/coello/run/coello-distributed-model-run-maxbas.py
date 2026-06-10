@@ -3,11 +3,11 @@
 import datetime as dt
 
 import pandas as pd
-from osgeo import gdal
+from pyramids.dataset import Dataset
 
-from Hapi.catchment import Catchment
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
-from Hapi.run import Run
+from hapi.catchment import Catchment
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
+from hapi.run import Run
 
 # %% Paths
 Path = "examples/hydrological-model/data/distributed_model"
@@ -78,7 +78,7 @@ plotend = "2011-12-31"
 Coello.plot_hydrograph(plotstart, plotend, gaugei)
 # %% store the result into rasters
 # create list of names
-src = gdal.Open(FlowAccPath)
+src = Dataset.read_file(FlowAccPath)
 s = dt.datetime(2012, 6, 14, 19, 00, 00)
 e = dt.datetime(2013, 12, 23, 00, 00, 00)
 index = pd.date_range(s, e, freq="1H")

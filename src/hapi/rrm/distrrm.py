@@ -8,10 +8,10 @@ network defined by a flow direction raster.
 The module belongs to the ``hapi.rrm`` package and supports both
 Muskingum and triangular (MAXBAS) routing strategies.
 """
+
 from __future__ import annotations
 
 import numpy as np
-from pyramids.dataset import Dataset
 
 from hapi.routing import Routing as routing
 
@@ -325,7 +325,7 @@ class DistributedRRM:
                 giving the grid indices of the lake cell.
             q_lake (numpy.ndarray): 1-D array of lake discharge
                 time series in m3/s.
-            DEM: GDAL dataset of the catchment DEM.
+            DEM (Dataset): pyramids ``Dataset`` of the catchment DEM.
             flow_acc (dict): Flow direction table mapping
                 ``"row,col"`` keys to lists of upstream cell index
                 pairs.
@@ -372,18 +372,15 @@ class DistributedRRM:
         dummy_states[:] = np.nan
 
         # Get the mask
-        # mask, no_val = raster.get_mask(DEM)
-        dataset = Dataset(DEM)
-        no_val = dataset.no_data_value[0]
-        mask = dataset.read_array()
+        no_val = DEM.no_data_value[0]
+        mask = DEM.read_array(band=0)
         # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
         x_ext, y_ext = mask.shape
         #    y_ext, x_ext = mask.shape # shape of the fpl raster (rows, columns)------------ should change rows are y and columns are x
 
         # Get deltas of pixel
-        geo_trans = (
-            DEM.GetGeoTransform()
-        )  # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        geo_trans = DEM.geotransform
         dx = np.abs(geo_trans[1]) / 1000.0  # dx in Km
         dy = np.abs(geo_trans[-1]) / 1000.0  # dy in Km
         px_area = dx * dy  # area of the cell

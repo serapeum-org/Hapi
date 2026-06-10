@@ -13,8 +13,9 @@ import math
 import os
 
 import numpy as np
-from osgeo import gdal
 from pyramids.dataset import Dataset
+
+from hapi.dem import DEM
 
 
 class Parameters:
@@ -45,9 +46,9 @@ class Parameters:
         raster.
 
         Args:
-            raster: A gdal.Dataset raster to get the spatial information
+            raster: A pyramids ``Dataset`` to get the spatial information
                 of the catchment (DEM, flow accumulation or flow direction
-                raster).
+                raster), read it using ``Dataset.read_file``.
             no_parameters: Number of parameters in the HBV model.
             no_lumped_par: Number of lumped parameters. You have to enter
                 the value of the lumped parameter at the end of the list.
@@ -77,19 +78,20 @@ class Parameters:
                 Defaults to False.
 
         Raises:
-            AssertionError: If `raster` is not a gdal.Dataset, if
-                `no_parameters` is not an integer, if `no_lumped_par` is
-                not an integer, or if the length of `lumped_par_pos` does
-                not match `no_lumped_par`.
+            TypeError: If `raster` is not a pyramids Dataset.
+            AssertionError: If `no_parameters` is not an integer, if
+                `no_lumped_par` is not an integer, or if the length of
+                `lumped_par_pos` does not match `no_lumped_par`.
             ValueError: If `lumped_par_pos` is not a list when
                 `no_lumped_par` >= 1.
         """
         if lumped_par_pos is None:
             lumped_par_pos = []
 
-        assert isinstance(
-            raster, gdal.Dataset
-        ), "raster should be read using gdal (gdal dataset please read it using gdal library) "
+        if not isinstance(raster, Dataset):
+            raise TypeError(
+                "raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file"
+            )
         assert isinstance(no_parameters, int), " no_parameters should be integer number"
         assert isinstance(
             no_lumped_par, int
@@ -116,12 +118,12 @@ class Parameters:
         self.Maskingum = muskingum
         # read the raster
         self.raster = raster
-        self.raster_A = raster.ReadAsArray().astype(float)
+        self.raster_A = raster.read_array(band=0).astype(float)
         # get the shape of the raster
-        self.rows = raster.RasterYSize
-        self.cols = raster.RasterXSize
+        self.rows = raster.rows
+        self.cols = raster.columns
         # get the no_value of in the raster
-        self.noval = raster.GetRasterBand(1).GetNoDataValue()
+        self.noval = raster.no_data_value[0]
 
         for i in range(self.rows):
             for j in range(self.cols):
@@ -510,12 +512,13 @@ class Parameters:
         and the flow path distance.
 
         Args:
-            dem: A gdal.Dataset of the DEM raster.
-            flow_direction: A gdal.Dataset of the flow direction raster.
-            flow_path_length: A gdal.Dataset of the flow path length
+            dem: A pyramids ``Dataset`` of the DEM raster.
+            flow_direction: A pyramids ``Dataset`` of the flow direction
                 raster.
-            river: A gdal.Dataset of the river location raster, where
-                cells with value 1 indicate river presence.
+            flow_path_length: A pyramids ``Dataset`` of the flow path
+                length raster.
+            river: A pyramids ``Dataset`` of the river location raster,
+                where cells with value 1 indicate river presence.
 
         Returns:
             A tuple of two numpy ndarrays:
@@ -528,20 +531,19 @@ class Parameters:
                 (e.g., after cropping with a polygon).
         """
         # Use DEM raster information to run all loops
-        dem_a = dem.ReadAsArray()
-        no_val = np.float32(dem.GetRasterBand(1).GetNoDataValue())
-        rows = dem.RasterYSize
-        cols = dem.RasterXSize
+        dem_a = dem.read_array(band=0)
+        no_val = np.float32(dem.no_data_value[0])
+        rows = dem.rows
+        cols = dem.columns
 
         # get the indices of the flow direction path
-        dem = dem(flow_direction)
-        fd_index = dem.flowDirectionIndex()
+        fd_index = DEM(flow_direction.raster).flow_direction_index()
 
         # read the river location raster
-        river_a = river.ReadAsArray()
+        river_a = river.read_array(band=0)
 
         # read the flow path length raster
-        fpl_a = flow_path_length.ReadAsArray()
+        fpl_a = flow_path_length.read_array(band=0)
 
         # trace the flow direction to the nearest river reach and store the location
         # of that nearst reach
@@ -703,6 +705,4 @@ class Parameters:
             ]
 
         for i in range(np.shape(self.Par3d)[2]):
-            Dataset.dataset_like(
-                Dataset(self.raster), self.Par3d[:, :, i], path=pnme[i]
-            )
+            Dataset.dataset_like(self.raster, self.Par3d[:, :, i], path=pnme[i])

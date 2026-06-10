@@ -5,6 +5,7 @@ rainfall-runoff model execution with spatial routing schemes. It
 supports multiple configurations including Muskingum routing,
 triangular routing, and lake integration.
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -59,12 +60,12 @@ class Wrapper:
         Args:
             Model: Catchment model object containing:
 
-                - DEM (gdal.dataset): DEM raster clipped to the
-                  catchment.
-                - flow_acc (gdal.dataset): Flow accumulation raster
-                  clipped to the catchment.
-                - flow_direct (gdal.dataset): Flow direction raster
-                  clipped to the catchment.
+                - DEM (numpy.ndarray): DEM raster array clipped to
+                  the catchment.
+                - FlowAccArr (numpy.ndarray): Flow accumulation
+                  raster array clipped to the catchment.
+                - FlowDirArr (numpy.ndarray): Flow direction raster
+                  array clipped to the catchment.
                 - sp_prec (numpy.ndarray): 3D precipitation array
                   with the same 2D dimensions as the raster input.
                 - sp_et (numpy.ndarray): 3D evapotranspiration array

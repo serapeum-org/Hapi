@@ -1,12 +1,12 @@
 import numpy as np
-from osgeo import gdal
+from pyramids.dataset import Dataset
 
 from hapi.rrm.parameters import Parameters as DP
 
 
 def test_create_distparameters_instance(
     coello_acc_path: str,
-    coello_acc_raster: gdal.Dataset,
+    coello_acc_raster: Dataset,
     coello_no_parameters: int,
     coello_rows: int,
     coello_cols: int,
@@ -27,7 +27,7 @@ def test_create_distparameters_instance(
     )
     assert SpatialVarFun.no_lumped_par == no_lumped_par
     assert SpatialVarFun.lumped_par_pos == lumped_par_pos
-    assert isinstance(SpatialVarFun.raster, gdal.Dataset)
+    assert isinstance(SpatialVarFun.raster, Dataset)
     assert SpatialVarFun.rows == coello_rows
     assert SpatialVarFun.cols == coello_cols
     assert isinstance(SpatialVarFun.raster_A, np.ndarray)
@@ -39,7 +39,7 @@ def test_create_distparameters_instance(
 
 def test_par3d(
     coello_acc_path: str,
-    coello_acc_raster: gdal.Dataset,
+    coello_acc_raster: Dataset,
     coello_no_parameters: int,
     coello_parameters: np.ndarray,
     coello_parameters_dist: np.ndarray,

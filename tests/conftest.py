@@ -1,10 +1,13 @@
-# from tests.gis.conftest import *
+# pyramids has to imported the very first thing to make gdal available
+from pyramids import __version__
+
+from hapi.dem import DEM
 from tests.rrm.conftest import *
 
 
 @pytest.fixture(scope="module")
-def coello_df_4000() -> gdal.Dataset:
-    return gdal.Open("tests/rrm/data/coello/gis/fd4000.tif")
+def coello_df_4000() -> DEM:
+    return DEM.read_file("tests/rrm/data/coello/gis/fd4000.tif")
 
 
 @pytest.fixture(scope="module")

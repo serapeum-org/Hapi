@@ -227,5 +227,5 @@ python = "3.12.*"
 [tool.pixi.feature.py313.dependencies]
 python = "3.13.*"
 
-[tool.pixi.dependencies]
-gdal = ">=3.10.0,<4"
+#[tool.pixi.dependencies]
+#gdal = ">=3.10.0,<4"

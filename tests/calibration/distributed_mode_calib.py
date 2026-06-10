@@ -9,7 +9,7 @@ import datetime as dt
 
 import numpy as np
 import statista.descriptors as metrics
-from osgeo import gdal
+from pyramids.dataset import Dataset
 
 from hapi.calibration import Calibration
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
@@ -61,7 +61,7 @@ function inside the calibration algorithm is written as following
 par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 
 """
-raster = gdal.Open(FlowAccPath)
+raster = Dataset.read_file(FlowAccPath)
 # -------------
 # for lumped catchment parameters
 no_parameters = 12

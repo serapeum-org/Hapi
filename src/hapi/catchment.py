@@ -29,7 +29,6 @@ import pandas as pd
 import statista.descriptors as metrics
 from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
-from osgeo import gdal
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 
@@ -404,13 +403,12 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
-        flow_acc = gdal.Open(path)
-        if flow_acc is None:
-            raise FileNotFoundError(f"GDAL could not open: {path}")
-        [self.rows, self.cols] = flow_acc.ReadAsArray().shape
+        flow_acc = Dataset.read_file(path)
+        self.rows = flow_acc.rows
+        self.cols = flow_acc.columns
         # check flow accumulation input raster
-        self.NoDataValue = flow_acc.GetRasterBand(1).GetNoDataValue()
-        self.FlowAccArr = flow_acc.ReadAsArray()
+        self.NoDataValue = flow_acc.no_data_value[0]
+        self.FlowAccArr = flow_acc.read_array(band=0)
 
         # check if the flow acc array is integer convert it to float
         if self.FlowAccArr.dtype == "int":
@@ -451,9 +449,8 @@ class Catchment:
         self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr))
 
         # calculate area covered by cells
-        geo_trans = (
-            flow_acc.GetGeoTransform()
-        )  # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        geo_trans = flow_acc.geotransform
         dx = np.abs(geo_trans[1]) / 1000.0  # dx in Km
         dy = np.abs(geo_trans[-1]) / 1000.0  # dy in Km
         self.CellSize = dx * 1000
@@ -490,14 +487,12 @@ class Catchment:
             )
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
-        flow_dir = gdal.Open(path)
-        if flow_dir is None:
-            raise FileNotFoundError(f"GDAL could not open: {path}")
-
-        [rows, cols] = flow_dir.ReadAsArray().shape
-        self.FlowDirArr = flow_dir.ReadAsArray().astype(float)
+        flow_dir = DEM.read_file(path)
+        rows = flow_dir.rows
+        cols = flow_dir.columns
+        self.FlowDirArr = flow_dir.read_array(band=0).astype(float)
         # check flow direction input raster
-        fd_noval = flow_dir.GetRasterBand(1).GetNoDataValue()
+        fd_noval = flow_dir.no_data_value[0]
 
         for i in range(rows):
             for j in range(cols):
@@ -517,8 +512,7 @@ class Catchment:
         ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
         # create the flow direction table
-        dem = DEM(flow_dir)
-        self.FDT = dem.flow_direction_table()
+        self.FDT = flow_dir.flow_direction_table()
         logger.debug("Flow Direction input is read successfully")
 
     def read_flow_path_length(self, path: str):
@@ -547,12 +541,11 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
-        fpl = gdal.Open(path)
-        if fpl is None:
-            raise FileNotFoundError(f"GDAL could not open: {path}")
-        [self.rows, self.cols] = fpl.ReadAsArray().shape
-        self.FPLArr = fpl.ReadAsArray()
-        self.NoDataValue = fpl.GetRasterBand(1).GetNoDataValue()
+        fpl = Dataset.read_file(path)
+        self.rows = fpl.rows
+        self.cols = fpl.columns
+        self.FPLArr = fpl.read_array(band=0)
+        self.NoDataValue = fpl.no_data_value[0]
 
         for i in range(self.rows):
             for j in range(self.cols):
@@ -598,10 +591,8 @@ class Catchment:
             ("RiverRoughness", river_roughness_file),
             ("FloodPlainRoughness", floodplain_roughness_file),
         ]:
-            ds = gdal.Open(fpath)
-            if ds is None:
-                raise FileNotFoundError(f"GDAL could not open {name} file: {fpath}")
-            setattr(self, name, ds.ReadAsArray())
+            ds = Dataset.read_file(fpath)
+            setattr(self, name, ds.read_array(band=0))
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
         """Read model parameter rasters or a CSV parameter file.
@@ -824,11 +815,8 @@ class Catchment:
                 )
         if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
-            flow_acc = gdal.Open(flow_acc_file)
-            if flow_acc is None:
-                raise FileNotFoundError(f"GDAL could not open: {flow_acc_file}")
             # calculate the nearest cell to each station
-            dataset = Dataset(flow_acc)
+            dataset = Dataset.read_file(flow_acc_file)
             loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
             self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = loc_arr
 
@@ -1403,9 +1391,7 @@ class Catchment:
                     "Please enter the FlowAccPath parameter to the saveResults method"
                 )
 
-            src = gdal.Open(flow_acc_path)
-            if src is None:
-                raise FileNotFoundError(f"GDAL could not open: {flow_acc_path}")
+            src = Dataset.read_file(flow_acc_path)
 
             if prefix == "":
                 prefix = "Result_"
@@ -1437,7 +1423,7 @@ class Catchment:
                     f" The result parameter takes a value between 1 and 8, given: {result}"
                 )
 
-            cube = Datacube(Dataset(src), time_length=arr.shape[2])
+            cube = Datacube(src, time_length=arr.shape[2])
             arr = np.moveaxis(arr, -1, 0)
             cube.values = arr
             cube.to_file(names)
