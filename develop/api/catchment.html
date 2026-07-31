@@ -3327,9 +3327,7 @@ class to run the model.</p>
 <span class="normal">1452</span>
 <span class="normal">1453</span>
 <span class="normal">1454</span>
-<span class="normal">1455</span>
-<span class="normal">1456</span>
-<span class="normal">1457</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -4505,16 +4503,18 @@ class to run the model.</p>
 <span class="sd">            gauges (bool, optional): Whether to plot gauge locations</span>
 <span class="sd">                on the animation. Default is False.</span>
 <span class="sd">            **kwargs: Additional keyword arguments passed to</span>
-<span class="sd">                ``ArrayGlyph.animate``. Common options include:</span>
-<span class="sd">                interval (int), text_colors (tuple),</span>
-<span class="sd">                text_loc (list), point_color (str),</span>
-<span class="sd">                point_size (int), pid_color (str), pid_size (int),</span>
+<span class="sd">                `ArrayGlyph.animate`. Common options include:</span>
+<span class="sd">                title (str), interval (int),</span>
+<span class="sd">                cell_value_text_colors (tuple),</span>
+<span class="sd">                frame_label (cleopatra `FrameLabel`),</span>
 <span class="sd">                title_size (int), cmap (str), vmin (float),</span>
 <span class="sd">                vmax (float), color_scale (str), ticks_spacing (int),</span>
 <span class="sd">                cbar_label (str), cbar_label_size (int),</span>
 <span class="sd">                cbar_length (float), cbar_orientation (str),</span>
 <span class="sd">                display_cell_value (bool), num_size (int),</span>
-<span class="sd">                background_color_threshold (float).</span>
+<span class="sd">                background_color_threshold (float), figsize (tuple).</span>
+<span class="sd">                See `cleopatra.array_glyph.ArrayGlyph.animate` for</span>
+<span class="sd">                the full list.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            matplotlib.animation.FuncAnimation: The animation object.</span>
@@ -4532,51 +4532,45 @@ class to run the model.</p>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Plotting options are from 1 to 11&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Total Discharge&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Surface Flow&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ground Water Flow&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Snow Pack&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Soil Moisture&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Upper Zone&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Lower Zone&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Water Content&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Precipitation&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;ET&quot;</span>
         <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Temperature&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Plotting options are from 1 to 11&quot;</span><span class="p">)</span>
+
+        <span class="c1"># mask the no-data cells on a copy so plotting never mutates the model</span>
+        <span class="c1"># result arrays stored on the instance</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
         <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
 
@@ -4588,7 +4582,9 @@ class to run the model.</p>
 
         <span class="c1"># animate iterates over the first dimension, so move the time axis to the front</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-        <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># the option title is a default; an explicit title= kwarg wins</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+        <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="o">=</span> <span class="n">array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">anim</span>
@@ -5629,15 +5625,17 @@ on the animation. Default is False.</p>
               <div class="doc-md-description">
                 <p>Additional keyword arguments passed to
 <code>ArrayGlyph.animate</code>. Common options include:
-interval (int), text_colors (tuple),
-text_loc (list), point_color (str),
-point_size (int), pid_color (str), pid_size (int),
+title (str), interval (int),
+cell_value_text_colors (tuple),
+frame_label (cleopatra <code>FrameLabel</code>),
 title_size (int), cmap (str), vmin (float),
 vmax (float), color_scale (str), ticks_spacing (int),
 cbar_label (str), cbar_label_size (int),
 cbar_length (float), cbar_orientation (str),
 display_cell_value (bool), num_size (int),
-background_color_threshold (float).</p>
+background_color_threshold (float), figsize (tuple).
+See <code>cleopatra.array_glyph.ArrayGlyph.animate</code> for
+the full list.</p>
               </div>
             </td>
             <td>
@@ -5810,9 +5808,7 @@ background_color_threshold (float).</p>
 <span class="normal">1304</span>
 <span class="normal">1305</span>
 <span class="normal">1306</span>
-<span class="normal">1307</span>
-<span class="normal">1308</span>
-<span class="normal">1309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
+<span class="normal">1307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -5841,16 +5837,18 @@ background_color_threshold (float).</p>
 <span class="sd">        gauges (bool, optional): Whether to plot gauge locations</span>
 <span class="sd">            on the animation. Default is False.</span>
 <span class="sd">        **kwargs: Additional keyword arguments passed to</span>
-<span class="sd">            ``ArrayGlyph.animate``. Common options include:</span>
-<span class="sd">            interval (int), text_colors (tuple),</span>
-<span class="sd">            text_loc (list), point_color (str),</span>
-<span class="sd">            point_size (int), pid_color (str), pid_size (int),</span>
+<span class="sd">            `ArrayGlyph.animate`. Common options include:</span>
+<span class="sd">            title (str), interval (int),</span>
+<span class="sd">            cell_value_text_colors (tuple),</span>
+<span class="sd">            frame_label (cleopatra `FrameLabel`),</span>
 <span class="sd">            title_size (int), cmap (str), vmin (float),</span>
 <span class="sd">            vmax (float), color_scale (str), ticks_spacing (int),</span>
 <span class="sd">            cbar_label (str), cbar_label_size (int),</span>
 <span class="sd">            cbar_length (float), cbar_orientation (str),</span>
 <span class="sd">            display_cell_value (bool), num_size (int),</span>
-<span class="sd">            background_color_threshold (float).</span>
+<span class="sd">            background_color_threshold (float), figsize (tuple).</span>
+<span class="sd">            See `cleopatra.array_glyph.ArrayGlyph.animate` for</span>
+<span class="sd">            the full list.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        matplotlib.animation.FuncAnimation: The animation object.</span>
@@ -5868,51 +5866,45 @@ background_color_threshold (float).</p>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Plotting options are from 1 to 11&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Total Discharge&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Surface Flow&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ground Water Flow&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Snow Pack&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Soil Moisture&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Upper Zone&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Lower Zone&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Water Content&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Precipitation&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;ET&quot;</span>
     <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Temperature&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Plotting options are from 1 to 11&quot;</span><span class="p">)</span>
+
+    <span class="c1"># mask the no-data cells on a copy so plotting never mutates the model</span>
+    <span class="c1"># result arrays stored on the instance</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
 
@@ -5924,7 +5916,9 @@ background_color_threshold (float).</p>
 
     <span class="c1"># animate iterates over the first dimension, so move the time axis to the front</span>
     <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># the option title is a default; an explicit title= kwarg wins</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+    <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="o">=</span> <span class="n">array</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">anim</span>
@@ -10084,7 +10078,9 @@ is not installed.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1311</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1309</span>
+<span class="normal">1310</span>
+<span class="normal">1311</span>
 <span class="normal">1312</span>
 <span class="normal">1313</span>
 <span class="normal">1314</span>
@@ -10103,9 +10099,7 @@ is not installed.</p>
 <span class="normal">1327</span>
 <span class="normal">1328</span>
 <span class="normal">1329</span>
-<span class="normal">1330</span>
-<span class="normal">1331</span>
-<span class="normal">1332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+<span class="normal">1330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save the animation created by `plot_distributed_results`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses</span>
@@ -10329,7 +10323,9 @@ distributed mode.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1334</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1332</span>
+<span class="normal">1333</span>
+<span class="normal">1334</span>
 <span class="normal">1335</span>
 <span class="normal">1336</span>
 <span class="normal">1337</span>
@@ -10450,9 +10446,7 @@ distributed mode.</p>
 <span class="normal">1452</span>
 <span class="normal">1453</span>
 <span class="normal">1454</span>
-<span class="normal">1455</span>
-<span class="normal">1456</span>
-<span class="normal">1457</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
+<span class="normal">1455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
