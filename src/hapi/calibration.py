@@ -19,6 +19,8 @@ from hapi.catchment import Catchment
 from hapi.wrapper import Wrapper
 
 
+ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
+COLUMNS_MISMATCH_ERROR = "all input data should have the same number of columns"
 OBJECTIVE_FN_ARGS_ERROR = (
     "the objective function you have entered needs more inputs, "
     "please enter them in a list as *args"
@@ -205,7 +207,7 @@ class Calibration(Catchment):
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows"
+            ROWS_MISMATCH_ERROR
         )
 
         # input dimensions
@@ -213,12 +215,12 @@ class Calibration(Catchment):
             np.shape(self.Prec)[0] == self.rows
             and np.shape(self.ET)[0] == self.rows
             and np.shape(self.Temp)[0] == self.rows
-        ), "all input data should have the same number of rows"
+        ), ROWS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[1] == self.cols
             and np.shape(self.ET)[1] == self.cols
             and np.shape(self.Temp)[1] == self.cols
-        ), "all input data should have the same number of columns"
+        ), COLUMNS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
@@ -357,19 +359,19 @@ class Calibration(Catchment):
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         # [fd_rows,fd_cols] = self.FlowDirArr.shape
-        # assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+        # assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
         # input dimensions
         assert (
             np.shape(self.Prec)[0] == self.rows
             and np.shape(self.ET)[0] == self.rows
             and np.shape(self.Temp)[0] == self.rows
-        ), "all input data should have the same number of rows"
+        ), ROWS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[1] == self.cols
             and np.shape(self.ET)[1] == self.cols
             and np.shape(self.Temp)[1] == self.cols
-        ), "all input data should have the same number of columns"
+        ), COLUMNS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
@@ -517,9 +519,6 @@ class Calibration(Catchment):
         # check optimization arguement
         assert isinstance(ApiObjArgs, dict), "store_history should be 0 or 1"
         assert isinstance(ApiSolveArgs, dict), "history_fname should be of type string "
-
-        # assert history_fname[-4:] == ".txt", "history_fname should be a txt file;
-        #     change the extension or add .txt at the end of the history_fname"
 
         print("Calibration starts")
 
