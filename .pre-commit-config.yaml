@@ -19,7 +19,7 @@ repos:
       - id: check-docstring-first
         name: "[py   -  check] docstring first"
         files: /examples
-        types : [file, python ]
+        types: [python]
       - id: check-json
         name: "[json -  check] validate json"
       - id: check-merge-conflict
@@ -136,7 +136,6 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        types: [python]
 
   - repo: local
     hooks:
