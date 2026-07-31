@@ -1636,9 +1636,7 @@ calibration.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 28</span>
-<span class="normal"> 29</span>
-<span class="normal"> 30</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 30</span>
 <span class="normal"> 31</span>
 <span class="normal"> 32</span>
 <span class="normal"> 33</span>
@@ -2211,8 +2209,7 @@ calibration.</p>
 <span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">603</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calibration class for distributed hydrological model parameter optimization.</span>
 
 <span class="sd">    The Calibration class connects the parameter spatial distribution function</span>
@@ -2392,7 +2389,7 @@ calibration.</p>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
         <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+            <span class="n">ROWS_MISMATCH_ERROR</span>
         <span class="p">)</span>
 
         <span class="c1"># input dimensions</span>
@@ -2400,12 +2397,12 @@ calibration.</p>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
         <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
@@ -2544,19 +2541,19 @@ calibration.</p>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
         <span class="c1"># [fd_rows,fd_cols] = self.FlowDirArr.shape</span>
-        <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, &quot;all input data should have the same number of rows&quot;</span>
+        <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR</span>
 
         <span class="c1"># input dimensions</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
         <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
@@ -2704,9 +2701,6 @@ calibration.</p>
         <span class="c1"># check optimization arguement</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ApiSolveArgs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;history_fname should be of type string &quot;</span>
-
-        <span class="c1"># assert history_fname[-4:] == &quot;.txt&quot;, &quot;history_fname should be a txt file;</span>
-        <span class="c1">#     change the extension or add .txt at the end of the history_fname&quot;</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
 
@@ -2948,9 +2942,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span>
@@ -3082,7 +3074,9 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
-<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run calibration using the FW1 (Focussed Width-1) routing scheme.</span>
 
 <span class="sd">    Executes the Harmony Search optimization algorithm to calibrate</span>
@@ -3126,19 +3120,19 @@ optimization arguments are not dictionaries.</p>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
     <span class="c1"># [fd_rows,fd_cols] = self.FlowDirArr.shape</span>
-    <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, &quot;all input data should have the same number of rows&quot;</span>
+    <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR</span>
 
     <span class="c1"># input dimensions</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
     <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
@@ -3375,9 +3369,7 @@ Default is "Muskingum".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
 <span class="normal">47</span>
@@ -3411,7 +3403,9 @@ Default is "Muskingum".</p>
 <span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span>
-<span class="normal">78</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3566,9 +3560,7 @@ kept for signature compatibility. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
 <span class="normal">113</span>
@@ -3610,7 +3602,9 @@ kept for signature compatibility. Default is False.</p>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
-<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">frame_work_1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -3818,9 +3812,7 @@ arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">454</span>
 <span class="normal">455</span>
 <span class="normal">456</span>
 <span class="normal">457</span>
@@ -3969,8 +3961,7 @@ arguments are not dictionaries.</p>
 <span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Basic_inputs</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">603</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Basic_inputs</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the calibration algorithm for the lumped hydrological model.</span>
 
 <span class="sd">    Executes the Harmony Search optimization algorithm to calibrate</span>
@@ -4038,9 +4029,6 @@ arguments are not dictionaries.</p>
     <span class="c1"># check optimization arguement</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ApiSolveArgs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;history_fname should be of type string &quot;</span>
-
-    <span class="c1"># assert history_fname[-4:] == &quot;.txt&quot;, &quot;history_fname should be a txt file;</span>
-    <span class="c1">#     change the extension or add .txt at the end of the history_fname&quot;</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
 
@@ -4223,9 +4211,7 @@ objective function. If None, defaults to an empty list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
 <span class="normal"> 83</span>
 <span class="normal"> 84</span>
 <span class="normal"> 85</span>
@@ -4249,7 +4235,9 @@ objective function. If None, defaults to an empty list.</p>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
-<span class="normal">106</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">):</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and store the objective function and its arguments.</span>
 
 <span class="sd">    Takes the objective function and any additional arguments that</span>
@@ -4437,9 +4425,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
 <span class="normal">164</span>
@@ -4592,7 +4578,9 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">311</span>
 <span class="normal">312</span>
 <span class="normal">313</span>
-<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the calibration algorithm for the distributed hydrological model.</span>
 
 <span class="sd">    Executes the Harmony Search optimization algorithm to calibrate</span>
@@ -4641,7 +4629,7 @@ optimization arguments are not dictionaries.</p>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
     <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="n">ROWS_MISMATCH_ERROR</span>
     <span class="p">)</span>
 
     <span class="c1"># input dimensions</span>
@@ -4649,12 +4637,12 @@ optimization arguments are not dictionaries.</p>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+    <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
     <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
