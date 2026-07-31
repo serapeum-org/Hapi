@@ -1245,51 +1245,45 @@ class Catchment:
             raise ValueError("Plotting options are from 1 to 11")
 
         if option == 1:
-            self.Qtot[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.Qtot[:, :, start_i:end_i]
             title = "Total Discharge"
         elif option == 2:
-            self.quz_routed[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.quz_routed[:, :, start_i:end_i]
             title = "Surface Flow"
         elif option == 3:
-            self.qlz_translated[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
-            self.state_variables[np.isnan(self.FlowAccArr), :, 0] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
-            self.state_variables[np.isnan(self.FlowAccArr), :, 1] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
-            self.state_variables[np.isnan(self.FlowAccArr), :, 2] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
-            self.state_variables[np.isnan(self.FlowAccArr), :, 3] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
-            self.state_variables[np.isnan(self.FlowAccArr), :, 4] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
-            self.Prec[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.Prec[:, :, start_i:end_i]
             title = "Precipitation"
         elif option == 10:
-            self.ET[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.ET[:, :, start_i:end_i]
             title = "ET"
         elif option == 11:
-            self.Temp[np.isnan(self.FlowAccArr), :] = np.nan
             arr = self.Temp[:, :, start_i:end_i]
             title = "Temperature"
         else:
             raise ValueError("Plotting options are from 1 to 11")
+
+        # mask the no-data cells on a copy so plotting never mutates the model
+        # result arrays stored on the instance
+        arr = arr.copy()
+        arr[np.isnan(self.FlowAccArr), :] = np.nan
 
         time = self.Index[start_i:end_i]
 
