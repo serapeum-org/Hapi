@@ -22,7 +22,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
-import requests  # type: ignore[import-untyped]
+import requests
 from loguru import logger
 
 BASE_URL = "https://api.figshare.com/v2"
