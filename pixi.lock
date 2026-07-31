@@ -2904,42 +2904,16 @@ packages:
   - geopandas>=1.0.1
   - loguru>=0.7.2
   - numpy>=2.1.3
-  - pandas>=2.2.3
+  - pandas>=3.0.0
   - pyyaml>=6.0.2
-  - pyramids-gis>=0.32.0
+  - pyramids-gis>=0.46.0
   - requests>=2.31.0
-  - scipy>=1.11.4
+  - scipy>=1.17.0
   - serapeum-utils>=0.2.0
   - statista>=0.8.0
   - oasis-optimization>=1.0.3
-  - cleopatra>=0.17.0
-  - matplotlib>=3.7.2
-  - nbval>=0.11.0 ; extra == 'dev'
-  - pre-commit>=3.7.1 ; extra == 'dev'
-  - pre-commit-hooks>=4.6.0 ; extra == 'dev'
-  - pytest>=8.2.2 ; extra == 'dev'
-  - pytest-cov>=6.0.0 ; extra == 'dev'
-  - coverage ; extra == 'dev'
-  - build>=1.0.0 ; extra == 'dev'
-  - twine>=5.0.0 ; extra == 'dev'
-  - pip ; extra == 'dev'
-  - jupyterlab ; extra == 'dev'
-  - jupyter ; extra == 'dev'
-  - commitizen>=4.8.4 ; extra == 'dev'
-  - mypy>=1.0 ; extra == 'dev'
-  - mkdocs>=1.5.3 ; extra == 'docs'
-  - mkdocs-material>=9.5.3 ; extra == 'docs'
-  - mkdocstrings>=0.24.0 ; extra == 'docs'
-  - mkdocstrings-python>=1.7.5 ; extra == 'docs'
-  - mike>=2.1.3 ; extra == 'docs'
-  - mkdocs-jupyter>=0.25.1 ; extra == 'docs'
-  - mkdocs-autorefs>=1.2 ; extra == 'docs'
-  - mkdocs-macros-plugin>=1.3.7 ; extra == 'docs'
-  - mkdocs-table-reader-plugin>=3.1.0 ; extra == 'docs'
-  - mkdocs-mermaid2-plugin>=1.2.1 ; extra == 'docs'
-  - jupyter-contrib-nbextensions>=0.7.0 ; extra == 'docs'
-  - mkdocs-panzoom-plugin ; extra == 'docs'
-  - notebook<7.0 ; extra == 'docs'
+  - cleopatra>=0.26.1
+  - matplotlib>=3.11.0
   requires_python: '>=3.11,<4'
 - pypi: https://files.pythonhosted.org/packages/01/bd/f8607e908605262e4926cbfd2560094bc5d04ef7f8aff1340e7fff503016/traitlets-5.16.0-py3-none-any.whl
   name: traitlets

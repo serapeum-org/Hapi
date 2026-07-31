@@ -29,19 +29,19 @@ dependencies = [
     "geopandas >=1.0.1",
     "loguru >=0.7.2",
     "numpy >=2.1.3",
-    "pandas >=2.2.3",
+    "pandas >=3.0.0",
     "PyYAML >=6.0.2",
-    "pyramids-gis >=0.32.0",
+    "pyramids-gis >=0.46.0",
     "requests >=2.31.0",
-    "scipy >=1.11.4",
+    "scipy >=1.17.0",
     "serapeum-utils >=0.2.0",
     "statista >=0.8.0",
     "Oasis-Optimization >=1.0.3",
-    "cleopatra >=0.17.0",
-    "matplotlib >=3.7.2"
+    "cleopatra >=0.26.1",
+    "matplotlib >=3.11.0"
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "nbval >=0.11.0",
     "pre-commit >=3.7.1",
