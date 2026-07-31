@@ -1247,9 +1247,6 @@ class Catchment:
         start_i = np.where(self.Index == start)[0][0]
         end_i = np.where(self.Index == end)[0][0]
 
-        if 1 > option > 11:
-            raise ValueError("Plotting options are from 1 to 11")
-
         if option == 1:
             arr = self.Qtot[:, :, start_i:end_i]
             title = "Total Discharge"
