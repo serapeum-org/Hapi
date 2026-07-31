@@ -1,6 +1,6 @@
-# pyramids has to imported the very first thing to make gdal available
-from pyramids import __version__
+import pytest
 
+# importing hapi.dem pulls in pyramids first, which sets up the vendored GDAL
 from hapi.dem import DEM
 from tests.rrm.conftest import *
 
