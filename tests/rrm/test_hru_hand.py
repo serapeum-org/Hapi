@@ -1,6 +1,7 @@
 """Unit test for Parameters.hru_hand on a synthetic catchment."""
 
 import numpy as np
+import pytest
 from pyramids.dataset import Dataset
 
 from hapi.rrm.parameters import Parameters
@@ -38,5 +39,22 @@ def test_hru_hand_synthetic_catchment():
 
     expected_hand = np.array([[20.0, 10.0, 0.0]] * 3)
     expected_dtnd = np.array([[200.0, 100.0, 0.0]] * 3)
-    assert np.allclose(hand, expected_hand)
-    assert np.allclose(dtnd, expected_dtnd)
+    assert np.allclose(hand, expected_hand), f"HAND mismatch: {hand}"
+    assert np.allclose(dtnd, expected_dtnd), f"DTND mismatch: {dtnd}"
+
+
+def test_hru_hand_no_river_raises():
+    """A flow path that never reaches a river raises a boundary error.
+
+    Test scenario:
+        With no river cell anywhere, tracing the flow direction runs off
+        the grid edge; hru_hand converts that anomaly into a ValueError
+        about the catchment boundaries.
+    """
+    dem = _dataset(np.array([[30.0, 20.0, 10.0]] * 3))
+    flow_direction = _dataset(np.full((3, 3), 1.0))
+    flow_path_length = _dataset(np.array([[200.0, 100.0, 0.0]] * 3))
+    river = _dataset(np.zeros((3, 3)))
+
+    with pytest.raises(ValueError, match="boundaries"):
+        Parameters.hru_hand(dem, flow_direction, flow_path_length, river)

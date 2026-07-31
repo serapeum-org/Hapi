@@ -103,3 +103,22 @@ def test_save_animation_before_plot_raises():
     coello = Catchment("bare", "2009-01-01", "2009-01-10")
     with pytest.raises(ValueError, match="plot_distributed_results"):
         coello.save_animation("never.gif")
+
+
+@pytest.mark.plot
+@pytest.mark.parametrize("option", [0, 12])
+def test_plot_invalid_option_raises(option: int):
+    """An option outside 1-11 raises ValueError before touching any array.
+
+    Args:
+        option: An out-of-range plotting option.
+
+    Test scenario:
+        The option dispatch must reject values outside 1..11 with a clear
+        error even on a catchment with no data loaded.
+    """
+    coello = Catchment(
+        "bare", "2009-01-01", "2009-01-10", spatial_resolution="Distributed"
+    )
+    with pytest.raises(ValueError, match="1 to 11"):
+        coello.plot_distributed_results("2009-01-01", "2009-01-09", option=option)

@@ -281,3 +281,8 @@ def coello_parameters_dist() -> np.ndarray:
 @pytest.fixture(scope="module")
 def coello_dist_parameters_maxbas() -> str:
     return "tests/rrm/data/coello/parameters/maxbas"
+
+
+@pytest.fixture(scope="module")
+def coello_dist_parameters_muskingum() -> str:
+    return "tests/rrm/data/coello/parameters/muskingum"
