@@ -82,7 +82,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -122,7 +122,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert (
@@ -184,7 +184,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], (
@@ -229,7 +229,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -288,7 +288,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], (
