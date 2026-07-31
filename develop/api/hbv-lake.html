@@ -2456,7 +2456,8 @@ supplied rating curve.</p>
 <span class="normal">885</span>
 <span class="normal">886</span>
 <span class="normal">887</span>
-<span class="normal">888</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVLake</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
+<span class="normal">888</span>
+<span class="normal">889</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVLake</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HBV-96 model variant with an explicit lake sub-model.</span>
 
 <span class="sd">    ``HBVLake`` extends the standard HBV-96 rainfall-runoff model by</span>
@@ -2980,7 +2981,6 @@ supplied rating curve.</p>
             <span class="n">maxbas_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">int_part</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)):</span>
-
             <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">ynow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="c1"># Integral of x dx with a slope of 60 degree Equilateral triangle</span>
@@ -3002,7 +3002,9 @@ supplied rating curve.</p>
 
                     <span class="n">flag</span> <span class="o">=</span> <span class="mi">2</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+                    <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                        <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span>
+                    <span class="p">)</span>
                     <span class="c1"># &#39;sum of the two heights in the descending part of the triangle</span>
                     <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>
                     <span class="c1"># Multiplying by the height of the trapezoidal and dividing by 2</span>
@@ -3504,7 +3506,8 @@ duration.  Can be a non-integer value.</p>
 <span class="normal">598</span>
 <span class="normal">599</span>
 <span class="normal">600</span>
-<span class="normal">601</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">601</span>
+<span class="normal">602</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_max_bas</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute MAXBAS routing weights using an equilateral triangle.</span>
 
@@ -3548,7 +3551,6 @@ duration.  Can be a non-integer value.</p>
         <span class="n">maxbas_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">int_part</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)):</span>
-
         <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">ynow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="c1"># Integral of x dx with a slope of 60 degree Equilateral triangle</span>
@@ -3570,7 +3572,9 @@ duration.  Can be a non-integer value.</p>
 
                 <span class="n">flag</span> <span class="o">=</span> <span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+                <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                    <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span>
+                <span class="p">)</span>
                 <span class="c1"># &#39;sum of the two heights in the descending part of the triangle</span>
                 <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>
                 <span class="c1"># Multiplying by the height of the trapezoidal and dividing by 2</span>
@@ -3705,8 +3709,7 @@ duration.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_lake.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">603</span>
-<span class="normal">604</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">604</span>
 <span class="normal">605</span>
 <span class="normal">606</span>
 <span class="normal">607</span>
@@ -3765,7 +3768,8 @@ duration.</p>
 <span class="normal">660</span>
 <span class="normal">661</span>
 <span class="normal">662</span>
-<span class="normal">663</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing_maxbas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">):</span>
+<span class="normal">663</span>
+<span class="normal">664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing_maxbas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Route a hydrograph using MAXBAS equilateral-triangle weights.</span>
 
 <span class="sd">    Computes routing by convolving the input hydrograph with weights</span>
@@ -4096,8 +4100,7 @@ interface compatibility.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_lake.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">793</span>
-<span class="normal">794</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">794</span>
 <span class="normal">795</span>
 <span class="normal">796</span>
 <span class="normal">797</span>
@@ -4191,7 +4194,8 @@ interface compatibility.</p>
 <span class="normal">885</span>
 <span class="normal">886</span>
 <span class="normal">887</span>
-<span class="normal">888</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+<span class="normal">888</span>
+<span class="normal">889</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">avg_prec</span><span class="p">,</span>
     <span class="n">temp</span><span class="p">,</span>

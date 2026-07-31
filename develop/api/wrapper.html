@@ -2401,9 +2401,9 @@ routing.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1">### input data validation</span>
         <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span>
-                <span class="n">RoutingFn</span>
-            <span class="p">),</span> <span class="s2">&quot;routing function should be of type callable (function that takes arguments)&quot;</span>
+            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">),</span> <span class="p">(</span>
+                <span class="s2">&quot;routing function should be of type callable (function that takes arguments)&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># data</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -3200,9 +3200,9 @@ routing is enabled.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">### input data validation</span>
     <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span>
-            <span class="n">RoutingFn</span>
-        <span class="p">),</span> <span class="s2">&quot;routing function should be of type callable (function that takes arguments)&quot;</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;routing function should be of type callable (function that takes arguments)&quot;</span>
+        <span class="p">)</span>
 
     <span class="c1"># data</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
