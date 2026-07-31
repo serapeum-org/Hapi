@@ -512,12 +512,12 @@ class Parameters:
         and the flow path distance.
 
         Args:
-            dem: A pyramids ``Dataset`` of the DEM raster.
-            flow_direction: A pyramids ``Dataset`` of the flow direction
+            dem: A pyramids `Dataset` of the DEM raster.
+            flow_direction: A pyramids `Dataset` of the flow direction
                 raster.
-            flow_path_length: A pyramids ``Dataset`` of the flow path
+            flow_path_length: A pyramids `Dataset` of the flow path
                 length raster.
-            river: A pyramids ``Dataset`` of the river location raster,
+            river: A pyramids `Dataset` of the river location raster,
                 where cells with value 1 indicate river presence.
 
         Returns:

@@ -711,8 +711,9 @@ class Catchment:
         """Read and set up a lumped conceptual model.
 
         Args:
-            lumped_model: A class representing the lumped conceptual
-                model (e.g., HBV).
+            lumped_model: A `BaseConceptualModel` subclass (the class
+                itself, not an instance), e.g. `HBVBergestrom92`. It is
+                instantiated and stored on `LumpedModel`.
             catchment_area (float | int): Catchment area in
                 km2.
             initial_condition (list): List of 5 initial condition
@@ -1202,7 +1203,10 @@ class Catchment:
 
         Creates an animation of the time series of meteorological inputs
         or model results (discharge, state variables) over the spatial
-        domain.
+        domain. Cells outside the catchment domain are masked on a copy of
+        the data, so the model arrays stored on the instance are never
+        modified. The animation title defaults to the selected variable's
+        name; an explicit `title=` keyword argument overrides it.
 
         Args:
             start (str): Starting date for the animation.
