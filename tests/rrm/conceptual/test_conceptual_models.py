@@ -7,14 +7,14 @@ from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 from hapi.rrm.hbv_lake import HBVLake
 
 
-@pytest.fixture()
+@pytest.fixture
 def coello_lumped_meteo_data() -> np.ndarray:
     path = "tests/rrm/data/coello/meteo-lumped-data-MSWEP.csv"
     data = pd.read_csv(path, header=0, delimiter=",", index_col=0).to_numpy()
     return data
 
 
-@pytest.fixture()
+@pytest.fixture
 def coello_lumped_parameters() -> list:
     path = "tests/rrm/data/coello/coello-lumpedparameter-muskingum.txt"
     parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
