@@ -21,6 +21,9 @@
   GDAL is vendored inside the pyramids-gis wheel.
 - `dev` and `docs` are PEP 735 `[dependency-groups]` and are no longer installable as pip extras
   (`pip install hapi-nile[dev]`).
+- `HBV.simulate` now takes its arguments in the `BaseConceptualModel` order
+  (`prec, temp, et, ll_temp, par, init_st, q_init, snow`) — previously `par` came before `ll_temp`,
+  which also made `HBV` unusable through `Wrapper.Lumped`'s positional call.
 
 ### Dependencies
 

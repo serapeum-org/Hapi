@@ -688,8 +688,8 @@ class HBV(BaseConceptualModel):
         #    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
         return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
-    def simulate(  # type: ignore[override]
-        self, prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0
+    def simulate(
+        self, prec, temp, et, ll_temp=None, par=None, init_st=None, q_init=None, snow=0
     ):
         """Run the HBV model for the full precipitation time series.
 
@@ -705,6 +705,9 @@ class HBV(BaseConceptualModel):
                 length ``n`` [C].
             et (numpy.ndarray): Potential evapotranspiration time
                 series of length ``n`` [mm/h].
+            ll_temp (numpy.ndarray): Long-term average temperature
+                time series of length ``n`` [C]. If None, computed
+                as the mean of ``temp``.
             par (numpy.ndarray): Parameter vector. When ``snow=1``,
                 must have 18 elements; when ``snow=0``, must have
                 10 elements. See :meth:`step_run` for the full
@@ -712,9 +715,6 @@ class HBV(BaseConceptualModel):
             init_st (list[float]): Initial model states as
                 ``[sp, sm, uz, lz, wc]`` [mm]. If None, defaults
                 to ``[0.0, 10.0, 10.0, 10.0, 0.0]``.
-            ll_temp (numpy.ndarray): Long-term average temperature
-                time series of length ``n`` [C]. If None, computed
-                as the mean of ``temp``.
             q_init (float): Initial discharge value. If None,
                 computed from the initial states and parameters.
             snow (int): Set to 1 to run the snow subroutine, 0 to
@@ -751,7 +751,7 @@ class HBV(BaseConceptualModel):
             >>> et = np.full(n, 3.0)
             >>> init_st = [0.0, 100.0, 10.0, 15.0, 0.0]
             >>> q_uz, q_lz, states = model.simulate(
-            ...     prec, temp_arr, et, par,
+            ...     prec, temp_arr, et, None, par,
             ...     init_st=init_st, snow=0,
             ... )
             >>> print(f"q_uz length={len(q_uz)}, first={q_uz[0]:.4f}")

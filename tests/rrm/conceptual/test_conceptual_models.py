@@ -100,9 +100,9 @@ def test_hbv(coello_lumped_meteo_data: np.ndarray, coello_lumped_parameters: lis
         p,
         t,
         et,
+        tm,
         coello_lumped_parameters,
         init_st=initial_conditions,
-        ll_temp=tm,
         q_init=q_init,
         snow=snow,
     )
