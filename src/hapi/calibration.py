@@ -219,7 +219,8 @@ class Calibration(Catchment):
 
         # basic inputs
         # check if all inputs are included
-        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys()
+        #     for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB']"
 
         ### optimization
 
@@ -370,7 +371,8 @@ class Calibration(Catchment):
 
         # basic inputs
         # check if all inputs are included
-        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys()
+        #     for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB']"
 
         ### optimization
 
@@ -396,7 +398,8 @@ class Calibration(Catchment):
                 Wrapper.FW1(self)
                 # calculate performance of the model
                 try:
-                    # error = self.objective_function(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
+                    # error = self.objective_function(self.QGauges, self.qout,
+                    #     self.quz_routed, self.qlz_translated, *[self.GaugesTable])
                     error = self.objective_function(
                         self.QGauges, self.qout, *[self.GaugesTable]
                     )
@@ -513,7 +516,8 @@ class Calibration(Catchment):
         assert isinstance(ApiObjArgs, dict), "store_history should be 0 or 1"
         assert isinstance(ApiSolveArgs, dict), "history_fname should be of type string "
 
-        # assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
+        # assert history_fname[-4:] == ".txt", "history_fname should be a txt file;
+        #     change the extension or add .txt at the end of the history_fname"
 
         print("Calibration starts")
 

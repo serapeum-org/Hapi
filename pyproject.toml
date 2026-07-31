@@ -254,15 +254,28 @@ platforms = ["win-64", "linux-64"]
 hapi-nile = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-main = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'not plot and not fig_share' --cov-report=xml", description = "Run the main test suite" }
 plot = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'plot' --cov-report=xml", description = "Run plot test suite" }
-test-all = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing", description = "Run all test suite" }
-notebooks = { cmd = "pytest --nbval --nbval-lax --verbose -p no:cacheprovider examples", description = "Check notebooks — currently red: every notebook still needs migration off the pre-rename Hapi package" }
 build-dist = { cmd = "python -m build", description = "Build sdist and wheel for PyPI" }
-publish-pypi = { cmd = "twine upload --non-interactive --repository pypi dist/*", depends-on = ["build-dist"], description = "Build and upload package to PyPI" }
 cz-changelog = { cmd = "cz changelog", description = "Generate changelog using Commitizen" }
 cz-bump = { cmd = "cz bump", description = "Bump version using Commitizen" }
 mypy = { cmd = "mypy", description = "Run mypy type checking" }
+
+[tool.pixi.tasks.main]
+cmd = "pytest -vvv --cov=src/hapi -sv -m 'not plot and not fig_share' --cov-report=xml"
+description = "Run the main test suite"
+
+[tool.pixi.tasks.test-all]
+cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing"
+description = "Run all test suite"
+
+[tool.pixi.tasks.notebooks]
+cmd = "pytest --nbval --nbval-lax --verbose -p no:cacheprovider examples"
+description = "Check notebooks — currently red: every notebook still needs migration off the pre-rename Hapi package"
+
+[tool.pixi.tasks.publish-pypi]
+cmd = "twine upload --non-interactive --repository pypi dist/*"
+depends-on = ["build-dist"]
+description = "Build and upload package to PyPI"
 
 [tool.pixi.environments]
 default = { solve-group = "default" }

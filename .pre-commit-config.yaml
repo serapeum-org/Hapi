@@ -141,7 +141,10 @@ repos:
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: pixi run --frozen -e dev pytest -v --cov=src/hapi --cov-report=term-missing -m "not plot and not fig_share" -p no:cacheprovider
+        entry: >-
+          pixi run --frozen -e dev pytest -v --cov=src/hapi
+          --cov-report=term-missing -m "not plot and not fig_share"
+          -p no:cacheprovider
         language: system
         pass_filenames: false
         always_run: true
@@ -153,7 +156,10 @@ repos:
 #       # `pytest --doctest-modules src` passes.
 #       - id: doctest
 #         name: doctest
-#         entry: pixi run --frozen -e dev python -c 'import matplotlib; matplotlib.use("Agg"); import pytest; import sys; sys.exit(pytest.main(["--doctest-modules", "src", "-p", "no:cacheprovider"]))'
+#         entry: >-
+#           pixi run --frozen -e dev python -c 'import matplotlib;
+#           matplotlib.use("Agg"); import pytest; import sys;
+#           sys.exit(pytest.main(["--doctest-modules", "src", "-p", "no:cacheprovider"]))'
 #         language: system
 #         always_run: true
 #         pass_filenames: false
