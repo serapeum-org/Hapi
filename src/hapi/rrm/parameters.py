@@ -93,9 +93,9 @@ class Parameters:
                 "raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file"
             )
         assert isinstance(no_parameters, int), " no_parameters should be integer number"
-        assert isinstance(
-            no_lumped_par, int
-        ), "no of lumped parameters should be integer"
+        assert isinstance(no_lumped_par, int), (
+            "no of lumped parameters should be integer"
+        )
 
         if no_lumped_par >= 1:
             if isinstance(lumped_par_pos, list):
@@ -145,7 +145,7 @@ class Parameters:
             self.no_elem = len(self.values)
         else:
             self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(  # type: ignore[assignment]
-                (self.raster_A[np.isnan(self.raster_A)])
+                self.raster_A[np.isnan(self.raster_A)]
             )
 
         self.no_parameters = no_parameters

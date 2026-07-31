@@ -4,7 +4,6 @@ currunt_work_directory = Hapi/Example
 """
 
 import numpy as np
-
 from Hapi.rrm.inputs import Inputs as IN
 
 rpath = "examples/hydrological-model/data/meteo_data/meteodata_prepared/"

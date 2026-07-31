@@ -25,6 +25,7 @@ Otherwise it uses 10 parameters::
 
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -180,7 +181,9 @@ class HBV(BaseConceptualModel):
         return rf, sf
 
     @staticmethod
-    def snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old) -> tuple[float, float, float]:  # type: ignore[override]
+    def snow(  # type: ignore[override]
+        cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old
+    ) -> tuple[float, float, float]:
         """Simulate snow accumulation, melt, and refreezing.
 
         The snow pack consists of two states: Water Content (``wc``)
@@ -266,9 +269,13 @@ class HBV(BaseConceptualModel):
             sp_new = sp_old + sf + refr
             wc_int = wc_old - refr + rf
 
-        if wc_int > cwh * sp_new:  # if water content > holding water capacity of the snow
+        if (
+            wc_int > cwh * sp_new
+        ):  # if water content > holding water capacity of the snow
             inf = wc_int - cwh * sp_new  # water content  will infiltrate
-            wc_new = cwh * sp_new  # and the capacity of snow of holding water will retained
+            wc_new = (
+                cwh * sp_new
+            )  # and the capacity of snow of holding water will retained
         else:  # if water content < holding water capacity of the snow
             inf = 0.0  # no infiltration
             wc_new = wc_int
@@ -276,7 +283,9 @@ class HBV(BaseConceptualModel):
         return inf, wc_new, sp_new
 
     @staticmethod
-    def soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old) -> tuple[float, float]:  # type: ignore[override]  # tfac,
+    def soil(  # type: ignore[override]  # tfac,
+        fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old
+    ) -> tuple[float, float]:
         """Compute soil moisture balance and recharge to the upper zone.
 
         The soil routine checks the amount of water that can infiltrate
@@ -351,7 +360,9 @@ class HBV(BaseConceptualModel):
         return sm_new, uz_int_1
 
     @staticmethod
-    def response(perc, alpha, k, k1, lz_old, uz_int_1) -> tuple[float, float, float, float]:  # type: ignore[override]  # tfac,area,
+    def response(  # type: ignore[override]  # tfac,area,
+        perc, alpha, k, k1, lz_old, uz_int_1
+    ) -> tuple[float, float, float, float]:
         r"""Transform upper and lower zone storage into discharge.
 
         The response routine converts the current values of the upper
@@ -502,7 +513,9 @@ class HBV(BaseConceptualModel):
 
         return q_r
 
-    def step_run(self, p: np.ndarray, v: np.ndarray, state_variable: np.ndarray, snow=0):
+    def step_run(
+        self, p: np.ndarray, v: np.ndarray, state_variable: np.ndarray, snow=0
+    ):
         """Execute a single time step of the HBV model.
 
         Parses the parameter vector, input vector, and state variables,
@@ -596,15 +609,15 @@ class HBV(BaseConceptualModel):
 
         elif snow == 0:
             ltt = 1.0  # less than utt and less than lowest temp to prevent sf formation
-            utt = (
-                2.0  # very low but it does not matter as temp is 25 so it is greater than 2
-            )
+            utt = 2.0  # very low but it does not matter as temp is 25 so it is greater than 2
             rfcf = p[0]  # 1.0 #p[16] # all precipitation becomes rainfall
             sfcf = 0.00001  # there is no snow
             # snow function
             ttm = 1  # should be very low lower than lowest temp as temp is 25 all the time so it does not matter
             cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
-            cwh = 0.00001  # as sp is always zero it doesn't matter all wc will go as inf
+            cwh = (
+                0.00001  # as sp is always zero it doesn't matter all wc will go as inf
+            )
             cfr = 0.000001  # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
             # soil function
             fc = p[1]
@@ -638,20 +651,46 @@ class HBV(BaseConceptualModel):
 
         rf, sf = self.precipitation(temp, ltt, utt, prec, rfcf, sfcf)  # , tfac
         inf, wc_new, sp_new = self.snow(
-            cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old  # tfac,
+            cfmax,
+            temp,
+            ttm,
+            cfr,
+            cwh,
+            rf,
+            sf,
+            wc_old,
+            sp_old,  # tfac,
         )
         sm_new, uz_int_1 = self.soil(
-            fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old  # tfac,
+            fc,
+            beta,
+            etf,
+            temp,
+            tm,
+            e_corr,
+            lp,
+            c_flux,
+            inf,
+            ep,
+            sm_old,
+            uz_old,  # tfac,
         )
 
         q_uz, q_lz, uz_new, lz_new = self.response(
-            perc, alpha, k, k1, lz_old, uz_int_1  # tfac,  # area,
+            perc,
+            alpha,
+            k,
+            k1,
+            lz_old,
+            uz_int_1,  # tfac,  # area,
         )
 
         #    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
         return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
-    def simulate(self, prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0):  # type: ignore[override]
+    def simulate(  # type: ignore[override]
+        self, prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0
+    ):
         """Run the HBV model for the full precipitation time series.
 
         Executes the HBV model for ``n`` time steps (the length of the
@@ -719,14 +758,15 @@ class HBV(BaseConceptualModel):
             q_uz length=6, first=0.0727
         """
         # data type
-        assert (
-            len(init_st) == 5
-        ), "state variables are 5 and the given initial values are " + str(len(init_st))
+        assert len(init_st) == 5, (
+            "state variables are 5 and the given initial values are "
+            + str(len(init_st))
+        )
         # assert type(p2) == list, " p2 should be of type list"
         # assert len(p2) == 2, "p2 should contains tfac and catchment area"
-        assert (
-            snow == 0 or snow == 1
-        ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
+        assert snow == 0 or snow == 1, (
+            " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
+        )
 
         if init_st is None:  # 0  1  2  3  4  5
             st = [DEF_ST]  # [sp,sm,uz,lz,wc,LA]

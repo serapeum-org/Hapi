@@ -21,6 +21,7 @@ Concrete implementations include
 :class:`~hapi.rrm.hbv_bergestrom92.HBVBergestrom92`, and
 :class:`~hapi.rrm.hbv_lake.HBVLake`.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

@@ -30,7 +30,7 @@ def test_lake():
     lake_area = 70.64
     snow = 0
     outflow_cell = [2, 1]  # 4km
-    initial_cond_lake = [0, 5, 5, 5, 0, 1.021144022048255e+10]
+    initial_cond_lake = [0, 5, 5, 5, 0, 1.021144022048255e10]
     curve = np.array(
         [
             [1.00000000e-02, 1.01196261e10],

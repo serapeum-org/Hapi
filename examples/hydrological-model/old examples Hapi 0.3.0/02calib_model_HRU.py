@@ -2,6 +2,7 @@
 
 @author: Mostafa
 """
+
 # %links
 # from IPython import get_ipython   # to reset the variable explorer each time
 # get_ipython().magic('reset -f')
@@ -19,17 +20,18 @@ sys.path.append(
 path = "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/"  # GIS/4000/
 from datetime import datetime
 
+# import Wrapper
+# import Hapi.GISpy as GIS
+import Hapi.gis.giscatchment as GC
+import Hapi.sm.performancecriteria as PC
+
 # %library
 import numpy as np
 import pandas as pd
 from osgeo import gdal
 
-# import Wrapper
-# import Hapi.GISpy as GIS
-import Hapi.gis.giscatchment as GC
 import Hapi.rrm.hbv as HBV
 import Hapi.rrm.parameters as DP
-import Hapi.sm.performancecriteria as PC
 
 # functions
 from Hapi.calibration import RunCalibration

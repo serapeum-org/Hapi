@@ -13,6 +13,7 @@ Here are just a few of the things that Hapi does well:
   - flexible GIS function to process rasters interpolate values and georeference
    calculated discharge values to the correct place
 """
+
 from __future__ import annotations
 
 from importlib.metadata import PackageNotFoundError, version

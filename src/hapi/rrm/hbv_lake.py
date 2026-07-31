@@ -553,7 +553,6 @@ class HBVLake(BaseConceptualModel):
             maxbas_w = np.ones(int(int_part))
 
         for x in range(int(maxbas)):
-
             if x < (maxbas / 2.0) - 1:
                 ynow = np.tan(np.pi / 3) * (x + 1)
                 # Integral of x dx with a slope of 60 degree Equilateral triangle
@@ -575,7 +574,9 @@ class HBVLake(BaseConceptualModel):
 
                     flag = 2
                 else:
-                    ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
+                    ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (
+                        x + 1 - maxbas / 2.0
+                    )
                     # 'sum of the two heights in the descending part of the triangle
                     maxbas_w[x] = ((ynow + yant) / 2) / total_a
                     # Multiplying by the height of the trapezoidal and dividing by 2

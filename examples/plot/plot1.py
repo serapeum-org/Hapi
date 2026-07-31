@@ -2,9 +2,9 @@
 
 @author: mofarrag
 """
+
 # import matplotlib.pyplot as plt
 import numpy as np
-
 from Hapi.visualizer import Visualize
 
 distance = [
@@ -68,7 +68,7 @@ OT1 = np.transpose([distance, OT1])
 
 OT2 = np.random.uniform(7000, 16000, size=len(wl1))
 OT2 = np.transpose([distance, OT2])
-#%%
+# %%
 Y1_2 = wl2
 
 Y2_2 = diff2

@@ -103,8 +103,7 @@ class DEM(Dataset):
         encoding = encoding.lower()
         if encoding not in D8_ENCODINGS:
             raise ValueError(
-                f"Unsupported encoding {encoding!r}. "
-                f"Choose from {list(D8_ENCODINGS)}"
+                f"Unsupported encoding {encoding!r}. Choose from {list(D8_ENCODINGS)}"
             )
         offsets = D8_ENCODINGS[encoding]
 

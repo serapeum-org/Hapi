@@ -5,6 +5,7 @@ with both components of the spatial representation of the hydrological
 process (conceptual model and spatial routing) to calculate the performance
 of predicted runoff at known locations based on a given performance function.
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -86,9 +87,9 @@ class Calibration(Catchment):
             AssertionError: If objective_function is not callable.
         """
         # check objective_function
-        assert callable(
-            objective_function
-        ), "The Objective function should be a function"
+        assert callable(objective_function), (
+            "The Objective function should be a function"
+        )
         self.objective_function = objective_function
 
         if args is None:
@@ -197,9 +198,9 @@ class Calibration(Catchment):
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows, fd_cols] = self.FlowDirArr.shape
-        assert (
-            fd_rows == self.rows and fd_cols == self.cols
-        ), "all input data should have the same number of rows"
+        assert fd_rows == self.rows and fd_cols == self.cols, (
+            "all input data should have the same number of rows"
+        )
 
         # input dimensions
         assert (
@@ -256,9 +257,9 @@ class Calibration(Catchment):
                         g.append((2 * k * (1 - x)) / self.dt)
 
                 except TypeError:  # if no of inputs less than what the function needs
-                    assert (
-                        False
-                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    assert False, (
+                        "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    )
 
                 # print error
                 if printError != 0:
@@ -276,9 +277,7 @@ class Calibration(Catchment):
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
-            opt_prob.addVar(
-                "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
-            )
+            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
 
         opt_prob.addObj("f")
 
@@ -402,9 +401,9 @@ class Calibration(Catchment):
                         self.QGauges, self.qout, *[self.GaugesTable]
                     )
                 except TypeError:  # if no of inputs less than what the function needs
-                    assert (
-                        False
-                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    assert False, (
+                        "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    )
 
                 # print error
                 if printError != 0:
@@ -421,9 +420,7 @@ class Calibration(Catchment):
         # define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
-            opt_prob.addVar(
-                "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
-            )
+            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
 
         print(opt_prob)
 
@@ -537,9 +534,9 @@ class Calibration(Catchment):
                         (2 * par[-2] * (1 - par[-1])) / self.dt,
                     ]
                 except TypeError:  # if no of inputs less than what the function needs
-                    assert (
-                        False
-                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    assert False, (
+                        "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    )
 
                 if printError != 0:
                     print(
@@ -559,7 +556,7 @@ class Calibration(Catchment):
         if InitialValues != []:
             for i in range(len(self.LB)):
                 opt_prob.addVar(
-                    "x{0}".format(i),
+                    f"x{i}",
                     type="c",
                     lower=self.LB[i],
                     upper=self.UB[i],
@@ -567,9 +564,7 @@ class Calibration(Catchment):
                 )
         else:
             for i in range(len(self.LB)):
-                opt_prob.addVar(
-                    "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
-                )
+                opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
 
         opt_prob.addObj("f")
 

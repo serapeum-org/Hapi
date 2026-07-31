@@ -351,9 +351,9 @@ class Wrapper:
         """
         ### input data validation
         if Routing != 0:
-            assert callable(
-                RoutingFn
-            ), "routing function should be of type callable (function that takes arguments)"
+            assert callable(RoutingFn), (
+                "routing function should be of type callable (function that takes arguments)"
+            )
 
         # data
         p = Model.data[:, 0]

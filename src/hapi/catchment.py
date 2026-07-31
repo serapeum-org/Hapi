@@ -296,9 +296,9 @@ class Catchment:
             )
             cube.open_multi_dataset()
             self.Temp = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(
-                self.Temp, np.ndarray
-            ), "array should be of type numpy array"
+            assert isinstance(self.Temp, np.ndarray), (
+                "array should be of type numpy array"
+            )
 
             if ll_temp is None:
                 self.ll_temp = np.zeros_like(self.Temp, dtype=np.float32)
@@ -370,9 +370,9 @@ class Catchment:
             )
             cube.open_multi_dataset()
             self.ET = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(
-                self.ET, np.ndarray
-            ), "array should be of type numpy array"
+            assert isinstance(self.ET, np.ndarray), (
+                "array should be of type numpy array"
+            )
             logger.debug("Potential Evapotranspiration data are read successfully")
 
     def read_flow_acc(self, path: str):
@@ -397,9 +397,9 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert path.endswith(
-            ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
+        assert path.endswith(".tif"), (
+            "please add the extension at the end of the Flow accumulation raster path input"
+        )
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
@@ -421,7 +421,7 @@ class Catchment:
 
         self.no_elem = int(
             np.size(self.FlowAccArr[:, :])
-            - np.count_nonzero((self.FlowAccArr[np.isnan(self.FlowAccArr)]))
+            - np.count_nonzero(self.FlowAccArr[np.isnan(self.FlowAccArr)])
         )
         self.acc_val = [
             int(self.FlowAccArr[i, j])
@@ -507,9 +507,9 @@ class Catchment:
         ]
         fd_val = list(set(fd_val))
         fd_should = [1, 2, 4, 8, 16, 32, 64, 128]
-        assert all(
-            fd_val[i] in fd_should for i in range(len(fd_val))
-        ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
+        assert all(fd_val[i] in fd_should for i in range(len(fd_val))), (
+            "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
+        )
 
         # create the flow direction table
         self.FDT = flow_dir.flow_direction_table()
@@ -554,7 +554,7 @@ class Catchment:
         # check flow accumulation input raster
         self.no_elem = int(
             np.size(self.FPLArr[:, :])
-            - np.count_nonzero((self.FPLArr[np.isnan(self.FPLArr)]))
+            - np.count_nonzero(self.FPLArr[np.isnan(self.FPLArr)])
         )
 
         logger.debug("Flow path length input is read successfully")
@@ -703,7 +703,7 @@ class Catchment:
 
     def read_lumped_model(
         self,
-        lumped_model,
+        lumped_model: type[BaseConceptualModel],
         catchment_area: float | int,
         initial_condition: list,
         q_init=None,
@@ -938,9 +938,9 @@ class Catchment:
                 `lower_bound` are not equal.
             ValueError: If `snow` is not a boolean.
         """
-        assert len(upper_bound) == len(
-            lower_bound
-        ), "the length of UB should be the same as LB"
+        assert len(upper_bound) == len(lower_bound), (
+            "the length of UB should be the same as LB"
+        )
         self.UB = np.array(upper_bound)
         self.LB = np.array(lower_bound)
 
@@ -1541,7 +1541,7 @@ class Lake:
 
     def read_lumped_model(
         self,
-        lumped_model,
+        lumped_model: type[BaseConceptualModel],
         catchment_area,
         lake_area,
         initial_condition,

@@ -1,6 +1,5 @@
 """Lumped Conceptual HBV model."""
 
-
 import numpy as np
 
 # HBV base model parameters

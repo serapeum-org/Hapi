@@ -633,14 +633,14 @@ def Simulate(
     """
     ### inputs validation
     # data type
-    assert (
-        len(init_st) == 5
-    ), "state variables are 5 and the given initial values are " + str(len(init_st))
+    assert len(init_st) == 5, (
+        "state variables are 5 and the given initial values are " + str(len(init_st))
+    )
     assert type(p2) == list, " p2 should be of type list"
     assert len(p2) == 2, "p2 should contains tfac and catchment area"
-    assert (
-        snow == 0 or snow == 1
-    ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
+    assert snow == 0 or snow == 1, (
+        " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
+    )
 
     if init_st is None:  # If unspecified, [0.0, 30.0, 30.0, 30.0, 0.0] mm
         st = [DEF_ST]  # if not given take the default
