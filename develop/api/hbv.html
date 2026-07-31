@@ -3025,8 +3025,8 @@ concrete implementations of all required subroutines.</p>
         <span class="c1">#    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1</span>
         <span class="k">return</span> <span class="n">q_uz</span><span class="p">,</span> <span class="n">q_lz</span><span class="p">,</span> <span class="p">[</span><span class="n">sp_new</span><span class="p">,</span> <span class="n">sm_new</span><span class="p">,</span> <span class="n">uz_new</span><span class="p">,</span> <span class="n">lz_new</span><span class="p">,</span> <span class="n">wc_new</span><span class="p">]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the HBV model for the full precipitation time series.</span>
 
@@ -3042,6 +3042,9 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">                length ``n`` [C].</span>
 <span class="sd">            et (numpy.ndarray): Potential evapotranspiration time</span>
 <span class="sd">                series of length ``n`` [mm/h].</span>
+<span class="sd">            ll_temp (numpy.ndarray): Long-term average temperature</span>
+<span class="sd">                time series of length ``n`` [C]. If None, computed</span>
+<span class="sd">                as the mean of ``temp``.</span>
 <span class="sd">            par (numpy.ndarray): Parameter vector. When ``snow=1``,</span>
 <span class="sd">                must have 18 elements; when ``snow=0``, must have</span>
 <span class="sd">                10 elements. See :meth:`step_run` for the full</span>
@@ -3049,9 +3052,6 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            init_st (list[float]): Initial model states as</span>
 <span class="sd">                ``[sp, sm, uz, lz, wc]`` [mm]. If None, defaults</span>
 <span class="sd">                to ``[0.0, 10.0, 10.0, 10.0, 0.0]``.</span>
-<span class="sd">            ll_temp (numpy.ndarray): Long-term average temperature</span>
-<span class="sd">                time series of length ``n`` [C]. If None, computed</span>
-<span class="sd">                as the mean of ``temp``.</span>
 <span class="sd">            q_init (float): Initial discharge value. If None,</span>
 <span class="sd">                computed from the initial states and parameters.</span>
 <span class="sd">            snow (int): Set to 1 to run the snow subroutine, 0 to</span>
@@ -3088,7 +3088,7 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            &gt;&gt;&gt; et = np.full(n, 3.0)</span>
 <span class="sd">            &gt;&gt;&gt; init_st = [0.0, 100.0, 10.0, 15.0, 0.0]</span>
 <span class="sd">            &gt;&gt;&gt; q_uz, q_lz, states = model.simulate(</span>
-<span class="sd">            ...     prec, temp_arr, et, par,</span>
+<span class="sd">            ...     prec, temp_arr, et, None, par,</span>
 <span class="sd">            ...     init_st=init_st, snow=0,</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; print(f&quot;q_uz length={len(q_uz)}, first={q_uz[0]:.4f}&quot;)</span>
@@ -4097,7 +4097,7 @@ function base. Must be &gt;= 1. Default is 1.</p>
 
 
 <h4 id="hapi.rrm.hbv.HBV.simulate" class="doc doc-heading"><a href="#hapi.rrm.hbv.HBV.simulate" class="toclink">
-            <code class="highlight language-python"><span class="n">simulate</span><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">simulate</span><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.hbv.HBV.simulate" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -4175,6 +4175,24 @@ series of length <code>n</code> [mm/h].</p>
           </tr>
           <tr class="doc-section-item">
             <td>
+                <code>ll_temp</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Long-term average temperature
+time series of length <code>n</code> [C]. If None, computed
+as the mean of <code>temp</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                 <code>par</code>
             </td>
             <td>
@@ -4189,7 +4207,7 @@ parameter layout.</p>
               </div>
             </td>
             <td>
-                <em>required</em>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -4204,24 +4222,6 @@ parameter layout.</p>
                 <p>Initial model states as
 <code>[sp, sm, uz, lz, wc]</code> [mm]. If None, defaults
 to <code>[0.0, 10.0, 10.0, 10.0, 0.0]</code>.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>ll_temp</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Long-term average temperature
-time series of length <code>n</code> [C]. If None, computed
-as the mean of <code>temp</code>.</p>
               </div>
             </td>
             <td>
@@ -4336,7 +4336,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">et</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">init_st</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">q_uz</span><span class="p">,</span> <span class="n">q_lz</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">prec</span><span class="p">,</span> <span class="n">temp_arr</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">prec</span><span class="p">,</span> <span class="n">temp_arr</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">init_st</span><span class="o">=</span><span class="n">init_st</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;q_uz length=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">q_uz</span><span class="p">)</span><span class="si">}</span><span class="s2">, first=</span><span class="si">{</span><span class="n">q_uz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -4456,8 +4456,8 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="normal">798</span>
 <span class="normal">799</span>
 <span class="normal">800</span>
-<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
-    <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
+<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HBV model for the full precipitation time series.</span>
 
@@ -4473,6 +4473,9 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="sd">            length ``n`` [C].</span>
 <span class="sd">        et (numpy.ndarray): Potential evapotranspiration time</span>
 <span class="sd">            series of length ``n`` [mm/h].</span>
+<span class="sd">        ll_temp (numpy.ndarray): Long-term average temperature</span>
+<span class="sd">            time series of length ``n`` [C]. If None, computed</span>
+<span class="sd">            as the mean of ``temp``.</span>
 <span class="sd">        par (numpy.ndarray): Parameter vector. When ``snow=1``,</span>
 <span class="sd">            must have 18 elements; when ``snow=0``, must have</span>
 <span class="sd">            10 elements. See :meth:`step_run` for the full</span>
@@ -4480,9 +4483,6 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="sd">        init_st (list[float]): Initial model states as</span>
 <span class="sd">            ``[sp, sm, uz, lz, wc]`` [mm]. If None, defaults</span>
 <span class="sd">            to ``[0.0, 10.0, 10.0, 10.0, 0.0]``.</span>
-<span class="sd">        ll_temp (numpy.ndarray): Long-term average temperature</span>
-<span class="sd">            time series of length ``n`` [C]. If None, computed</span>
-<span class="sd">            as the mean of ``temp``.</span>
 <span class="sd">        q_init (float): Initial discharge value. If None,</span>
 <span class="sd">            computed from the initial states and parameters.</span>
 <span class="sd">        snow (int): Set to 1 to run the snow subroutine, 0 to</span>
@@ -4519,7 +4519,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="sd">        &gt;&gt;&gt; et = np.full(n, 3.0)</span>
 <span class="sd">        &gt;&gt;&gt; init_st = [0.0, 100.0, 10.0, 15.0, 0.0]</span>
 <span class="sd">        &gt;&gt;&gt; q_uz, q_lz, states = model.simulate(</span>
-<span class="sd">        ...     prec, temp_arr, et, par,</span>
+<span class="sd">        ...     prec, temp_arr, et, None, par,</span>
 <span class="sd">        ...     init_st=init_st, snow=0,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; print(f&quot;q_uz length={len(q_uz)}, first={q_uz[0]:.4f}&quot;)</span>
