@@ -9,16 +9,16 @@
     `gdal.Dataset` and raises `TypeError` otherwise.
   - `DistributedRRM.Dist_HBV2` and `Parameters.hru_hand` take pyramids `Dataset` objects.
 - `Catchment.plot_distributed_results` forwards the cleopatra `ArrayGlyph.animate` keyword
-  arguments (`figsize`, `display_cell_value`, `ticks_spacing`, `interval`, `text_loc`,
-  `point_color`, `pid_color`, `pid_size`, `color_scale="linear"|"power"|…`) — the old CamelCase
-  kwargs (`Figsize`, `PlotNumbers`, `TicksSpacing`, `Gaugecolor`, `IDcolor`, `ColorScale=1`, …)
-  are no longer accepted.
+  arguments (`figsize`, `display_cell_value`, `ticks_spacing`, `interval`, `frame_label`,
+  `cell_value_text_colors`, `color_scale="linear"|"power"|…`) — the old CamelCase kwargs
+  (`Figsize`, `PlotNumbers`, `TicksSpacing`, `Gaugecolor`, `IDcolor`, `ColorScale=1`, …) are no
+  longer accepted.
 - `Catchment.save_animation(path, fps=2)` replaces the old
   `save_animation(video_format=, path=, save_frames=)` signature; the format is inferred from the
   file extension.
 - Dependency floors raised: `pyramids-gis>=0.46.0`, `cleopatra>=0.26.1`, `statista>=0.8.0`,
-  `pandas>=3.0.0`, `numpy>=2.1.3`, `scipy>=1.17.0`, `matplotlib>=3.11.0`. The direct conda `gdal`
-  pin is gone — GDAL is vendored inside the pyramids-gis wheel.
+  `pandas>=3.0.0`, `scipy>=1.17.0`, `matplotlib>=3.11.0`. The direct conda `gdal` pin is gone —
+  GDAL is vendored inside the pyramids-gis wheel.
 - `dev` and `docs` are PEP 735 `[dependency-groups]` and are no longer installable as pip extras
   (`pip install hapi-nile[dev]`).
 
@@ -28,10 +28,16 @@
   `align`/`crop` `inplace=` semantics) and cleopatra 0.26 (first-axis animation, `points` arrays,
   `ArrayGlyph.save_animation`).
 - Migrate to statista 0.8 (`pearson_corr_coeff`, `r2`, `Sensitivity.one_at_a_time`/`sobol`).
-- Fix the no-data masks in `plot_distributed_results` (`np.isnan` instead of comparing against the
-  no-data value, which never matched after `read_flow_acc` converts no-data cells to NaN).
 - Replace black + isort + flake8 + pydocstyle with ruff; add bandit, gitleaks, checkov, nbstripout,
   shellcheck, package-wide mypy, a coverage floor, and a pixi lock staleness gate to pre-commit.
+
+### Fixed
+
+- Fix the no-data masks in `plot_distributed_results` (`np.isnan` instead of comparing against the
+  no-data value, which never matched after `read_flow_acc` converts no-data cells to NaN); the
+  masking now happens on a copy, so plotting no longer mutates the model result arrays.
+- Fix `Parameters.hru_hand`: river cells are their own nearest drainage (HAND = 0), and the
+  flow-tracing no longer crashes on the removed legacy `dem = dem(flow_direction)` call.
 
 ### Dev
 
