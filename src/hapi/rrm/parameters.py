@@ -553,31 +553,30 @@ class Parameters:
                 for j in range(cols):
                     if dem_a[i, j] != no_val:
                         f = river_a[i, j]
+                        # a river cell is its own nearest drainage
+                        new_row = i
+                        new_cols = j
                         old_row = i
                         old_cols = j
 
                         while f != 1:
-                            # did not reached to the river yet then go to the next down stream cell
-                            # get the down stream cell (furure position)
+                            # did not reach the river yet, go to the next downstream cell
                             new_row = int(fd_index[old_row, old_cols, 0])
                             new_cols = int(fd_index[old_row, old_cols, 1])
-                            # print(str(new_row)+","+str(new_cols))
                             # go to the downstream cell
                             f = river_a[new_row, new_cols]
-                            # down stream cell becomes the current position (old position)
+                            # the downstream cell becomes the current position
                             old_row = new_row
                             old_cols = new_cols
-                            # at this moment old and new stored position are the same (current position)
                         # store the position in the array
                         nearest_network[i, j, 0] = new_row
                         nearest_network[i, j, 1] = new_cols
 
-        except Exception as e:
-            print(e)
+        except (IndexError, ValueError) as e:
             raise ValueError(
-                "please check the boundaries of your catchment.  After cropping the catchment using a polygon, it "
+                "please check the boundaries of your catchment. After cropping the catchment using a polygon, it "
                 "creates anomalies at the boundary"
-            )
+            ) from e
 
         # calculate the elevation difference between the cell and the nearest drainage cell
         # or height above nearst drainage

@@ -43,6 +43,29 @@ def test_hru_hand_synthetic_catchment():
     assert np.allclose(dtnd, expected_dtnd), f"DTND mismatch: {dtnd}"
 
 
+def test_hru_hand_river_cells_are_their_own_drainage():
+    """River cells get HAND = 0 even on an asymmetric grid.
+
+    Test scenario:
+        The first cell in scan order is itself a river cell, and the two
+        rows drain to different river cells with different elevations, so
+        any stale carry-over of the previous cell's trace would produce a
+        nonzero HAND for a river cell.
+    """
+    dem = _dataset(np.array([[5.0, 20.0, 30.0], [7.0, 40.0, 60.0]]))
+    # ESRI D8 code 16 = west everywhere
+    flow_direction = _dataset(np.full((2, 3), 16.0))
+    flow_path_length = _dataset(np.array([[0.0, 10.0, 20.0], [0.0, 11.0, 22.0]]))
+    river = _dataset(np.array([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]))
+
+    hand, dtnd = Parameters.hru_hand(dem, flow_direction, flow_path_length, river)
+
+    expected_hand = np.array([[0.0, 15.0, 25.0], [0.0, 33.0, 53.0]])
+    expected_dtnd = np.array([[0.0, 10.0, 20.0], [0.0, 11.0, 22.0]])
+    assert np.allclose(hand, expected_hand), f"HAND mismatch: {hand}"
+    assert np.allclose(dtnd, expected_dtnd), f"DTND mismatch: {dtnd}"
+
+
 def test_hru_hand_no_river_raises():
     """A flow path that never reaches a river raises a boundary error.
 
