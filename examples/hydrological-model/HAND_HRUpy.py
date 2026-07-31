@@ -25,16 +25,6 @@ from scipy.stats import norm
 # functions
 from hapi.rrm.parameters import Parameters as DP
 
-# from hapi.catchment import GISCatchment as gc
-
-# import matplotlib.pyplot as plt
-
-
-# %% to modify the basins raster
-# path="C:/Users/Mostafa/Desktop/delineation/Clipped/proj/basins.tif"
-# pathout="mask.tif"
-# basins=Dataset.read_file(path)
-# gc.DeleteBasins(basins,pathout)
 # %%
 path = "C:/Users/Mostafa/Desktop/delineation/HRU/HAND/"
 DEM = Dataset.read_file(path + "DEM.tif")
