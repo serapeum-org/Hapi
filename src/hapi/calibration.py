@@ -19,6 +19,12 @@ from hapi.catchment import Catchment
 from hapi.wrapper import Wrapper
 
 
+OBJECTIVE_FN_ARGS_ERROR = (
+    "the objective function you have entered needs more inputs, "
+    "please enter them in a list as *args"
+)
+
+
 class Calibration(Catchment):
     """Calibration class for distributed hydrological model parameter optimization.
 
@@ -257,10 +263,9 @@ class Calibration(Catchment):
                         g.append(2 * k * x / self.dt)
                         g.append((2 * k * (1 - x)) / self.dt)
 
-                except TypeError:  # if no of inputs less than what the function needs
-                    assert False, (
-                        "the objective function you have entered needs more inputs please enter then in a list as *args"
-                    )
+                except TypeError as e:
+                    # the objective function received fewer inputs than it needs
+                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
                 if printError != 0:
@@ -398,15 +403,12 @@ class Calibration(Catchment):
                 Wrapper.FW1(self)
                 # calculate performance of the model
                 try:
-                    # error = self.objective_function(self.QGauges, self.qout,
-                    #     self.quz_routed, self.qlz_translated, *[self.GaugesTable])
                     error = self.objective_function(
                         self.QGauges, self.qout, *[self.GaugesTable]
                     )
-                except TypeError:  # if no of inputs less than what the function needs
-                    assert False, (
-                        "the objective function you have entered needs more inputs please enter then in a list as *args"
-                    )
+                except TypeError as e:
+                    # the objective function received fewer inputs than it needs
+                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
                 if printError != 0:
@@ -537,10 +539,9 @@ class Calibration(Catchment):
                         2 * par[-2] * par[-1] / self.dt,
                         (2 * par[-2] * (1 - par[-1])) / self.dt,
                     ]
-                except TypeError:  # if no of inputs less than what the function needs
-                    assert False, (
-                        "the objective function you have entered needs more inputs please enter then in a list as *args"
-                    )
+                except TypeError as e:
+                    # the objective function received fewer inputs than it needs
+                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 if printError != 0:
                     print(
