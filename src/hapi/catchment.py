@@ -1218,16 +1218,18 @@ class Catchment:
             gauges (bool, optional): Whether to plot gauge locations
                 on the animation. Default is False.
             **kwargs: Additional keyword arguments passed to
-                ``ArrayGlyph.animate``. Common options include:
-                interval (int), text_colors (tuple),
-                text_loc (list), point_color (str),
-                point_size (int), pid_color (str), pid_size (int),
+                `ArrayGlyph.animate`. Common options include:
+                title (str), interval (int),
+                cell_value_text_colors (tuple),
+                frame_label (cleopatra `FrameLabel`),
                 title_size (int), cmap (str), vmin (float),
                 vmax (float), color_scale (str), ticks_spacing (int),
                 cbar_label (str), cbar_label_size (int),
                 cbar_length (float), cbar_orientation (str),
                 display_cell_value (bool), num_size (int),
-                background_color_threshold (float).
+                background_color_threshold (float), figsize (tuple).
+                See `cleopatra.array_glyph.ArrayGlyph.animate` for
+                the full list.
 
         Returns:
             matplotlib.animation.FuncAnimation: The animation object.
@@ -1295,7 +1297,9 @@ class Catchment:
 
         # animate iterates over the first dimension, so move the time axis to the front
         array = ArrayGlyph(np.moveaxis(arr, -1, 0))
-        anim = array.animate(time, title=title, **kwargs)
+        # the option title is a default; an explicit title= kwarg wins
+        kwargs.setdefault("title", title)
+        anim = array.animate(time, **kwargs)
 
         self._animation_glyph = array
         self.anim = anim
