@@ -2381,8 +2381,7 @@ and hydrologic response units (HRUs).</p>
 <span class="normal">704</span>
 <span class="normal">705</span>
 <span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
+<span class="normal">707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter distribution class for hydrological model calibration.</span>
 
 <span class="sd">    The Parameters class distributes values from a parameter vector during</span>
@@ -2876,12 +2875,12 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        and the flow path distance.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dem: A pyramids ``Dataset`` of the DEM raster.</span>
-<span class="sd">            flow_direction: A pyramids ``Dataset`` of the flow direction</span>
+<span class="sd">            dem: A pyramids `Dataset` of the DEM raster.</span>
+<span class="sd">            flow_direction: A pyramids `Dataset` of the flow direction</span>
 <span class="sd">                raster.</span>
-<span class="sd">            flow_path_length: A pyramids ``Dataset`` of the flow path</span>
+<span class="sd">            flow_path_length: A pyramids `Dataset` of the flow path</span>
 <span class="sd">                length raster.</span>
-<span class="sd">            river: A pyramids ``Dataset`` of the river location raster,</span>
+<span class="sd">            river: A pyramids `Dataset` of the river location raster,</span>
 <span class="sd">                where cells with value 1 indicate river presence.</span>
 
 <span class="sd">        Returns:</span>
@@ -2917,31 +2916,30 @@ and hydrologic response units (HRUs).</p>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
                         <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                        <span class="c1"># a river cell is its own nearest drainage</span>
+                        <span class="n">new_row</span> <span class="o">=</span> <span class="n">i</span>
+                        <span class="n">new_cols</span> <span class="o">=</span> <span class="n">j</span>
                         <span class="n">old_row</span> <span class="o">=</span> <span class="n">i</span>
                         <span class="n">old_cols</span> <span class="o">=</span> <span class="n">j</span>
 
                         <span class="k">while</span> <span class="n">f</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="c1"># did not reached to the river yet then go to the next down stream cell</span>
-                            <span class="c1"># get the down stream cell (furure position)</span>
+                            <span class="c1"># did not reach the river yet, go to the next downstream cell</span>
                             <span class="n">new_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
                             <span class="n">new_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                            <span class="c1"># print(str(new_row)+&quot;,&quot;+str(new_cols))</span>
                             <span class="c1"># go to the downstream cell</span>
                             <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">new_row</span><span class="p">,</span> <span class="n">new_cols</span><span class="p">]</span>
-                            <span class="c1"># down stream cell becomes the current position (old position)</span>
+                            <span class="c1"># the downstream cell becomes the current position</span>
                             <span class="n">old_row</span> <span class="o">=</span> <span class="n">new_row</span>
                             <span class="n">old_cols</span> <span class="o">=</span> <span class="n">new_cols</span>
-                            <span class="c1"># at this moment old and new stored position are the same (current position)</span>
                         <span class="c1"># store the position in the array</span>
                         <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>
                         <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_cols</span>
 
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;please check the boundaries of your catchment.  After cropping the catchment using a polygon, it &quot;</span>
+                <span class="s2">&quot;please check the boundaries of your catchment. After cropping the catchment using a polygon, it &quot;</span>
                 <span class="s2">&quot;creates anomalies at the boundary&quot;</span>
-            <span class="p">)</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="c1"># calculate the elevation difference between the cell and the nearest drainage cell</span>
         <span class="c1"># or height above nearst drainage</span>
@@ -4160,8 +4158,7 @@ where cells with value 1 indicate river presence.</p>
 <span class="normal">605</span>
 <span class="normal">606</span>
 <span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">608</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">hru_hand</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="n">flow_direction</span><span class="p">,</span> <span class="n">flow_path_length</span><span class="p">,</span> <span class="n">river</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
 
@@ -4171,12 +4168,12 @@ where cells with value 1 indicate river presence.</p>
 <span class="sd">    and the flow path distance.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        dem: A pyramids ``Dataset`` of the DEM raster.</span>
-<span class="sd">        flow_direction: A pyramids ``Dataset`` of the flow direction</span>
+<span class="sd">        dem: A pyramids `Dataset` of the DEM raster.</span>
+<span class="sd">        flow_direction: A pyramids `Dataset` of the flow direction</span>
 <span class="sd">            raster.</span>
-<span class="sd">        flow_path_length: A pyramids ``Dataset`` of the flow path</span>
+<span class="sd">        flow_path_length: A pyramids `Dataset` of the flow path</span>
 <span class="sd">            length raster.</span>
-<span class="sd">        river: A pyramids ``Dataset`` of the river location raster,</span>
+<span class="sd">        river: A pyramids `Dataset` of the river location raster,</span>
 <span class="sd">            where cells with value 1 indicate river presence.</span>
 
 <span class="sd">    Returns:</span>
@@ -4212,31 +4209,30 @@ where cells with value 1 indicate river presence.</p>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
                     <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                    <span class="c1"># a river cell is its own nearest drainage</span>
+                    <span class="n">new_row</span> <span class="o">=</span> <span class="n">i</span>
+                    <span class="n">new_cols</span> <span class="o">=</span> <span class="n">j</span>
                     <span class="n">old_row</span> <span class="o">=</span> <span class="n">i</span>
                     <span class="n">old_cols</span> <span class="o">=</span> <span class="n">j</span>
 
                     <span class="k">while</span> <span class="n">f</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="c1"># did not reached to the river yet then go to the next down stream cell</span>
-                        <span class="c1"># get the down stream cell (furure position)</span>
+                        <span class="c1"># did not reach the river yet, go to the next downstream cell</span>
                         <span class="n">new_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
                         <span class="n">new_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                        <span class="c1"># print(str(new_row)+&quot;,&quot;+str(new_cols))</span>
                         <span class="c1"># go to the downstream cell</span>
                         <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">new_row</span><span class="p">,</span> <span class="n">new_cols</span><span class="p">]</span>
-                        <span class="c1"># down stream cell becomes the current position (old position)</span>
+                        <span class="c1"># the downstream cell becomes the current position</span>
                         <span class="n">old_row</span> <span class="o">=</span> <span class="n">new_row</span>
                         <span class="n">old_cols</span> <span class="o">=</span> <span class="n">new_cols</span>
-                        <span class="c1"># at this moment old and new stored position are the same (current position)</span>
                     <span class="c1"># store the position in the array</span>
                     <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>
                     <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_cols</span>
 
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;please check the boundaries of your catchment.  After cropping the catchment using a polygon, it &quot;</span>
+            <span class="s2">&quot;please check the boundaries of your catchment. After cropping the catchment using a polygon, it &quot;</span>
             <span class="s2">&quot;creates anomalies at the boundary&quot;</span>
-        <span class="p">)</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="c1"># calculate the elevation difference between the cell and the nearest drainage cell</span>
     <span class="c1"># or height above nearst drainage</span>
@@ -5160,7 +5156,8 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">611</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">610</span>
+<span class="normal">611</span>
 <span class="normal">612</span>
 <span class="normal">613</span>
 <span class="normal">614</span>
@@ -5192,8 +5189,7 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 <span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">643</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the total number of parameters for the optimization.</span>
 
 <span class="sd">    Calculates the number of parameters that the optimization</span>
@@ -5317,7 +5313,8 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">646</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">645</span>
+<span class="normal">646</span>
 <span class="normal">647</span>
 <span class="normal">648</span>
 <span class="normal">649</span>
@@ -5378,8 +5375,7 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="normal">704</span>
 <span class="normal">705</span>
 <span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="normal">707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
 
 <span class="sd">    Takes the generated 3D parameter array and saves each parameter</span>
