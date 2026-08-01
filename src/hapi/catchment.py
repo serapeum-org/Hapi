@@ -140,9 +140,9 @@ class Catchment:
         self.CellSize: float | None = None
         self.px_area: float | None = None
         self.px_tot_area: float | None = None
-        self.FlowDirArr: np.ndarray | None = None
+        self.flow_dir_arr: np.ndarray | None = None
         self.FDT: dict | None = None
-        self.FPLArr: np.ndarray | None = None
+        self.fpl_arr: np.ndarray | None = None
         self.DEM: np.ndarray | None = None
         self.BankfullDepth: np.ndarray | None = None
         self.RiverWidth: np.ndarray | None = None
@@ -490,20 +490,20 @@ class Catchment:
         flow_dir = DEM.read_file(path)
         rows = flow_dir.rows
         cols = flow_dir.columns
-        self.FlowDirArr = flow_dir.read_array(band=0).astype(float)
+        self.flow_dir_arr = flow_dir.read_array(band=0).astype(float)
         # check flow direction input raster
         fd_noval = flow_dir.no_data_value[0]
 
         for i in range(rows):
             for j in range(cols):
-                if math.isclose(self.FlowDirArr[i, j], fd_noval, rel_tol=0.001):
-                    self.FlowDirArr[i, j] = np.nan
+                if math.isclose(self.flow_dir_arr[i, j], fd_noval, rel_tol=0.001):
+                    self.flow_dir_arr[i, j] = np.nan
 
         fd_val = [
-            int(self.FlowDirArr[i, j])
+            int(self.flow_dir_arr[i, j])
             for i in range(rows)
             for j in range(cols)
-            if not np.isnan(self.FlowDirArr[i, j])
+            if not np.isnan(self.flow_dir_arr[i, j])
         ]
         fd_val = list(set(fd_val))
         fd_should = [1, 2, 4, 8, 16, 32, 64, 128]
@@ -544,17 +544,17 @@ class Catchment:
         fpl = Dataset.read_file(path)
         self.rows = fpl.rows
         self.cols = fpl.columns
-        self.FPLArr = fpl.read_array(band=0)
+        self.fpl_arr = fpl.read_array(band=0)
         self.NoDataValue = fpl.no_data_value[0]
 
         for i in range(self.rows):
             for j in range(self.cols):
-                if math.isclose(self.FPLArr[i, j], self.NoDataValue, rel_tol=0.001):
-                    self.FPLArr[i, j] = np.nan
+                if math.isclose(self.fpl_arr[i, j], self.NoDataValue, rel_tol=0.001):
+                    self.fpl_arr[i, j] = np.nan
         # check flow accumulation input raster
         self.no_elem = int(
-            np.size(self.FPLArr[:, :])
-            - np.count_nonzero(self.FPLArr[np.isnan(self.FPLArr)])
+            np.size(self.fpl_arr[:, :])
+            - np.count_nonzero(self.fpl_arr[np.isnan(self.fpl_arr)])
         )
 
         logger.debug("Flow path length input is read successfully")

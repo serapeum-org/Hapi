@@ -63,7 +63,7 @@ class Run(Catchment):
                 row counts, column counts, or temporal lengths.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, (
             "all input data should have the same number of rows"
         )
@@ -103,7 +103,7 @@ class Run(Catchment):
                 dimensions.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, (
             "all input data should have the same number of rows"
         )
@@ -165,7 +165,7 @@ class Run(Catchment):
                 does not match the distributed raster data length.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, (
             "all input data should have the same number of rows and columns"
         )

@@ -264,7 +264,7 @@ class DistributedRRM:
                 - ``cols`` (int): Number of grid columns.
                 - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
                   array; NaN marks cells outside the domain.
-                - ``FPLArr`` (numpy.ndarray): 2-D flow path length
+                - ``fpl_arr`` (numpy.ndarray): 2-D flow path length
                   array.
                 - ``NoDataValue`` (float): No-data value used in the
                   flow path length raster.
@@ -275,20 +275,20 @@ class DistributedRRM:
         """
         MAXBAS = np.nanmax(Model.Parameters[:, :, -1])
         # replace novalue cells by nan
-        Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan
+        Model.fpl_arr[Model.fpl_arr == Model.NoDataValue] = np.nan
 
-        MaxFPL = np.nanmax(Model.FPLArr)
-        MinFPL = np.nanmin(Model.FPLArr)
+        MaxFPL = np.nanmax(Model.fpl_arr)
+        MinFPL = np.nanmin(Model.fpl_arr)
         # resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
         resize_fun = lambda g: (
             (((g - MinFPL) / (MaxFPL - MinFPL)) * (1 * MAXBAS - 1)) + 1
         )
 
-        NormalizedFPL = resize_fun(Model.FPLArr)
+        NormalizedFPL = resize_fun(Model.fpl_arr)
 
         for x in range(Model.rows):
             for y in range(Model.cols):
-                if not np.isnan(Model.FPLArr[x, y]):
+                if not np.isnan(Model.fpl_arr[x, y]):
                     Model.quz[x, y, :] = routing.triangular_routing_2(
                         Model.quz[x, y, :], NormalizedFPL[x, y]
                     )

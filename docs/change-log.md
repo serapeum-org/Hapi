@@ -24,6 +24,8 @@
 - `HBV.simulate` now takes its arguments in the `BaseConceptualModel` order
   (`prec, temp, et, ll_temp, par, init_st, q_init, snow`) — previously `par` came before `ll_temp`,
   which also made `HBV` unusable through `Wrapper.Lumped`'s positional call.
+- Attributes renamed to snake_case: `Catchment.FlowDirArr` → `flow_dir_arr`,
+  `Catchment.FPLArr` → `fpl_arr`, and `Parameters.raster_A` → `raster_array`.
 
 ### Dependencies
 

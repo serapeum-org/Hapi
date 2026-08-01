@@ -30,7 +30,7 @@ def test_create_distparameters_instance(
     assert isinstance(SpatialVarFun.raster, Dataset)
     assert SpatialVarFun.rows == coello_rows
     assert SpatialVarFun.cols == coello_cols
-    assert isinstance(SpatialVarFun.raster_A, np.ndarray)
+    assert isinstance(SpatialVarFun.raster_array, np.ndarray)
     assert SpatialVarFun.no_parameters == 11
     assert SpatialVarFun.Par3d.shape == (coello_rows, coello_cols, coello_no_parameters)
     assert SpatialVarFun.totnumberpar == 980

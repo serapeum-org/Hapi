@@ -64,7 +64,7 @@ class Wrapper:
                   the catchment.
                 - FlowAccArr (numpy.ndarray): Flow accumulation
                   raster array clipped to the catchment.
-                - FlowDirArr (numpy.ndarray): Flow direction raster
+                - flow_dir_arr (numpy.ndarray): Flow direction raster
                   array clipped to the catchment.
                 - sp_prec (numpy.ndarray): 3D precipitation array
                   with the same 2D dimensions as the raster input.

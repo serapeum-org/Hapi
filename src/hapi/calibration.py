@@ -171,7 +171,7 @@ class Calibration(Catchment):
         this method:
 
             - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-            - ``FlowDirArr``: Flow direction array.
+            - ``flow_dir_arr``: Flow direction array.
             - ``rows``, ``cols``: Grid dimensions.
             - ``LB``, ``UB``: Lower and upper parameter bounds.
             - ``objective_function``: Objective function for evaluation.
@@ -205,7 +205,7 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, (
             ROWS_MISMATCH_ERROR
         )
@@ -358,7 +358,7 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        # [fd_rows,fd_cols] = self.FlowDirArr.shape
+        # [fd_rows,fd_cols] = self.flow_dir_arr.shape
         # assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
         # input dimensions

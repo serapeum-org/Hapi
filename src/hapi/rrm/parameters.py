@@ -118,7 +118,7 @@ class Parameters:
         self.Maskingum = muskingum
         # read the raster
         self.raster = raster
-        self.raster_A = raster.read_array(band=0).astype(float)
+        self.raster_array = raster.read_array(band=0).astype(float)
         # get the shape of the raster
         self.rows = raster.rows
         self.cols = raster.columns
@@ -127,25 +127,25 @@ class Parameters:
 
         for i in range(self.rows):
             for j in range(self.cols):
-                if math.isclose(self.raster_A[i, j], self.noval, rel_tol=0.001):
-                    self.raster_A[i, j] = np.nan
+                if math.isclose(self.raster_array[i, j], self.noval, rel_tol=0.001):
+                    self.raster_array[i, j] = np.nan
 
         # count the number of non-empty cells
         if self.HRUs:
             self.values = list(
                 set(
                     [
-                        int(self.raster_A[i, j])
+                        int(self.raster_array[i, j])
                         for i in range(self.rows)
                         for j in range(self.cols)
-                        if not np.isnan(self.raster_A[i, j])
+                        if not np.isnan(self.raster_array[i, j])
                     ]
                 )
             )
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(  # type: ignore[assignment]
-                self.raster_A[np.isnan(self.raster_A)]
+            self.no_elem = np.size(self.raster_array[:, :]) - np.count_nonzero(  # type: ignore[assignment]
+                self.raster_array[np.isnan(self.raster_array)]
             )
 
         self.no_parameters = no_parameters
@@ -155,7 +155,7 @@ class Parameters:
         self.cellj = []
         for i in range(self.rows):
             for j in range(self.cols):
-                if not np.isnan(self.raster_A[i, j]):
+                if not np.isnan(self.raster_array[i, j]):
                     self.celli.append(i)
                     self.cellj.append(j)
 
@@ -500,7 +500,7 @@ class Parameters:
         # the spatially corrected location in par2d each soil type will have the same
         # generated parameters
         for i in range(self.no_elem):
-            self.Par3d[self.raster_A == self.values[i]] = self.Par2d[:, i]
+            self.Par3d[self.raster_array == self.values[i]] = self.Par2d[:, i]
 
     @staticmethod
     def hru_hand(dem, flow_direction, flow_path_length, river):
