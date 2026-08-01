@@ -14,7 +14,6 @@ import random
 
 import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
-
 from Hapi.calibration import Calibration
 from Hapi.routing import Routing
 from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped

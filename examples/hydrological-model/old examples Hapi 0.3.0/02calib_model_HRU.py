@@ -23,18 +23,17 @@ from datetime import datetime
 # import Wrapper
 # import Hapi.GISpy as GIS
 import Hapi.gis.giscatchment as GC
+import Hapi.rrm.hbv as HBV
+import Hapi.rrm.parameters as DP
 import Hapi.sm.performancecriteria as PC
 
 # %library
 import numpy as np
 import pandas as pd
-from osgeo import gdal
-
-import Hapi.rrm.hbv as HBV
-import Hapi.rrm.parameters as DP
 
 # functions
 from Hapi.calibration import RunCalibration
+from osgeo import gdal
 
 # from pyOpt import Optimization, ALHSO,Optimizer
 

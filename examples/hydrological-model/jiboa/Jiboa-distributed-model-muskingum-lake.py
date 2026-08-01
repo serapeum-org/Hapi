@@ -12,7 +12,6 @@ import numpy as np
 
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
-
 from Hapi.catchment import Catchment, Lake
 from Hapi.rrm.hbv import HBV
 from Hapi.rrm.hbv_lake import HBVLake

@@ -126,6 +126,16 @@ select = ["E", "F", "W", "I", "UP"]
 # implement it (formatter-owned pycodestyle code black conflicted with).
 ignore = ["E203", "E226", "E266", "E501", "E701", "E722", "C901", "E741", "E731"]
 
+[tool.ruff.lint.isort]
+# Classify the import roots explicitly so sorting never depends on the filesystem.
+# The legacy examples still import the pre-rename `Hapi.*` package: on a
+# case-insensitive filesystem (Windows/macOS) ruff resolves `Hapi` to `src/hapi` and
+# sorts those imports as first-party, while Linux CI finds no such package and sorts
+# them as third-party — so the same file failed lint on whichever platform had not
+# formatted it last. Naming both spellings pins the answer on every platform.
+known-first-party = ["hapi"]
+known-third-party = ["Hapi"]
+
 [tool.ruff.lint.per-file-ignores]
 # flake8 excluded examples/ and tests/ from linting — drop E/F/W and UP there,
 # keeping only import-sorting (I), which isort did run everywhere. This keeps
