@@ -37,7 +37,7 @@ jobs:
           ref: ${{ inputs.branch || github.ref }}
 
       - name: Set up Pixi
-        uses: serapeum-org/github-actions/actions/python-setup/pixi@pixi/v1
+        uses: serapeum-org/github-actions/actions/python-setup/pixi@38c111084f99d5ff5f4a1e63bedce48fe33a10c0  # pixi/v1.2.1
         with:
           environments: dev
           activate-environment: dev
@@ -93,7 +93,9 @@ jobs:
         shell: bash
         # --only-binary=:all: keeps the run honest: every dependency (pyramids-gis with
         # its vendored GDAL included) must resolve to a wheel, with no source build.
-        run: "pip install dist/*.whl --only-binary=:all:"
+        run: |
+          WHEEL="$(ls dist/*.whl)"
+          python -m pip install "${WHEEL}" --only-binary=:all:
 
       - name: Verify package import and console scripts
         shell: bash
@@ -105,7 +107,9 @@ jobs:
       - name: Install the test runner
         shell: bash
         # pytest-env is required by the `env =` block in [tool.pytest.ini_options].
-        run: "pip install pytest pytest-env --only-binary=:all:"
+        # Versions are pinned so a runner upgrade cannot change what this job tests.
+        run: |
+          python -m pip install "pytest==9.1.1" "pytest-env==1.7.0" --only-binary=:all:
 
       - name: Run the test suite against the installed wheel
         shell: bash
