@@ -3,8 +3,11 @@
 The inputs module provides the `Inputs` class for preparing meteorological
 and parameter raster data for distributed hydrological modeling. It handles
 alignment of rasters to a source DEM, extraction of HBV model parameters
-from global datasets, creation of lumped inputs from distributed data, and
-renaming of raster files with date-based ordering.
+from global datasets, and creation of lumped inputs from distributed data.
+
+Rasters are read in chronological order by
+``DatasetCollection.read_multiple_files(with_order=True, ...)``, which parses the date
+out of each file name, so the files themselves never need renaming on disk.
 
 The module relies on the ``pyramids`` library for raster I/O and
 manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
@@ -13,7 +16,6 @@ locate pre-downloaded global parameter sets (Beck et al., 2016).
 
 from __future__ import annotations
 
-import datetime as dt
 import os
 from pathlib import Path
 
@@ -49,8 +51,9 @@ class Inputs:
 
     The Inputs class provides methods to prepare meteorological and parameter
     raster data so they align with a reference DEM. It supports extracting
-    HBV model parameter boundaries, computing lumped inputs from distributed
-    rasters, and renaming files with date-based ordering.
+    HBV model parameter boundaries and computing lumped inputs from distributed
+    rasters. Chronological ordering is handled by pyramids at read time
+    (``read_multiple_files(with_order=True, ...)``), not by renaming files on disk.
 
     Attributes:
         source_dem: Path to the reference DEM raster used for spatial
@@ -311,77 +314,6 @@ class Inputs:
             avg.append(stats.loc[stats.index[0], "mean"])
 
         return avg
-
-    @staticmethod
-    def rename_files(
-        path: str, prefix: str = "", fmt: str = "%Y.%m.%d", freq: str = "daily"
-    ):
-        """Rename raster files with a sequential order prefix based on date.
-
-        Reads all ``.tif`` files in the given directory, extracts dates
-        from their names, sorts them chronologically, and renames each
-        file with a leading index number indicating its temporal order.
-
-        The new file name format is:
-        ``{order}_{prefix}_{date_string}.tif``
-
-        Args:
-            path: Path to the directory containing the raster files.
-            prefix: An optional string to include in the new file names,
-                such as a dataset identifier (e.g.,
-                ``"precipitation_ecmwf"``). Default is ``""``.
-            fmt: The date format in the original file names. Default is
-                ``"%Y.%m.%d"``.
-            freq: The temporal frequency of the data, which controls the
-                date format in the new file names. One of ``"daily"``,
-                ``"hourly"``, or any other value for minute-level.
-                Default is ``"daily"``.
-
-        Raises:
-            FileNotFoundError: If ``path`` does not exist.
-        """
-        if not os.path.exists(path):
-            raise FileNotFoundError("The directory you have entered does not exist")
-
-        files = os.listdir(path)
-        # get only the tif files
-        files = [i for i in files if i.endswith(".tif")]
-
-        # get the date
-        dates_str = [files[i].split("_")[-1][:-4] for i in range(len(files))]
-        dates = [dt.datetime.strptime(dates_str[i], fmt) for i in range(len(files))]
-
-        if freq == "daily":
-            new_date_str = [
-                str(i.year) + "_" + str(i.month) + "_" + str(i.day) for i in dates
-            ]
-        elif freq == "hourly":
-            new_date_str = [
-                str(i.year) + "_" + str(i.month) + "_" + str(i.day) + "_" + str(i.hour)
-                for i in dates
-            ]
-        else:
-            new_date_str = [
-                f"{i.year}-{i.month}-{i.day}-{i.hour}-{i.minute}" for i in dates
-            ]
-
-        df = pd.DataFrame()
-        df["files"] = files
-        df["DateStr"] = new_date_str
-        df["dates"] = dates
-        df.sort_values("dates", inplace=True)
-        df.reset_index(inplace=True)
-        df["order"] = [i for i in range(len(files))]
-
-        df["new_names"] = [
-            f"{df.loc[i, 'order']}_{prefix}_{df.loc[i, 'DateStr']}.tif"
-            for i in range(len(files))
-        ]
-        # rename the files
-        for i in range(len(files)):
-            os.rename(
-                f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
-            )
 
     @staticmethod
     def _check_data_dir() -> Path:

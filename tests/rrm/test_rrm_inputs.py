@@ -165,3 +165,63 @@ def test_create_lumped_parameter():
     # raw raster reads cannot silently shift both sides of the comparison
     assert np.isclose(lumped_data[1], 0.2987198, atol=0.001)
     assert np.isclose(lumped_data[2], 44.0648258, atol=0.001)
+
+
+class TestChronologicalReading:
+    """Tests for the date-ordered reading that replaced ``Inputs.rename_files``."""
+
+    def test_read_multiple_files_orders_by_parsed_date(self, tmp_path):
+        """Test that rasters are read chronologically regardless of directory order.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            This is the capability that justified deleting ``Inputs.rename_files``, whose
+            only purpose was to rewrite file names with an order prefix so a later
+            directory read picked them up in sequence. Three rasters are written whose
+            dates are deliberately not in creation order, each carrying a distinct pixel
+            value identifying its date, and read back with ``with_order=True``. The values
+            must come back chronologically, so no rename step is needed.
+        """
+        import numpy as np
+        from pyramids.dataset import Dataset
+
+        stamps = {"2020.02.01": 3, "2020.01.02": 1, "2020.01.10": 2}
+        for stamp, value in stamps.items():
+            Dataset.create_from_array(
+                np.full((2, 2), value, dtype="int32"),
+                top_left_corner=(0.0, 2.0),
+                cell_size=1.0,
+                epsg=4326,
+                no_data_value=-9999,
+                path=str(tmp_path / f"prec_{stamp}.tif"),
+            ).close()
+
+        cube = Datacube.read_multiple_files(
+            str(tmp_path),
+            with_order=True,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
+        first_pixel = [
+            int(cube.iloc(i).read_array(band=0)[0, 0]) for i in range(cube.time_length)
+        ]
+
+        assert first_pixel == [1, 2, 3], (
+            "rasters should be ordered by the date parsed from the file name, so no "
+            f"rename step is needed; got {first_pixel}"
+        )
+
+    def test_rename_files_is_gone(self):
+        """Test that the deleted helper is no longer on the public surface.
+
+        Test scenario:
+            ``Inputs.rename_files`` was removed because pyramids already orders by the
+            parsed date. Pinning its absence keeps a merge from quietly reintroducing it.
+        """
+        assert not hasattr(Inputs, "rename_files"), (
+            "Inputs.rename_files was deleted; read_multiple_files(with_order=True) "
+            "supersedes it"
+        )
