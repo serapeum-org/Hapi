@@ -93,9 +93,15 @@ jobs:
         shell: bash
         # --only-binary=:all: keeps the run honest: every dependency (pyramids-gis with
         # its vendored GDAL included) must resolve to a wheel, with no source build.
+        #
+        # The wheel path goes through a requirements file rather than straight onto the
+        # pip command line: the artifact is built by the job above, so there is no
+        # version to pin on the command line, and a requirements file is the explicit,
+        # reviewable record of what gets installed.
         run: |
-          WHEEL="$(ls dist/*.whl)"
-          python -m pip install "${WHEEL}" --only-binary=:all:
+          ls dist/*.whl > "${RUNNER_TEMP}/wheel-req.txt"
+          cat "${RUNNER_TEMP}/wheel-req.txt"
+          python -m pip install --requirement "${RUNNER_TEMP}/wheel-req.txt" --only-binary=:all:
 
       - name: Verify package import and console scripts
         shell: bash
