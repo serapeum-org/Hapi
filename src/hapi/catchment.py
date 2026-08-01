@@ -391,6 +391,13 @@ class Catchment:
         logged at DEBUG rather than raised, since some upstream tools number cells from
         one.
 
+        Cell geometry is read from the named fields of :attr:`~pyramids.dataset.Dataset.transform`.
+        :attr:`CellSize` is the pixel **width** in map units (what
+        :attr:`~pyramids.dataset.Dataset.cell_size` means), while :attr:`px_area` multiplies the
+        pixel width by the pixel height, so a non-square grid is not silently squared off.
+        :attr:`px_area` and :attr:`px_tot_area` are in km^2 and assume the raster CRS is
+        metric — a geographic (degree) CRS would produce meaningless areas.
+
         Args:
             path (str): Path to the flow accumulation raster file
                 (must include the raster name and .tif extension).
@@ -423,6 +430,8 @@ class Catchment:
                 3
                 >>> float(model.px_area)
                 16.0
+                >>> model.CellSize
+                4000.0
                 >>> bool(np.isnan(model.FlowAccArr[1, 1]))
                 True
                 >>> model.acc_val
@@ -509,12 +518,14 @@ class Catchment:
         # outlet is the cell that has the max flow_acc
         self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr))
 
-        # calculate area covered by cells
-        # get the coordinates of the top left corner and cell size [x,dx,y,dy]
-        geo_trans = flow_acc.geotransform
-        dx = np.abs(geo_trans[1]) / 1000.0  # dx in Km
-        dy = np.abs(geo_trans[-1]) / 1000.0  # dy in Km
-        self.CellSize = dx * 1000
+        # Cell geometry comes from the named fields of the affine transform rather than
+        # positional geotransform indices. pixel_width/pixel_height are read separately
+        # (and abs()-ed, since pixel_height is negative on a north-up grid) so non-square
+        # cells are not silently squared off.
+        transform = flow_acc.transform
+        dx = abs(transform.pixel_width) / 1000.0  # dx in Km
+        dy = abs(transform.pixel_height) / 1000.0  # dy in Km
+        self.CellSize = flow_acc.cell_size
 
         # area of the cell
         self.px_area = dx * dy

@@ -47,8 +47,8 @@ def write_raster(tmp_path):
 
     Returns:
         Callable[..., str]: A factory taking the pixel ``array`` and, optionally, a
-            ``no_data_value`` and file ``name``, returning the path of the written
-            GeoTIFF.
+            ``no_data_value``, file ``name``, and ``pixel_height`` (to build a
+            non-square grid), returning the path of the written GeoTIFF.
     """
 
     def _write(
@@ -56,12 +56,13 @@ def write_raster(tmp_path):
         *,
         no_data_value: int | float | None = NO_DATA,
         name: str = "raster.tif",
+        pixel_height: float | None = None,
     ) -> str:
         path = tmp_path / name
+        height = CELL_SIZE if pixel_height is None else pixel_height
         Dataset.create_from_array(
             array,
-            top_left_corner=(0.0, array.shape[0] * CELL_SIZE),
-            cell_size=CELL_SIZE,
+            geo=(0.0, CELL_SIZE, 0.0, array.shape[0] * height, 0.0, -height),
             epsg=EPSG,
             no_data_value=no_data_value,
             path=str(path),
@@ -248,6 +249,33 @@ class TestReadFlowAcc:
         )
         assert catchment.px_tot_area == pytest.approx(48.0), (
             f"expected 3 cells x 16 km2 = 48 km2, got {catchment.px_tot_area}"
+        )
+
+    def test_non_square_cells_use_both_axes(self, catchment, write_raster):
+        """Test that pixel area uses width and height separately, not cell size squared.
+
+        Test scenario:
+            A grid of 4000 m wide by 2000 m tall cells. ``CellSize`` reports the pixel
+            *width* only (that is what ``Dataset.cell_size`` means), while ``px_area``
+            multiplies both axes — 4 km x 2 km = 8 km^2, not 16 km^2. Three domain cells
+            give 24 km^2.
+        """
+        path = write_raster(
+            np.array([[0, 1], [2, NO_DATA]], dtype="int32"),
+            name="acc_rect.tif",
+            pixel_height=2000.0,
+        )
+
+        catchment.read_flow_acc(path)
+
+        assert catchment.CellSize == pytest.approx(4000.0), (
+            f"CellSize should report the pixel width, got {catchment.CellSize}"
+        )
+        assert catchment.px_area == pytest.approx(8.0), (
+            f"expected 4 km x 2 km = 8 km2 for a non-square cell, got {catchment.px_area}"
+        )
+        assert catchment.px_tot_area == pytest.approx(24.0), (
+            f"expected 3 cells x 8 km2 = 24 km2, got {catchment.px_tot_area}"
         )
 
     def test_missing_file_raises(self, catchment, tmp_path):
