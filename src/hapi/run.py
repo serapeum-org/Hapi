@@ -5,6 +5,7 @@ both components of the spatial representation of the hydrological process
 (conceptual model and spatial routing) to calculate the predicted runoff
 at known locations based on a given performance function.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -62,10 +63,10 @@ class Run(Catchment):
                 row counts, column counts, or temporal lengths.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
-        assert (
-            fd_rows == self.rows and fd_cols == self.cols
-        ), "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, (
+            "all input data should have the same number of rows"
+        )
 
         # input dimensions
         assert (
@@ -81,7 +82,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -102,10 +103,10 @@ class Run(Catchment):
                 dimensions.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
-        assert (
-            fd_rows == self.rows and fd_cols == self.cols
-        ), "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, (
+            "all input data should have the same number of rows"
+        )
 
         # input dimensions
         assert (
@@ -121,7 +122,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert (
@@ -164,10 +165,10 @@ class Run(Catchment):
                 does not match the distributed raster data length.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
-        assert (
-            fd_rows == self.rows and fd_cols == self.cols
-        ), "all input data should have the same number of rows and columns"
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, (
+            "all input data should have the same number of rows and columns"
+        )
 
         # input dimensions
         assert (
@@ -183,15 +184,15 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
-        assert (
-            np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
-        ), "Lake meteorological data has to have the same length as the distributed raster data"
-        assert (
-            np.shape(Lake.MeteoData)[1] >= 3
-        ), "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
+        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], (
+            "Lake meteorological data has to have the same length as the distributed raster data"
+        )
+        assert np.shape(Lake.MeteoData)[1] >= 3, (
+            "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
+        )
 
         # run the model
         Wrapper.RRMWithlake(self, Lake)
@@ -228,7 +229,7 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -287,15 +288,15 @@ class Run(Catchment):
             and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
-        assert (
-            np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
-        ), "Lake meteorological data has to have the same length as the distributed raster data"
-        assert (
-            np.shape(Lake.MeteoData)[1] >= 3
-        ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], (
+            "Lake meteorological data has to have the same length as the distributed raster data"
+        )
+        assert np.shape(Lake.MeteoData)[1] >= 3, (
+            "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        )
 
         # run the model
         Wrapper.FW1Withlake(self, Lake)

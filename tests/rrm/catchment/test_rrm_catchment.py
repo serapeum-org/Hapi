@@ -83,7 +83,8 @@ class TestLumped:
         route = 1
         Run.runLumped(coello, route, routing_fn)
 
-        assert len(coello.Qsim) == 10 and coello.Qsim.columns.to_list() == ["q"]
+        assert len(coello.Qsim) == 10
+        assert coello.Qsim.columns.to_list() == ["q"]
 
     def test_save_lumped_results(
         self,
@@ -217,8 +218,8 @@ class TestDistributed:
         assert coello.Outlet[0][0] == 10
         assert coello.Outlet[1][0] == 13
         assert coello.acc_val == coello_acc_values
-        assert isinstance(coello.FlowDirArr, np.ndarray)
-        assert coello.FlowDirArr.shape == (13, 14)
+        assert isinstance(coello.flow_dir_arr, np.ndarray)
+        assert coello.flow_dir_arr.shape == (13, 14)
         assert coello.FDT == coello_fdt
 
     def test_read_lumped_model(

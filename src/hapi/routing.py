@@ -7,6 +7,7 @@ It includes:
 1. Muskingum-Cunge routing (iterative and vectorized variants).
 2. Triangular (MAXBAS) routing using transfer function weights.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -294,7 +295,9 @@ class Routing:
                     flag = 2
                 else:
                     # 'sum of the two height in the descending part of the triangle
-                    ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
+                    ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (
+                        x + 1 - maxbas / 2.0
+                    )
                     # Multiplying by the height of the trapezoidal and dividing by 2
                     maxbas_w[x] = ((ynow + yant) / 2) / total_area
 

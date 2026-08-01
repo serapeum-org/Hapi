@@ -14,7 +14,6 @@ from hapi.parameters.parameters import (
 
 
 class TestFigshareAPIClient:
-
     def test_figshare_api_client_get_article(self):
         """
         Test an actual API call to Figshare's API to retrieve an article.
@@ -27,9 +26,9 @@ class TestFigshareAPIClient:
         # Check basic response structure
         assert isinstance(response, dict), "Response should be a dictionary."
         assert "id" in response, "Response should include an 'id' key."
-        assert (
-            response["id"] == 19999901
-        ), "The article ID should match the requested ID."
+        assert response["id"] == 19999901, (
+            "The article ID should match the requested ID."
+        )
 
     def test_figshare_api_client_get_article_version(self):
         """
@@ -44,9 +43,9 @@ class TestFigshareAPIClient:
         assert isinstance(response, dict), "Response should be a dictionary."
         assert "id" in response, "Response should include an 'id' key."
         assert "version" in response, "Response should include a 'version' key."
-        assert (
-            response["version"] == 1
-        ), "The version should match the requested version."
+        assert response["version"] == 1, (
+            "The version should match the requested version."
+        )
 
     def test_figshare_api_client_list_article_versions(self):
         """
@@ -61,9 +60,9 @@ class TestFigshareAPIClient:
         assert isinstance(versions, list), "Response should be a list."
         assert len(versions) > 0, "There should be at least one version."
         for version in versions:
-            assert (
-                "version" in version
-            ), "Each version entry should include a 'version' key."
+            assert "version" in version, (
+                "Each version entry should include a 'version' key."
+            )
 
     def test_figshare_api_client_invalid_article(self):
         """
@@ -88,7 +87,6 @@ class TestFigshareAPIClient:
 
 
 class TestFileManager:
-
     @pytest.fixture
     def temp_directory(self, tmp_path):
         """Fixture to create a temporary directory for testing."""
@@ -104,7 +102,9 @@ class TestFileManager:
         mock_response.iter_content.return_value = [b"fake content"]
         mock_response.raise_for_status = MagicMock()
 
-        with patch("hapi.parameters.parameters.requests.get", return_value=mock_response):
+        with patch(
+            "hapi.parameters.parameters.requests.get", return_value=mock_response
+        ):
             FileManager.download_file(url, file_path)
 
         assert new_dir.exists(), "The directory should be created."
@@ -118,9 +118,9 @@ class TestFileManager:
 
         FileManager.clear_directory(temp_directory)
 
-        assert not any(
-            temp_directory.iterdir()
-        ), "The directory should be empty after clearing."
+        assert not any(temp_directory.iterdir()), (
+            "The directory should be empty after clearing."
+        )
 
     def test_clear_empty_directory(self, temp_directory):
         """Test clearing an already empty directory."""
@@ -134,14 +134,13 @@ class TestFileManager:
 
         FileManager.clear_directory(non_existent_dir)
 
-        assert (
-            not non_existent_dir.exists()
-        ), "The directory should not exist and should not cause errors."
+        assert not non_existent_dir.exists(), (
+            "The directory should not exist and should not cause errors."
+        )
 
 
 @pytest.mark.mock
 class TestParameterManagerMock:
-
     @pytest.fixture
     def mock_api_client(self):
         """Fixture to provide a mock API client."""
@@ -198,14 +197,14 @@ class TestParameterManagerMock:
     def test_get_article_id_from_friendly_id(self, parameter_manager):
         """Test mapping a friendly ID to an article ID."""
         result = parameter_manager.get_article_id(1)
-        assert (
-            result == ParameterManager.ARTICLE_IDS[0]
-        ), "The article ID should match the corresponding friendly ID."
+        assert result == ParameterManager.ARTICLE_IDS[0], (
+            "The article ID should match the corresponding friendly ID."
+        )
 
         result = parameter_manager.get_article_id("max")
-        assert (
-            result == ParameterManager.ARTICLE_IDS[-2]
-        ), "The article ID should match the corresponding friendly ID."
+        assert result == ParameterManager.ARTICLE_IDS[-2], (
+            "The article ID should match the corresponding friendly ID."
+        )
 
         with pytest.raises(ValueError):
             parameter_manager.get_article_id("invalid_id")
@@ -228,7 +227,6 @@ class TestParameterManagerMock:
 
 @pytest.mark.integration
 class TestParameterManagerIntegration:
-
     @pytest.fixture
     def real_api_client(self):
         """Provide an actual API client for integration testing."""
@@ -252,9 +250,9 @@ class TestParameterManagerIntegration:
 
         assert isinstance(details, dict), "Details should be a dictionary."
         assert "id" in details, "Article details should include an 'id' key."
-        assert (
-            details["id"] == article_id
-        ), "The article ID should match the requested ID."
+        assert details["id"] == article_id, (
+            "The article ID should match the requested ID."
+        )
 
     def test_integration_list_files(self, parameter_manager):
         """Integration test for listing files in an article."""
@@ -275,9 +273,9 @@ class TestParameterManagerIntegration:
         parameter_manager.download_files(set_id, int_test_dir)
 
         downloaded_files = list(int_test_dir.iterdir())
-        assert (
-            len(downloaded_files) == 19
-        ), "Files should be downloaded to the specified directory."
+        assert len(downloaded_files) == 19, (
+            "Files should be downloaded to the specified directory."
+        )
         try:
             shutil.rmtree(int_test_dir)
         except PermissionError:
@@ -286,14 +284,14 @@ class TestParameterManagerIntegration:
     def test_integration_get_article_id(self, parameter_manager):
         """Integration test for mapping a friendly ID to an article ID."""
         article_id = parameter_manager.get_article_id(1)
-        assert (
-            article_id == ParameterManager.ARTICLE_IDS[0]
-        ), "The friendly ID should map to the correct article ID."
+        assert article_id == ParameterManager.ARTICLE_IDS[0], (
+            "The friendly ID should map to the correct article ID."
+        )
 
         article_id = parameter_manager.get_article_id("avg")
-        assert (
-            article_id == ParameterManager.ARTICLE_IDS[-3]
-        ), "The friendly ID 'avg' should map to the correct article ID."
+        assert article_id == ParameterManager.ARTICLE_IDS[-3], (
+            "The friendly ID 'avg' should map to the correct article ID."
+        )
 
     def test_integration_get_article_details_with_version(self, parameter_manager):
         """Integration test for retrieving article details with a specific version."""
@@ -303,14 +301,13 @@ class TestParameterManagerIntegration:
 
         assert isinstance(details, dict), "Details should be a dictionary."
         assert "version" in details, "Article details should include a 'version' key."
-        assert (
-            details["version"] == version
-        ), "The version should match the requested version."
+        assert details["version"] == version, (
+            "The version should match the requested version."
+        )
 
 
 @pytest.mark.integration
 class TestParameter:
-
     @pytest.fixture
     def int_test_dir(self, tmp_path):
         """Provide a temporary directory for testing file downloads."""
@@ -327,9 +324,9 @@ class TestParameter:
             parameter.get_parameters()
 
         downloaded_files = list(int_test_dir.glob("**/*"))
-        assert (
-            len(downloaded_files) > 0
-        ), "Parameter sets should be downloaded to the specified directory."
+        assert len(downloaded_files) > 0, (
+            "Parameter sets should be downloaded to the specified directory."
+        )
 
     @pytest.mark.fig_share
     def test_integration_get_parameter_set_with_download_dir(self, int_test_dir):
@@ -340,9 +337,9 @@ class TestParameter:
         parameter.get_parameter_set(1, int_test_dir)
         downloaded_files = list(int_test_dir.glob("**/*"))
 
-        assert (
-            len(downloaded_files) > 0
-        ), "Parameter sets should be downloaded to the specified directory."
+        assert len(downloaded_files) > 0, (
+            "Parameter sets should be downloaded to the specified directory."
+        )
 
     @pytest.mark.fig_share
     def test_integration_get_parameter_set_default_download_dir(self):
@@ -353,9 +350,9 @@ class TestParameter:
         parameter = Parameter(version=1)
         parameter.get_parameter_set(1)
         downloaded_files = list(download_dir.glob("**/*"))
-        assert (
-            len(downloaded_files) == 19
-        ), "Parameter sets should be downloaded to the specified directory."
+        assert len(downloaded_files) == 19, (
+            "Parameter sets should be downloaded to the specified directory."
+        )
 
     def test_integration_list_parameter_names(self):
         """Integration test for listing parameter names."""
@@ -363,17 +360,16 @@ class TestParameter:
         names = parameter.list_parameter_names()
 
         assert isinstance(names, list), "Parameter names should be returned as a list."
-        assert len(names) == len(
-            parameter.manager.PARAMETER_NAMES
-        ), "The number of parameter names should match."
-        assert (
-            "01_tt" in names
-        ), "Expected parameter name '01_tt' should be in the list."
+        assert len(names) == len(parameter.manager.PARAMETER_NAMES), (
+            "The number of parameter names should match."
+        )
+        assert "01_tt" in names, (
+            "Expected parameter name '01_tt' should be in the list."
+        )
 
 
 @pytest.mark.mock
 class TestParameterMock:
-
     @pytest.fixture
     def mock_parameter_manager(self):
         """Fixture to provide a mock ParameterManager."""
@@ -387,8 +383,9 @@ class TestParameterMock:
     @pytest.fixture
     def parameter(self, mock_parameter_manager):
         """Fixture to provide a Parameter instance with a mocked ParameterManager."""
-        with patch("os.getenv", return_value="/mocked/path/to/data"), patch(
-            "pathlib.Path.mkdir", return_value=None
+        with (
+            patch("os.getenv", return_value="/mocked/path/to/data"),
+            patch("pathlib.Path.mkdir", return_value=None),
         ):
             parameter_instance = Parameter(version=1)
         parameter_instance.manager = mock_parameter_manager
@@ -423,9 +420,9 @@ class TestParameterMock:
         names = Parameter.list_parameter_names()
 
         assert isinstance(names, list), "Parameter names should be returned as a list."
-        assert len(names) == len(
-            ParameterManager.PARAMETER_NAMES
-        ), "The number of parameter names should match."
-        assert (
-            "01_tt" in names
-        ), "Expected parameter name '01_tt' should be in the list."
+        assert len(names) == len(ParameterManager.PARAMETER_NAMES), (
+            "The number of parameter names should match."
+        )
+        assert "01_tt" in names, (
+            "Expected parameter name '01_tt' should be in the list."
+        )

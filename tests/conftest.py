@@ -1,10 +1,13 @@
-# from tests.gis.conftest import *
+import pytest
+
+# importing hapi.dem pulls in pyramids first, which sets up the vendored GDAL
+from hapi.dem import DEM
 from tests.rrm.conftest import *
 
 
 @pytest.fixture(scope="module")
-def coello_df_4000() -> gdal.Dataset:
-    return gdal.Open("tests/rrm/data/coello/gis/fd4000.tif")
+def coello_df_4000() -> DEM:
+    return DEM.read_file("tests/rrm/data/coello/gis/fd4000.tif")
 
 
 @pytest.fixture(scope="module")

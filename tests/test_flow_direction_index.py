@@ -4,49 +4,44 @@ Covers encoding selection, direction offset correctness for all three
 D8 encodings (ESRI, SAGA, GRASS), no-data handling, input validation,
 output shape, and edge cases.
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pytest
-from osgeo import gdal
 
 from hapi.dem import (
-    DEM,
     D8_ENCODINGS,
     D8_OFFSETS_ESRI,
     D8_OFFSETS_GRASS,
     D8_OFFSETS_SAGA,
+    DEM,
 )
 
 NO_DATA = -1.0
 
 
-def _create_fd_raster(
-    data: np.ndarray, no_data: float = NO_DATA
-) -> gdal.Dataset:
-    """Create an in-memory GDAL raster from a 2-D flow-direction array.
+def _create_fd_raster(data: np.ndarray, no_data: float = NO_DATA) -> DEM:
+    """Create an in-memory DEM from a 2-D flow-direction array.
 
     Args:
         data: 2-D numpy array of flow direction codes.
         no_data: Sentinel value for no-data cells.
 
     Returns:
-        An in-memory GDAL Dataset (MEM driver).
+        An in-memory DEM dataset.
     """
-    rows, cols = data.shape
-    driver = gdal.GetDriverByName("MEM")
-    ds = driver.Create("", cols, rows, 1, gdal.GDT_Float64)
-    ds.SetGeoTransform((0.0, 1.0, 0.0, float(rows), 0.0, -1.0))
-    band = ds.GetRasterBand(1)
-    band.SetNoDataValue(no_data)
-    band.WriteArray(data)
-    band.FlushCache()
-    return ds
+    rows, _ = data.shape
+    return DEM.create_from_array(
+        data,
+        top_left_corner=(0.0, float(rows)),
+        cell_size=1.0,
+        epsg=4326,
+        no_data_value=no_data,
+    )
 
 
-def _single_code_raster(
-    code: float, no_data: float = NO_DATA
-) -> gdal.Dataset:
+def _single_code_raster(code: float, no_data: float = NO_DATA) -> DEM:
     """Create a 3x3 raster with one valid code at the center cell.
 
     Args:
@@ -54,7 +49,7 @@ def _single_code_raster(
         no_data: Sentinel value for surrounding cells.
 
     Returns:
-        A 3x3 in-memory GDAL Dataset.
+        A 3x3 in-memory DEM dataset.
     """
     data = np.full((3, 3), no_data)
     data[1, 1] = code
@@ -72,12 +67,10 @@ class TestFlowDirectionIndexEncoding:
             produce a valid downstream index with no explicit
             encoding argument.
         """
-        ds = _single_code_raster(1.0)
-        dem = DEM(ds)
+        dem = _single_code_raster(1.0)
         result = dem.flow_direction_index()
         assert not np.isnan(result[1, 1, 0]), (
-            "Center cell should have a valid downstream index "
-            "with default encoding"
+            "Center cell should have a valid downstream index with default encoding"
         )
 
     @pytest.mark.parametrize("encoding", ["esri", "saga", "grass"])
@@ -92,12 +85,13 @@ class TestFlowDirectionIndexEncoding:
             and verify no exception is raised.
         """
         first_code = min(D8_ENCODINGS[encoding])
-        ds = _single_code_raster(float(first_code))
-        dem = DEM(ds)
+        dem = _single_code_raster(float(first_code))
         result = dem.flow_direction_index(encoding=encoding)
-        assert result.shape == (3, 3, 2), (
-            f"Output shape should be (3, 3, 2), got {result.shape}"
-        )
+        assert result.shape == (
+            3,
+            3,
+            2,
+        ), f"Output shape should be (3, 3, 2), got {result.shape}"
 
     @pytest.mark.parametrize(
         "encoding_input, canonical",
@@ -115,16 +109,15 @@ class TestFlowDirectionIndexEncoding:
             to the canonical encoding without error.
         """
         first_code = min(D8_ENCODINGS[canonical])
-        ds = _single_code_raster(float(first_code))
-        dem = DEM(ds)
+        dem = _single_code_raster(float(first_code))
         result = dem.flow_direction_index(encoding=encoding_input)
-        assert result.shape == (3, 3, 2), (
-            f"Encoding '{encoding_input}' should be accepted"
-        )
+        assert result.shape == (
+            3,
+            3,
+            2,
+        ), f"Encoding '{encoding_input}' should be accepted"
 
-    @pytest.mark.parametrize(
-        "bad_encoding", ["arcgis", "qgis", "d8", "", "taudem"]
-    )
+    @pytest.mark.parametrize("bad_encoding", ["arcgis", "qgis", "d8", "", "taudem"])
     def test_invalid_encoding_raises_valueerror(self, bad_encoding):
         """Test that unsupported encoding names raise ValueError.
 
@@ -135,11 +128,8 @@ class TestFlowDirectionIndexEncoding:
             Any name not in {'esri', 'saga', 'grass'} should raise
             ValueError mentioning 'Unsupported encoding'.
         """
-        ds = _single_code_raster(1.0)
-        dem = DEM(ds)
-        with pytest.raises(
-            ValueError, match="Unsupported encoding"
-        ):
+        dem = _single_code_raster(1.0)
+        with pytest.raises(ValueError, match="Unsupported encoding"):
             dem.flow_direction_index(encoding=bad_encoding)
 
 
@@ -162,15 +152,20 @@ class TestFlowDirectionIndexValidation:
             (10, "grass"),
         ],
         ids=[
-            "esri-3", "esri-5", "esri-7", "esri-9",
-            "esri-100", "esri-256",
-            "saga-9", "saga-10",
-            "grass-0", "grass-9", "grass-10",
+            "esri-3",
+            "esri-5",
+            "esri-7",
+            "esri-9",
+            "esri-100",
+            "esri-256",
+            "saga-9",
+            "saga-10",
+            "grass-0",
+            "grass-9",
+            "grass-10",
         ],
     )
-    def test_invalid_code_raises_valueerror(
-        self, invalid_code, encoding
-    ):
+    def test_invalid_code_raises_valueerror(self, invalid_code, encoding):
         """Test that rasters with invalid codes raise ValueError.
 
         Args:
@@ -181,11 +176,8 @@ class TestFlowDirectionIndexValidation:
             A raster containing a code outside the valid set for the
             given encoding should raise ValueError.
         """
-        ds = _single_code_raster(float(invalid_code))
-        dem = DEM(ds)
-        with pytest.raises(
-            ValueError, match="Flow direction raster"
-        ):
+        dem = _single_code_raster(float(invalid_code))
+        with pytest.raises(ValueError, match="Flow direction raster"):
             dem.flow_direction_index(encoding=encoding)
 
     def test_mixed_valid_and_invalid_codes_raises(self):
@@ -198,20 +190,15 @@ class TestFlowDirectionIndexValidation:
         data = np.full((3, 3), NO_DATA)
         data[0, 0] = 1.0
         data[1, 1] = 3.0
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
-        with pytest.raises(
-            ValueError, match="Flow direction raster"
-        ):
+        dem = _create_fd_raster(data)
+        with pytest.raises(ValueError, match="Flow direction raster"):
             dem.flow_direction_index(encoding="esri")
 
 
 class TestFlowDirectionIndexOutputShape:
     """Tests for output array shape and dtype."""
 
-    @pytest.mark.parametrize(
-        "rows, cols", [(1, 1), (3, 3), (2, 5), (5, 2), (13, 14)]
-    )
+    @pytest.mark.parametrize("rows, cols", [(1, 1), (3, 3), (2, 5), (5, 2), (13, 14)])
     def test_output_shape(self, rows, cols):
         """Test output shape matches (rows, cols, 2).
 
@@ -224,12 +211,10 @@ class TestFlowDirectionIndexOutputShape:
             be (rows, cols, 2).
         """
         data = np.full((rows, cols), 1.0)
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index(encoding="esri")
         assert result.shape == (rows, cols, 2), (
-            f"Expected shape ({rows}, {cols}, 2), "
-            f"got {result.shape}"
+            f"Expected shape ({rows}, {cols}, 2), got {result.shape}"
         )
 
     def test_output_dtype_is_float(self):
@@ -239,8 +224,7 @@ class TestFlowDirectionIndexOutputShape:
             The output must be a floating-point array so that
             no-data cells can be represented as NaN.
         """
-        ds = _single_code_raster(1.0)
-        dem = DEM(ds)
+        dem = _single_code_raster(1.0)
         result = dem.flow_direction_index()
         assert np.issubdtype(result.dtype, np.floating), (
             f"Expected floating dtype, got {result.dtype}"
@@ -257,20 +241,17 @@ class TestFlowDirectionIndexNoData:
             In a 3x3 grid with only the center cell valid, all
             surrounding no-data cells should be NaN in both layers.
         """
-        ds = _single_code_raster(1.0)
-        dem = DEM(ds)
+        dem = _single_code_raster(1.0)
         result = dem.flow_direction_index()
 
         for r in range(3):
             for c in range(3):
                 if (r, c) != (1, 1):
                     assert np.isnan(result[r, c, 0]), (
-                        f"Cell ({r},{c}) is no-data but row index "
-                        f"is {result[r, c, 0]}"
+                        f"Cell ({r},{c}) is no-data but row index is {result[r, c, 0]}"
                     )
                     assert np.isnan(result[r, c, 1]), (
-                        f"Cell ({r},{c}) is no-data but col index "
-                        f"is {result[r, c, 1]}"
+                        f"Cell ({r},{c}) is no-data but col index is {result[r, c, 1]}"
                     )
 
     def test_all_nodata_produces_all_nan(self):
@@ -281,8 +262,7 @@ class TestFlowDirectionIndexNoData:
             should yield an output filled with NaN.
         """
         data = np.full((3, 3), NO_DATA)
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
         assert np.all(np.isnan(result)), (
             "All cells are no-data; output should be entirely NaN"
@@ -295,15 +275,10 @@ class TestFlowDirectionIndexNoData:
             ESRI code 4 (south) at center (1,1) of a 3x3 grid.
             Expected downstream cell: row=2, col=1.
         """
-        ds = _single_code_raster(4.0)
-        dem = DEM(ds)
+        dem = _single_code_raster(4.0)
         result = dem.flow_direction_index()
-        assert result[1, 1, 0] == 2.0, (
-            f"Row index should be 2, got {result[1, 1, 0]}"
-        )
-        assert result[1, 1, 1] == 1.0, (
-            f"Col index should be 1, got {result[1, 1, 1]}"
-        )
+        assert result[1, 1, 0] == 2.0, f"Row index should be 2, got {result[1, 1, 0]}"
+        assert result[1, 1, 1] == 1.0, f"Col index should be 1, got {result[1, 1, 1]}"
 
     def test_1x1_nodata_raster(self):
         """Test a 1x1 raster with only no-data.
@@ -313,12 +288,9 @@ class TestFlowDirectionIndexNoData:
             NaN in both output layers.
         """
         data = np.array([[NO_DATA]])
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
-        assert np.all(np.isnan(result)), (
-            "Single no-data cell should produce all NaN"
-        )
+        assert np.all(np.isnan(result)), "Single no-data cell should produce all NaN"
 
 
 class TestFlowDirectionIndexEsriDirections:
@@ -337,13 +309,17 @@ class TestFlowDirectionIndexEsriDirections:
             (128, 0, 2),
         ],
         ids=[
-            "east", "south-east", "south", "south-west",
-            "west", "north-west", "north", "north-east",
+            "east",
+            "south-east",
+            "south",
+            "south-west",
+            "west",
+            "north-west",
+            "north",
+            "north-east",
         ],
     )
-    def test_direction_offset(
-        self, code, expected_row, expected_col
-    ):
+    def test_direction_offset(self, code, expected_row, expected_col):
         """Test each ESRI D8 code maps to the correct neighbor.
 
         Args:
@@ -355,16 +331,13 @@ class TestFlowDirectionIndexEsriDirections:
             Place a single code at (1,1) in a 3x3 grid and verify
             the downstream cell indices match the D8 offset.
         """
-        ds = _single_code_raster(float(code))
-        dem = DEM(ds)
+        dem = _single_code_raster(float(code))
         result = dem.flow_direction_index(encoding="esri")
         assert result[1, 1, 0] == expected_row, (
-            f"ESRI code {code}: row should be {expected_row}, "
-            f"got {result[1, 1, 0]}"
+            f"ESRI code {code}: row should be {expected_row}, got {result[1, 1, 0]}"
         )
         assert result[1, 1, 1] == expected_col, (
-            f"ESRI code {code}: col should be {expected_col}, "
-            f"got {result[1, 1, 1]}"
+            f"ESRI code {code}: col should be {expected_col}, got {result[1, 1, 1]}"
         )
 
     def test_all_eight_directions_in_one_raster(self):
@@ -377,14 +350,19 @@ class TestFlowDirectionIndexEsriDirections:
         """
         data = np.full((3, 4), NO_DATA)
         codes_and_positions = [
-            (1, 0, 0), (2, 0, 1), (4, 0, 2), (8, 0, 3),
-            (16, 1, 0), (32, 1, 1), (64, 1, 2), (128, 1, 3),
+            (1, 0, 0),
+            (2, 0, 1),
+            (4, 0, 2),
+            (8, 0, 3),
+            (16, 1, 0),
+            (32, 1, 1),
+            (64, 1, 2),
+            (128, 1, 3),
         ]
         for code, r, c in codes_and_positions:
             data[r, c] = float(code)
 
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index(encoding="esri")
 
         for code, r, c in codes_and_positions:
@@ -415,13 +393,17 @@ class TestFlowDirectionIndexSagaDirections:
             (7, 2, 2),
         ],
         ids=[
-            "east", "north-east", "north", "north-west",
-            "west", "south-west", "south", "south-east",
+            "east",
+            "north-east",
+            "north",
+            "north-west",
+            "west",
+            "south-west",
+            "south",
+            "south-east",
         ],
     )
-    def test_direction_offset(
-        self, code, expected_row, expected_col
-    ):
+    def test_direction_offset(self, code, expected_row, expected_col):
         """Test each SAGA D8 code maps to the correct neighbor.
 
         Args:
@@ -433,16 +415,13 @@ class TestFlowDirectionIndexSagaDirections:
             Place a single code at (1,1) in a 3x3 grid and verify
             the downstream cell matches the SAGA offset table.
         """
-        ds = _single_code_raster(float(code))
-        dem = DEM(ds)
+        dem = _single_code_raster(float(code))
         result = dem.flow_direction_index(encoding="saga")
         assert result[1, 1, 0] == expected_row, (
-            f"SAGA code {code}: row should be {expected_row}, "
-            f"got {result[1, 1, 0]}"
+            f"SAGA code {code}: row should be {expected_row}, got {result[1, 1, 0]}"
         )
         assert result[1, 1, 1] == expected_col, (
-            f"SAGA code {code}: col should be {expected_col}, "
-            f"got {result[1, 1, 1]}"
+            f"SAGA code {code}: col should be {expected_col}, got {result[1, 1, 1]}"
         )
 
     def test_all_eight_saga_directions(self):
@@ -455,14 +434,19 @@ class TestFlowDirectionIndexSagaDirections:
         """
         data = np.full((3, 4), NO_DATA)
         codes_and_positions = [
-            (0, 0, 0), (1, 0, 1), (2, 0, 2), (3, 0, 3),
-            (4, 1, 0), (5, 1, 1), (6, 1, 2), (7, 1, 3),
+            (0, 0, 0),
+            (1, 0, 1),
+            (2, 0, 2),
+            (3, 0, 3),
+            (4, 1, 0),
+            (5, 1, 1),
+            (6, 1, 2),
+            (7, 1, 3),
         ]
         for code, r, c in codes_and_positions:
             data[r, c] = float(code)
 
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index(encoding="saga")
 
         for code, r, c in codes_and_positions:
@@ -493,13 +477,17 @@ class TestFlowDirectionIndexGrassDirections:
             (8, 0, 0),
         ],
         ids=[
-            "north", "north-east", "east", "south-east",
-            "south", "south-west", "west", "north-west",
+            "north",
+            "north-east",
+            "east",
+            "south-east",
+            "south",
+            "south-west",
+            "west",
+            "north-west",
         ],
     )
-    def test_direction_offset(
-        self, code, expected_row, expected_col
-    ):
+    def test_direction_offset(self, code, expected_row, expected_col):
         """Test each GRASS D8 code maps to the correct neighbor.
 
         Args:
@@ -511,16 +499,13 @@ class TestFlowDirectionIndexGrassDirections:
             Place a single code at (1,1) in a 3x3 grid and verify
             the downstream cell matches the GRASS offset table.
         """
-        ds = _single_code_raster(float(code))
-        dem = DEM(ds)
+        dem = _single_code_raster(float(code))
         result = dem.flow_direction_index(encoding="grass")
         assert result[1, 1, 0] == expected_row, (
-            f"GRASS code {code}: row should be {expected_row}, "
-            f"got {result[1, 1, 0]}"
+            f"GRASS code {code}: row should be {expected_row}, got {result[1, 1, 0]}"
         )
         assert result[1, 1, 1] == expected_col, (
-            f"GRASS code {code}: col should be {expected_col}, "
-            f"got {result[1, 1, 1]}"
+            f"GRASS code {code}: col should be {expected_col}, got {result[1, 1, 1]}"
         )
 
     def test_all_eight_grass_directions(self):
@@ -533,14 +518,19 @@ class TestFlowDirectionIndexGrassDirections:
         """
         data = np.full((3, 4), NO_DATA)
         codes_and_positions = [
-            (1, 0, 0), (2, 0, 1), (3, 0, 2), (4, 0, 3),
-            (5, 1, 0), (6, 1, 1), (7, 1, 2), (8, 1, 3),
+            (1, 0, 0),
+            (2, 0, 1),
+            (3, 0, 2),
+            (4, 0, 3),
+            (5, 1, 0),
+            (6, 1, 1),
+            (7, 1, 2),
+            (8, 1, 3),
         ]
         for code, r, c in codes_and_positions:
             data[r, c] = float(code)
 
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index(encoding="grass")
 
         for code, r, c in codes_and_positions:
@@ -571,8 +561,14 @@ class TestFlowDirectionIndexCrossEncoding:
             ("north-east", 128, 1, 2),
         ],
         ids=[
-            "east", "south-east", "south", "south-west",
-            "west", "north-west", "north", "north-east",
+            "east",
+            "south-east",
+            "south",
+            "south-west",
+            "west",
+            "north-west",
+            "north",
+            "north-east",
         ],
     )
     def test_same_direction_same_result(
@@ -596,18 +592,15 @@ class TestFlowDirectionIndexCrossEncoding:
             ("saga", saga_code),
             ("grass", grass_code),
         ]:
-            ds = _single_code_raster(float(code))
-            dem = DEM(ds)
+            dem = _single_code_raster(float(code))
             r = dem.flow_direction_index(encoding=enc)
             results[enc] = (r[1, 1, 0], r[1, 1, 1])
 
         assert results["esri"] == results["saga"], (
-            f"{direction}: ESRI {results['esri']} != "
-            f"SAGA {results['saga']}"
+            f"{direction}: ESRI {results['esri']} != SAGA {results['saga']}"
         )
         assert results["esri"] == results["grass"], (
-            f"{direction}: ESRI {results['esri']} != "
-            f"GRASS {results['grass']}"
+            f"{direction}: ESRI {results['esri']} != GRASS {results['grass']}"
         )
 
 
@@ -623,12 +616,9 @@ class TestFlowDirectionIndexEdgeCases:
             still be computed without error.
         """
         data = np.array([[1.0]])
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
-        assert result[0, 0, 0] == 0.0, (
-            f"Row should be 0, got {result[0, 0, 0]}"
-        )
+        assert result[0, 0, 0] == 0.0, f"Row should be 0, got {result[0, 0, 0]}"
         assert result[0, 0, 1] == 1.0, (
             f"Col should be 1 (out of bounds), got {result[0, 0, 1]}"
         )
@@ -642,15 +632,10 @@ class TestFlowDirectionIndexEdgeCases:
         """
         data = np.full((3, 3), NO_DATA)
         data[0, 0] = 32.0
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
-        assert result[0, 0, 0] == -1.0, (
-            f"Row should be -1, got {result[0, 0, 0]}"
-        )
-        assert result[0, 0, 1] == -1.0, (
-            f"Col should be -1, got {result[0, 0, 1]}"
-        )
+        assert result[0, 0, 0] == -1.0, f"Row should be -1, got {result[0, 0, 0]}"
+        assert result[0, 0, 1] == -1.0, f"Col should be -1, got {result[0, 0, 1]}"
 
     def test_edge_cell_points_outside_grid(self):
         """Test edge cells pointing outward yield out-of-bounds row.
@@ -661,15 +646,10 @@ class TestFlowDirectionIndexEdgeCases:
         """
         data = np.full((3, 3), NO_DATA)
         data[0, 1] = 64.0
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
-        assert result[0, 1, 0] == -1.0, (
-            f"Row should be -1, got {result[0, 1, 0]}"
-        )
-        assert result[0, 1, 1] == 1.0, (
-            f"Col should be 1, got {result[0, 1, 1]}"
-        )
+        assert result[0, 1, 0] == -1.0, f"Row should be -1, got {result[0, 1, 0]}"
+        assert result[0, 1, 1] == 1.0, f"Col should be 1, got {result[0, 1, 1]}"
 
     def test_uniform_raster_all_cells_flow_east(self):
         """Test a uniform raster where every cell flows east.
@@ -679,18 +659,15 @@ class TestFlowDirectionIndexEdgeCases:
             at (r, c) should point to (r, c+1).
         """
         data = np.full((3, 3), 1.0)
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
         for r in range(3):
             for c in range(3):
                 assert result[r, c, 0] == r, (
-                    f"Cell ({r},{c}): row should be {r}, "
-                    f"got {result[r, c, 0]}"
+                    f"Cell ({r},{c}): row should be {r}, got {result[r, c, 0]}"
                 )
                 assert result[r, c, 1] == c + 1, (
-                    f"Cell ({r},{c}): col should be {c + 1}, "
-                    f"got {result[r, c, 1]}"
+                    f"Cell ({r},{c}): col should be {c + 1}, got {result[r, c, 1]}"
                 )
 
     def test_rectangular_raster_wide(self):
@@ -701,16 +678,15 @@ class TestFlowDirectionIndexEdgeCases:
             point one row down, same column.
         """
         data = np.full((2, 5), 4.0)
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
-        assert result.shape == (2, 5, 2), (
-            f"Shape should be (2, 5, 2), got {result.shape}"
-        )
+        assert result.shape == (
+            2,
+            5,
+            2,
+        ), f"Shape should be (2, 5, 2), got {result.shape}"
         for c in range(5):
-            assert result[0, c, 0] == 1.0, (
-                f"Row 0, col {c}: should flow to row 1"
-            )
+            assert result[0, c, 0] == 1.0, f"Row 0, col {c}: should flow to row 1"
             assert result[0, c, 1] == float(c), (
                 f"Row 0, col {c}: should stay in col {c}"
             )
@@ -723,19 +699,18 @@ class TestFlowDirectionIndexEdgeCases:
             point one column right, same row.
         """
         data = np.full((5, 2), 1.0)
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
-        assert result.shape == (5, 2, 2), (
-            f"Shape should be (5, 2, 2), got {result.shape}"
-        )
+        assert result.shape == (
+            5,
+            2,
+            2,
+        ), f"Shape should be (5, 2, 2), got {result.shape}"
         for r in range(5):
             assert result[r, 0, 0] == float(r), (
                 f"Row {r}, col 0: should stay in row {r}"
             )
-            assert result[r, 0, 1] == 1.0, (
-                f"Row {r}, col 0: should flow to col 1"
-            )
+            assert result[r, 0, 1] == 1.0, f"Row {r}, col 0: should flow to col 1"
 
     def test_checkerboard_nodata_pattern(self):
         """Test alternating valid/no-data cells in a checkerboard.
@@ -752,8 +727,7 @@ class TestFlowDirectionIndexEdgeCases:
                 if (r + c) % 2 == 0:
                     data[r, c] = 4.0
 
-        ds = _create_fd_raster(data)
-        dem = DEM(ds)
+        dem = _create_fd_raster(data)
         result = dem.flow_direction_index()
 
         for r in range(4):
@@ -780,17 +754,14 @@ class TestFlowDirectionIndexEdgeCases:
             no-data set to -1, code 0 should be treated as a valid
             direction, not as no-data.
         """
-        ds = _single_code_raster(0.0)
-        dem = DEM(ds)
+        dem = _single_code_raster(0.0)
         result = dem.flow_direction_index(encoding="saga")
         assert not np.isnan(result[1, 1, 0]), (
             "SAGA code 0 should be valid, not treated as no-data"
         )
         assert result[1, 1, 0] == 1.0, (
-            f"SAGA code 0 (east): row should be 1, "
-            f"got {result[1, 1, 0]}"
+            f"SAGA code 0 (east): row should be 1, got {result[1, 1, 0]}"
         )
         assert result[1, 1, 1] == 2.0, (
-            f"SAGA code 0 (east): col should be 2, "
-            f"got {result[1, 1, 1]}"
+            f"SAGA code 0 (east): col should be 2, got {result[1, 1, 1]}"
         )

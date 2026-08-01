@@ -29,33 +29,39 @@ dependencies = [
     "geopandas >=1.0.1",
     "loguru >=0.7.2",
     "numpy >=2.1.3",
-    "pandas >=2.2.3",
+    "pandas >=3.0.0",
     "PyYAML >=6.0.2",
-    "pyramids-gis >=0.6.0,!=0.9.0",
+    # GDAL is vendored inside the pyramids-gis wheel — do not pin gdal directly.
+    "pyramids-gis >=0.46.0",
     "requests >=2.31.0",
-    "scipy >=1.11.4",
+    "scipy >=1.17.0",
     "serapeum-utils >=0.2.0",
-    "statista >=0.6.0",
+    "statista >=0.8.0",
     "Oasis-Optimization >=1.0.3",
-    "cleopatra >=0.5.1",
-    "matplotlib >=3.7.2"
+    "cleopatra >=0.26.1",
+    "matplotlib >=3.11.0"
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "nbval >=0.11.0",
     "pre-commit >=3.7.1",
     "pre-commit-hooks >=4.6.0",
     "pytest >=8.2.2",
     "pytest-cov >= 6.0.0",
+    "pytest-env >=1.6.0",
+    "pytest-mock >=3.12.0",
+    "pytest-timeout >=2.3.0",
     "coverage",
     "build >=1.0.0",
     "twine >=5.0.0",
     "pip",
     "jupyterlab",
+    "notebook",
     "jupyter",
     "commitizen >=4.8.4",
-    "mypy >=1.0"
+    "mypy >=1.10.0",
+    "types-PyYAML >=6.0.0"
 ]
 
 docs = [
@@ -99,28 +105,67 @@ include = ["hapi", "hapi.*"]
 [tool.setuptools.package-data]
 hapi = ["*.yaml", "include/gdal/*.h"]
 
-[tool.flake8]
-ignore = ["E203", "E266", "E501", "W503", "E722", "C901", "E741", "E731"]
-max-line-length = 88
-max-complexity = 18
-select = "B,C,E,F,W,T4"
-
-[tool.black]
-profile = "flake8"
+# Ruff replaces black + isort + flake8 with one tool. Because a single engine
+# formats and sorts imports against one line-length, the formatter and the
+# import sorter cannot disagree the way black and isort did. Ruff lints and
+# formats both .py and .ipynb natively.
+[tool.ruff]
 line-length = 88
-skip-string-normalization = true
+target-version = "py311"  # requires-python floors at 3.11
 
-[tool.isort]
-profile = "black"
-line_length = 88
-multi_line_output = 3
+[tool.ruff.format]
+# black had skip-string-normalization = true → preserve existing quotes.
+quote-style = "preserve"
+
+[tool.ruff.lint]
+# The old flake8 select was E/F/W (B and T4 were inert: flake8-bugbear /
+# flake8-print were never installed). Add I (isort) and UP (pyupgrade) to fold
+# in the standalone isort hook and modern-typing upgrades.
+select = ["E", "F", "W", "I", "UP"]
+# Mirror the old [tool.flake8].ignore. W503 is dropped — ruff does not
+# implement it (formatter-owned pycodestyle code black conflicted with).
+ignore = ["E203", "E226", "E266", "E501", "E701", "E722", "C901", "E741", "E731"]
+
+[tool.ruff.lint.isort]
+# Classify the import roots explicitly so sorting never depends on the filesystem.
+# The legacy examples still import the pre-rename `Hapi.*` package: on a
+# case-insensitive filesystem (Windows/macOS) ruff resolves `Hapi` to `src/hapi` and
+# sorts those imports as first-party, while Linux CI finds no such package and sorts
+# them as third-party — so the same file failed lint on whichever platform had not
+# formatted it last. Naming both spellings pins the answer on every platform.
+known-first-party = ["hapi"]
+known-third-party = ["Hapi"]
+
+[tool.ruff.lint.per-file-ignores]
+# flake8 excluded examples/ and tests/ from linting — drop E/F/W and UP there,
+# keeping only import-sorting (I), which isort did run everywhere. This keeps
+# the migration's lint churn on shipped src/.
+"tests/**" = ["E", "F", "W", "UP"]
+"examples/**" = ["E", "F", "W", "UP"]
+# Tutorial notebooks import next to first use and run setup before imports —
+# both legitimately trip E402, which stays enforced for real modules.
+"*.ipynb" = ["E402"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "examples", "docs", "planning"]
+skips = ["B101"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/hapi"]
+
+[tool.coverage.report]
+show_missing = true
+# Current branch coverage is ~52%; the floor locks that level in so it can only
+# move up. Raise it as coverage improves.
+fail_under = 50
 
 [tool.commitizen]
 name = "cz_conventional_commits"
 version_provider = "pep621"
 tag_format = "$version"
 changelog_file = "docs/change-log.md"
-update_changelog_on_bump = false
+update_changelog_on_bump = true
 style = [
     ["qmark", "fg:#ff9d00 bold"],
     ["question", "bold"],
@@ -135,21 +180,26 @@ style = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+# Checker target is 3.12 even though `requires-python` floors at 3.11: numpy
+# ships PEP 695 `type` statements in its stubs, which mypy only parses when the
+# target is >= 3.12. This only widens the *typing* target; actual 3.11 runtime
+# compatibility is covered by the py311 leg of the test matrix, not by mypy.
+python_version = "3.12"
+mypy_path = "src"
+packages = ["hapi"]
+explicit_package_bases = true
 warn_return_any = true
-warn_unused_configs = true
+warn_unused_configs = false
 disallow_untyped_defs = false
-disallow_incomplete_defs = false
 check_untyped_defs = true
 ignore_missing_imports = true
 no_implicit_optional = true
-warn_redundant_casts = true
 warn_unused_ignores = true
-show_error_codes = true
 exclude = [
     "tests/",
     "examples/",
     "docs/",
+    "planning/",
 ]
 
 [[tool.mypy.overrides]]
@@ -181,8 +231,19 @@ disable_error_code = ["empty-body"]
 
 
 [tool.pytest.ini_options]
+env = [
+    "MPLBACKEND=Agg",
+    # D: sets the value only when the variable is not already set, so an
+    # explicitly exported HAPI_DATA_DIR still wins over this default.
+    "D:HAPI_DATA_DIR=src/hapi/parameters",
+]
 pythonpath = ["src"]
 testpaths = ["tests"]
+# Fail (don't hang) on a stuck test: pytest-timeout aborts any single test that
+# runs longer than `timeout` and prints its stack; `faulthandler_timeout`
+# (stdlib) dumps an earlier all-thread traceback for diagnosis.
+timeout = 300
+faulthandler_timeout = 120
 markers = [
     "vfs: mark a test as a virtual file system (deselect with '-m \"not vfs\"')",
     "slow: mark test as slow (deselect with '-m \"not slow\"')",
@@ -203,14 +264,28 @@ platforms = ["win-64", "linux-64"]
 hapi-nile = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-main = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'not plot and not fig_share' --cov-report=xml", description = "Run the main test suite" }
 plot = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'plot' --cov-report=xml", description = "Run plot test suite" }
-test-all = { cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing", description = "Run all test suite" }
-notebooks = { cmd = "pytest --nbval --nbval-lax --verbose examples/notebooks", description = "Check notebooks" }
 build-dist = { cmd = "python -m build", description = "Build sdist and wheel for PyPI" }
-publish-pypi = { cmd = "twine upload --non-interactive --repository pypi dist/*", depends-on = ["build-dist"], description = "Build and upload package to PyPI" }
 cz-changelog = { cmd = "cz changelog", description = "Generate changelog using Commitizen" }
 cz-bump = { cmd = "cz bump", description = "Bump version using Commitizen" }
+mypy = { cmd = "mypy", description = "Run mypy type checking" }
+
+[tool.pixi.tasks.main]
+cmd = "pytest -vvv --cov=src/hapi -sv -m 'not plot and not fig_share' --cov-report=xml"
+description = "Run the main test suite"
+
+[tool.pixi.tasks.test-all]
+cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing"
+description = "Run all test suite"
+
+[tool.pixi.tasks.notebooks]
+cmd = "pytest --nbval --nbval-lax --verbose -p no:cacheprovider examples"
+description = "Check notebooks — currently red: every notebook still needs migration off the pre-rename Hapi package"
+
+[tool.pixi.tasks.publish-pypi]
+cmd = "twine upload --non-interactive --repository pypi dist/*"
+depends-on = ["build-dist"]
+description = "Build and upload package to PyPI"
 
 [tool.pixi.environments]
 default = { solve-group = "default" }
@@ -226,6 +301,3 @@ python = "3.11.*"
 python = "3.12.*"
 [tool.pixi.feature.py313.dependencies]
 python = "3.13.*"
-
-[tool.pixi.dependencies]
-gdal = ">=3.10.0,<4"

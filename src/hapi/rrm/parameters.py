@@ -5,6 +5,7 @@ spatially (totally distributed, totally distributed with some parameters
 lumped, all parameters lumped, hydrologic response units) and saving
 generated parameters into rasters.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -12,8 +13,9 @@ import math
 import os
 
 import numpy as np
-from osgeo import gdal
 from pyramids.dataset import Dataset
+
+from hapi.dem import DEM
 
 
 class Parameters:
@@ -44,9 +46,9 @@ class Parameters:
         raster.
 
         Args:
-            raster: A gdal.Dataset raster to get the spatial information
+            raster: A pyramids ``Dataset`` to get the spatial information
                 of the catchment (DEM, flow accumulation or flow direction
-                raster).
+                raster), read it using ``Dataset.read_file``.
             no_parameters: Number of parameters in the HBV model.
             no_lumped_par: Number of lumped parameters. You have to enter
                 the value of the lumped parameter at the end of the list.
@@ -76,23 +78,24 @@ class Parameters:
                 Defaults to False.
 
         Raises:
-            AssertionError: If `raster` is not a gdal.Dataset, if
-                `no_parameters` is not an integer, if `no_lumped_par` is
-                not an integer, or if the length of `lumped_par_pos` does
-                not match `no_lumped_par`.
+            TypeError: If `raster` is not a pyramids Dataset.
+            AssertionError: If `no_parameters` is not an integer, if
+                `no_lumped_par` is not an integer, or if the length of
+                `lumped_par_pos` does not match `no_lumped_par`.
             ValueError: If `lumped_par_pos` is not a list when
                 `no_lumped_par` >= 1.
         """
         if lumped_par_pos is None:
             lumped_par_pos = []
 
-        assert isinstance(
-            raster, gdal.Dataset
-        ), "raster should be read using gdal (gdal dataset please read it using gdal library) "
+        if not isinstance(raster, Dataset):
+            raise TypeError(
+                "raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file"
+            )
         assert isinstance(no_parameters, int), " no_parameters should be integer number"
-        assert isinstance(
-            no_lumped_par, int
-        ), "no of lumped parameters should be integer"
+        assert isinstance(no_lumped_par, int), (
+            "no of lumped parameters should be integer"
+        )
 
         if no_lumped_par >= 1:
             if isinstance(lumped_par_pos, list):
@@ -115,34 +118,34 @@ class Parameters:
         self.Maskingum = muskingum
         # read the raster
         self.raster = raster
-        self.raster_A = raster.ReadAsArray().astype(float)
+        self.raster_array = raster.read_array(band=0).astype(float)
         # get the shape of the raster
-        self.rows = raster.RasterYSize
-        self.cols = raster.RasterXSize
+        self.rows = raster.rows
+        self.cols = raster.columns
         # get the no_value of in the raster
-        self.noval = raster.GetRasterBand(1).GetNoDataValue()
+        self.noval = raster.no_data_value[0]
 
         for i in range(self.rows):
             for j in range(self.cols):
-                if math.isclose(self.raster_A[i, j], self.noval, rel_tol=0.001):
-                    self.raster_A[i, j] = np.nan
+                if math.isclose(self.raster_array[i, j], self.noval, rel_tol=0.001):
+                    self.raster_array[i, j] = np.nan
 
         # count the number of non-empty cells
         if self.HRUs:
             self.values = list(
                 set(
                     [
-                        int(self.raster_A[i, j])
+                        int(self.raster_array[i, j])
                         for i in range(self.rows)
                         for j in range(self.cols)
-                        if not np.isnan(self.raster_A[i, j])
+                        if not np.isnan(self.raster_array[i, j])
                     ]
                 )
             )
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_A[:, :]) - np.count_nonzero(  # type: ignore[assignment]
-                (self.raster_A[np.isnan(self.raster_A)])
+            self.no_elem = np.size(self.raster_array[:, :]) - np.count_nonzero(  # type: ignore[assignment]
+                self.raster_array[np.isnan(self.raster_array)]
             )
 
         self.no_parameters = no_parameters
@@ -152,7 +155,7 @@ class Parameters:
         self.cellj = []
         for i in range(self.rows):
             for j in range(self.cols):
-                if not np.isnan(self.raster_A[i, j]):
+                if not np.isnan(self.raster_array[i, j]):
                     self.celli.append(i)
                     self.cellj.append(j)
 
@@ -497,7 +500,7 @@ class Parameters:
         # the spatially corrected location in par2d each soil type will have the same
         # generated parameters
         for i in range(self.no_elem):
-            self.Par3d[self.raster_A == self.values[i]] = self.Par2d[:, i]
+            self.Par3d[self.raster_array == self.values[i]] = self.Par2d[:, i]
 
     @staticmethod
     def hru_hand(dem, flow_direction, flow_path_length, river):
@@ -509,12 +512,13 @@ class Parameters:
         and the flow path distance.
 
         Args:
-            dem: A gdal.Dataset of the DEM raster.
-            flow_direction: A gdal.Dataset of the flow direction raster.
-            flow_path_length: A gdal.Dataset of the flow path length
+            dem: A pyramids `Dataset` of the DEM raster.
+            flow_direction: A pyramids `Dataset` of the flow direction
                 raster.
-            river: A gdal.Dataset of the river location raster, where
-                cells with value 1 indicate river presence.
+            flow_path_length: A pyramids `Dataset` of the flow path
+                length raster.
+            river: A pyramids `Dataset` of the river location raster,
+                where cells with value 1 indicate river presence.
 
         Returns:
             A tuple of two numpy ndarrays:
@@ -527,20 +531,19 @@ class Parameters:
                 (e.g., after cropping with a polygon).
         """
         # Use DEM raster information to run all loops
-        dem_a = dem.ReadAsArray()
-        no_val = np.float32(dem.GetRasterBand(1).GetNoDataValue())
-        rows = dem.RasterYSize
-        cols = dem.RasterXSize
+        dem_a = dem.read_array(band=0)
+        no_val = np.float32(dem.no_data_value[0])
+        rows = dem.rows
+        cols = dem.columns
 
         # get the indices of the flow direction path
-        dem = dem(flow_direction)
-        fd_index = dem.flowDirectionIndex()
+        fd_index = DEM(flow_direction.raster).flow_direction_index()
 
         # read the river location raster
-        river_a = river.ReadAsArray()
+        river_a = river.read_array(band=0)
 
         # read the flow path length raster
-        fpl_a = flow_path_length.ReadAsArray()
+        fpl_a = flow_path_length.read_array(band=0)
 
         # trace the flow direction to the nearest river reach and store the location
         # of that nearst reach
@@ -550,31 +553,30 @@ class Parameters:
                 for j in range(cols):
                     if dem_a[i, j] != no_val:
                         f = river_a[i, j]
+                        # a river cell is its own nearest drainage
+                        new_row = i
+                        new_cols = j
                         old_row = i
                         old_cols = j
 
                         while f != 1:
-                            # did not reached to the river yet then go to the next down stream cell
-                            # get the down stream cell (furure position)
+                            # did not reach the river yet, go to the next downstream cell
                             new_row = int(fd_index[old_row, old_cols, 0])
                             new_cols = int(fd_index[old_row, old_cols, 1])
-                            # print(str(new_row)+","+str(new_cols))
                             # go to the downstream cell
                             f = river_a[new_row, new_cols]
-                            # down stream cell becomes the current position (old position)
+                            # the downstream cell becomes the current position
                             old_row = new_row
                             old_cols = new_cols
-                            # at this moment old and new stored position are the same (current position)
                         # store the position in the array
                         nearest_network[i, j, 0] = new_row
                         nearest_network[i, j, 1] = new_cols
 
-        except Exception as e:
-            print(e)
+        except (IndexError, ValueError) as e:
             raise ValueError(
-                "please check the boundaries of your catchment.  After cropping the catchment using a polygon, it "
+                "please check the boundaries of your catchment. After cropping the catchment using a polygon, it "
                 "creates anomalies at the boundary"
-            )
+            ) from e
 
         # calculate the elevation difference between the cell and the nearest drainage cell
         # or height above nearst drainage
@@ -702,6 +704,4 @@ class Parameters:
             ]
 
         for i in range(np.shape(self.Par3d)[2]):
-            Dataset.dataset_like(
-                self.raster, self.Par3d[:, :, i], driver="geotiff", path=pnme[i]
-            )
+            Dataset.dataset_like(self.raster, self.Par3d[:, :, i], path=pnme[i])

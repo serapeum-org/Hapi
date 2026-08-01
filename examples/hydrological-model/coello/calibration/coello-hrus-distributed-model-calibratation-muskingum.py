@@ -5,12 +5,12 @@ os.chdir(Comp + "/Coello/HAPI/Model")
 import datetime as dt
 
 import numpy as np
-from osgeo import gdal
+from pyramids.dataset import Dataset
 from statista.descriptors import rmse
 
-from Hapi.calibration import Calibration
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
-from Hapi.rrm.parameters import Parameters as DP
+from hapi.calibration import Calibration
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
+from hapi.rrm.parameters import Parameters as DP
 
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"
@@ -61,7 +61,7 @@ par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 "01_rfcf","02_FC", "03_BETA", "04_ETF", "05_LP", "06_K0","07_K1", "08_K2",
 "09_UZL","10_PERC", + ["11_Kmuskingum", "12_Xmuskingum"]
 """
-raster = gdal.Open(path + "GIS/4000/subcatch_classes.tif")
+raster = Dataset.read_file(path + "GIS/4000/subcatch_classes.tif")
 no_parameters = 12
 no_lumped_par = 1
 lumped_par_pos = [7]

@@ -36,6 +36,9 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# GDAL statistics sidecar files generated when tests compute raster stats
+*.aux.xml
+
 # Unit test / coverage reports
 htmlcov/
 .tox/

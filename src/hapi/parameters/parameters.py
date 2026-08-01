@@ -14,6 +14,7 @@ The module contains four main classes:
 - ``Parameter``: high-level facade that wires everything together and
   exposes a CLI-friendly interface.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,7 +22,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
-import requests  # type: ignore[import-untyped]
+import requests
 from loguru import logger
 
 BASE_URL = "https://api.figshare.com/v2"
@@ -89,7 +90,9 @@ class FigshareAPIClient:
             logger.error(f"HTTPError: {error}, Response: {response.text}")
             raise
 
-    def get_article_version(self, article_id: int, version: int) -> dict[str, int] | None:
+    def get_article_version(
+        self, article_id: int, version: int
+    ) -> dict[str, int] | None:
         """Retrieve a specific version of an article from the API.
 
         Args:
@@ -183,8 +186,9 @@ class FileManager:
         )
         download_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Perform the download
-        response = requests.get(url, stream=True)
+        # Perform the download. The timeout bounds each socket operation
+        # (connect / read between chunks), not the total download time.
+        response = requests.get(url, stream=True, timeout=60)
         response.raise_for_status()
 
         with open(download_path, "wb") as file:
@@ -486,9 +490,7 @@ class Parameter:
             self.get_parameter_set(set_id, download_dir)
             logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
 
-    def get_parameter_set(
-        self, set_id: int | str, download_dir: Path | None = None
-    ):
+    def get_parameter_set(self, set_id: int | str, download_dir: Path | None = None):
         r"""Download a specific parameter set.
 
         Args:

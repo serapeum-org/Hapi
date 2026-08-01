@@ -6,7 +6,6 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
-
 from Hapi.calibration import Calibration
 from Hapi.routing import Routing
 from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped

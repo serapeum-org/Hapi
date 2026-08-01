@@ -4,7 +4,6 @@ import matplotlib
 
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
-
 from Hapi.catchment import Catchment
 from Hapi.routing import Routing
 from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped

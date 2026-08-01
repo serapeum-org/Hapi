@@ -64,10 +64,13 @@ def test_download_parameter_set(mock_parameter_class):
 def test_list_parameter_names(mock_parameter_class):
     """Test the list-parameter-names command."""
 
-    with patch("sys.argv", ["parameters.py", "list-parameter-names"]), patch(
-        "hapi.parameters.parameters.Parameter.list_parameter_names",
-        return_value=["01_tt", "02_rfcf", "03_sfcf"],
-    ) as mock_list_names:
+    with (
+        patch("sys.argv", ["parameters.py", "list-parameter-names"]),
+        patch(
+            "hapi.parameters.parameters.Parameter.list_parameter_names",
+            return_value=["01_tt", "02_rfcf", "03_sfcf"],
+        ) as mock_list_names,
+    ):
         main()
 
     # `list-parameter-names` doesn't instantiate `Parameter`, so ensure it's not called

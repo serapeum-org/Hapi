@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 from geopandas import GeoDataFrame
-from pyramids.multidataset import MultiDataset as Datacube
+from pyramids.dataset import DatasetCollection as Datacube
 
 from hapi.inputs import Inputs
 
@@ -144,16 +144,27 @@ def test_create_lumped_parameter():
         date=True,
         file_name_data_fmt="%Y.%m.%d",
     )
-    validation_values = [
-        0.0,
-        0.3153739,
-        43.65052,
-        0.9195719,
-        8.736267,
-        6.411966,
-        21.155485,
-        1.027534,
-        4.1313076,
-        1.5406969,
-    ]
-    assert np.isclose(lumped_data, validation_values, atol=0.001, rtol=0.001).all()
+    # independent expectation: numpy mean over the valid (non-nodata) cells of
+    # each raster, bypassing the GDAL band-statistics path that
+    # create_lumped_inputs relies on (pyramids >= 0.32 returns exact band
+    # statistics instead of the sampled values returned by older versions)
+    cube = Datacube.read_multiple_files(
+        path,
+        with_order=True,
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date=True,
+        file_name_data_fmt="%Y.%m.%d",
+    )
+    cube.open_multi_dataset()
+    expected = []
+    for i in range(cube.time_length):
+        dataset = cube.iloc(i)
+        arr = dataset.read_array(band=0).astype(np.float64)
+        valid = arr[~np.isclose(arr, dataset.no_data_value[0], rtol=1e-5)]
+        expected.append(valid.mean())
+    assert len(lumped_data) == 10
+    assert np.isclose(lumped_data, expected, atol=0.001, rtol=0.001).all()
+    # anchor a couple of values against fixed references so a regression in the
+    # raw raster reads cannot silently shift both sides of the comparison
+    assert np.isclose(lumped_data[1], 0.2987198, atol=0.001)
+    assert np.isclose(lumped_data[2], 44.0648258, atol=0.001)

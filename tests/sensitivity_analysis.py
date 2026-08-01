@@ -8,13 +8,13 @@ from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
 # %% Paths
-Parameterpath = "examples/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = "examples/data/lumped/meteo_data-MSWEP.csv"
+Parameterpath = "tests/rrm/data/coello/coello-lumpedparameter-muskingum.txt"
+MeteoDataPath = "tests/rrm/data/coello/meteo-lumped-data-MSWEP.csv"
 Path = "examples/data/lumped/"
 # %%
 ### meteorological data
 start = "2009-01-01"
-end = "2011-12-31"
+end = "2009-01-10"
 name = "Coello"
 Coello = Catchment(name, start, end)
 Coello.read_lumped_inputs(MeteoDataPath)
@@ -29,7 +29,7 @@ InitialCond = [0, 10, 10, 10, 0]
 Coello.read_lumped_model(HBVLumped, CatArea, InitialCond)
 
 ### parameters
-Snow = 0  # no snow subroutine
+Snow = False  # no snow subroutine
 Coello.read_parameters(Parameterpath, Snow)
 
 parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
@@ -44,7 +44,9 @@ Coello.read_parameters_bound(UB, LB, Snow)
 
 # %%
 # observed flow
-Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(
+    "examples/hydrological-model/data/lumped_model/Qout_c.csv", fmt="%Y-%m-%d"
+)
 ### Routing
 Route = 1
 # RoutingFn=Routing.triangular_routing_2
@@ -70,39 +72,39 @@ print("KGE= " + str(round(Metrics["KGE"], 2)))
 print("WB= " + str(round(Metrics["WB"], 2)))
 # %%
 """
-first the SensitivityAnalysis method takes 4 arguments :
-    1-parameters:previous obtained parameters
-    2-LB: upper bound
-    3-UB: lower bound
-    4-wrapper: defined function contains the function you want to run with different
-        parameters and the metric function you want to assess the first function
-        based on it.
+the Sensitivity class takes 4 main arguments:
+    1-parameter: previously obtained parameters
+    2-lower_bound: lower bound
+    3-upper_bound: upper bound
+    4-function: defined function containing the function you want to run with
+        different parameters and the metric function you want to assess the first
+        function based on it.
 
 ## Wrapper function definition
-    define the function to the OAT sesitivity wrapper and put the parameters argument
+    define the function for the OAT sensitivity wrapper and put the parameters argument
     at the first position, and then list all the other arguments required for your function
 
-    the following defined function contains two inner function that calculates discharge
-    for lumped HBV model and calculates the RMSE of the calculated discharge.
+    the following defined function contains two inner functions that calculate discharge
+    for the lumped HBV model and the RMSE of the calculated discharge.
 
-    the first function "RUN.runLumped" takes some arguments we need to pass it through
-    the SensitivityAnalysis method [ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn]
+    the first function "Run.runLumped" takes some arguments we need to pass through
+    the one_at_a_time method [ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn]
     with the same order in the defined function "wrapper"
 
     the second function is RMSE takes the calculated discharge from the first function
     and measured discharge array
 
     to define the argument of the "wrapper" function
-    1- the random parameters valiable i=of the first function should be the first argument
+    1- the random parameters variable of the first function should be the first argument
         "wrapper(Randpar)"
     2- the first function arguments with the same order (except that the parameter
-            argument is taken out and placed at the first potition step-1)
+            argument is taken out and placed at the first position step-1)
     3- list the argument of the second function with the same order that the second
     function takes them
 
-SensitivityAnalysis method returns a dictionary with the name of the parameters
-as keys,
-Each parameter has a disctionary with two keys 0: list of parameters woth relative values
+the one_at_a_time method stores a dictionary in `Sen.sen` with the name of the
+parameters as keys.
+Each parameter has a dictionary with two keys 0: list of parameters with relative values
 1: list of parameter values
 """
 
@@ -133,34 +135,31 @@ elif Type == 2:
     fn = WrapperType2
 
 
-Positions = []
-
-
-Sen = SA(parameters, Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
-Sen.OAT(Route, RoutingFn, Qobs)
+Sen = SA(parameters, Coello.LB, Coello.UB, fn, n_values=5, return_values=Type)
+Sen.one_at_a_time(Route, RoutingFn, Qobs)
 # %%
 From = ""
 To = ""
 if Type == 1:
-    fig, ax1 = Sen.Sobol(
-        RealValues=False,
-        Title="Sensitivity Analysis of the rmse to models parameters",
+    fig, ax1 = Sen.sobol(
+        real_values=False,
+        title="Sensitivity Analysis of the rmse to models parameters",
         xlabel="Maxbas Values",
         ylabel="rmse",
-        From=From,
-        To=To,
+        plotting_from=From,
+        plotting_to=To,
         xlabel2="Time",
         ylabel2="Discharge m3/s",
         spaces=[None, None, None, None, None, None],
     )
 elif Type == 2:
-    fig, (ax1, ax2) = Sen.Sobol(
-        RealValues=False,
-        Title="Sensitivity Analysis of the rmse to models parameters",
+    fig, (ax1, ax2) = Sen.sobol(
+        real_values=False,
+        title="Sensitivity Analysis of the rmse to models parameters",
         xlabel="Maxbas Values",
         ylabel="rmse",
-        From=From,
-        To=To,
+        plotting_from=From,
+        plotting_to=To,
         xlabel2="Time",
         ylabel2="Discharge m3/s",
         spaces=[None, None, None, None, None, None],

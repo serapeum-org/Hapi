@@ -12,6 +12,7 @@ The Lake class provides similar functionality for simulating a lake
 as a lumped model using a rating curve, where the lake and its
 upstream sub-catchments are treated as one lumped model.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -28,9 +29,8 @@ import pandas as pd
 import statista.descriptors as metrics
 from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
-from osgeo import gdal
 from pyramids.dataset import Dataset
-from pyramids.multidataset import MultiDataset as Datacube
+from pyramids.dataset import DatasetCollection as Datacube
 
 from hapi.dem import DEM
 
@@ -140,9 +140,9 @@ class Catchment:
         self.CellSize: float | None = None
         self.px_area: float | None = None
         self.px_tot_area: float | None = None
-        self.FlowDirArr: np.ndarray | None = None
+        self.flow_dir_arr: np.ndarray | None = None
         self.FDT: dict | None = None
-        self.FPLArr: np.ndarray | None = None
+        self.fpl_arr: np.ndarray | None = None
         self.DEM: np.ndarray | None = None
         self.BankfullDepth: np.ndarray | None = None
         self.RiverWidth: np.ndarray | None = None
@@ -154,6 +154,7 @@ class Catchment:
         self.qlz_translated: np.ndarray | None = None
         self.state_variables: np.ndarray | None = None
         self.anim: matplotlib.animation.FuncAnimation | None = None
+        self._animation_glyph: ArrayGlyph | None = None
         self.quz: np.ndarray | None = None
         self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
@@ -295,9 +296,9 @@ class Catchment:
             )
             cube.open_multi_dataset()
             self.Temp = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(
-                self.Temp, np.ndarray
-            ), "array should be of type numpy array"
+            assert isinstance(self.Temp, np.ndarray), (
+                "array should be of type numpy array"
+            )
 
             if ll_temp is None:
                 self.ll_temp = np.zeros_like(self.Temp, dtype=np.float32)
@@ -369,9 +370,9 @@ class Catchment:
             )
             cube.open_multi_dataset()
             self.ET = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(
-                self.ET, np.ndarray
-            ), "array should be of type numpy array"
+            assert isinstance(self.ET, np.ndarray), (
+                "array should be of type numpy array"
+            )
             logger.debug("Potential Evapotranspiration data are read successfully")
 
     def read_flow_acc(self, path: str):
@@ -396,19 +397,18 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert path.endswith(
-            ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
+        assert path.endswith(".tif"), (
+            "please add the extension at the end of the Flow accumulation raster path input"
+        )
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
-        flow_acc = gdal.Open(path)
-        if flow_acc is None:
-            raise FileNotFoundError(f"GDAL could not open: {path}")
-        [self.rows, self.cols] = flow_acc.ReadAsArray().shape
+        flow_acc = Dataset.read_file(path)
+        self.rows = flow_acc.rows
+        self.cols = flow_acc.columns
         # check flow accumulation input raster
-        self.NoDataValue = flow_acc.GetRasterBand(1).GetNoDataValue()
-        self.FlowAccArr = flow_acc.ReadAsArray()
+        self.NoDataValue = flow_acc.no_data_value[0]
+        self.FlowAccArr = flow_acc.read_array(band=0)
 
         # check if the flow acc array is integer convert it to float
         if self.FlowAccArr.dtype == "int":
@@ -419,8 +419,9 @@ class Catchment:
                 if math.isclose(self.FlowAccArr[i, j], self.NoDataValue, rel_tol=0.001):
                     self.FlowAccArr[i, j] = np.nan
 
-        self.no_elem = int(np.size(self.FlowAccArr[:, :]) - np.count_nonzero(
-            (self.FlowAccArr[np.isnan(self.FlowAccArr)]))
+        self.no_elem = int(
+            np.size(self.FlowAccArr[:, :])
+            - np.count_nonzero(self.FlowAccArr[np.isnan(self.FlowAccArr)])
         )
         self.acc_val = [
             int(self.FlowAccArr[i, j])
@@ -448,9 +449,8 @@ class Catchment:
         self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr))
 
         # calculate area covered by cells
-        geo_trans = (
-            flow_acc.GetGeoTransform()
-        )  # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        geo_trans = flow_acc.geotransform
         dx = np.abs(geo_trans[1]) / 1000.0  # dx in Km
         dy = np.abs(geo_trans[-1]) / 1000.0  # dy in Km
         self.CellSize = dx * 1000
@@ -487,35 +487,32 @@ class Catchment:
             )
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
-        flow_dir = gdal.Open(path)
-        if flow_dir is None:
-            raise FileNotFoundError(f"GDAL could not open: {path}")
-
-        [rows, cols] = flow_dir.ReadAsArray().shape
-        self.FlowDirArr = flow_dir.ReadAsArray().astype(float)
+        flow_dir = DEM.read_file(path)
+        rows = flow_dir.rows
+        cols = flow_dir.columns
+        self.flow_dir_arr = flow_dir.read_array(band=0).astype(float)
         # check flow direction input raster
-        fd_noval = flow_dir.GetRasterBand(1).GetNoDataValue()
+        fd_noval = flow_dir.no_data_value[0]
 
         for i in range(rows):
             for j in range(cols):
-                if math.isclose(self.FlowDirArr[i, j], fd_noval, rel_tol=0.001):
-                    self.FlowDirArr[i, j] = np.nan
+                if math.isclose(self.flow_dir_arr[i, j], fd_noval, rel_tol=0.001):
+                    self.flow_dir_arr[i, j] = np.nan
 
         fd_val = [
-            int(self.FlowDirArr[i, j])
+            int(self.flow_dir_arr[i, j])
             for i in range(rows)
             for j in range(cols)
-            if not np.isnan(self.FlowDirArr[i, j])
+            if not np.isnan(self.flow_dir_arr[i, j])
         ]
         fd_val = list(set(fd_val))
         fd_should = [1, 2, 4, 8, 16, 32, 64, 128]
-        assert all(
-            fd_val[i] in fd_should for i in range(len(fd_val))
-        ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
+        assert all(fd_val[i] in fd_should for i in range(len(fd_val))), (
+            "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
+        )
 
         # create the flow direction table
-        dem = DEM(flow_dir)
-        self.FDT = dem.flow_direction_table()
+        self.FDT = flow_dir.flow_direction_table()
         logger.debug("Flow Direction input is read successfully")
 
     def read_flow_path_length(self, path: str):
@@ -544,21 +541,21 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
-        fpl = gdal.Open(path)
-        if fpl is None:
-            raise FileNotFoundError(f"GDAL could not open: {path}")
-        [self.rows, self.cols] = fpl.ReadAsArray().shape
-        self.FPLArr = fpl.ReadAsArray()
-        self.NoDataValue = fpl.GetRasterBand(1).GetNoDataValue()
+        fpl = Dataset.read_file(path)
+        self.rows = fpl.rows
+        self.cols = fpl.columns
+        self.fpl_arr = fpl.read_array(band=0)
+        self.NoDataValue = fpl.no_data_value[0]
 
         for i in range(self.rows):
             for j in range(self.cols):
-                if math.isclose(self.FPLArr[i, j], self.NoDataValue, rel_tol=0.001):
-                    self.FPLArr[i, j] = np.nan
+                if math.isclose(self.fpl_arr[i, j], self.NoDataValue, rel_tol=0.001):
+                    self.fpl_arr[i, j] = np.nan
         # check flow accumulation input raster
-        self.no_elem = int(np.size(self.FPLArr[:, :]) - np.count_nonzero(
-            (self.FPLArr[np.isnan(self.FPLArr)])
-        ))
+        self.no_elem = int(
+            np.size(self.fpl_arr[:, :])
+            - np.count_nonzero(self.fpl_arr[np.isnan(self.fpl_arr)])
+        )
 
         logger.debug("Flow path length input is read successfully")
 
@@ -594,12 +591,8 @@ class Catchment:
             ("RiverRoughness", river_roughness_file),
             ("FloodPlainRoughness", floodplain_roughness_file),
         ]:
-            ds = gdal.Open(fpath)
-            if ds is None:
-                raise FileNotFoundError(
-                    f"GDAL could not open {name} file: {fpath}"
-                )
-            setattr(self, name, ds.ReadAsArray())
+            ds = Dataset.read_file(fpath)
+            setattr(self, name, ds.read_array(band=0))
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
         """Read model parameter rasters or a CSV parameter file.
@@ -710,7 +703,7 @@ class Catchment:
 
     def read_lumped_model(
         self,
-        lumped_model,
+        lumped_model: type[BaseConceptualModel],
         catchment_area: float | int,
         initial_condition: list,
         q_init=None,
@@ -718,8 +711,9 @@ class Catchment:
         """Read and set up a lumped conceptual model.
 
         Args:
-            lumped_model: A class representing the lumped conceptual
-                model (e.g., HBV).
+            lumped_model: A `BaseConceptualModel` subclass (the class
+                itself, not an instance), e.g. `HBVBergestrom92`. It is
+                instantiated and stored on `LumpedModel`.
             catchment_area (float | int): Catchment area in
                 km2.
             initial_condition (list): List of 5 initial condition
@@ -822,13 +816,8 @@ class Catchment:
                 )
         if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
-            flow_acc = gdal.Open(flow_acc_file)
-            if flow_acc is None:
-                raise FileNotFoundError(
-                    f"GDAL could not open: {flow_acc_file}"
-                )
             # calculate the nearest cell to each station
-            dataset = Dataset(flow_acc)
+            dataset = Dataset.read_file(flow_acc_file)
             loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
             self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = loc_arr
 
@@ -950,9 +939,9 @@ class Catchment:
                 `lower_bound` are not equal.
             ValueError: If `snow` is not a boolean.
         """
-        assert len(upper_bound) == len(
-            lower_bound
-        ), "the length of UB should be the same as LB"
+        assert len(upper_bound) == len(lower_bound), (
+            "the length of UB should be the same as LB"
+        )
         self.UB = np.array(upper_bound)
         self.LB = np.array(lower_bound)
 
@@ -1038,10 +1027,10 @@ class Catchment:
                         metrics.wb(q_obs, q_sim), 3
                     )
                     self.Metrics.loc["Pearson-CC", gauge_id] = round(
-                        metrics.pearson_corre(q_obs, q_sim), 3
+                        metrics.pearson_corr_coeff(q_obs, q_sim), 3
                     )
                     self.Metrics.loc["R2", gauge_id] = round(
-                        metrics.R2(q_obs, q_sim), 3
+                        metrics.r2(q_obs, q_sim), 3
                     )
         elif frame_work_1 or only_outlet:
             self.Qsim = pd.DataFrame(index=self.Index)
@@ -1214,7 +1203,10 @@ class Catchment:
 
         Creates an animation of the time series of meteorological inputs
         or model results (discharge, state variables) over the spatial
-        domain.
+        domain. Cells outside the catchment domain are masked on a copy of
+        the data, so the model arrays stored on the instance are never
+        modified. The animation title defaults to the selected variable's
+        name; an explicit `title=` keyword argument overrides it.
 
         Args:
             start (str): Starting date for the animation.
@@ -1230,16 +1222,18 @@ class Catchment:
             gauges (bool, optional): Whether to plot gauge locations
                 on the animation. Default is False.
             **kwargs: Additional keyword arguments passed to
-                ``ArrayGlyph.animate``. Common options include:
-                TicksSpacing (int), Figsize (tuple),
-                PlotNumbers (bool), NumSize (int), title (str),
-                title_size (int), Backgroundcolorthreshold (float),
-                textcolors (tuple), cbarlabel (str),
-                cbarlabelsize (int), Cbarlength (float),
-                Interval (int), cmap (str), Textloc (list),
-                Gaugecolor (str), Gaugesize (int),
-                ColorScale (int), orientation (str),
-                rotation (float), Points (DataFrame).
+                `ArrayGlyph.animate`. Common options include:
+                title (str), interval (int),
+                cell_value_text_colors (tuple),
+                frame_label (cleopatra `FrameLabel`),
+                title_size (int), cmap (str), vmin (float),
+                vmax (float), color_scale (str), ticks_spacing (int),
+                cbar_label (str), cbar_label_size (int),
+                cbar_length (float), cbar_orientation (str),
+                display_cell_value (bool), num_size (int),
+                background_color_threshold (float), figsize (tuple).
+                See `cleopatra.array_glyph.ArrayGlyph.animate` for
+                the full list.
 
         Returns:
             matplotlib.animation.FuncAnimation: The animation object.
@@ -1253,68 +1247,88 @@ class Catchment:
         start_i = np.where(self.Index == start)[0][0]
         end_i = np.where(self.Index == end)[0][0]
 
-        if 1 > option > 11:
-            raise ValueError("Plotting options are from 1 to 11")
-
         if option == 1:
-            self.Qtot[self.FlowAccArr == self.NoDataValue, :] = np.nan
             arr = self.Qtot[:, :, start_i:end_i]
             title = "Total Discharge"
         elif option == 2:
-            self.quz_routed[self.FlowAccArr == self.NoDataValue, :] = np.nan
             arr = self.quz_routed[:, :, start_i:end_i]
             title = "Surface Flow"
         elif option == 3:
-            self.qlz_translated[self.FlowAccArr == self.NoDataValue, :] = np.nan
             arr = self.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
-            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
             arr = self.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
-            self.Prec[self.FlowAccArr == self.NoDataValue, :] = np.nan
             arr = self.Prec[:, :, start_i:end_i]
             title = "Precipitation"
         elif option == 10:
-            self.ET[self.FlowAccArr == self.NoDataValue, :] = np.nan
             arr = self.ET[:, :, start_i:end_i]
             title = "ET"
         elif option == 11:
-            self.Temp[self.FlowAccArr == self.NoDataValue, :] = np.nan
             arr = self.Temp[:, :, start_i:end_i]
             title = "Temperature"
         else:
             raise ValueError("Plotting options are from 1 to 11")
 
+        # mask the no-data cells on a copy so plotting never mutates the model
+        # result arrays stored on the instance
+        arr = arr.copy()
+        arr[np.isnan(self.FlowAccArr), :] = np.nan
+
         time = self.Index[start_i:end_i]
 
         if gauges:
-            kwargs["Points"] = self.GaugesTable
+            # animate expects a 3-column array: [value to display, cell row, cell column]
+            kwargs["points"] = self.GaugesTable[
+                ["id", "cell_row", "cell_col"]
+            ].to_numpy()
 
-        array = ArrayGlyph(arr)
-        anim = array.animate(time, title=title, **kwargs)
-        # anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
+        # animate iterates over the first dimension, so move the time axis to the front
+        array = ArrayGlyph(np.moveaxis(arr, -1, 0))
+        # the option title is a default; an explicit title= kwarg wins
+        kwargs.setdefault("title", title)
+        anim = array.animate(time, **kwargs)
 
+        self._animation_glyph = array
         self.anim = anim
 
         return anim
+
+    def save_animation(self, path: str, fps: int = 2):
+        """Save the animation created by `plot_distributed_results`.
+
+        The output format is determined by the file extension. GIF uses
+        PillowWriter; mov/avi/mp4 require FFmpeg to be installed.
+
+        Args:
+            path (str): Output file path. The extension determines the
+                format (gif, mov, avi, or mp4).
+            fps (int, optional): Frames per second. Default is 2.
+
+        Raises:
+            ValueError: If `plot_distributed_results` has not been called
+                yet, or if the file format is not supported.
+            FileNotFoundError: If a video format is requested but FFmpeg
+                is not installed.
+        """
+        if self._animation_glyph is None:
+            raise ValueError(
+                "There is no animation to save, call `plot_distributed_results` first"
+            )
+        self._animation_glyph.save_animation(path, fps=fps)
 
     def save_results(
         self,
@@ -1376,11 +1390,7 @@ class Catchment:
                     "Please enter the FlowAccPath parameter to the saveResults method"
                 )
 
-            src = gdal.Open(flow_acc_path)
-            if src is None:
-                raise FileNotFoundError(
-                    f"GDAL could not open: {flow_acc_path}"
-                )
+            src = Dataset.read_file(flow_acc_path)
 
             if prefix == "":
                 prefix = "Result_"
@@ -1412,7 +1422,7 @@ class Catchment:
                     f" The result parameter takes a value between 1 and 8, given: {result}"
                 )
 
-            cube = Datacube(Dataset(src), time_length=arr.shape[2])
+            cube = Datacube(src, time_length=arr.shape[2])
             arr = np.moveaxis(arr, -1, 0)
             cube.values = arr
             cube.to_file(names)
@@ -1530,7 +1540,7 @@ class Lake:
 
     def read_lumped_model(
         self,
-        lumped_model,
+        lumped_model: type[BaseConceptualModel],
         catchment_area,
         lake_area,
         initial_condition,

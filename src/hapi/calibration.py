@@ -5,6 +5,7 @@ with both components of the spatial representation of the hydrological
 process (conceptual model and spatial routing) to calculate the performance
 of predicted runoff at known locations based on a given performance function.
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -16,6 +17,13 @@ from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
 from hapi.wrapper import Wrapper
+
+ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
+COLUMNS_MISMATCH_ERROR = "all input data should have the same number of columns"
+OBJECTIVE_FN_ARGS_ERROR = (
+    "the objective function you have entered needs more inputs, "
+    "please enter them in a list as *args"
+)
 
 
 class Calibration(Catchment):
@@ -86,9 +94,9 @@ class Calibration(Catchment):
             AssertionError: If objective_function is not callable.
         """
         # check objective_function
-        assert callable(
-            objective_function
-        ), "The Objective function should be a function"
+        assert callable(objective_function), (
+            "The Objective function should be a function"
+        )
         self.objective_function = objective_function
 
         if args is None:
@@ -162,7 +170,7 @@ class Calibration(Catchment):
         this method:
 
             - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-            - ``FlowDirArr``: Flow direction array.
+            - ``flow_dir_arr``: Flow direction array.
             - ``rows``, ``cols``: Grid dimensions.
             - ``LB``, ``UB``: Lower and upper parameter bounds.
             - ``objective_function``: Objective function for evaluation.
@@ -196,29 +204,28 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows, fd_cols] = self.FlowDirArr.shape
-        assert (
-            fd_rows == self.rows and fd_cols == self.cols
-        ), "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.flow_dir_arr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
         # input dimensions
         assert (
             np.shape(self.Prec)[0] == self.rows
             and np.shape(self.ET)[0] == self.rows
             and np.shape(self.Temp)[0] == self.rows
-        ), "all input data should have the same number of rows"
+        ), ROWS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[1] == self.cols
             and np.shape(self.ET)[1] == self.cols
             and np.shape(self.Temp)[1] == self.cols
-        ), "all input data should have the same number of columns"
+        ), COLUMNS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
         # check if all inputs are included
-        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys()
+        #     for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB']"
 
         ### optimization
 
@@ -255,10 +262,9 @@ class Calibration(Catchment):
                         g.append(2 * k * x / self.dt)
                         g.append((2 * k * (1 - x)) / self.dt)
 
-                except TypeError:  # if no of inputs less than what the function needs
-                    assert (
-                        False
-                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
+                except TypeError as e:
+                    # the objective function received fewer inputs than it needs
+                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
                 if printError != 0:
@@ -276,9 +282,7 @@ class Calibration(Catchment):
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
-            opt_prob.addVar(
-                "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
-            )
+            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
 
         opt_prob.addObj("f")
 
@@ -351,27 +355,28 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        # [fd_rows,fd_cols] = self.FlowDirArr.shape
-        # assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+        # [fd_rows,fd_cols] = self.flow_dir_arr.shape
+        # assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
         # input dimensions
         assert (
             np.shape(self.Prec)[0] == self.rows
             and np.shape(self.ET)[0] == self.rows
             and np.shape(self.Temp)[0] == self.rows
-        ), "all input data should have the same number of rows"
+        ), ROWS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[1] == self.cols
             and np.shape(self.ET)[1] == self.cols
             and np.shape(self.Temp)[1] == self.cols
-        ), "all input data should have the same number of columns"
+        ), COLUMNS_MISMATCH_ERROR
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
         # check if all inputs are included
-        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys()
+        #     for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB']"
 
         ### optimization
 
@@ -397,14 +402,12 @@ class Calibration(Catchment):
                 Wrapper.FW1(self)
                 # calculate performance of the model
                 try:
-                    # error = self.objective_function(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
                     error = self.objective_function(
                         self.QGauges, self.qout, *[self.GaugesTable]
                     )
-                except TypeError:  # if no of inputs less than what the function needs
-                    assert (
-                        False
-                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
+                except TypeError as e:
+                    # the objective function received fewer inputs than it needs
+                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
                 if printError != 0:
@@ -421,9 +424,7 @@ class Calibration(Catchment):
         # define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
-            opt_prob.addVar(
-                "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
-            )
+            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
 
         print(opt_prob)
 
@@ -516,8 +517,6 @@ class Calibration(Catchment):
         assert isinstance(ApiObjArgs, dict), "store_history should be 0 or 1"
         assert isinstance(ApiSolveArgs, dict), "history_fname should be of type string "
 
-        # assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
-
         print("Calibration starts")
 
         ### calculate the objective function
@@ -536,10 +535,9 @@ class Calibration(Catchment):
                         2 * par[-2] * par[-1] / self.dt,
                         (2 * par[-2] * (1 - par[-1])) / self.dt,
                     ]
-                except TypeError:  # if no of inputs less than what the function needs
-                    assert (
-                        False
-                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
+                except TypeError as e:
+                    # the objective function received fewer inputs than it needs
+                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 if printError != 0:
                     print(
@@ -559,7 +557,7 @@ class Calibration(Catchment):
         if InitialValues != []:
             for i in range(len(self.LB)):
                 opt_prob.addVar(
-                    "x{0}".format(i),
+                    f"x{i}",
                     type="c",
                     lower=self.LB[i],
                     upper=self.UB[i],
@@ -567,9 +565,7 @@ class Calibration(Catchment):
                 )
         else:
             for i in range(len(self.LB)):
-                opt_prob.addVar(
-                    "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
-                )
+                opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
 
         opt_prob.addObj("f")
 
