@@ -965,6 +965,10 @@ class Catchment:
         gauge is mapped onto the raster grid and ``cell_row`` / ``cell_col`` columns are
         appended.
 
+        ``start`` and ``end`` columns, if present, are parsed with ``fmt`` into
+        ``datetime64`` columns. The two are handled independently, so a table carrying
+        only one of them is fine.
+
         Args:
             path (str): Path to the gauge file (CSV or GeoJSON).
             flow_acc_file (str, optional): Path to the flow
@@ -972,6 +976,9 @@ class Catchment:
                 array indices. Default is "".
             fmt (str, optional): Date format for start/end columns
                 in the gauge table. Default is "%Y-%m-%d".
+
+        Raises:
+            ValueError: A ``start`` or ``end`` value does not match ``fmt``.
 
         Examples:
             - Read a GeoJSON gauge file and inspect the loaded stations:
@@ -1011,6 +1018,22 @@ class Catchment:
                 False
 
                 ```
+            - A validity period is parsed into datetime columns using ``fmt``:
+                ```python
+                >>> import os, tempfile
+                >>> import pandas as pd
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "gauges.csv")
+                >>> pd.DataFrame(
+                ...     {"id": [1], "start": ["03/04/2009"], "end": ["05/06/2011"]}
+                ... ).to_csv(path, index=False)
+                >>> model = Catchment("coello", "2009-01-01", "2009-01-10",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_gauge_table(path, fmt="%d/%m/%Y")
+                >>> model.GaugesTable.loc[0, "start"].strftime("%d %B %Y")
+                '03 April 2009'
+
+                ```
 
         See Also:
             Catchment.read_discharge_gauges: Read the observed discharge series per gauge.
@@ -1026,13 +1049,13 @@ class Catchment:
             self.GaugesTable = pd.read_csv(path)
         col_list = self.GaugesTable.columns.tolist()
 
-        if "start" in col_list:
-            for i in range(len(self.GaugesTable)):
-                self.GaugesTable.loc[i, "start"] = dt.datetime.strptime(
-                    self.GaugesTable.loc[i, "start"], fmt
-                )
-                self.GaugesTable.loc[i, "end"] = dt.datetime.strptime(
-                    self.GaugesTable.loc[i, "end"], fmt
+        # Convert whole columns rather than assigning per cell: pandas 3 string columns
+        # reject an in-place datetime write, and each column is handled independently so
+        # a table carrying only one of the two does not raise KeyError on the other.
+        for column in ("start", "end"):
+            if column in col_list:
+                self.GaugesTable[column] = pd.to_datetime(
+                    self.GaugesTable[column], format=fmt
                 )
         if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):

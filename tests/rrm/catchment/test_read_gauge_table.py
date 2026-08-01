@@ -161,16 +161,6 @@ class TestReadGaugeTable:
             "a CSV gauge table has no geometry and should not become a GeoDataFrame"
         )
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Pre-existing, unrelated to the vector-read change: pandas 3 made string "
-            "columns strict, so read_gauge_table's per-cell "
-            "`GaugesTable.loc[i, 'start'] = datetime(...)` raises TypeError on a str "
-            "column. Any gauge table carrying start/end is unreadable. Tracked as issue "
-            "18; remove this marker with the fix."
-        ),
-    )
     def test_start_and_end_columns_are_parsed_as_dates(self, catchment, tmp_path):
         """Test that ``start``/``end`` columns are converted to datetimes.
 
@@ -180,7 +170,6 @@ class TestReadGaugeTable:
         Test scenario:
             When the table carries a validity period, both columns are parsed with the
             supplied format. Covers the CSV branch, where the columns are strings on read.
-            Currently expected to fail — see the xfail reason.
         """
         path = tmp_path / "gauges_dates.csv"
         pd.DataFrame(
@@ -200,3 +189,124 @@ class TestReadGaugeTable:
         assert catchment.GaugesTable.loc[0, "end"].year == 2011, (
             f"end should parse to 2011, got {catchment.GaugesTable.loc[0, 'end']}"
         )
+
+    def test_start_and_end_become_datetime_columns(self, catchment, tmp_path):
+        """Test that the parsed columns carry a datetime dtype, not object.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The whole column is converted at once, so the result is a real
+            ``datetime64`` column rather than a column of Python objects. Downstream
+            comparisons against the model's ``Index`` rely on that.
+        """
+        path = tmp_path / "gauges_dtype.csv"
+        pd.DataFrame(
+            {
+                "id": [1, 2],
+                "start": ["2009-01-01", "2009-02-01"],
+                "end": ["2011-12-31", "2011-11-30"],
+            }
+        ).to_csv(path, index=False)
+
+        catchment.read_gauge_table(str(path))
+
+        for column in ("start", "end"):
+            assert pd.api.types.is_datetime64_any_dtype(
+                catchment.GaugesTable[column]
+            ), (
+                f"{column} should be a datetime column, got dtype "
+                f"{catchment.GaugesTable[column].dtype}"
+            )
+
+    def test_start_without_end_is_parsed(self, catchment, tmp_path):
+        """Test that a table carrying only ``start`` is handled.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The columns are now converted independently. Previously a single ``start in
+            columns`` check guarded both conversions, so a table with ``start`` but no
+            ``end`` raised ``KeyError`` on the missing column.
+        """
+        path = tmp_path / "gauges_start_only.csv"
+        pd.DataFrame({"id": [1], "start": ["2009-01-01"]}).to_csv(path, index=False)
+
+        catchment.read_gauge_table(str(path))
+
+        assert catchment.GaugesTable.loc[0, "start"].year == 2009, (
+            f"start should parse to 2009, got {catchment.GaugesTable.loc[0, 'start']}"
+        )
+        assert "end" not in catchment.GaugesTable.columns, (
+            "no end column should be invented when the source has none"
+        )
+
+    def test_custom_date_format_is_honoured(self, catchment, tmp_path):
+        """Test that ``fmt`` drives the parsing.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            A day-first table parsed with ``"%d/%m/%Y"`` must read 03/04/2009 as 3 April,
+            not 4 March — proving the format is applied rather than guessed.
+        """
+        path = tmp_path / "gauges_dayfirst.csv"
+        pd.DataFrame(
+            {"id": [1], "start": ["03/04/2009"], "end": ["05/06/2011"]}
+        ).to_csv(path, index=False)
+
+        catchment.read_gauge_table(str(path), fmt="%d/%m/%Y")
+
+        parsed = catchment.GaugesTable.loc[0, "start"]
+        assert (parsed.day, parsed.month, parsed.year) == (3, 4, 2009), (
+            f"expected 3 April 2009 under a day-first format, got {parsed}"
+        )
+
+    def test_date_not_matching_the_format_raises(self, catchment, tmp_path):
+        """Test that an unparseable date is rejected.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            A value that does not match ``fmt`` raises ``ValueError``, the same failure
+            mode the previous per-cell ``datetime.strptime`` produced.
+        """
+        path = tmp_path / "gauges_bad.csv"
+        pd.DataFrame(
+            {"id": [1], "start": ["not-a-date"], "end": ["2011-12-31"]}
+        ).to_csv(path, index=False)
+
+        with pytest.raises(ValueError, match="doesn't match format"):
+            catchment.read_gauge_table(str(path))
+
+    def test_geojson_dates_are_parsed_too(self, catchment, tmp_path):
+        """Test that the date conversion also applies on the GeoJSON branch.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The conversion runs after the format branch, so it must work on the
+            ``FeatureCollection`` a GeoJSON produces as well as on a plain DataFrame —
+            assigning a datetime column onto a GeoDataFrame must not disturb its geometry.
+        """
+        gdf = GeoDataFrame(
+            {"id": [1], "start": ["2009-01-01"], "end": ["2011-12-31"]},
+            geometry=[Point(GAUGES[0][2], GAUGES[0][3])],
+            crs="EPSG:32618",
+        )
+        path = tmp_path / "gauges_dates.geojson"
+        gdf.to_file(path, driver="GeoJSON")
+
+        catchment.read_gauge_table(str(path))
+
+        assert catchment.GaugesTable.loc[0, "start"].year == 2009, (
+            f"start should parse to 2009, got {catchment.GaugesTable.loc[0, 'start']}"
+        )
+        assert catchment.GaugesTable.geometry.iloc[0].x == pytest.approx(
+            GAUGES[0][2]
+        ), "the geometry should survive the date conversion"
