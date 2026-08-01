@@ -182,6 +182,39 @@ class TestReadFlowAcc:
             f"expected a floating dtype so NaN can be stored, got {catchment.FlowAccArr.dtype}"
         )
 
+    def test_acc_val_is_sorted_unique_python_ints(self, catchment, write_raster):
+        """Test that ``acc_val`` is a sorted, de-duplicated list of built-in ints.
+
+        Test scenario:
+            The raster repeats the value ``1`` and holds them out of order. ``acc_val``
+            must collapse duplicates, sort ascending, and yield Python ``int`` rather
+            than ``numpy.int64`` — downstream code compares it against plain lists.
+        """
+        path = write_raster(np.array([[2, 1], [1, 0]], dtype="int32"))
+
+        catchment.read_flow_acc(path)
+
+        assert catchment.acc_val == [0, 1, 2], (
+            f"expected the sorted distinct values [0, 1, 2], got {catchment.acc_val}"
+        )
+        assert all(type(value) is int for value in catchment.acc_val), (
+            f"expected built-in ints, got {[type(v).__name__ for v in catchment.acc_val]}"
+        )
+
+    def test_all_no_data_raster_raises(self, catchment, write_raster):
+        """Test the degenerate all-no-data raster.
+
+        Test scenario:
+            Every cell is the sentinel, so no accumulation values survive and the
+            max-value sanity check has nothing to take a maximum of. This documents
+            pre-existing behaviour — the same ``ValueError`` was raised before the
+            vectorisation — rather than endorsing it as a good error message.
+        """
+        path = write_raster(np.full((2, 2), NO_DATA, dtype="int32"))
+
+        with pytest.raises(ValueError, match="empty"):
+            catchment.read_flow_acc(path)
+
     def test_outlet_is_cell_of_maximum_accumulation(self, catchment, write_raster):
         """Test that the outlet is located at the maximum accumulation cell.
 
@@ -334,6 +367,23 @@ class TestReadFlowDir:
             AssertionError, match="flow direction raster should contain values"
         ):
             catchment.read_flow_dir(path)
+
+    def test_repeated_direction_codes_are_accepted(self, catchment, write_raster):
+        """Test that duplicated D8 codes validate once de-duplicated.
+
+        Test scenario:
+            All four cells share the code ``1``. Validation works on the distinct values,
+            so a raster with one repeated direction is legitimate.
+        """
+        path = write_raster(
+            np.array([[1, 1], [1, 1]], dtype="int32"), name="fd_dup.tif"
+        )
+
+        catchment.read_flow_dir(path)
+
+        assert np.unique(catchment.flow_dir_arr).tolist() == [1.0], (
+            f"expected a single distinct code, got {np.unique(catchment.flow_dir_arr).tolist()}"
+        )
 
     def test_builds_flow_direction_table(self, catchment, write_raster):
         """Test that the upstream lookup table is built for every domain cell.

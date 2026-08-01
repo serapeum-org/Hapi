@@ -385,6 +385,12 @@ class Catchment:
         ``NaN``, and every downstream attribute (``no_elem``, ``acc_val``, ``Outlet``)
         is derived from that masked array.
 
+        :attr:`acc_val` holds the distinct accumulation values inside the domain, sorted
+        ascending, as built-in ``int``. Its maximum is expected to equal the domain cell
+        count (or one less, depending on whether the outlet is counted); a mismatch is
+        logged at DEBUG rather than raised, since some upstream tools number cells from
+        one.
+
         Args:
             path (str): Path to the flow accumulation raster file
                 (must include the raster name and .tif extension).
@@ -393,6 +399,8 @@ class Catchment:
             TypeError: If `path` is not a string.
             AssertionError: If the path does not exist or does not
                 end with ".tif".
+            ValueError: If every cell is no-data, so no accumulation values remain to
+                take a maximum of.
 
         Examples:
             - Read a small accumulation raster and inspect the derived domain
@@ -417,6 +425,8 @@ class Catchment:
                 16.0
                 >>> bool(np.isnan(model.FlowAccArr[1, 1]))
                 True
+                >>> model.acc_val
+                [0, 1, 2]
 
                 ```
             - A real value close to the sentinel survives. ``-9990`` sits within 0.1% of
@@ -477,14 +487,11 @@ class Catchment:
         # is_no_data's default rel. tolerance, which masks values within 0.1% of the
         # sentinel -- the defect this branch removed.
         self.no_elem = int(np.count_nonzero(~np.isnan(self.FlowAccArr)))
-        self.acc_val = [
-            int(self.FlowAccArr[i, j])
-            for i in range(self.rows)
-            for j in range(self.cols)
-            if not np.isnan(self.FlowAccArr[i, j])
-        ]
-        self.acc_val = list(set(self.acc_val))
-        self.acc_val.sort()
+        # np.unique already returns sorted, de-duplicated values, so it replaces the
+        # per-cell comprehension plus set() plus sort().
+        self.acc_val = (
+            np.unique(self.FlowAccArr[~np.isnan(self.FlowAccArr)]).astype(int).tolist()
+        )
         acc_val_mx = max(self.acc_val)
 
         if not (acc_val_mx == self.no_elem or acc_val_mx == self.no_elem - 1):
@@ -524,9 +531,10 @@ class Catchment:
         sits close to the sentinel is therefore no longer swallowed as no-data — it
         reaches the D8 check and is rejected.
 
-        The surviving codes are converted into an upstream lookup table
-        (:attr:`FDT`), keyed ``"row,col"``, mapping each cell to the cells draining
-        directly into it.
+        Validation runs on the *distinct* surviving codes, so a raster in which every
+        cell shares one direction is legitimate. The surviving codes are converted into
+        an upstream lookup table (:attr:`FDT`), keyed ``"row,col"``, mapping each cell to
+        the cells draining directly into it.
 
         Args:
             path (str): Path to the flow direction raster file (must
@@ -598,22 +606,14 @@ class Catchment:
         # check whether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         flow_dir = DEM.read_file(path)
-        rows = flow_dir.rows
-        cols = flow_dir.columns
         # No-data masking is delegated to pyramids (see read_flow_acc).
         self.flow_dir_arr = np.ma.filled(
             flow_dir.read_array(band=0, masked=True).astype(float), np.nan
         )
 
-        fd_val = [
-            int(self.flow_dir_arr[i, j])
-            for i in range(rows)
-            for j in range(cols)
-            if not np.isnan(self.flow_dir_arr[i, j])
-        ]
-        fd_val = list(set(fd_val))
-        fd_should = [1, 2, 4, 8, 16, 32, 64, 128]
-        assert all(fd_val[i] in fd_should for i in range(len(fd_val))), (
+        fd_val = np.unique(self.flow_dir_arr[~np.isnan(self.flow_dir_arr)]).astype(int)
+        fd_should = {1, 2, 4, 8, 16, 32, 64, 128}
+        assert set(fd_val.tolist()) <= fd_should, (
             "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
         )
 
