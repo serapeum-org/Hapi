@@ -1323,49 +1323,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
+  <a href="#200-unreleased" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unreleased
+        2.0.0 (Unreleased)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+    <nav class="md-nav" aria-label="2.0.0 (Unreleased)">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Breaking Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixed
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#dev" class="md-nav__link">
@@ -1517,49 +1484,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
+  <a href="#200-unreleased" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unreleased
+        2.0.0 (Unreleased)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+    <nav class="md-nav" aria-label="2.0.0 (Unreleased)">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Breaking Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixed
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#dev" class="md-nav__link">
@@ -1710,49 +1644,7 @@
 
 
 <h1 id="change-log"><a class="toclink" href="#change-log">Change Log</a><a class="headerlink" href="#change-log" title="Permanent link">#</a></h1>
-<h2 id="unreleased"><a class="toclink" href="#unreleased">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">#</a></h2>
-<h3 id="breaking-changes"><a class="toclink" href="#breaking-changes">Breaking Changes</a><a class="headerlink" href="#breaking-changes" title="Permanent link">#</a></h3>
-<ul>
-<li>Remove all direct <code>gdal</code>/<code>osgeo</code> usage from the package in favour of the pyramids <code>Dataset</code> API:</li>
-<li><code>Parameters</code> (spatial parameter distribution) now requires a pyramids <code>Dataset</code> instead of a
-    <code>gdal.Dataset</code> and raises <code>TypeError</code> otherwise.</li>
-<li><code>DistributedRRM.Dist_HBV2</code> and <code>Parameters.hru_hand</code> take pyramids <code>Dataset</code> objects.</li>
-<li><code>Catchment.plot_distributed_results</code> forwards the cleopatra <code>ArrayGlyph.animate</code> keyword
-  arguments (<code>figsize</code>, <code>display_cell_value</code>, <code>ticks_spacing</code>, <code>interval</code>, <code>frame_label</code>,
-  <code>cell_value_text_colors</code>, <code>color_scale="linear"|"power"|…</code>) — the old CamelCase kwargs
-  (<code>Figsize</code>, <code>PlotNumbers</code>, <code>TicksSpacing</code>, <code>Gaugecolor</code>, <code>IDcolor</code>, <code>ColorScale=1</code>, …) are no
-  longer accepted.</li>
-<li><code>Catchment.save_animation(path, fps=2)</code> replaces the old
-  <code>save_animation(video_format=, path=, save_frames=)</code> signature; the format is inferred from the
-  file extension.</li>
-<li>Dependency floors raised: <code>pyramids-gis&gt;=0.46.0</code>, <code>cleopatra&gt;=0.26.1</code>, <code>statista&gt;=0.8.0</code>,
-  <code>pandas&gt;=3.0.0</code>, <code>scipy&gt;=1.17.0</code>, <code>matplotlib&gt;=3.11.0</code>. The direct conda <code>gdal</code> pin is gone —
-  GDAL is vendored inside the pyramids-gis wheel.</li>
-<li><code>dev</code> and <code>docs</code> are PEP 735 <code>[dependency-groups]</code> and are no longer installable as pip extras
-  (<code>pip install hapi-nile[dev]</code>).</li>
-<li><code>HBV.simulate</code> now takes its arguments in the <code>BaseConceptualModel</code> order
-  (<code>prec, temp, et, ll_temp, par, init_st, q_init, snow</code>) — previously <code>par</code> came before <code>ll_temp</code>,
-  which also made <code>HBV</code> unusable through <code>Wrapper.Lumped</code>'s positional call.</li>
-<li>Attributes renamed to snake_case: <code>Catchment.FlowDirArr</code> → <code>flow_dir_arr</code>,
-  <code>Catchment.FPLArr</code> → <code>fpl_arr</code>, and <code>Parameters.raster_A</code> → <code>raster_array</code>.</li>
-</ul>
-<h3 id="dependencies"><a class="toclink" href="#dependencies">Dependencies</a><a class="headerlink" href="#dependencies" title="Permanent link">#</a></h3>
-<ul>
-<li>Migrate to pyramids-gis 0.46 (<code>MultiDataset</code> → <code>DatasetCollection</code>, exact band statistics,
-  <code>align</code>/<code>crop</code> <code>inplace=</code> semantics) and cleopatra 0.26 (first-axis animation, <code>points</code> arrays,
-  <code>ArrayGlyph.save_animation</code>).</li>
-<li>Migrate to statista 0.8 (<code>pearson_corr_coeff</code>, <code>r2</code>, <code>Sensitivity.one_at_a_time</code>/<code>sobol</code>).</li>
-<li>Replace black + isort + flake8 + pydocstyle with ruff; add bandit, gitleaks, checkov, nbstripout,
-  shellcheck, package-wide mypy, a coverage floor, and a pixi lock staleness gate to pre-commit.</li>
-</ul>
-<h3 id="fixed"><a class="toclink" href="#fixed">Fixed</a><a class="headerlink" href="#fixed" title="Permanent link">#</a></h3>
-<ul>
-<li>Fix the no-data masks in <code>plot_distributed_results</code> (<code>np.isnan</code> instead of comparing against the
-  no-data value, which never matched after <code>read_flow_acc</code> converts no-data cells to NaN); the
-  masking now happens on a copy, so plotting no longer mutates the model result arrays.</li>
-<li>Fix <code>Parameters.hru_hand</code>: river cells are their own nearest drainage (HAND = 0), and the
-  flow-tracing no longer crashes on the removed legacy <code>dem = dem(flow_direction)</code> call.</li>
-</ul>
+<h2 id="200-unreleased"><a class="toclink" href="#200-unreleased">2.0.0 (Unreleased)</a><a class="headerlink" href="#200-unreleased" title="Permanent link">#</a></h2>
 <h3 id="dev"><a class="toclink" href="#dev">Dev</a><a class="headerlink" href="#dev" title="Permanent link">#</a></h3>
 <ul>
 <li>Add conda/pypi workflow</li>
