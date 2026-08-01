@@ -71,9 +71,7 @@ def test_plot_state_variable(coello_animated: Catchment):
         "2009-01-01", "2009-01-09", option=5
     )
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
-    assert np.array_equal(
-        before, coello_animated.state_variables, equal_nan=True
-    )
+    assert np.array_equal(before, coello_animated.state_variables, equal_nan=True)
 
 
 @pytest.mark.plot
@@ -88,9 +86,7 @@ def test_plot_title_override(coello_animated: Catchment):
 @pytest.mark.plot
 def test_save_animation_gif(coello_animated: Catchment, tmp_path):
     """save_animation writes a non-empty gif after plotting."""
-    coello_animated.plot_distributed_results(
-        "2009-01-01", "2009-01-09", option=9
-    )
+    coello_animated.plot_distributed_results("2009-01-01", "2009-01-09", option=9)
     out = tmp_path / "anim.gif"
     coello_animated.save_animation(str(out), fps=2)
     assert out.exists()

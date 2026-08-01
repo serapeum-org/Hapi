@@ -18,7 +18,6 @@ from Oasis.optimization import Optimization
 from hapi.catchment import Catchment
 from hapi.wrapper import Wrapper
 
-
 ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
 COLUMNS_MISMATCH_ERROR = "all input data should have the same number of columns"
 OBJECTIVE_FN_ARGS_ERROR = (
@@ -206,9 +205,7 @@ class Calibration(Catchment):
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            ROWS_MISMATCH_ERROR
-        )
+        assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
         # input dimensions
         assert (
