@@ -2011,7 +2011,12 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="normal">417</span>
 <span class="normal">418</span>
 <span class="normal">419</span>
-<span class="normal">420</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Rainfall-runoff inputs preparation for distributed hydrological models.</span>
 
 <span class="sd">    The Inputs class provides methods to prepare meteorological and parameter</span>
@@ -2122,7 +2127,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
         <span class="n">cube</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract upper and lower parameter boundaries for a catchment.</span>
 
 <span class="sd">        Reads the global maximum and minimum HBV parameter rasters from</span>
@@ -2135,9 +2140,10 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="sd">        k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            basin: A GeoDataFrame containing the catchment polygon. Must</span>
-<span class="sd">                contain exactly one row; merge all polygons first if the</span>
-<span class="sd">                shapefile has multiple features.</span>
+<span class="sd">            basin: The catchment polygon, as a</span>
+<span class="sd">                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is</span>
+<span class="sd">                accepted too and is wrapped on the way in. Must contain exactly one row;</span>
+<span class="sd">                merge all polygons first if the shapefile has multiple features.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            pandas.DataFrame: A DataFrame indexed by parameter name with</span>
@@ -2160,7 +2166,9 @@ alignment (coordinate system, rows, columns, resolution).</p>
             <span class="p">)</span>
 
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
-        <span class="n">basin</span> <span class="o">=</span> <span class="n">basin</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="c1"># Wrap on the way in so a plain GeoDataFrame is accepted as readily as a</span>
+        <span class="c1"># FeatureCollection; the constructor is a no-op for one that is already wrapped.</span>
+        <span class="n">basin</span> <span class="o">=</span> <span class="n">FeatureCollection</span><span class="p">(</span><span class="n">basin</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
         <span class="c1"># max values</span>
         <span class="n">ub</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -2185,7 +2193,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">as_raster</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">save_to</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -2211,9 +2219,11 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="sd">        k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            gdf: A GeoDataFrame of the catchment polygon. Must contain</span>
-<span class="sd">                one row; merge all polygons first if the shapefile has</span>
-<span class="sd">                multiple features. Can be None when ``as_raster`` is True.</span>
+<span class="sd">            gdf: The catchment polygon, as a</span>
+<span class="sd">                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is</span>
+<span class="sd">                accepted too and is wrapped on the way in. Must contain one row; merge</span>
+<span class="sd">                all polygons first if the shapefile has multiple features. Ignored (and</span>
+<span class="sd">                may be ``None``) when ``as_raster`` is True.</span>
 <span class="sd">            scenario: Name of the parameter set. One of ``&quot;1&quot;`` through</span>
 <span class="sd">                ``&quot;10&quot;``, ``&quot;avg&quot;``, ``&quot;max&quot;``, or ``&quot;min&quot;``.</span>
 <span class="sd">            as_raster: If True, save aligned parameter rasters to</span>
@@ -2239,7 +2249,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">as_raster</span><span class="p">:</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameters_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">PARAMETERS_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.tif&quot;</span><span class="p">)</span>
-            <span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>  <span class="c1"># type: ignore[union-attr]</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">FeatureCollection</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
             <span class="n">stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">PARAMETERS_LIST</span><span class="p">)):</span>
@@ -2722,12 +2732,7 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
 <span class="normal">300</span>
@@ -2826,7 +2831,12 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 <span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
-<span class="normal">396</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -2946,7 +2956,7 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 
 
 <h4 id="hapi.inputs.Inputs.extract_parameters" class="doc doc-heading"><a href="#hapi.inputs.Inputs.extract_parameters" class="toclink">
-            <code class="highlight language-python"><span class="n">extract_parameters</span><span class="p">(</span><span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">as_raster</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">save_to</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">extract_parameters</span><span class="p">(</span><span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">as_raster</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">save_to</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 </a><a href="#hapi.inputs.Inputs.extract_parameters" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -2990,13 +3000,15 @@ k2, uzl, perc, maxbas, K_muskingum, x_muskingum</code>.</p>
                 <code>gdf</code>
             </td>
             <td>
-                  <code><span title="geopandas.GeoDataFrame">GeoDataFrame</span> | <span title="str">str</span></code>
+                  <code><span title="pyramids.feature.FeatureCollection">FeatureCollection</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A GeoDataFrame of the catchment polygon. Must contain
-one row; merge all polygons first if the shapefile has
-multiple features. Can be None when <code>as_raster</code> is True.</p>
+                <p>The catchment polygon, as a
+:class:<code>~pyramids.feature.FeatureCollection</code>. Any <code>GeoDataFrame</code> is
+accepted too and is wrapped on the way in. Must contain one row; merge
+all polygons first if the shapefile has multiple features. Ignored (and
+may be <code>None</code>) when <code>as_raster</code> is True.</p>
               </div>
             </td>
             <td>
@@ -3121,10 +3133,7 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
 <span class="normal">227</span>
@@ -3190,9 +3199,14 @@ exist.</p>
 <span class="normal">287</span>
 <span class="normal">288</span>
 <span class="normal">289</span>
-<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">as_raster</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">save_to</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -3218,9 +3232,11 @@ exist.</p>
 <span class="sd">    k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        gdf: A GeoDataFrame of the catchment polygon. Must contain</span>
-<span class="sd">            one row; merge all polygons first if the shapefile has</span>
-<span class="sd">            multiple features. Can be None when ``as_raster`` is True.</span>
+<span class="sd">        gdf: The catchment polygon, as a</span>
+<span class="sd">            :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is</span>
+<span class="sd">            accepted too and is wrapped on the way in. Must contain one row; merge</span>
+<span class="sd">            all polygons first if the shapefile has multiple features. Ignored (and</span>
+<span class="sd">            may be ``None``) when ``as_raster`` is True.</span>
 <span class="sd">        scenario: Name of the parameter set. One of ``&quot;1&quot;`` through</span>
 <span class="sd">            ``&quot;10&quot;``, ``&quot;avg&quot;``, ``&quot;max&quot;``, or ``&quot;min&quot;``.</span>
 <span class="sd">        as_raster: If True, save aligned parameter rasters to</span>
@@ -3246,7 +3262,7 @@ exist.</p>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">as_raster</span><span class="p">:</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameters_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">PARAMETERS_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.tif&quot;</span><span class="p">)</span>
-        <span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>  <span class="c1"># type: ignore[union-attr]</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">FeatureCollection</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
         <span class="n">stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">PARAMETERS_LIST</span><span class="p">)):</span>
@@ -3275,7 +3291,7 @@ exist.</p>
 
 
 <h4 id="hapi.inputs.Inputs.extract_parameters_boundaries" class="doc doc-heading"><a href="#hapi.inputs.Inputs.extract_parameters_boundaries" class="toclink">
-            <code class="highlight language-python"><span class="n">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
@@ -3312,13 +3328,14 @@ k2, uzl, perc, maxbas, K_muskingum, x_muskingum</code>.</p>
                 <code>basin</code>
             </td>
             <td>
-                  <code><span title="geopandas.GeoDataFrame">GeoDataFrame</span></code>
+                  <code><span title="pyramids.feature.FeatureCollection">FeatureCollection</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A GeoDataFrame containing the catchment polygon. Must
-contain exactly one row; merge all polygons first if the
-shapefile has multiple features.</p>
+                <p>The catchment polygon, as a
+:class:<code>~pyramids.feature.FeatureCollection</code>. Any <code>GeoDataFrame</code> is
+accepted too and is wrapped on the way in. Must contain exactly one row;
+merge all polygons first if the shapefile has multiple features.</p>
               </div>
             </td>
             <td>
@@ -3449,8 +3466,11 @@ not set.</p>
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
-<span class="normal">219</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">):</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract upper and lower parameter boundaries for a catchment.</span>
 
 <span class="sd">    Reads the global maximum and minimum HBV parameter rasters from</span>
@@ -3463,9 +3483,10 @@ not set.</p>
 <span class="sd">    k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        basin: A GeoDataFrame containing the catchment polygon. Must</span>
-<span class="sd">            contain exactly one row; merge all polygons first if the</span>
-<span class="sd">            shapefile has multiple features.</span>
+<span class="sd">        basin: The catchment polygon, as a</span>
+<span class="sd">            :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is</span>
+<span class="sd">            accepted too and is wrapped on the way in. Must contain exactly one row;</span>
+<span class="sd">            merge all polygons first if the shapefile has multiple features.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        pandas.DataFrame: A DataFrame indexed by parameter name with</span>
@@ -3488,7 +3509,9 @@ not set.</p>
         <span class="p">)</span>
 
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
-    <span class="n">basin</span> <span class="o">=</span> <span class="n">basin</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="c1"># Wrap on the way in so a plain GeoDataFrame is accepted as readily as a</span>
+    <span class="c1"># FeatureCollection; the constructor is a no-op for one that is already wrapped.</span>
+    <span class="n">basin</span> <span class="o">=</span> <span class="n">FeatureCollection</span><span class="p">(</span><span class="n">basin</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
     <span class="c1"># max values</span>
     <span class="n">ub</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>

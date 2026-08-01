@@ -4417,11 +4417,11 @@ class to run the model.</p>
 <span class="sd">            - Read a GeoJSON gauge file and inspect the loaded stations:</span>
 <span class="sd">                ```python</span>
 <span class="sd">                &gt;&gt;&gt; import os, tempfile</span>
-<span class="sd">                &gt;&gt;&gt; from geopandas import GeoDataFrame</span>
+<span class="sd">                &gt;&gt;&gt; from pyramids.feature import FeatureCollection</span>
 <span class="sd">                &gt;&gt;&gt; from shapely.geometry import Point</span>
 <span class="sd">                &gt;&gt;&gt; from hapi.catchment import Catchment</span>
 <span class="sd">                &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), &quot;gauges.geojson&quot;)</span>
-<span class="sd">                &gt;&gt;&gt; GeoDataFrame(</span>
+<span class="sd">                &gt;&gt;&gt; FeatureCollection(</span>
 <span class="sd">                ...     {&quot;id&quot;: [1, 2], &quot;name&quot;: [&quot;Station 1&quot;, &quot;Station 2&quot;]},</span>
 <span class="sd">                ...     geometry=[Point(454795.7, 503143.3), Point(443847.6, 481850.7)],</span>
 <span class="sd">                ...     crs=&quot;EPSG:32618&quot;,</span>
@@ -8903,11 +8903,11 @@ in the gauge table. Default is "%Y-%m-%d".</p>
     <ul>
 <li>Read a GeoJSON gauge file and inspect the loaded stations:
     <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoDataFrame</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.feature</span><span class="w"> </span><span class="kn">import</span> <span class="n">FeatureCollection</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">&quot;gauges.geojson&quot;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">GeoDataFrame</span><span class="p">(</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">FeatureCollection</span><span class="p">(</span>
 <span class="o">...</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Station 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Station 2&quot;</span><span class="p">]},</span>
 <span class="o">...</span>     <span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">Point</span><span class="p">(</span><span class="mf">454795.7</span><span class="p">,</span> <span class="mf">503143.3</span><span class="p">),</span> <span class="n">Point</span><span class="p">(</span><span class="mf">443847.6</span><span class="p">,</span> <span class="mf">481850.7</span><span class="p">)],</span>
 <span class="o">...</span>     <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;EPSG:32618&quot;</span><span class="p">,</span>
@@ -9120,11 +9120,11 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 <span class="sd">        - Read a GeoJSON gauge file and inspect the loaded stations:</span>
 <span class="sd">            ```python</span>
 <span class="sd">            &gt;&gt;&gt; import os, tempfile</span>
-<span class="sd">            &gt;&gt;&gt; from geopandas import GeoDataFrame</span>
+<span class="sd">            &gt;&gt;&gt; from pyramids.feature import FeatureCollection</span>
 <span class="sd">            &gt;&gt;&gt; from shapely.geometry import Point</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.catchment import Catchment</span>
 <span class="sd">            &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), &quot;gauges.geojson&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; GeoDataFrame(</span>
+<span class="sd">            &gt;&gt;&gt; FeatureCollection(</span>
 <span class="sd">            ...     {&quot;id&quot;: [1, 2], &quot;name&quot;: [&quot;Station 1&quot;, &quot;Station 2&quot;]},</span>
 <span class="sd">            ...     geometry=[Point(454795.7, 503143.3), Point(443847.6, 481850.7)],</span>
 <span class="sd">            ...     crs=&quot;EPSG:32618&quot;,</span>
