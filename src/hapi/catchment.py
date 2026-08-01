@@ -472,10 +472,11 @@ class Catchment:
             flow_acc.read_array(band=0, masked=True).astype(float), np.nan
         )
 
-        self.no_elem = int(
-            np.size(self.FlowAccArr[:, :])
-            - np.count_nonzero(self.FlowAccArr[np.isnan(self.FlowAccArr)])
-        )
+        # Count the cells the pyramids mask left intact. Deliberately not
+        # Dataset.count_domain_cells(): that re-reads the raster and compares with
+        # is_no_data's default rel. tolerance, which masks values within 0.1% of the
+        # sentinel -- the defect this branch removed.
+        self.no_elem = int(np.count_nonzero(~np.isnan(self.FlowAccArr)))
         self.acc_val = [
             int(self.FlowAccArr[i, j])
             for i in range(self.rows)
@@ -510,7 +511,6 @@ class Catchment:
 
         # area of the cell
         self.px_area = dx * dy
-        # no_cells=np.size(raster[:,:])-np.count_nonzero(raster[raster==no_val])
         self.px_tot_area = self.no_elem * self.px_area  # total area of pixels
 
         logger.debug("Flow Accmulation input is read successfully")
@@ -705,10 +705,8 @@ class Catchment:
         )
         self.NoDataValue = fpl.no_data_value[0]
         # check flow accumulation input raster
-        self.no_elem = int(
-            np.size(self.fpl_arr[:, :])
-            - np.count_nonzero(self.fpl_arr[np.isnan(self.fpl_arr)])
-        )
+        # Count the cells the pyramids mask left intact (see read_flow_acc).
+        self.no_elem = int(np.count_nonzero(~np.isnan(self.fpl_arr)))
 
         logger.debug("Flow path length input is read successfully")
 

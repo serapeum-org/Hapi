@@ -106,7 +106,7 @@ class Parameters:
                 ...     no_data_value=-9999,
                 ... )
                 >>> distributor = Parameters(raster, 12)
-                >>> int(distributor.no_elem)
+                >>> distributor.no_elem
                 3
                 >>> distributor.Par2d.shape
                 (12, 3)
@@ -126,7 +126,7 @@ class Parameters:
                 ...     no_data_value=-9999,
                 ... )
                 >>> distributor = Parameters(raster, 12)
-                >>> int(distributor.no_elem)
+                >>> distributor.no_elem
                 4
                 >>> float(distributor.raster_array[1, 1])
                 -9990.0
@@ -192,9 +192,9 @@ class Parameters:
             )
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_array[:, :]) - np.count_nonzero(  # type: ignore[assignment]
-                self.raster_array[np.isnan(self.raster_array)]
-            )
+            # Count the cells the pyramids mask left intact (see
+            # Catchment.read_flow_acc for why not Dataset.count_domain_cells).
+            self.no_elem = int(np.count_nonzero(~np.isnan(self.raster_array)))
 
         self.no_parameters = no_parameters
 

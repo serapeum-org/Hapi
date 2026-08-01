@@ -144,6 +144,29 @@ class TestReadFlowAcc:
             f"expected 4 domain cells out of 6, got {catchment.no_elem}"
         )
 
+    def test_domain_count_does_not_use_fuzzy_tolerance(self, catchment, write_raster):
+        """Test that ``no_elem`` is counted from the masked array, not by a fuzzy comparison.
+
+        Test scenario:
+            Guards against "simplifying" the count to ``Dataset.count_domain_cells()``.
+            That helper re-reads the raster and compares with ``is_no_data``'s default
+            relative tolerance, which masks values within 0.1% of the sentinel: on this
+            raster it reports 3 domain cells where the masked array correctly has 4.
+            ``no_elem`` must follow the masked array.
+        """
+        path = write_raster(np.array([[0, 1], [2, NEAR_SENTINEL]], dtype="int32"))
+
+        catchment.read_flow_acc(path)
+
+        assert catchment.no_elem == 4, (
+            "no_elem must be counted from the pyramids-masked array; a value 0.1% away "
+            f"from the sentinel is real data, got no_elem={catchment.no_elem}"
+        )
+        assert Dataset.read_file(path).count_domain_cells() == 3, (
+            "this test is only meaningful while Dataset.count_domain_cells still applies "
+            "the fuzzy tolerance; if it now returns 4, the helper is safe to adopt"
+        )
+
     def test_returns_float_array_for_integer_raster(self, catchment, write_raster):
         """Test that an integer raster is promoted to float so NaN is representable.
 
