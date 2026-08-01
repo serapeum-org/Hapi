@@ -2430,7 +2430,16 @@ and hydrologic response units (HRUs).</p>
 <span class="normal">752</span>
 <span class="normal">753</span>
 <span class="normal">754</span>
-<span class="normal">755</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter distribution class for hydrological model calibration.</span>
 
 <span class="sd">    The Parameters class distributes values from a parameter vector during</span>
@@ -3114,15 +3123,24 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">                be saved.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If `path` is not a string or does not exist.</span>
+<span class="sd">            TypeError: `path` is not a ``str``. Output names are built by concatenation</span>
+<span class="sd">                (``path + name``), which a ``Path`` does not support.</span>
+<span class="sd">            FileNotFoundError: The output directory does not exist. Checked up front so</span>
+<span class="sd">                the failure does not surface midway through writing.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            The Parameters object should have the following attributes</span>
 <span class="sd">            set before calling this method: ``DistParFn``, ``raster``,</span>
 <span class="sd">            ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;path should be of type string&quot;</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist&quot;</span>
+        <span class="c1"># Not delegated to pyramids: the output names are built by string concatenation</span>
+        <span class="c1"># below (`path + name`), so this genuinely needs a str, and the directory must</span>
+        <span class="c1"># exist before the first raster is written. Raised rather than asserted so the</span>
+        <span class="c1"># checks survive `python -O`.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;path should be of type string, given: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist&quot;</span><span class="p">)</span>
 
         <span class="c1"># save</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># now snow subroutine</span>
@@ -5538,11 +5556,23 @@ be saved.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="TypeError">TypeError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If <code>path</code> is not a string or does not exist.</p>
+                <p><code>path</code> is not a <code>str</code>. Output names are built by concatenation
+(<code>path + name</code>), which a <code>Path</code> does not support.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The output directory does not exist. Checked up front so
+the failure does not surface midway through writing.</p>
               </div>
             </td>
           </tr>
@@ -5621,7 +5651,16 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="normal">752</span>
 <span class="normal">753</span>
 <span class="normal">754</span>
-<span class="normal">755</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
 
 <span class="sd">    Takes the generated 3D parameter array and saves each parameter</span>
@@ -5632,15 +5671,24 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="sd">            be saved.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If `path` is not a string or does not exist.</span>
+<span class="sd">        TypeError: `path` is not a ``str``. Output names are built by concatenation</span>
+<span class="sd">            (``path + name``), which a ``Path`` does not support.</span>
+<span class="sd">        FileNotFoundError: The output directory does not exist. Checked up front so</span>
+<span class="sd">            the failure does not surface midway through writing.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The Parameters object should have the following attributes</span>
 <span class="sd">        set before calling this method: ``DistParFn``, ``raster``,</span>
 <span class="sd">        ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;path should be of type string&quot;</span>
-    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist&quot;</span>
+    <span class="c1"># Not delegated to pyramids: the output names are built by string concatenation</span>
+    <span class="c1"># below (`path + name`), so this genuinely needs a str, and the directory must</span>
+    <span class="c1"># exist before the first raster is written. Raised rather than asserted so the</span>
+    <span class="c1"># checks survive `python -O`.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;path should be of type string, given: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist&quot;</span><span class="p">)</span>
 
     <span class="c1"># save</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># now snow subroutine</span>
