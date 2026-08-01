@@ -1917,7 +1917,8 @@ class to run the model.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  45</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  44</span>
+<span class="normal">  45</span>
 <span class="normal">  46</span>
 <span class="normal">  47</span>
 <span class="normal">  48</span>
@@ -3314,21 +3315,7 @@ class to run the model.</p>
 <span class="normal">1439</span>
 <span class="normal">1440</span>
 <span class="normal">1441</span>
-<span class="normal">1442</span>
-<span class="normal">1443</span>
-<span class="normal">1444</span>
-<span class="normal">1445</span>
-<span class="normal">1446</span>
-<span class="normal">1447</span>
-<span class="normal">1448</span>
-<span class="normal">1449</span>
-<span class="normal">1450</span>
-<span class="normal">1451</span>
-<span class="normal">1452</span>
-<span class="normal">1453</span>
-<span class="normal">1454</span>
-<span class="normal">1455</span>
-<span class="normal">1456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3507,7 +3494,6 @@ class to run the model.</p>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
                 <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="c1"># no of time steps =length of time series +1</span>
@@ -3580,7 +3566,6 @@ class to run the model.</p>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
                 <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="p">(</span>
                 <span class="s2">&quot;array should be of type numpy array&quot;</span>
@@ -3654,7 +3639,6 @@ class to run the model.</p>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
                 <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="p">(</span>
                 <span class="s2">&quot;array should be of type numpy array&quot;</span>
@@ -3694,16 +3678,13 @@ class to run the model.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="o">.</span><span class="n">columns</span>
         <span class="c1"># check flow accumulation input raster</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="c1"># check if the flow acc array is integer convert it to float</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="c1"># Let pyramids resolve the no-data mask: it is vectorised and dtype-aware</span>
+        <span class="c1"># (exact equality on integer bands, NaN-aware on float ones) and it also</span>
+        <span class="c1"># honours the band&#39;s GDAL mask band. Filling with NaN keeps the</span>
+        <span class="c1"># float-array-with-NaN contract the rest of this class relies on.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+            <span class="n">flow_acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[:,</span> <span class="p">:])</span>
@@ -3776,14 +3757,10 @@ class to run the model.</p>
         <span class="n">flow_dir</span> <span class="o">=</span> <span class="n">DEM</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">rows</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">columns</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="c1"># check flow direction input raster</span>
-        <span class="n">fd_noval</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">fd_noval</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="c1"># No-data masking is delegated to pyramids (see read_flow_acc).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+            <span class="n">flow_dir</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="p">)</span>
 
         <span class="n">fd_val</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
@@ -3830,13 +3807,11 @@ class to run the model.</p>
         <span class="n">fpl</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">rows</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">columns</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># No-data masking is delegated to pyramids (see read_flow_acc).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+            <span class="n">fpl</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="c1"># check flow accumulation input raster</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[:,</span> <span class="p">:])</span>
@@ -3914,7 +3889,6 @@ class to run the model.</p>
             <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span>
                 <span class="n">path</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -4935,7 +4909,8 @@ Default is "Muskingum".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 55</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 54</span>
+<span class="normal"> 55</span>
 <span class="normal"> 56</span>
 <span class="normal"> 57</span>
 <span class="normal"> 58</span>
@@ -5040,8 +5015,7 @@ Default is "Muskingum".</p>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">160</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start_data</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -5286,7 +5260,21 @@ only at the outlet cell. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 957</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 943</span>
+<span class="normal"> 944</span>
+<span class="normal"> 945</span>
+<span class="normal"> 946</span>
+<span class="normal"> 947</span>
+<span class="normal"> 948</span>
+<span class="normal"> 949</span>
+<span class="normal"> 950</span>
+<span class="normal"> 951</span>
+<span class="normal"> 952</span>
+<span class="normal"> 953</span>
+<span class="normal"> 954</span>
+<span class="normal"> 955</span>
+<span class="normal"> 956</span>
+<span class="normal"> 957</span>
 <span class="normal"> 958</span>
 <span class="normal"> 959</span>
 <span class="normal"> 960</span>
@@ -5374,21 +5362,7 @@ only at the outlet cell. Default is False.</p>
 <span class="normal">1042</span>
 <span class="normal">1043</span>
 <span class="normal">1044</span>
-<span class="normal">1045</span>
-<span class="normal">1046</span>
-<span class="normal">1047</span>
-<span class="normal">1048</span>
-<span class="normal">1049</span>
-<span class="normal">1050</span>
-<span class="normal">1051</span>
-<span class="normal">1052</span>
-<span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
-<span class="normal">1058</span>
-<span class="normal">1059</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">1045</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frame_work_1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">only_outlet</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract and sum discharge at gauge locations.</span>
@@ -5698,7 +5672,21 @@ the full list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1193</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1179</span>
+<span class="normal">1180</span>
+<span class="normal">1181</span>
+<span class="normal">1182</span>
+<span class="normal">1183</span>
+<span class="normal">1184</span>
+<span class="normal">1185</span>
+<span class="normal">1186</span>
+<span class="normal">1187</span>
+<span class="normal">1188</span>
+<span class="normal">1189</span>
+<span class="normal">1190</span>
+<span class="normal">1191</span>
+<span class="normal">1192</span>
+<span class="normal">1193</span>
 <span class="normal">1194</span>
 <span class="normal">1195</span>
 <span class="normal">1196</span>
@@ -5799,21 +5787,7 @@ the full list.</p>
 <span class="normal">1291</span>
 <span class="normal">1292</span>
 <span class="normal">1293</span>
-<span class="normal">1294</span>
-<span class="normal">1295</span>
-<span class="normal">1296</span>
-<span class="normal">1297</span>
-<span class="normal">1298</span>
-<span class="normal">1299</span>
-<span class="normal">1300</span>
-<span class="normal">1301</span>
-<span class="normal">1302</span>
-<span class="normal">1303</span>
-<span class="normal">1304</span>
-<span class="normal">1305</span>
-<span class="normal">1306</span>
-<span class="normal">1307</span>
-<span class="normal">1308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
+<span class="normal">1294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -6245,7 +6219,21 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1061</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1047</span>
+<span class="normal">1048</span>
+<span class="normal">1049</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
 <span class="normal">1062</span>
 <span class="normal">1063</span>
 <span class="normal">1064</span>
@@ -6361,21 +6349,7 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1174</span>
 <span class="normal">1175</span>
 <span class="normal">1176</span>
-<span class="normal">1177</span>
-<span class="normal">1178</span>
-<span class="normal">1179</span>
-<span class="normal">1180</span>
-<span class="normal">1181</span>
-<span class="normal">1182</span>
-<span class="normal">1183</span>
-<span class="normal">1184</span>
-<span class="normal">1185</span>
-<span class="normal">1186</span>
-<span class="normal">1187</span>
-<span class="normal">1188</span>
-<span class="normal">1189</span>
-<span class="normal">1190</span>
-<span class="normal">1191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -6723,7 +6697,21 @@ reading the CSV. Default is "".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">826</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
 <span class="normal">827</span>
 <span class="normal">828</span>
 <span class="normal">829</span>
@@ -6798,21 +6786,7 @@ reading the CSV. Default is "".</p>
 <span class="normal">898</span>
 <span class="normal">899</span>
 <span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
-<span class="normal">913</span>
-<span class="normal">914</span>
-<span class="normal">915</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_discharge_gauges</span><span class="p">(</span>
+<span class="normal">901</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_discharge_gauges</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
@@ -7117,7 +7091,10 @@ resulting array is not a numpy ndarray.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -7177,11 +7154,7 @@ resulting array is not a numpy ndarray.</p>
 <span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_et</span><span class="p">(</span>
+<span class="normal">372</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_et</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -7240,7 +7213,6 @@ resulting array is not a numpy ndarray.</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="p">(</span>
             <span class="s2">&quot;array should be of type numpy array&quot;</span>
@@ -7342,7 +7314,11 @@ end with ".tif".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -7420,14 +7396,7 @@ end with ".tif".</p>
 <span class="normal">453</span>
 <span class="normal">454</span>
 <span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read flow accumulation raster and compute cell properties.</span>
 
 <span class="sd">    Reads the flow accumulation raster, extracts the number of rows,</span>
@@ -7460,16 +7429,13 @@ end with ".tif".</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="o">.</span><span class="n">columns</span>
     <span class="c1"># check flow accumulation input raster</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="c1"># check if the flow acc array is integer convert it to float</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="c1"># Let pyramids resolve the no-data mask: it is vectorised and dtype-aware</span>
+    <span class="c1"># (exact equality on integer bands, NaN-aware on float ones) and it also</span>
+    <span class="c1"># honours the band&#39;s GDAL mask band. Filling with NaN keeps the</span>
+    <span class="c1"># float-array-with-NaN contract the rest of this class relies on.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+        <span class="n">flow_acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[:,</span> <span class="p">:])</span>
@@ -7617,7 +7583,14 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">465</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
 <span class="normal">466</span>
 <span class="normal">467</span>
 <span class="normal">468</span>
@@ -7657,18 +7630,7 @@ exist.</p>
 <span class="normal">502</span>
 <span class="normal">503</span>
 <span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">505</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the flow direction raster and build the flow direction table.</span>
 
 <span class="sd">    Args:</span>
@@ -7696,14 +7658,10 @@ exist.</p>
     <span class="n">flow_dir</span> <span class="o">=</span> <span class="n">DEM</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">rows</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">columns</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-    <span class="c1"># check flow direction input raster</span>
-    <span class="n">fd_noval</span> <span class="o">=</span> <span class="n">flow_dir</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">fd_noval</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="c1"># No-data masking is delegated to pyramids (see read_flow_acc).</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+        <span class="n">flow_dir</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="p">)</span>
 
     <span class="n">fd_val</span> <span class="o">=</span> <span class="p">[</span>
         <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
@@ -7815,7 +7773,18 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">518</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
 <span class="normal">519</span>
 <span class="normal">520</span>
 <span class="normal">521</span>
@@ -7844,20 +7813,7 @@ exist.</p>
 <span class="normal">544</span>
 <span class="normal">545</span>
 <span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the flow path length raster.</span>
 
 <span class="sd">    Reads the flow path length raster and extracts rows, columns,</span>
@@ -7886,13 +7842,11 @@ exist.</p>
     <span class="n">fpl</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">rows</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">columns</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># No-data masking is delegated to pyramids (see read_flow_acc).</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+        <span class="n">fpl</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span> <span class="o">=</span> <span class="n">fpl</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="c1"># check flow accumulation input raster</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[:,</span> <span class="p">:])</span>
@@ -7996,7 +7950,21 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">785</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
 <span class="normal">786</span>
 <span class="normal">787</span>
 <span class="normal">788</span>
@@ -8021,21 +7989,7 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 <span class="normal">807</span>
 <span class="normal">808</span>
 <span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_gauge_table</span><span class="p">(</span>
+<span class="normal">810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_gauge_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flow_acc_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the gauge table listing gauge locations and properties.</span>
@@ -8178,7 +8132,21 @@ columns (excluding the date index).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">754</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
 <span class="normal">755</span>
 <span class="normal">756</span>
 <span class="normal">757</span>
@@ -8193,21 +8161,7 @@ columns (excluding the date index).</p>
 <span class="normal">766</span>
 <span class="normal">767</span>
 <span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="normal">769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read meteorological inputs for lumped mode.</span>
 
 <span class="sd">    Reads precipitation, evapotranspiration, temperature, and</span>
@@ -8374,7 +8328,21 @@ values.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">704</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
 <span class="normal">705</span>
 <span class="normal">706</span>
 <span class="normal">707</span>
@@ -8408,21 +8376,7 @@ values.</p>
 <span class="normal">735</span>
 <span class="normal">736</span>
 <span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
+<span class="normal">738</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">lumped_model</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseConceptualModel</span><span class="p">],</span>
     <span class="n">catchment_area</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
@@ -8603,7 +8557,20 @@ the given snow/maxbas configuration.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">597</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
 <span class="normal">598</span>
 <span class="normal">599</span>
 <span class="normal">600</span>
@@ -8694,21 +8661,7 @@ the given snow/maxbas configuration.</p>
 <span class="normal">685</span>
 <span class="normal">686</span>
 <span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">688</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read model parameter rasters or a CSV parameter file.</span>
 
 <span class="sd">    For distributed mode, reads parameter rasters from a folder.</span>
@@ -8742,7 +8695,6 @@ the given snow/maxbas configuration.</p>
         <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span>
             <span class="n">path</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -8959,7 +8911,21 @@ maxbas. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">917</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span>
+<span class="normal">912</span>
+<span class="normal">913</span>
+<span class="normal">914</span>
+<span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
 <span class="normal">918</span>
 <span class="normal">919</span>
 <span class="normal">920</span>
@@ -8983,21 +8949,7 @@ maxbas. Default is False.</p>
 <span class="normal">938</span>
 <span class="normal">939</span>
 <span class="normal">940</span>
-<span class="normal">941</span>
-<span class="normal">942</span>
-<span class="normal">943</span>
-<span class="normal">944</span>
-<span class="normal">945</span>
-<span class="normal">946</span>
-<span class="normal">947</span>
-<span class="normal">948</span>
-<span class="normal">949</span>
-<span class="normal">950</span>
-<span class="normal">951</span>
-<span class="normal">952</span>
-<span class="normal">953</span>
-<span class="normal">954</span>
-<span class="normal">955</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters_bound</span><span class="p">(</span>
+<span class="normal">941</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters_bound</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -9252,7 +9204,8 @@ numpy ndarray.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
+<span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
@@ -9318,9 +9271,7 @@ numpy ndarray.</p>
 <span class="normal">226</span>
 <span class="normal">227</span>
 <span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rainfall</span><span class="p">(</span>
+<span class="normal">229</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rainfall</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -9381,7 +9332,6 @@ numpy ndarray.</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="c1"># no of time steps =length of time series +1</span>
@@ -9518,7 +9468,20 @@ roughness raster file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">562</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
 <span class="normal">563</span>
 <span class="normal">564</span>
 <span class="normal">565</span>
@@ -9538,20 +9501,7 @@ roughness raster file.</p>
 <span class="normal">579</span>
 <span class="normal">580</span>
 <span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
+<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dem_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bankfull_depth_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -9819,7 +9769,9 @@ resulting array is not a numpy ndarray.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">233</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
@@ -9893,10 +9845,7 @@ resulting array is not a numpy ndarray.</p>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_temperature</span><span class="p">(</span>
+<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_temperature</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">ll_temp</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -9960,7 +9909,6 @@ resulting array is not a numpy ndarray.</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="p">(</span>
             <span class="s2">&quot;array should be of type numpy array&quot;</span>
@@ -10086,28 +10034,28 @@ is not installed.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1310</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1296</span>
+<span class="normal">1297</span>
+<span class="normal">1298</span>
+<span class="normal">1299</span>
+<span class="normal">1300</span>
+<span class="normal">1301</span>
+<span class="normal">1302</span>
+<span class="normal">1303</span>
+<span class="normal">1304</span>
+<span class="normal">1305</span>
+<span class="normal">1306</span>
+<span class="normal">1307</span>
+<span class="normal">1308</span>
+<span class="normal">1309</span>
+<span class="normal">1310</span>
 <span class="normal">1311</span>
 <span class="normal">1312</span>
 <span class="normal">1313</span>
 <span class="normal">1314</span>
 <span class="normal">1315</span>
 <span class="normal">1316</span>
-<span class="normal">1317</span>
-<span class="normal">1318</span>
-<span class="normal">1319</span>
-<span class="normal">1320</span>
-<span class="normal">1321</span>
-<span class="normal">1322</span>
-<span class="normal">1323</span>
-<span class="normal">1324</span>
-<span class="normal">1325</span>
-<span class="normal">1326</span>
-<span class="normal">1327</span>
-<span class="normal">1328</span>
-<span class="normal">1329</span>
-<span class="normal">1330</span>
-<span class="normal">1331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+<span class="normal">1317</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save the animation created by `plot_distributed_results`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses</span>
@@ -10331,7 +10279,21 @@ distributed mode.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1333</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1319</span>
+<span class="normal">1320</span>
+<span class="normal">1321</span>
+<span class="normal">1322</span>
+<span class="normal">1323</span>
+<span class="normal">1324</span>
+<span class="normal">1325</span>
+<span class="normal">1326</span>
+<span class="normal">1327</span>
+<span class="normal">1328</span>
+<span class="normal">1329</span>
+<span class="normal">1330</span>
+<span class="normal">1331</span>
+<span class="normal">1332</span>
+<span class="normal">1333</span>
 <span class="normal">1334</span>
 <span class="normal">1335</span>
 <span class="normal">1336</span>
@@ -10440,21 +10402,7 @@ distributed mode.</p>
 <span class="normal">1439</span>
 <span class="normal">1440</span>
 <span class="normal">1441</span>
-<span class="normal">1442</span>
-<span class="normal">1443</span>
-<span class="normal">1444</span>
-<span class="normal">1445</span>
-<span class="normal">1446</span>
-<span class="normal">1447</span>
-<span class="normal">1448</span>
-<span class="normal">1449</span>
-<span class="normal">1450</span>
-<span class="normal">1451</span>
-<span class="normal">1452</span>
-<span class="normal">1453</span>
-<span class="normal">1454</span>
-<span class="normal">1455</span>
-<span class="normal">1456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
+<span class="normal">1442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>

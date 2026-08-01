@@ -2022,9 +2022,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
+<span class="normal">408</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Rainfall-runoff inputs preparation for distributed hydrological models.</span>
 
 <span class="sd">    The Inputs class provides methods to prepare meteorological and parameter</span>
@@ -2085,7 +2083,6 @@ alignment (coordinate system, rows, columns, resolution).</p>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inputs_dir</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
         <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span><span class="n">inputs_dir</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="c1"># in-place align/crop clear the collection&#39;s file list, so capture the names first</span>
         <span class="n">file_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">files</span><span class="p">]</span>
         <span class="n">cube</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -2285,7 +2282,6 @@ alignment (coordinate system, rows, columns, resolution).</p>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
             <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
         <span class="n">avg</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">time_length</span><span class="p">):</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">iloc</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -2689,7 +2685,8 @@ the corresponding raster in chronological order.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
+<span class="normal">249</span>
 <span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
@@ -2753,9 +2750,7 @@ the corresponding raster in chronological order.</p>
 <span class="normal">310</span>
 <span class="normal">311</span>
 <span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">313</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -2814,7 +2809,6 @@ the corresponding raster in chronological order.</p>
         <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
         <span class="n">extension</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
     <span class="n">avg</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">time_length</span><span class="p">):</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">iloc</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -3012,7 +3006,8 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+<span class="normal">178</span>
 <span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
@@ -3080,8 +3075,7 @@ exist.</p>
 <span class="normal">243</span>
 <span class="normal">244</span>
 <span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
+<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3280,7 +3274,8 @@ not set.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">116</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
+<span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span>
@@ -3339,8 +3334,7 @@ not set.</p>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract upper and lower parameter boundaries for a catchment.</span>
 
@@ -3552,8 +3546,7 @@ rasters will be saved.</p>
 <span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
+<span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Align and crop input rasters to match the source DEM.</span>
 
 <span class="sd">    Reads all rasters from ``inputs_dir``, aligns them to the source</span>
@@ -3586,7 +3579,6 @@ rasters will be saved.</p>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inputs_dir</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
     <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">read_multiple_files</span><span class="p">(</span><span class="n">inputs_dir</span><span class="p">,</span> <span class="n">with_order</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">cube</span><span class="o">.</span><span class="n">open_multi_dataset</span><span class="p">()</span>
     <span class="c1"># in-place align/crop clear the collection&#39;s file list, so capture the names first</span>
     <span class="n">file_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">files</span><span class="p">]</span>
     <span class="n">cube</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -3737,7 +3729,9 @@ Default is <code>"daily"</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">317</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
@@ -3804,9 +3798,7 @@ Default is <code>"daily"</code>.</p>
 <span class="normal">381</span>
 <span class="normal">382</span>
 <span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">384</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">rename_files</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%Y.%m.</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
 <span class="p">):</span>
