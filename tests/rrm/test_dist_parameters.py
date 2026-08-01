@@ -249,3 +249,70 @@ class TestParametersMasking:
 
         with pytest.raises(ValueError, match="has to be entered as a list"):
             DP(raster, 12, no_lumped_par=1, lumped_par_pos=7)
+
+    @pytest.mark.parametrize(
+        "function, expected",
+        [
+            (1, "par3d_lumped"),
+            (2, "par3d"),
+            (3, "par2d_lumped_k1_lake"),
+            (4, "hydrologic_response_units"),
+        ],
+    )
+    def test_function_selects_distribution_strategy(self, function, expected):
+        """Test that ``function`` binds the matching parameter-distribution strategy.
+
+        Args:
+            function: The strategy selector passed to the constructor.
+            expected: Name of the method ``Function`` should be bound to.
+
+        Test scenario:
+            The four documented selectors each bind a different distribution strategy.
+            Only the binding is checked — the strategies themselves are exercised by the
+            ``par3d`` / ``par3d_lumped`` tests above, and ``par2d_lumped_k1_lake`` needs a
+            lake parameter count it is not given here.
+        """
+        raster = self._raster(np.array([[1, 2], [3, NO_DATA]], dtype="int32"))
+
+        parameters = DP(raster, 12, function=function)
+
+        assert parameters.Function.__name__ == expected, (
+            f"function={function} should bind {expected}, got {parameters.Function.__name__}"
+        )
+
+    def test_hru_mode_overrides_the_selected_function(self):
+        """Test that ``hru=True`` wins over an explicit ``function`` selector.
+
+        Test scenario:
+            The constructor documents that HRU mode overrides whatever strategy the
+            caller selected. Asking for ``function=2`` (``par3d``) while passing
+            ``hru=True`` must still bind the HRU strategy.
+        """
+        raster = self._raster(np.array([[1, 1], [2, NO_DATA]], dtype="int32"))
+
+        parameters = DP(raster, 12, function=2, hru=True)
+
+        assert parameters.Function.__name__ == "hydrologic_response_units", (
+            f"hru=True should override function=2, got {parameters.Function.__name__}"
+        )
+
+    def test_unknown_function_leaves_strategy_unbound(self):
+        """Test the fall-through when ``function`` matches none of the four selectors.
+
+        Test scenario:
+            Documents current behaviour rather than endorsing it. The dispatch is a plain
+            if/elif chain with no ``else``, so an unknown selector constructs successfully
+            and simply never binds ``Function``. The mistake then surfaces much later, as
+            an opaque ``AttributeError`` the first time calibration calls the strategy,
+            instead of at construction. Tracked as a follow-up: the constructor should
+            reject an unknown ``function`` outright.
+        """
+        raster = self._raster(np.array([[1, 2], [3, NO_DATA]], dtype="int32"))
+
+        parameters = DP(raster, 12, function=99)
+
+        assert not hasattr(parameters, "Function"), (
+            "an unknown function selector currently binds no strategy at all; if this "
+            "now fails, the constructor gained validation and the test should assert the "
+            "new error instead"
+        )
