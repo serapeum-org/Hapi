@@ -1,0 +1,50 @@
+name: pip-audit
+
+# Dependency-vulnerability scan. Dependencies rarely change per commit, and CVEs are
+# disclosed over time against packages we already ship, so this runs on every PR to
+# catch a newly introduced vulnerable dependency, plus weekly to re-audit the unchanged
+# tree — a freshly disclosed CVE is then caught without needing a code change.
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  schedule:
+    # Weekly, Monday 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: serapeum-org/github-actions/actions/python-setup/pixi@pixi/v1
+        with:
+          environments: py311
+          activate-environment: py311
+          cache: true
+
+      - name: Audit dependencies with pip-audit
+        # pip-audit checks installed packages against the PyPI/OSV advisory DB. Conda
+        # and PyPI packages both carry site-packages metadata, so a `pip freeze` of the
+        # resolved env captures the whole tree; we audit that pinned list. pip-audit is
+        # run via pipx so it is never added to the project's own dependency graph.
+        # No --strict: a conda-only package with no PyPI advisory record is skipped
+        # rather than failing the run — the job fails only when a real vulnerability is
+        # reported (pip-audit exits non-zero).
+        run: |
+          pixi run -e py311 python -m pip freeze --exclude-editable \
+            | grep -E '^[A-Za-z0-9_.-]+==' > "${RUNNER_TEMP}/pip-audit-reqs.txt"
+          echo "Auditing $(wc -l < "${RUNNER_TEMP}/pip-audit-reqs.txt") pinned packages against the advisory DB"
+          pipx run pip-audit --requirement "${RUNNER_TEMP}/pip-audit-reqs.txt" --desc

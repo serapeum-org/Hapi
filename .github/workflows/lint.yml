@@ -1,0 +1,91 @@
+name: Lint
+
+# The static gate that the test matrix (tests.yml) does not provide. tests.yml runs
+# pytest across the Python matrix, but nothing in CI runs the pre-commit hooks or mypy —
+# so a formatting slip, a ruff violation or a type error could reach main unnoticed.
+# This workflow closes that gap. It stays out of tests.yml so a slow test leg never
+# blocks the fast lint feedback, and vice versa.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Fast, environment-free hooks: ruff (lint + format), the file/format/security
+  # checks, bandit, checkov, nbstripout, beautysh, shellcheck. Formatting and linting
+  # are identical on every OS and Python version, so this runs ONCE (no matrix) on a
+  # plain runner.
+  #
+  # SKIP drops the hooks that need the pixi dev env: pytest-check and notebook-check are
+  # already the tests.yml matrix's job (running them here would duplicate it and pin to
+  # one Python), while mypy runs in the `static` job below. no-commit-to-branch is a
+  # local commit guard that would misfire in CI, which legitimately runs on main.
+  #
+  # pixi-lock-check is deliberately out of CI scope: `pixi lock --check` re-solves against
+  # live conda/PyPI channels, so it fails on *upstream* churn (a new build of an unrelated
+  # transitive dep), not just on our own pyproject-vs-lock drift — that would make every
+  # PR flaky. Lock freshness stays enforced by the local pixi-lock-check hook (scoped to
+  # pyproject.toml/pixi.lock edits) plus PR review.
+  pre-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # No fetch-depth: `pre-commit run --all-files` scans the working tree, not history.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # Cache the hook toolchains (each hook repo builds an isolated env on first run).
+      # Keyed on the config so a hook or rev bump rebuilds; restore-keys reuse the rest.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: pre-commit-
+
+      # Pin the resolved version so CI is reproducible; bump deliberately.
+      - run: python -m pip install pre-commit==4.5.1
+
+      - name: Run pre-commit hooks
+        # --show-diff-on-failure prints exactly what the auto-fixers (ruff-format,
+        # end-of-file-fixer, nbstripout, ...) would change, so a contributor sees the
+        # fix to apply.
+        run: pre-commit run --all-files --show-diff-on-failure --color=always
+        env:
+          SKIP: no-commit-to-branch,mypy,pytest-check,notebook-check,pixi-lock-check
+
+  # Type check. mypy needs the full `dev` pixi env (typed deps and an importable
+  # package) but is neither platform- nor Python-version-sensitive, so one runner
+  # covers it. It runs nowhere else in CI today.
+  #
+  # No doctest step yet: the `>>>` examples in the HBV modules are stale and the
+  # matching pre-commit hook is disabled for the same reason. Add
+  # `pixi run -e dev pytest --doctest-modules src -p no:cacheprovider` here once they
+  # are repaired, and re-enable the hook alongside it.
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: serapeum-org/github-actions/actions/python-setup/pixi@pixi/v1
+        with:
+          environments: dev
+          activate-environment: dev
+          cache: true
+
+      - name: Type check with mypy
+        run: pixi run -e dev mypy

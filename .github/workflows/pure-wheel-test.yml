@@ -1,0 +1,126 @@
+name: Pure Wheel - Build & Test
+
+# Validates the install path real users take: build the wheel, install it with plain
+# pip into a bare virtual environment, and run the test suite against the INSTALLED
+# package. tests.yml only ever exercises the source tree inside a pixi environment, so
+# nothing else in CI would catch a packaging mistake — a module missing from the wheel,
+# a runtime dependency that is only ever present because pixi installed it, or a broken
+# console script.
+#
+# hapi-nile is pure Python: GDAL arrives vendored inside the pyramids-gis wheel, so no
+# conda environment or system GDAL is needed here — that is exactly what this job
+# proves.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch / ref to build and test (defaults to the ref selected in the UI)"
+        required: false
+        default: ""
+        type: string
+  workflow_call:
+
+jobs:
+  build-wheel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Set up Pixi
+        uses: serapeum-org/github-actions/actions/python-setup/pixi@pixi/v1
+        with:
+          environments: dev
+          activate-environment: dev
+          cache: true
+
+      - name: Build wheel
+        run: pixi run -e dev python -m build --wheel --outdir dist/
+
+      - name: Verify the wheel contains the package modules
+        # Guards against a packaging regression in [tool.setuptools.packages.find]
+        # (e.g. a renamed subpackage silently dropping out of the distribution).
+        run: |
+          pixi run -e dev python -m zipfile -l dist/*.whl | grep "hapi/catchment.py"
+          pixi run -e dev python -m zipfile -l dist/*.whl | grep "hapi/rrm/distrrm.py"
+          pixi run -e dev python -m zipfile -l dist/*.whl | grep "hapi/parameters/parameters.py"
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel
+          path: dist/*.whl
+
+  # Install the wheel across the supported OS × Python grid and run the suite against
+  # it. The matrix covers the two platforms pixi solves for (linux-64, win-64) and every
+  # Python version in requires-python.
+  test-wheel:
+    needs: build-wheel
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: dist/
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the wheel
+        shell: bash
+        # --only-binary=:all: keeps the run honest: every dependency (pyramids-gis with
+        # its vendored GDAL included) must resolve to a wheel, with no source build.
+        run: "pip install dist/*.whl --only-binary=:all:"
+
+      - name: Verify package import and console scripts
+        shell: bash
+        run: |
+          cd "${RUNNER_TEMP}"
+          python -c "import hapi; from hapi.catchment import Catchment; print('hapi imported from', hapi.__file__)"
+          list-parameter-names --help
+
+      - name: Install the test runner
+        shell: bash
+        # pytest-env is required by the `env =` block in [tool.pytest.ini_options].
+        run: "pip install pytest pytest-env --only-binary=:all:"
+
+      - name: Run the test suite against the installed wheel
+        shell: bash
+        # -o pythonpath= clears `pythonpath = ["src"]` from pyproject.toml, which would
+        # otherwise shadow the installed package with the source tree and defeat the
+        # point of this job.
+        #
+        # -m "not fig_share" matches tests.yml. TestExtractParameters is deselected on
+        # top of that: it downloads a parameter set from the live FigShare API, which
+        # would put a network dependency (and 6 redundant downloads) into every matrix
+        # cell — the pixi matrix in tests.yml already covers it.
+        env:
+          HAPI_DATA_DIR: ${{ github.workspace }}/src/hapi/parameters
+        run: |
+          pytest -vvv -o pythonpath= -p no:cacheprovider \
+            -m "not fig_share" \
+            --deselect tests/rrm/test_rrm_inputs.py::TestExtractParameters \
+            tests/
