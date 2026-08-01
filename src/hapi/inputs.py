@@ -20,9 +20,9 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from geopandas import GeoDataFrame
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
+from pyramids.feature import FeatureCollection
 
 PARAMETERS_LIST = [
     "01_tt",
@@ -157,7 +157,7 @@ class Inputs:
         cube.to_file(path)
 
     @staticmethod
-    def extract_parameters_boundaries(basin: GeoDataFrame):
+    def extract_parameters_boundaries(basin: FeatureCollection):
         """Extract upper and lower parameter boundaries for a catchment.
 
         Reads the global maximum and minimum HBV parameter rasters from
@@ -170,9 +170,10 @@ class Inputs:
         k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
 
         Args:
-            basin: A GeoDataFrame containing the catchment polygon. Must
-                contain exactly one row; merge all polygons first if the
-                shapefile has multiple features.
+            basin: The catchment polygon, as a
+                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is
+                accepted too and is wrapped on the way in. Must contain exactly one row;
+                merge all polygons first if the shapefile has multiple features.
 
         Returns:
             pandas.DataFrame: A DataFrame indexed by parameter name with
@@ -195,7 +196,9 @@ class Inputs:
             )
 
         dataset = Dataset.read_file(str(file_path))
-        basin = basin.to_crs(crs=dataset.crs)
+        # Wrap on the way in so a plain GeoDataFrame is accepted as readily as a
+        # FeatureCollection; the constructor is a no-op for one that is already wrapped.
+        basin = FeatureCollection(basin).to_crs(crs=dataset.crs)
 
         # max values
         ub = list()
@@ -220,7 +223,7 @@ class Inputs:
 
     def extract_parameters(
         self,
-        gdf: GeoDataFrame | str,
+        gdf: FeatureCollection | None,
         scenario: str,
         as_raster: bool = False,
         save_to: str = "",
@@ -246,9 +249,11 @@ class Inputs:
         k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
 
         Args:
-            gdf: A GeoDataFrame of the catchment polygon. Must contain
-                one row; merge all polygons first if the shapefile has
-                multiple features. Can be None when ``as_raster`` is True.
+            gdf: The catchment polygon, as a
+                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is
+                accepted too and is wrapped on the way in. Must contain one row; merge
+                all polygons first if the shapefile has multiple features. Ignored (and
+                may be ``None``) when ``as_raster`` is True.
             scenario: Name of the parameter set. One of ``"1"`` through
                 ``"10"``, ``"avg"``, ``"max"``, or ``"min"``.
             as_raster: If True, save aligned parameter rasters to
@@ -274,7 +279,7 @@ class Inputs:
 
         if not as_raster:
             dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
-            gdf = gdf.to_crs(crs=dataset.crs)  # type: ignore[union-attr]
+            gdf = FeatureCollection(gdf).to_crs(crs=dataset.crs)
 
             stats = pd.DataFrame(columns=["min", "max", "mean", "std"])
             for i in range(len(PARAMETERS_LIST)):

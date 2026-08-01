@@ -1,3 +1,4 @@
+import ast
 from pathlib import Path
 
 import numpy as np
@@ -5,6 +6,8 @@ import pytest
 from geopandas import GeoDataFrame
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
+from pyramids.feature import FeatureCollection
+from shapely.geometry import Polygon
 
 from hapi.inputs import Inputs
 
@@ -291,4 +294,109 @@ class TestPrepareInputs:
 
         assert [f.name for f in sorted(out_dir.iterdir())] == ["prec_2020.01.01.tif"], (
             f"expected the source file name to be preserved, got {list(out_dir.iterdir())}"
+        )
+
+
+class TestVectorTypes:
+    """Tests that Hapi speaks pyramids' vector type and no longer needs geopandas."""
+
+    @pytest.fixture(scope="function")
+    def basin(self):
+        """Return a single-polygon catchment as a plain GeoDataFrame.
+
+        Returns:
+            GeoDataFrame: One square polygon in WGS 84.
+        """
+        return GeoDataFrame(
+            {"id": [1]},
+            geometry=[Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])],
+            crs="EPSG:4326",
+        )
+
+    def test_plain_geodataframe_is_still_accepted(self, basin):
+        """Test that a plain ``GeoDataFrame`` is wrapped rather than rejected.
+
+        Args:
+            basin: A plain GeoDataFrame fixture.
+
+        Test scenario:
+            The annotations now name ``FeatureCollection``, which is *narrower* than
+            ``GeoDataFrame``. Wrapping at the boundary keeps the wider input working, so
+            existing callers passing a geopandas frame are unaffected.
+        """
+        wrapped = FeatureCollection(basin)
+
+        assert isinstance(wrapped, FeatureCollection), (
+            f"a GeoDataFrame should wrap cleanly, got {type(wrapped).__name__}"
+        )
+        assert wrapped.crs.to_epsg() == 4326, (
+            f"wrapping must preserve the CRS, got {wrapped.crs}"
+        )
+        assert len(wrapped) == len(basin), (
+            f"wrapping must preserve the rows, got {len(wrapped)} vs {len(basin)}"
+        )
+
+    def test_wrapping_a_feature_collection_is_a_no_op(self, basin):
+        """Test that wrapping an already-wrapped collection changes nothing.
+
+        Args:
+            basin: A plain GeoDataFrame fixture.
+
+        Test scenario:
+            The boundary coercion runs unconditionally, so it must be idempotent for a
+            caller that already passes a ``FeatureCollection``.
+        """
+        once = FeatureCollection(basin)
+        twice = FeatureCollection(once)
+
+        assert twice.crs == once.crs, (
+            f"CRS drifted on re-wrap: {twice.crs} vs {once.crs}"
+        )
+        assert len(twice) == len(once), (
+            f"row count drifted on re-wrap: {len(twice)} vs {len(once)}"
+        )
+
+    def test_hapi_does_not_import_geopandas(self):
+        """Test that no Hapi module imports geopandas directly.
+
+        Test scenario:
+            geopandas was dropped from ``[project].dependencies`` because nothing in
+            ``src/hapi`` imports it any more — it arrives transitively through
+            pyramids-gis. That matters beyond tidiness: pyramids excludes geopandas on
+            win_arm64 (it vendors the vector stack there), and Hapi's unconditional pin
+            overrode that exclusion. This scan keeps the import from creeping back and
+            re-breaking that platform.
+        """
+        offenders = []
+        for module in sorted(Path("src/hapi").rglob("*.py")):
+            tree = ast.parse(module.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    names = [alias.name for alias in node.names]
+                elif isinstance(node, ast.ImportFrom):
+                    names = [node.module or ""]
+                else:
+                    continue
+                if any(name.split(".")[0] == "geopandas" for name in names):
+                    offenders.append(f"{module}:{node.lineno}")
+
+        assert not offenders, (
+            "these modules import geopandas directly; use pyramids.feature."
+            f"FeatureCollection instead: {offenders}"
+        )
+
+    def test_geopandas_is_not_a_declared_dependency(self):
+        """Test that geopandas is absent from the project's runtime dependencies.
+
+        Test scenario:
+            Pairs with the import scan: the declaration and the imports must agree, so a
+            future edit cannot reinstate the pin without also reinstating a use for it.
+        """
+        pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+        block = pyproject.split("dependencies = [", 1)[1].split("]", 1)[0]
+
+        assert "geopandas" not in block, (
+            "geopandas is declared again in [project].dependencies but nothing in "
+            "src/hapi imports it; it arrives transitively via pyramids-gis, which "
+            "deliberately excludes it on win_arm64"
         )

@@ -935,11 +935,11 @@ class Catchment:
             - Read a GeoJSON gauge file and inspect the loaded stations:
                 ```python
                 >>> import os, tempfile
-                >>> from geopandas import GeoDataFrame
+                >>> from pyramids.feature import FeatureCollection
                 >>> from shapely.geometry import Point
                 >>> from hapi.catchment import Catchment
                 >>> path = os.path.join(tempfile.mkdtemp(), "gauges.geojson")
-                >>> GeoDataFrame(
+                >>> FeatureCollection(
                 ...     {"id": [1, 2], "name": ["Station 1", "Station 2"]},
                 ...     geometry=[Point(454795.7, 503143.3), Point(443847.6, 481850.7)],
                 ...     crs="EPSG:32618",

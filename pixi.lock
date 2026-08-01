@@ -2941,7 +2941,6 @@ packages:
 - pypi: ./
   name: hapi-nile
   requires_dist:
-  - geopandas>=1.0.1
   - loguru>=0.7.2
   - numpy>=2.1.3
   - pandas>=3.0.0
