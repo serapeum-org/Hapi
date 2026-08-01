@@ -78,7 +78,9 @@ class Calibration(Catchment):
         self.OFArgs: list | None = None
         self.OFvalue: float | None = None
 
-    def read_objective_function(self, objective_function: Callable[..., Any], args):
+    def read_objective_function(
+        self, objective_function: Callable[..., Any], args: list | None
+    ):
         """Read and store the objective function and its arguments.
 
         Takes the objective function and any additional arguments that
@@ -157,7 +159,12 @@ class Calibration(Catchment):
 
         # return error
 
-    def run_calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
+    def run_calibration(
+        self,
+        SpatialVarFun: Callable[..., Any],
+        OptimizationArgs: list,
+        printError: int | None = None,
+    ):
         """Run the calibration algorithm for the distributed hydrological model.
 
         Executes the Harmony Search optimization algorithm to calibrate
@@ -312,7 +319,12 @@ class Calibration(Catchment):
 
         return res
 
-    def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
+    def FW1Calibration(
+        self,
+        SpatialVarFun: Callable[..., Any],
+        OptimizationArgs: list,
+        printError: int | None = None,
+    ):
         """Run calibration using the FW1 (Focussed Width-1) routing scheme.
 
         Executes the Harmony Search optimization algorithm to calibrate
@@ -448,7 +460,12 @@ class Calibration(Catchment):
 
         return res
 
-    def lumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
+    def lumpedCalibration(
+        self,
+        Basic_inputs: dict,
+        OptimizationArgs: list,
+        printError: int | None = None,
+    ):
         """Run the calibration algorithm for the lumped hydrological model.
 
         Executes the Harmony Search optimization algorithm to calibrate

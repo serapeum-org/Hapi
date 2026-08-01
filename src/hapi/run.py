@@ -8,11 +8,14 @@ at known locations based on a given performance function.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from loguru import logger
 
-from hapi.catchment import Catchment
+from hapi.catchment import Catchment, Lake as LakeType
 
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
@@ -145,7 +148,7 @@ class Run(Catchment):
         # SV.KinematicRaster(self)
         # print("1D model Run has finished")
 
-    def runHAPIwithLake(self, Lake):
+    def runHAPIwithLake(self, Lake: LakeType):
         """Run the distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -237,7 +240,7 @@ class Run(Catchment):
 
         print("Model Run has finished")
 
-    def RunFW1withLake(self, Lake):
+    def RunFW1withLake(self, Lake: LakeType):
         """Run the FW1 distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -304,7 +307,7 @@ class Run(Catchment):
     def runLumped(
         self,
         Route: int = 0,
-        RoutingFn=None,
+        RoutingFn: Callable[..., Any] | None = None,
     ):
         """Run the lumped conceptual model.
 

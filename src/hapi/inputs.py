@@ -249,7 +249,7 @@ class Inputs:
     @staticmethod
     def create_lumped_inputs(
         path: str,
-        regex_string=r"\d{4}.\d{2}.\d{2}",
+        regex_string: str = r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
         file_name_data_fmt: str | None = None,
         start: str | None = None,

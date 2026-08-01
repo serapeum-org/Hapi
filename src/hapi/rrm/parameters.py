@@ -28,7 +28,7 @@ class Parameters:
 
     def __init__(
         self,
-        raster,
+        raster: Dataset,
         no_parameters: int,
         no_lumped_par: int = 0,
         lumped_par_pos: list[int] | None = None,
@@ -191,7 +191,7 @@ class Parameters:
 
         pass
 
-    def par3d(self, par_g):  # , kub=1,klb=0.5, Maskingum=True
+    def par3d(self, par_g: list | np.ndarray):  # , kub=1,klb=0.5, Maskingum=True
         """Distribute parameters horizontally across grid cells.
 
         Takes a list of parameters (saved as one column or generated as a
@@ -278,7 +278,7 @@ class Parameters:
         #               klb
         #              )
 
-    def par3d_lumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
+    def par3d_lumped(self, par_g: list | np.ndarray):  # , kub=1, klb=0.5, Maskingum = True
         r"""Distribute lumped parameters horizontally across grid cells.
 
         Takes a list of parameters (saved as one column or generated as a
@@ -318,7 +318,9 @@ class Parameters:
         #         self.Par3d[self.celli[i],self.cellj[i],-1], self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
     @staticmethod
-    def calculate_k(x, position, upper_bound, lower_bound):
+    def calculate_k(
+        x: float, position: int, upper_bound: float, lower_bound: float
+    ) -> float:
         """Calculate K parameter for Muskingum routing.
 
         Takes the value of x parameter and generates 100 random values of
@@ -336,7 +338,7 @@ class Parameters:
 
         Returns:
             The K parameter value corresponding to the given position
-            within the constrained range.
+                within the constrained range.
         """
         # k has to be smaller than this constraint
         constraint1 = 0.5 * 1 / (1 - x)
@@ -351,9 +353,11 @@ class Parameters:
 
         generated_k = np.linspace(constraint1, constraint2, 50)
         k = generated_k[int(round(position, 0))]
-        return k
+        return float(k)
 
-    def par2d_lumped_k1_lake(self, par_g, no_parameters_lake):  # ,kub,klb
+    def par2d_lumped_k1_lake(
+        self, par_g: list | np.ndarray, no_parameters_lake: int
+    ):  # ,kub,klb
         """Distribute parameters with a lumped K1 and lake parameters.
 
         Takes a list of parameters and distributes them horizontally on
@@ -412,7 +416,7 @@ class Parameters:
 
         # return self.Par3d, lake_par
 
-    def hydrologic_response_units(self, par_g):  # ,kub=1,klb=0.5
+    def hydrologic_response_units(self, par_g: list | np.ndarray):  # ,kub=1,klb=0.5
         """Distribute parameters using Hydrologic Response Units (HRUs).
 
         Takes a list of parameters (saved as one column or generated as a
@@ -503,7 +507,12 @@ class Parameters:
             self.Par3d[self.raster_array == self.values[i]] = self.Par2d[:, i]
 
     @staticmethod
-    def hru_hand(dem, flow_direction, flow_path_length, river):
+    def hru_hand(
+        dem: Dataset,
+        flow_direction: Dataset,
+        flow_path_length: Dataset,
+        river: Dataset,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Calculate Height Above Nearest Drainage (HAND) for HRU classification.
 
         Calculates inputs for the HAND method for land use
@@ -642,7 +651,7 @@ class Parameters:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
 
-    def save_parameters(self, path):
+    def save_parameters(self, path: str | None):
         """Save distributed parameters as raster files.
 
         Takes the generated 3D parameter array and saves each parameter
