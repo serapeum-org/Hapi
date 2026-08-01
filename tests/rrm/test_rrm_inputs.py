@@ -1,7 +1,9 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 from geopandas import GeoDataFrame
+from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 
 from hapi.inputs import Inputs
@@ -184,9 +186,6 @@ class TestChronologicalReading:
             value identifying its date, and read back with ``with_order=True``. The values
             must come back chronologically, so no rename step is needed.
         """
-        import numpy as np
-        from pyramids.dataset import Dataset
-
         stamps = {"2020.02.01": 3, "2020.01.02": 1, "2020.01.10": 2}
         for stamp, value in stamps.items():
             Dataset.create_from_array(
@@ -224,4 +223,72 @@ class TestChronologicalReading:
         assert not hasattr(Inputs, "rename_files"), (
             "Inputs.rename_files was deleted; read_multiple_files(with_order=True) "
             "supersedes it"
+        )
+
+
+class TestPrepareInputs:
+    """Tests for ``Inputs.prepare_inputs``."""
+
+    def test_missing_inputs_dir_raises_before_opening_the_dem(self, tmp_path):
+        """Test that a missing input directory fails fast, without reading the DEM.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The validation used to run *after* ``Dataset.read_file(self.source_dem)``, so
+            a missing input directory surfaced only once the DEM had been opened — and a
+            bogus DEM path raised the wrong error first. The DEM path here does not exist
+            either; the ``FileNotFoundError`` must still name the input directory.
+        """
+        missing = tmp_path / "absent"
+
+        with pytest.raises(FileNotFoundError) as exc_info:
+            Inputs("dem-that-does-not-exist.tif").prepare_inputs(
+                missing, tmp_path / "out"
+            )
+
+        assert str(missing) in str(exc_info.value), (
+            "the error should name the missing input directory, not the DEM; got "
+            f"{exc_info.value}"
+        )
+
+    def test_accepts_path_objects_for_both_directories(self, tmp_path):
+        """Test that ``pathlib.Path`` arguments are accepted for input and output.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The signature is annotated ``str | Path``, but the body used to warn (via a
+            bare ``print``) whenever ``outputs_dir`` was not a ``str`` — contradicting the
+            annotation while doing nothing. Passing ``Path`` for both arguments must work
+            silently and write the aligned rasters.
+        """
+        dem_path = tmp_path / "dem.tif"
+        Dataset.create_from_array(
+            np.ones((4, 4), dtype="float32"),
+            top_left_corner=(0.0, 4.0),
+            cell_size=1.0,
+            epsg=4326,
+            no_data_value=-9999.0,
+            path=str(dem_path),
+        ).close()
+
+        src_dir = tmp_path / "src"
+        src_dir.mkdir()
+        Dataset.create_from_array(
+            np.full((4, 4), 5.0, dtype="float32"),
+            top_left_corner=(0.0, 4.0),
+            cell_size=1.0,
+            epsg=4326,
+            no_data_value=-9999.0,
+            path=str(src_dir / "prec_2020.01.01.tif"),
+        ).close()
+
+        out_dir = tmp_path / "out"
+        Inputs(str(dem_path)).prepare_inputs(src_dir, out_dir)
+
+        assert [f.name for f in sorted(out_dir.iterdir())] == ["prec_2020.01.01.tif"], (
+            f"expected the source file name to be preserved, got {list(out_dir.iterdir())}"
         )

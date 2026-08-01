@@ -89,24 +89,65 @@ class Inputs:
             outputs_dir: Path to the output folder where the aligned
                 rasters will be saved.
 
+        Each output keeps its source file name, so the ordering of the collection is
+        irrelevant here and the rasters are read with ``with_order=False``.
+        ``outputs_dir`` is created if it does not exist; either argument may be a
+        ``str`` or a :class:`pathlib.Path`.
+
+        Returns:
+            None: The aligned rasters are written to ``outputs_dir``.
+
         Raises:
             FileNotFoundError: If ``inputs_dir`` does not exist.
 
         Examples:
-            >>> from hapi.inputs import Inputs
-            >>> inp = Inputs("GIS/inputs/acc4000.tif")
-            >>> inp.prepare_inputs(
-            ...     "Precipitation/CHIRPS/Daily/",
-            ...     "outputs/prec",
-            ... )
-        """
-        if not isinstance(outputs_dir, str):
-            print("output_folder input should be string type")
+            - Align two rasters onto a DEM grid and read back what was written:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.inputs import Inputs
+                >>> root = tempfile.mkdtemp()
+                >>> dem_path = os.path.join(root, "dem.tif")
+                >>> Dataset.create_from_array(
+                ...     np.ones((4, 4), dtype="float32"), top_left_corner=(0.0, 4.0),
+                ...     cell_size=1.0, epsg=4326, no_data_value=-9999.0, path=dem_path,
+                ... ).close()
+                >>> src_dir = os.path.join(root, "src")
+                >>> os.makedirs(src_dir)
+                >>> for stamp in ("2020.01.01", "2020.01.02"):
+                ...     Dataset.create_from_array(
+                ...         np.full((4, 4), 5.0, dtype="float32"), top_left_corner=(0.0, 4.0),
+                ...         cell_size=1.0, epsg=4326, no_data_value=-9999.0,
+                ...         path=os.path.join(src_dir, f"prec_{stamp}.tif"),
+                ...     ).close()
+                >>> out_dir = os.path.join(root, "out")
+                >>> Inputs(dem_path).prepare_inputs(src_dir, out_dir)
+                >>> sorted(os.listdir(out_dir))
+                ['prec_2020.01.01.tif', 'prec_2020.01.02.tif']
 
-        mask = Dataset.read_file(self.source_dem)
+                ```
+            - A missing input directory fails fast, before the DEM is opened:
+                ```python
+                >>> import os, tempfile
+                >>> from hapi.inputs import Inputs
+                >>> missing = os.path.join(tempfile.mkdtemp(), "absent")
+                >>> try:
+                ...     Inputs("dem-never-opened.tif").prepare_inputs(missing, "out")
+                ... except FileNotFoundError as exc:
+                ...     print("does not exist" in str(exc))
+                True
+
+                ```
+
+        See Also:
+            Inputs.create_lumped_inputs: Reduce the same rasters to catchment averages.
+        """
+        # Validate before opening the DEM so a missing input directory fails fast
+        # rather than after a raster read.
         if not Path(inputs_dir).exists():
             raise FileNotFoundError(f"{inputs_dir} does not exist")
 
+        mask = Dataset.read_file(self.source_dem)
         cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
         # in-place align/crop clear the collection's file list, so capture the names first
         file_names = [Path(file).name for file in cube.files]
@@ -284,17 +325,56 @@ class Inputs:
             extension: File extension to filter by. Default is ``".tif"``.
 
         Returns:
-            list: A list of float values, each being the spatial mean of
-                the corresponding raster in chronological order.
+            list: The spatial mean of each raster, in chronological order. The elements
+                are NumPy scalars (``numpy.float32`` for a float32 source) rather than
+                built-in ``float``, since they come straight from the per-raster
+                statistics; wrap them in ``float()`` if a built-in is required.
 
         Examples:
-            >>> from hapi.inputs import Inputs
-            >>> avg = Inputs.create_lumped_inputs(
-            ...     "tests/rrm/data/coello/prec",
-            ...     regex_string=r"\\d{4}.\\d{2}.\\d{2}",
-            ...     date=True,
-            ...     file_name_data_fmt="%Y.%m.%d",
-            ... )
+            - Reduce two dated rasters to one catchment average each, in date order:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.inputs import Inputs
+                >>> src_dir = tempfile.mkdtemp()
+                >>> for stamp, value in (("2020.01.02", 4.0), ("2020.01.01", 2.0)):
+                ...     Dataset.create_from_array(
+                ...         np.full((2, 2), value, dtype="float32"),
+                ...         top_left_corner=(0.0, 2.0), cell_size=1.0, epsg=4326,
+                ...         no_data_value=-9999.0,
+                ...         path=os.path.join(src_dir, f"prec_{stamp}.tif"),
+                ...     ).close()
+                >>> averages = Inputs.create_lumped_inputs(
+                ...     src_dir, regex_string=r"\d{4}.\d{2}.\d{2}", date=True,
+                ...     file_name_data_fmt="%Y.%m.%d",
+                ... )
+                >>> [float(value) for value in averages]
+                [2.0, 4.0]
+
+                ```
+            - A uniform raster averages to its own value:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.inputs import Inputs
+                >>> src_dir = tempfile.mkdtemp()
+                >>> Dataset.create_from_array(
+                ...     np.full((3, 3), 7.5, dtype="float32"),
+                ...     top_left_corner=(0.0, 3.0), cell_size=1.0, epsg=4326,
+                ...     no_data_value=-9999.0,
+                ...     path=os.path.join(src_dir, "prec_2021.06.01.tif"),
+                ... ).close()
+                >>> averages = Inputs.create_lumped_inputs(
+                ...     src_dir, regex_string=r"\d{4}.\d{2}.\d{2}", date=True,
+                ...     file_name_data_fmt="%Y.%m.%d",
+                ... )
+                >>> float(averages[0])
+                7.5
+
+                ```
+
+        See Also:
+            Inputs.prepare_inputs: Align and crop the same rasters onto the DEM grid.
         """
         cube = Datacube.read_multiple_files(
             path,
