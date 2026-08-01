@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1686,8 +1686,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 37</span>
-<span class="normal"> 38</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 38</span>
 <span class="normal"> 39</span>
 <span class="normal"> 40</span>
 <span class="normal"> 41</span>
@@ -2279,7 +2278,8 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
-<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVBergestrom92</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
+<span class="normal">630</span>
+<span class="normal">631</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVBergestrom92</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HBV Bergestrom 1992 lumped conceptual hydrological model.</span>
 
 <span class="sd">    This class implements the HBV-96 model variant based on</span>
@@ -2902,9 +2902,9 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the HBVBergestrom92 model.&quot;&quot;&quot;</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
@@ -3084,8 +3084,7 @@ becomes rainfall:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 59</span>
-<span class="normal"> 60</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 60</span>
 <span class="normal"> 61</span>
 <span class="normal"> 62</span>
 <span class="normal"> 63</span>
@@ -3138,7 +3137,8 @@ becomes rainfall:</p>
 <span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
-<span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">113</span>
+<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">precipitation</span><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">rfcf</span><span class="p">,</span> <span class="n">sfcf</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Partition precipitation into rainfall and snowfall.</span>
 
@@ -3409,8 +3409,7 @@ coefficient [-].</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
-<span class="normal">285</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
 <span class="normal">288</span>
@@ -3491,7 +3490,8 @@ coefficient [-].</p>
 <span class="normal">363</span>
 <span class="normal">364</span>
 <span class="normal">365</span>
-<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">366</span>
+<span class="normal">367</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="n">lz_old</span><span class="p">,</span> <span class="n">uz_int_1</span><span class="p">,</span> <span class="n">perc</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">uzl</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the runoff response from upper and lower zones.</span>
 
@@ -3709,8 +3709,7 @@ shape as <code>q</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">407</span>
-<span class="normal">408</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
 <span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
@@ -3751,7 +3750,8 @@ shape as <code>q</code>.</p>
 <span class="normal">446</span>
 <span class="normal">447</span>
 <span class="normal">448</span>
-<span class="normal">449</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="normal">449</span>
+<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply triangular transfer function routing to discharge.</span>
 
 <span class="sd">    Routes the discharge signal through a triangular transfer</span>
@@ -4038,8 +4038,7 @@ A tuple of <code>(q_uz, q_lz, st)</code> where:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">451</span>
-<span class="normal">452</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">452</span>
 <span class="normal">453</span>
 <span class="normal">454</span>
 <span class="normal">455</span>
@@ -4217,7 +4216,8 @@ A tuple of <code>(q_uz, q_lz, st)</code> where:
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
-<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+<span class="normal">630</span>
+<span class="normal">631</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HBV Bergestrom92 model simulation.</span>
@@ -4644,8 +4644,7 @@ as a fraction [-].</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
-<span class="normal">116</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span>
@@ -4735,7 +4734,8 @@ as a fraction [-].</p>
 <span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
-<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">snow</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">wc_old</span><span class="p">,</span> <span class="n">sp_old</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">cfmax</span><span class="p">,</span> <span class="n">cfr</span><span class="p">,</span> <span class="n">cwh</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute snow accumulation, melt, and infiltration.</span>
 
@@ -5083,8 +5083,7 @@ capacity [-].</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
@@ -5157,7 +5156,8 @@ capacity [-].</p>
 <span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
-<span class="normal">282</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">282</span>
+<span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">soil</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">sm_old</span><span class="p">,</span> <span class="n">uz_old</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">,</span> <span class="n">lp</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute soil moisture balance and upper zone recharge.</span>
 
@@ -5333,8 +5333,7 @@ function, summing to 1.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">368</span>
-<span class="normal">369</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
@@ -5370,7 +5369,8 @@ function, summing to 1.0.</p>
 <span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
-<span class="normal">405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">405</span>
+<span class="normal">406</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate transfer function weights for triangular routing.</span>
 
@@ -5520,7 +5520,7 @@ function, summing to 1.0.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       
