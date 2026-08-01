@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@v5
       with:
         fetch-depth: 0
-    - uses: serapeum-org/github-actions/actions/mkdocs-deploy@mkdocs/v1
+    - uses: serapeum-org/github-actions/actions/mkdocs-deploy@38c111084f99d5ff5f4a1e63bedce48fe33a10c0  # mkdocs/v1.3.1
       with:
         trigger: 'pull_request'
         package-manager: 'pixi'
@@ -44,7 +44,7 @@ jobs:
     - uses: actions/checkout@v5
       with:
         fetch-depth: 0
-    - uses: serapeum-org/github-actions/actions/mkdocs-deploy@mkdocs/v1
+    - uses: serapeum-org/github-actions/actions/mkdocs-deploy@38c111084f99d5ff5f4a1e63bedce48fe33a10c0  # mkdocs/v1.3.1
       with:
         trigger: 'main'
         package-manager: 'pixi'
@@ -60,7 +60,7 @@ jobs:
     - uses: actions/checkout@v5
       with:
         fetch-depth: 0
-    - uses: serapeum-org/github-actions/actions/mkdocs-deploy@mkdocs/v1
+    - uses: serapeum-org/github-actions/actions/mkdocs-deploy@38c111084f99d5ff5f4a1e63bedce48fe33a10c0  # mkdocs/v1.3.1
       with:
         trigger: 'release'
         package-manager: 'pixi'
