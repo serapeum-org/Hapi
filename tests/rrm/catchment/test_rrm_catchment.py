@@ -83,7 +83,8 @@ class TestLumped:
         route = 1
         Run.runLumped(coello, route, routing_fn)
 
-        assert len(coello.Qsim) == 10 and coello.Qsim.columns.to_list() == ["q"]
+        assert len(coello.Qsim) == 10
+        assert coello.Qsim.columns.to_list() == ["q"]
 
     def test_save_lumped_results(
         self,
