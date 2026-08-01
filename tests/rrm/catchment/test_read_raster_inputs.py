@@ -14,6 +14,8 @@ equality, so such values now survive.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from pyramids.dataset import Dataset
@@ -279,34 +281,65 @@ class TestReadFlowAcc:
         )
 
     def test_missing_file_raises(self, catchment, tmp_path):
-        """Test that a path which does not exist is rejected.
+        """Test that a path which does not exist is rejected by pyramids.
 
         Test scenario:
-            A ``.tif`` path inside an empty temp directory raises ``AssertionError``.
+            Validation is delegated to ``Dataset.read_file``, so a missing path raises
+            ``FileNotFoundError`` rather than the ``AssertionError`` the hand-rolled
+            guard used to produce.
         """
-        with pytest.raises(AssertionError, match="does not exist"):
+        with pytest.raises(FileNotFoundError, match="does not exist"):
             catchment.read_flow_acc(str(tmp_path / "absent.tif"))
 
-    def test_non_tif_extension_raises(self, catchment, tmp_path):
-        """Test that a non-GeoTIFF extension is rejected before the raster is opened.
+    def test_unreadable_file_raises(self, catchment, tmp_path):
+        """Test that a file GDAL cannot open is rejected.
 
         Test scenario:
-            An existing file without a ``.tif`` extension raises ``AssertionError``.
+            The guard no longer keys off the file extension — it lets GDAL decide. A file
+            that is not a raster at all surfaces as a GDAL ``RuntimeError`` naming the
+            path, instead of an extension complaint that could not tell a mislabelled
+            GeoTIFF from genuine garbage.
         """
         other = tmp_path / "grid.asc"
         other.write_text("not a geotiff", encoding="utf-8")
 
-        with pytest.raises(AssertionError, match="extension"):
+        with pytest.raises(RuntimeError, match="not recognized"):
             catchment.read_flow_acc(str(other))
 
-    def test_non_string_path_raises_type_error(self, catchment, tmp_path):
-        """Test that a non-string path is rejected with ``TypeError``.
+    def test_path_object_is_accepted(self, catchment, write_raster):
+        """Test that a ``pathlib.Path`` is a valid argument.
 
         Test scenario:
-            A ``pathlib.Path`` is not accepted by the current contract.
+            pyramids accepts ``str`` and ``Path`` alike. The removed
+            ``assert isinstance(path, str)`` rejected ``Path`` outright, contradicting
+            both pyramids and the surrounding type hints.
         """
-        with pytest.raises(TypeError, match="string"):
-            catchment.read_flow_acc(tmp_path / "acc.tif")
+        path = Path(write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32")))
+
+        catchment.read_flow_acc(path)
+
+        assert catchment.no_elem == 3, (
+            f"a Path argument should read exactly as a str does, got {catchment.no_elem}"
+        )
+
+    def test_non_tif_raster_is_accepted(self, catchment, write_raster, tmp_path):
+        """Test that a valid raster is read regardless of its extension.
+
+        Test scenario:
+            The old guard demanded ``.tif`` and so rejected every other GDAL format. An
+            ESRI ASCII grid is a legitimate flow-accumulation raster and must now load.
+        """
+        source = Dataset.read_file(
+            write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
+        )
+        asc_path = str(tmp_path / "acc.asc")
+        source.to_file(asc_path)
+
+        catchment.read_flow_acc(asc_path)
+
+        assert catchment.no_elem == 3, (
+            f"a valid .asc raster should read like a .tif, got {catchment.no_elem}"
+        )
 
     def test_reads_coello_fixture(
         self, catchment, coello_acc_path, coello_rows, coello_cols, coello_acc_values
@@ -430,17 +463,27 @@ class TestReadFlowDir:
             f"expected one table entry per domain cell, got {sorted(catchment.FDT)}"
         )
 
-    def test_non_tif_extension_raises(self, catchment, tmp_path):
-        """Test that a non-GeoTIFF extension is rejected before the raster is opened.
+    def test_unreadable_file_raises(self, catchment, tmp_path):
+        """Test that a file GDAL cannot open is rejected.
 
         Test scenario:
-            An existing file without a ``.tif`` extension raises ``ValueError``.
+            Validation is delegated to ``DEM.read_file``, so a non-raster file surfaces as
+            a GDAL ``RuntimeError`` rather than the previous extension ``ValueError``.
         """
         other = tmp_path / "directions.asc"
         other.write_text("not a geotiff", encoding="utf-8")
 
-        with pytest.raises(ValueError, match="extension"):
+        with pytest.raises(RuntimeError, match="not recognized"):
             catchment.read_flow_dir(str(other))
+
+    def test_missing_file_raises(self, catchment, tmp_path):
+        """Test that a missing flow-direction raster is rejected by pyramids.
+
+        Test scenario:
+            ``FileNotFoundError`` from ``DEM.read_file``, matching the other readers.
+        """
+        with pytest.raises(FileNotFoundError, match="does not exist"):
+            catchment.read_flow_dir(str(tmp_path / "absent.tif"))
 
     def test_reads_coello_fixture(self, catchment, coello_fd_path, coello_fdt):
         """Test that the real Coello flow-direction raster is unchanged by the refactor.
@@ -520,14 +563,24 @@ class TestReadFlowPathLength:
             f"expected 4 domain cells out of 6, got {catchment.no_elem}"
         )
 
-    def test_non_tif_extension_raises(self, catchment, tmp_path):
-        """Test that a non-GeoTIFF extension is rejected.
+    def test_unreadable_file_raises(self, catchment, tmp_path):
+        """Test that a file GDAL cannot open is rejected.
 
         Test scenario:
-            An existing file without a ``.tif`` extension raises ``ValueError``.
+            Validation is delegated to ``Dataset.read_file``, so a non-raster file
+            surfaces as a GDAL ``RuntimeError`` rather than an extension ``ValueError``.
         """
         other = tmp_path / "lengths.asc"
         other.write_text("not a geotiff", encoding="utf-8")
 
-        with pytest.raises(ValueError, match="extension"):
+        with pytest.raises(RuntimeError, match="not recognized"):
             catchment.read_flow_path_length(str(other))
+
+    def test_missing_file_raises(self, catchment, tmp_path):
+        """Test that a missing flow-path-length raster is rejected by pyramids.
+
+        Test scenario:
+            ``FileNotFoundError`` from ``Dataset.read_file``, matching the other readers.
+        """
+        with pytest.raises(FileNotFoundError, match="does not exist"):
+            catchment.read_flow_path_length(str(tmp_path / "absent.tif"))

@@ -194,21 +194,14 @@ class Catchment:
                 read from the given path. Default is ".tif".
 
         Raises:
-            FileNotFoundError: If the path does not exist or the
-                folder is empty.
-            TypeError: If the resulting precipitation array is not a
-                numpy ndarray.
+            FileNotFoundError: The directory does not exist or holds no matching
+                rasters. Raised by ``DatasetCollection.read_multiple_files``.
+            TypeError: The resulting precipitation array is not a numpy ndarray.
         """
         if self.Prec is None:
-            # data type
-            assert isinstance(path, str), "path input should be string type"
-            # check whether the path exists or not
-            if not os.path.exists(path):
-                raise FileNotFoundError(f"{path} you have provided does not exist")
-            # check whether the folder has the rasters or not
-            if not len(os.listdir(path)) > 0:
-                raise FileNotFoundError(f"{path} folder you have provided is empty")
-            # read data
+            # Path validation is delegated to pyramids: read_multiple_files raises
+            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
+            # these replace, that survives `python -O`.
             cube = Datacube.read_multiple_files(
                 path,
                 with_order=True,
@@ -268,19 +261,13 @@ class Catchment:
                 read from the given path. Default is ".tif".
 
         Raises:
-            AssertionError: If the path does not exist or the
-                resulting array is not a numpy ndarray.
-            Exception: If the folder is empty.
+            FileNotFoundError: The directory does not exist or holds no matching
+                rasters. Raised by ``DatasetCollection.read_multiple_files``.
         """
         if self.Temp is None:
-            # data type
-            assert isinstance(path, str), "path input should be string type"
-            # check whether the path exists or not
-            assert os.path.exists(path), path + " you have provided does not exist"
-            # check whether the folder has the rasters or not
-            if not len(os.listdir(path)) > 0:
-                raise Exception(f"The folder you have provided is empty: {path}")
-            # read data
+            # Path validation is delegated to pyramids: read_multiple_files raises
+            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
+            # these replace, that survives `python -O`.
             cube = Datacube.read_multiple_files(
                 path,
                 with_order=True,
@@ -341,19 +328,13 @@ class Catchment:
                 read from the given path. Default is ".tif".
 
         Raises:
-            AssertionError: If the path does not exist or the
-                resulting array is not a numpy ndarray.
-            Exception: If the folder is empty.
+            FileNotFoundError: The directory does not exist or holds no matching
+                rasters. Raised by ``DatasetCollection.read_multiple_files``.
         """
         if self.ET is None:
-            # data type
-            assert isinstance(path, str), "path input should be string type"
-            # check whether the path exists or not
-            assert os.path.exists(path), path + " you have provided does not exist"
-            # check whether the folder has the rasters or not
-            if not len(os.listdir(path)) > 0:
-                raise Exception(f"The folder you have provided is empty: {path}")
-            # read data
+            # Path validation is delegated to pyramids: read_multiple_files raises
+            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
+            # these replace, that survives `python -O`.
             cube = Datacube.read_multiple_files(
                 path,
                 with_order=True,
@@ -399,14 +380,14 @@ class Catchment:
         metric — a geographic (degree) CRS would produce meaningless areas.
 
         Args:
-            path (str): Path to the flow accumulation raster file
-                (must include the raster name and .tif extension).
+            path (str | Path): Path to the flow accumulation raster. Any raster format
+                GDAL can open is accepted, not only GeoTIFF.
 
         Raises:
-            TypeError: If `path` is not a string.
-            AssertionError: If the path does not exist or does not
-                end with ".tif".
-            ValueError: If every cell is no-data, so no accumulation values remain to
+            FileNotFoundError: The path does not exist.
+            TypeError: `path` is neither a string nor a ``Path``.
+            RuntimeError: GDAL cannot open the file as a raster.
+            ValueError: Every cell is no-data, so no accumulation values remain to
                 take a maximum of.
 
         Examples:
@@ -466,18 +447,9 @@ class Catchment:
             Catchment.read_flow_dir: Read the matching flow-direction raster.
             Catchment.read_flow_path_length: Read the matching flow-path-length raster.
         """
-        # data type
-        if not isinstance(path, str):
-            raise TypeError("path input should be string type")
-        # check whether the path exists or not
-        assert os.path.exists(path), path + " you have provided does not exist"
-        # check the extension of the accumulation file
-        assert path.endswith(".tif"), (
-            "please add the extension at the end of the Flow accumulation raster path input"
-        )
-        # check whether the path exists or not
-        assert os.path.exists(path), path + " you have provided does not exist"
-
+        # Path validation is delegated to pyramids: a missing path raises
+        # FileNotFoundError, a non-path argument TypeError, and an unreadable file a
+        # GDAL RuntimeError. Unlike the asserts these replace, they survive `python -O`.
         flow_acc = Dataset.read_file(path)
         self.rows = flow_acc.rows
         self.cols = flow_acc.columns
@@ -548,14 +520,14 @@ class Catchment:
         the cells draining directly into it.
 
         Args:
-            path (str): Path to the flow direction raster file (must
-                include the raster name and .tif extension).
+            path (str | Path): Path to the flow direction raster. Any raster format GDAL
+                can open is accepted, not only GeoTIFF.
 
         Raises:
-            AssertionError: If `path` is not a string or does not
-                exist.
-            ValueError: If the file does not have a ".tif" extension.
-            AssertionError: If the raster contains values other than
+            FileNotFoundError: The path does not exist.
+            TypeError: `path` is neither a string nor a ``Path``.
+            RuntimeError: GDAL cannot open the file as a raster.
+            AssertionError: The raster contains values other than
                 1, 2, 4, 8, 16, 32, 64, 128.
 
         Examples:
@@ -605,17 +577,9 @@ class Catchment:
             Catchment.read_flow_acc: Read the matching flow-accumulation raster.
             hapi.dem.DEM.flow_direction_table: Builds the upstream lookup table.
         """
-        # data type
-        assert isinstance(path, str), "path input should be string type"
-        # check whether the path exists or not
-        assert os.path.exists(path), path + " you have provided does not exist"
-        # check the extension of the accumulation file
-        if not (path[-4:] == ".tif"):
-            raise ValueError(
-                "please add the extension at the end of the Flow accumulation raster path input"
-            )
-        # check whether the path exists or not
-        assert os.path.exists(path), path + " you have provided does not exist"
+        # Path validation is delegated to pyramids: a missing path raises
+        # FileNotFoundError, a non-path argument TypeError, and an unreadable file a
+        # GDAL RuntimeError. Unlike the asserts these replace, they survive `python -O`.
         flow_dir = DEM.read_file(path)
         # No-data masking is delegated to pyramids (see read_flow_acc).
         self.flow_dir_arr = np.ma.filled(
@@ -644,13 +608,13 @@ class Catchment:
         hold ``NaN``.
 
         Args:
-            path (str): Path to the flow path length raster file
-                (must include the raster name and .tif extension).
+            path (str | Path): Path to the flow path length raster. Any raster format
+                GDAL can open is accepted, not only GeoTIFF.
 
         Raises:
-            AssertionError: If `path` is not a string or does not
-                exist.
-            ValueError: If the file does not have a ".tif" extension.
+            FileNotFoundError: The path does not exist.
+            TypeError: `path` is neither a string nor a ``Path``.
+            RuntimeError: GDAL cannot open the file as a raster.
 
         Examples:
             - Read a small path-length raster; the one no-data cell is excluded from the
@@ -696,17 +660,9 @@ class Catchment:
         See Also:
             Catchment.read_flow_acc: Read the matching flow-accumulation raster.
         """
-        # data type
-        assert isinstance(path, str), "path input should be string type"
-        # input values
-        fpl_ext = path[-4:]
-        if not (fpl_ext == ".tif"):
-            raise ValueError(
-                "please add the extension at the end of the Flow accumulation raster path input"
-            )
-        # check whether the path exists or not
-        assert os.path.exists(path), path + " you have provided does not exist"
-
+        # Path validation is delegated to pyramids: a missing path raises
+        # FileNotFoundError, a non-path argument TypeError, and an unreadable file a
+        # GDAL RuntimeError. Unlike the asserts these replace, they survive `python -O`.
         fpl = Dataset.read_file(path)
         self.rows = fpl.rows
         self.cols = fpl.columns
@@ -779,14 +735,9 @@ class Catchment:
                 the given snow/maxbas configuration.
         """
         if self.spatial_resolution.lower() == "distributed":
-            # data type
-            assert isinstance(path, str), "cpath input should be string type"
-            # check whither the path exists or not
-            assert os.path.exists(path), f"{path} you have provided does not exist"
-            # check whither the folder has the rasters or not
-            if not len(os.listdir(path)) > 0:
-                raise Exception(f"The folder you have provided is empty: {path}")
-            # parameters
+            # Path validation is delegated to pyramids: read_multiple_files raises
+            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
+            # these replace, that survives `python -O`.
             cube = Datacube.read_multiple_files(
                 path, with_order=True, regex_string=r"\d+", date=False
             )

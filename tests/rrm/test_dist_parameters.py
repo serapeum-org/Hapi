@@ -1,3 +1,8 @@
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import numpy as np
 import pytest
 from pyramids.dataset import Dataset
@@ -315,4 +320,126 @@ class TestParametersMasking:
             "an unknown function selector currently binds no strategy at all; if this "
             "now fails, the constructor gained validation and the test should assert the "
             "new error instead"
+        )
+
+
+SUBPROCESS_PROBE = """
+import sys
+import numpy as np
+from pyramids.dataset import Dataset
+from hapi.rrm.parameters import Parameters
+
+raster = Dataset.create_from_array(
+    np.array([[1, 2], [3, -9999]], dtype="int32"),
+    top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618, no_data_value=-9999,
+)
+try:
+    Parameters(raster, 12).save_parameters("definitely-missing-dir/")
+except FileNotFoundError:
+    sys.exit(0)
+sys.exit(1)
+"""
+"""Probe run in a child interpreter: exits 0 only if the missing-directory guard fires."""
+
+
+def _raster() -> Dataset:
+    """Build a small in-memory raster for the save_parameters tests.
+
+    Returns:
+        Dataset: A 2x2 raster on a 4000 m UTM 18N grid with one no-data cell.
+    """
+    return Dataset.create_from_array(
+        np.array([[1, 2], [3, NO_DATA]], dtype="int32"),
+        top_left_corner=(0.0, 8000.0),
+        cell_size=4000.0,
+        epsg=32618,
+        no_data_value=NO_DATA,
+    )
+
+
+class TestSaveParametersValidation:
+    """Tests for the input validation on ``Parameters.save_parameters``."""
+
+    def test_missing_output_directory_raises(self, tmp_path):
+        """Test that a non-existent output directory is rejected up front.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            ``save_parameters`` builds each output name by concatenating onto ``path``, so
+            it cannot delegate to pyramids the way the readers do — the failure would
+            otherwise surface per-file, midway through writing.
+        """
+        with pytest.raises(FileNotFoundError, match="does not exist"):
+            DP(_raster(), 12).save_parameters(str(tmp_path / "absent") + "/")
+
+    def test_non_string_path_raises(self, tmp_path):
+        """Test that a non-``str`` output path is rejected with ``TypeError``.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            Unlike the readers, this method really does need a ``str``: it concatenates
+            ``path + name``, which ``Path`` does not support. The check is kept rather
+            than delegated — but raised, not asserted.
+        """
+        with pytest.raises(TypeError, match="string"):
+            DP(_raster(), 12).save_parameters(tmp_path)
+
+    def test_validation_survives_optimised_mode(self):
+        """Test that the guard still fires under ``python -O``.
+
+        Test scenario:
+            This is what made issue 3 more than a tidy-up. ``python -O`` strips every
+            ``assert``, so the previous ``assert os.path.exists(path)`` did not exist in
+            an optimised run and the method proceeded to write. Unlike the readers — where
+            pyramids raises a moment later regardless — nothing downstream replaces this
+            one, so it had to become a real ``raise``. Run in a child interpreter because
+            ``-O`` is fixed at start-up.
+        """
+        result = subprocess.run(
+            [sys.executable, "-O", "-c", SUBPROCESS_PROBE],
+            capture_output=True,
+            text=True,
+            cwd=str(Path.cwd()),
+            env={**os.environ, "PYTHONPATH": "src"},
+        )
+
+        assert result.returncode == 0, (
+            "save_parameters must still reject a missing output directory under "
+            f"`python -O`; exit={result.returncode}, stderr={result.stderr[-400:]}"
+        )
+
+    @pytest.mark.parametrize("snow, expected", [(0, 12), (1, 15)])
+    def test_writes_one_raster_per_parameter(self, tmp_path, snow, expected):
+        """Test that a successful save writes one raster per distributed parameter.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+            snow: Whether the snow subroutine is active.
+            expected: Number of parameter rasters the branch should write.
+
+        Test scenario:
+            The two snow branches carry different parameter-name lists (12 without snow,
+            15 with), and the writer emits one dated GeoTIFF per layer of ``Par3d``. The
+            method had no tests before, so this covers the happy path alongside the
+            validation guards above. ``path`` must end with a separator: output names are
+            built by concatenation.
+        """
+        distributor = DP(_raster(), expected)
+        distributor.Snow = snow
+        distributor.Par3d = np.zeros((2, 2, expected), dtype="float32")
+
+        distributor.save_parameters(str(tmp_path) + "/")
+
+        written = sorted(tmp_path.glob("*.tif"))
+        assert len(written) == expected, (
+            f"snow={snow} should write {expected} rasters, got "
+            f"{[f.name for f in written]}"
+        )
+        assert all(f.stat().st_size > 0 for f in written), (
+            "every written raster should be non-empty, got "
+            f"{[f.stat().st_size for f in written]}"
         )

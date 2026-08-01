@@ -701,15 +701,24 @@ class Parameters:
                 be saved.
 
         Raises:
-            AssertionError: If `path` is not a string or does not exist.
+            TypeError: `path` is not a ``str``. Output names are built by concatenation
+                (``path + name``), which a ``Path`` does not support.
+            FileNotFoundError: The output directory does not exist. Checked up front so
+                the failure does not surface midway through writing.
 
         Note:
             The Parameters object should have the following attributes
             set before calling this method: ``DistParFn``, ``raster``,
             ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.
         """
-        assert isinstance(path, str), "path should be of type string"
-        assert os.path.exists(path), f"{path} you have provided does not exist"
+        # Not delegated to pyramids: the output names are built by string concatenation
+        # below (`path + name`), so this genuinely needs a str, and the directory must
+        # exist before the first raster is written. Raised rather than asserted so the
+        # checks survive `python -O`.
+        if not isinstance(path, str):
+            raise TypeError(f"path should be of type string, given: {type(path)}")
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"{path} you have provided does not exist")
 
         # save
         if self.Snow == 0:  # now snow subroutine
