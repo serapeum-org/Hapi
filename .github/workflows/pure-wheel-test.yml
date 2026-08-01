@@ -95,15 +95,17 @@ jobs:
         # its vendored GDAL included) must resolve to a wheel, with no source build.
         #
         #
-        # NOSONAR (S8544, "lock resolved versions"): the wheel is the artifact built by
-        # the job above, not a package fetched from an index, so there is no upstream
-        # version to pin — the file itself is the pinned input, and pinning the runtime
-        # dependencies would defeat the point of the job, which is to prove a fresh
-        # resolve from PyPI works for an end user.
+        # SonarCloud flags this line with S8544 ("lock resolved versions"). It is a
+        # false positive that has to be marked Safe in the SonarCloud UI — neither an
+        # inline NOSONAR nor a --requirement file suppresses it. The wheel is the
+        # artifact built by the job above, not a package fetched from an index, so
+        # there is no upstream version to pin; the file itself is the pinned input.
+        # Pinning the runtime dependencies would defeat the point of the job, which is
+        # to prove that a fresh resolve from PyPI works for an end user.
         run: |
           WHEEL="$(ls dist/*.whl)"
           echo "Installing ${WHEEL}"
-          python -m pip install "${WHEEL}" --only-binary=:all:  # NOSONAR
+          python -m pip install "${WHEEL}" --only-binary=:all:
 
       - name: Verify package import and console scripts
         shell: bash
