@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import datetime as dt
 import inspect
-import math
 import os
 from typing import TYPE_CHECKING
 
@@ -405,16 +404,13 @@ class Catchment:
         self.cols = flow_acc.columns
         # check flow accumulation input raster
         self.NoDataValue = flow_acc.no_data_value[0]
-        self.FlowAccArr = flow_acc.read_array(band=0)
-
-        # check if the flow acc array is integer convert it to float
-        if self.FlowAccArr.dtype == "int":
-            self.FlowAccArr = self.FlowAccArr.astype(float)
-
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if math.isclose(self.FlowAccArr[i, j], self.NoDataValue, rel_tol=0.001):
-                    self.FlowAccArr[i, j] = np.nan
+        # Let pyramids resolve the no-data mask: it is vectorised and dtype-aware
+        # (exact equality on integer bands, NaN-aware on float ones) and it also
+        # honours the band's GDAL mask band. Filling with NaN keeps the
+        # float-array-with-NaN contract the rest of this class relies on.
+        self.FlowAccArr = np.ma.filled(
+            flow_acc.read_array(band=0, masked=True).astype(float), np.nan
+        )
 
         self.no_elem = int(
             np.size(self.FlowAccArr[:, :])
@@ -487,14 +483,10 @@ class Catchment:
         flow_dir = DEM.read_file(path)
         rows = flow_dir.rows
         cols = flow_dir.columns
-        self.flow_dir_arr = flow_dir.read_array(band=0).astype(float)
-        # check flow direction input raster
-        fd_noval = flow_dir.no_data_value[0]
-
-        for i in range(rows):
-            for j in range(cols):
-                if math.isclose(self.flow_dir_arr[i, j], fd_noval, rel_tol=0.001):
-                    self.flow_dir_arr[i, j] = np.nan
+        # No-data masking is delegated to pyramids (see read_flow_acc).
+        self.flow_dir_arr = np.ma.filled(
+            flow_dir.read_array(band=0, masked=True).astype(float), np.nan
+        )
 
         fd_val = [
             int(self.flow_dir_arr[i, j])
@@ -541,13 +533,11 @@ class Catchment:
         fpl = Dataset.read_file(path)
         self.rows = fpl.rows
         self.cols = fpl.columns
-        self.fpl_arr = fpl.read_array(band=0)
+        # No-data masking is delegated to pyramids (see read_flow_acc).
+        self.fpl_arr = np.ma.filled(
+            fpl.read_array(band=0, masked=True).astype(float), np.nan
+        )
         self.NoDataValue = fpl.no_data_value[0]
-
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if math.isclose(self.fpl_arr[i, j], self.NoDataValue, rel_tol=0.001):
-                    self.fpl_arr[i, j] = np.nan
         # check flow accumulation input raster
         self.no_elem = int(
             np.size(self.fpl_arr[:, :])

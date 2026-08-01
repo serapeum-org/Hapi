@@ -9,7 +9,6 @@ generated parameters into rasters.
 from __future__ import annotations
 
 import datetime as dt
-import math
 import os
 
 import numpy as np
@@ -118,17 +117,17 @@ class Parameters:
         self.Maskingum = muskingum
         # read the raster
         self.raster = raster
-        self.raster_array = raster.read_array(band=0).astype(float)
+        # No-data masking is delegated to pyramids: vectorised, dtype-aware, and it
+        # also honours the band's GDAL mask band. Filling with NaN keeps the
+        # float-array-with-NaN contract the rest of this class relies on.
+        self.raster_array = np.ma.filled(
+            raster.read_array(band=0, masked=True).astype(float), np.nan
+        )
         # get the shape of the raster
         self.rows = raster.rows
         self.cols = raster.columns
         # get the no_value of in the raster
         self.noval = raster.no_data_value[0]
-
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if math.isclose(self.raster_array[i, j], self.noval, rel_tol=0.001):
-                    self.raster_array[i, j] = np.nan
 
         # count the number of non-empty cells
         if self.HRUs:
