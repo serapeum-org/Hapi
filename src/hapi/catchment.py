@@ -378,6 +378,13 @@ class Catchment:
         columns, NoDataValue, number of domain cells, outlet location,
         cell size, and pixel area.
 
+        No-data handling is delegated to pyramids via ``read_array(masked=True)``,
+        which compares integer bands for exact equality with the sentinel and float
+        bands with a NaN-aware comparison, and additionally honours the band's GDAL
+        mask band. The array is promoted to floating point so masked cells can hold
+        ``NaN``, and every downstream attribute (``no_elem``, ``acc_val``, ``Outlet``)
+        is derived from that masked array.
+
         Args:
             path (str): Path to the flow accumulation raster file
                 (must include the raster name and .tif extension).
@@ -386,6 +393,59 @@ class Catchment:
             TypeError: If `path` is not a string.
             AssertionError: If the path does not exist or does not
                 end with ".tif".
+
+        Examples:
+            - Read a small accumulation raster and inspect the derived domain
+              properties. The bottom-right cell carries the no-data sentinel, so three
+              of the four cells lie inside the catchment:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "acc.tif")
+                >>> Dataset.create_from_array(
+                ...     np.array([[0, 1], [2, -9999]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999, path=path,
+                ... ).close()
+                >>> model = Catchment("example", "2000-01-01", "2000-01-02",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_flow_acc(path)
+                >>> model.no_elem
+                3
+                >>> float(model.px_area)
+                16.0
+                >>> bool(np.isnan(model.FlowAccArr[1, 1]))
+                True
+
+                ```
+            - A real value close to the sentinel survives. ``-9990`` sits within 0.1% of
+              ``-9999``, so the tolerance-based comparison used before delegating to
+              pyramids destroyed it; exact integer comparison keeps it and the cell
+              counts toward the domain:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "acc_near.tif")
+                >>> Dataset.create_from_array(
+                ...     np.array([[0, 1], [2, -9990]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999, path=path,
+                ... ).close()
+                >>> model = Catchment("example", "2000-01-01", "2000-01-02",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_flow_acc(path)
+                >>> float(model.FlowAccArr[1, 1])
+                -9990.0
+                >>> model.no_elem
+                4
+
+                ```
+
+        See Also:
+            Catchment.read_flow_dir: Read the matching flow-direction raster.
+            Catchment.read_flow_path_length: Read the matching flow-path-length raster.
         """
         # data type
         if not isinstance(path, str):
@@ -458,6 +518,16 @@ class Catchment:
     def read_flow_dir(self, path: str):
         """Read the flow direction raster and build the flow direction table.
 
+        Cells outside the catchment are masked to ``NaN`` by pyramids via
+        ``read_array(masked=True)`` before the ESRI D8 codes are validated, so only
+        genuine no-data cells are excluded from validation. A corrupt value that merely
+        sits close to the sentinel is therefore no longer swallowed as no-data — it
+        reaches the D8 check and is rejected.
+
+        The surviving codes are converted into an upstream lookup table
+        (:attr:`FDT`), keyed ``"row,col"``, mapping each cell to the cells draining
+        directly into it.
+
         Args:
             path (str): Path to the flow direction raster file (must
                 include the raster name and .tif extension).
@@ -468,6 +538,53 @@ class Catchment:
             ValueError: If the file does not have a ".tif" extension.
             AssertionError: If the raster contains values other than
                 1, 2, 4, 8, 16, 32, 64, 128.
+
+        Examples:
+            - Read a small D8 raster and inspect the upstream lookup table. The
+              bottom-right cell is no-data, so it gets no entry:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "fd.tif")
+                >>> Dataset.create_from_array(
+                ...     np.array([[2, 4], [1, -9999]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999, path=path,
+                ... ).close()
+                >>> model = Catchment("example", "2000-01-01", "2000-01-02",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_flow_dir(path)
+                >>> sorted(model.FDT)
+                ['0,0', '0,1', '1,0']
+                >>> float(model.flow_dir_arr[0, 0])
+                2.0
+
+                ```
+            - A value that is not a valid D8 code is rejected rather than modelled:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "fd_bad.tif")
+                >>> Dataset.create_from_array(
+                ...     np.array([[2, 4], [1, 3]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999, path=path,
+                ... ).close()
+                >>> model = Catchment("example", "2000-01-01", "2000-01-02",
+                ...                   spatial_resolution="Distributed")
+                >>> try:
+                ...     model.read_flow_dir(path)
+                ... except AssertionError as exc:
+                ...     print("rejected:", "1,2,4,8,16,32,64,128" in str(exc))
+                rejected: True
+
+                ```
+
+        See Also:
+            Catchment.read_flow_acc: Read the matching flow-accumulation raster.
+            hapi.dem.DEM.flow_direction_table: Builds the upstream lookup table.
         """
         # data type
         assert isinstance(path, str), "path input should be string type"
@@ -510,6 +627,11 @@ class Catchment:
         Reads the flow path length raster and extracts rows, columns,
         NoDataValue, and the number of domain cells.
 
+        No-data handling is delegated to pyramids via ``read_array(masked=True)``, so
+        cells outside the catchment become ``NaN`` and ``no_elem`` counts only the
+        cells that remain. The array is promoted to floating point so masked cells can
+        hold ``NaN``.
+
         Args:
             path (str): Path to the flow path length raster file
                 (must include the raster name and .tif extension).
@@ -518,6 +640,50 @@ class Catchment:
             AssertionError: If `path` is not a string or does not
                 exist.
             ValueError: If the file does not have a ".tif" extension.
+
+        Examples:
+            - Read a small path-length raster; the one no-data cell is excluded from the
+              domain count:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "fpl.tif")
+                >>> Dataset.create_from_array(
+                ...     np.array([[10, 20], [30, -9999]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999, path=path,
+                ... ).close()
+                >>> model = Catchment("example", "2000-01-01", "2000-01-02",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_flow_path_length(path)
+                >>> model.no_elem
+                3
+                >>> float(model.fpl_arr[0, 1])
+                20.0
+
+                ```
+            - A real length within 0.1% of the sentinel is kept, so every cell counts:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "fpl_near.tif")
+                >>> Dataset.create_from_array(
+                ...     np.array([[10, 20], [30, -9990]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999, path=path,
+                ... ).close()
+                >>> model = Catchment("example", "2000-01-01", "2000-01-02",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_flow_path_length(path)
+                >>> model.no_elem
+                4
+
+                ```
+
+        See Also:
+            Catchment.read_flow_acc: Read the matching flow-accumulation raster.
         """
         # data type
         assert isinstance(path, str), "path input should be string type"

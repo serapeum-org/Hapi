@@ -83,6 +83,55 @@ class Parameters:
                 `lumped_par_pos` does not match `no_lumped_par`.
             ValueError: If `lumped_par_pos` is not a list when
                 `no_lumped_par` >= 1.
+
+        Note:
+            Cells outside the catchment are identified by pyramids via
+            ``read_array(masked=True)`` and stored as ``NaN`` in
+            :attr:`raster_array`, which is promoted to floating point so it can hold
+            them. ``no_elem``, ``celli``/``cellj`` and the width of :attr:`Par2d` all
+            derive from that mask, so the parameter vector length follows the raster's
+            real domain.
+
+        Examples:
+            - Build the distributor from a small raster and inspect the domain it
+              derived. The bottom-right cell is no-data, leaving three cells to
+              parameterise:
+                ```python
+                >>> import numpy as np
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.rrm.parameters import Parameters
+                >>> raster = Dataset.create_from_array(
+                ...     np.array([[1, 2], [3, -9999]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999,
+                ... )
+                >>> distributor = Parameters(raster, 12)
+                >>> int(distributor.no_elem)
+                3
+                >>> distributor.Par2d.shape
+                (12, 3)
+                >>> list(zip(distributor.celli, distributor.cellj))
+                [(0, 0), (0, 1), (1, 0)]
+
+                ```
+            - A real value within 0.1% of the sentinel is kept, so it is treated as a
+              catchment cell and widens the parameter array:
+                ```python
+                >>> import numpy as np
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.rrm.parameters import Parameters
+                >>> raster = Dataset.create_from_array(
+                ...     np.array([[1, 2], [3, -9990]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999,
+                ... )
+                >>> distributor = Parameters(raster, 12)
+                >>> int(distributor.no_elem)
+                4
+                >>> float(distributor.raster_array[1, 1])
+                -9990.0
+
+                ```
         """
         if lumped_par_pos is None:
             lumped_par_pos = []
