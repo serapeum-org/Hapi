@@ -4,10 +4,10 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 - First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
 
 ```python
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-from Hapi.run import Run
-from Hapi.catchment import Catchment
-from Hapi.routing import Routing
+import hapi.rrm.hbv_bergestrom92 as HBVLumped
+from hapi.run import Run
+from hapi.catchment import Catchment
+from hapi.routing import Routing
 ```
 - read the meteorological data, data has be in the form of numpy array with the following order [rainfall, ET, Temp, Tm], ET is the potential evapotranspiration, Temp is the temperature (C), and Tm is the long term monthly average temperature.
 
@@ -20,7 +20,7 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 ```
 - Meteorological data
 
@@ -29,7 +29,7 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 ```
 - Lumped model
 prepare the initial conditions, cathcment area and the lumped model.
@@ -40,7 +40,7 @@ AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0,10,10,10,0]
 
-Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 ```
 - Load the pre-estimated parameters
     snow option (if you want to simulate snow accumulation and snow melt or not)
@@ -48,7 +48,7 @@ Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 ```python
 Snow = 0 # no snow subroutine
 # if routing using Maxbas True, if Muskingum False
-Coello.readParameters(Parameterpath, Snow)
+Coello.read_parameters(Parameterpath, Snow)
 ```
 - Prepare the routing options.
 
@@ -92,16 +92,16 @@ To plot the calculated and measured discharge import matplotlib
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plotHydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
+Coello.plot_hydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
 ```
 ![lumped-model](../img/lumpedmodel.png)
 
 - To save the results
 
 ```python
-StartDate = "2009-01-01"
-EndDate = "2010-04-20"
+start = "2009-01-01"
+end = "2010-04-20"
 
 Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.saveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)
+Coello.save_results(result=5, start=start, end=end, path=Path)
 ```

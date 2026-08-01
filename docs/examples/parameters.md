@@ -11,7 +11,7 @@ The only input we need to extract parameters to our catchment is the DEM or any 
 
 - import the class from the inputs module
 ```python
-from Hapi.inputs import Inputs
+from hapi.inputs import Inputs
 ```
 - define the paths to the DEM and the directory to save the parameters
 
@@ -19,10 +19,10 @@ from Hapi.inputs import Inputs
 dem_path = "../../data/GIS/Hapi_GIS_Data/acc4000.tif"
 outputpath = "../../data/parameters/03/"
 ```
-- call the `extractParameters` method
+- call the `extract_parameters` method
 
 ```python
-Inputs.extractParameters(dem_path, '03', AsRaster=True, SaveTo=outputpath)
+Inputs.extract_parameters(dem_path, '03', AsRaster=True, SaveTo=outputpath)
 ```
 
 
@@ -36,7 +36,7 @@ To Extract the parameters range needed for the Calibration you have to prepare a
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import Hapi.inputs as IN
+import hapi.inputs as IN
 
 BasinF = "Path to shapefile"
 Basin = gpd.read_file(BasinF)
@@ -45,16 +45,16 @@ ind = ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","pe
 Par = pd.DataFrame(index = ind)
 ```
 
-the `inputs` module in Hapi has a `extractParametersBoundaries` method to overlay the basin shapefile with the global parameters rasters and extract the max and min parameter values within the basin and plots your basin shapefile in top of the world map to make sure of the projection transformation from whatever projection your basin shapefile to the `WGS64` that the parameters rasters have
+the `inputs` module in Hapi has a `extract_parameters_boundaries` method to overlay the basin shapefile with the global parameters rasters and extract the max and min parameter values within the basin and plots your basin shapefile in top of the world map to make sure of the projection transformation from whatever projection your basin shapefile to the `WGS64` that the parameters rasters have
 
 ```python
 # extract parameters boundaries
-Par['UB'], Par['LB'] = IN.extractParametersBoundaries(Basin)
+Par['UB'], Par['LB'] = IN.extract_parameters_boundaries(Basin)
 ```
-To extract the parameters from one of the ten scenarios developed to derive the Global model `extractParameters` method takes the number of the scenario as a string and return the parameters
+To extract the parameters from one of the ten scenarios developed to derive the Global model `extract_parameters` method takes the number of the scenario as a string and return the parameters
 
 ```python
 # extract parameters in a specific scenarion from the 10 scenarios
-Par['1'] = IN.extractParameters(Basin,"01")
+Par['1'] = IN.extract_parameters(Basin,"01")
 ```
 the extracted parameters needs to be modified incase you are not considering the snow bucket the first 5 parameters are disregarded
