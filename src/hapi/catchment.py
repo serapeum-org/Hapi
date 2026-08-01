@@ -20,7 +20,6 @@ import inspect
 import os
 from typing import TYPE_CHECKING
 
-import geopandas as gpd
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,6 +29,7 @@ from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
+from pyramids.feature import FeatureCollection
 
 from hapi.dem import DEM
 
@@ -126,7 +126,7 @@ class Catchment:
         self.CatArea: float | int | None = None
         self.InitialCond: list | None = None
         self.q_init: float | None = None
-        self.GaugesTable: gpd.GeoDataFrame | pd.DataFrame | None = None
+        self.GaugesTable: FeatureCollection | pd.DataFrame | None = None
         self.UB: np.ndarray | None = None
         self.LB: np.ndarray | None = None
         self.cols: int | None = None
@@ -952,6 +952,19 @@ class Catchment:
         weight. The coordinates are mandatory to locate the gauges and
         extract discharge at the corresponding cells.
 
+        The result lands on :attr:`GaugesTable`, and its type follows the input format:
+
+        * ``.geojson`` is read with
+          :meth:`pyramids.feature.FeatureCollection.read_file`, giving a
+          :class:`~pyramids.feature.FeatureCollection` — a ``GeoDataFrame`` subclass, so
+          it keeps its geometry column and CRS.
+        * anything else is read with :func:`pandas.read_csv`, giving a plain
+          :class:`~pandas.DataFrame` with no geometry.
+
+        When ``flow_acc_file`` is given and the table has no ``cell_row`` column, each
+        gauge is mapped onto the raster grid and ``cell_row`` / ``cell_col`` columns are
+        appended.
+
         Args:
             path (str): Path to the gauge file (CSV or GeoJSON).
             flow_acc_file (str, optional): Path to the flow
@@ -959,10 +972,56 @@ class Catchment:
                 array indices. Default is "".
             fmt (str, optional): Date format for start/end columns
                 in the gauge table. Default is "%Y-%m-%d".
+
+        Examples:
+            - Read a GeoJSON gauge file and inspect the loaded stations:
+                ```python
+                >>> import os, tempfile
+                >>> from geopandas import GeoDataFrame
+                >>> from shapely.geometry import Point
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "gauges.geojson")
+                >>> GeoDataFrame(
+                ...     {"id": [1, 2], "name": ["Station 1", "Station 2"]},
+                ...     geometry=[Point(454795.7, 503143.3), Point(443847.6, 481850.7)],
+                ...     crs="EPSG:32618",
+                ... ).to_file(path, driver="GeoJSON")
+                >>> model = Catchment("coello", "2009-01-01", "2009-01-10",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_gauge_table(path)
+                >>> model.GaugesTable["name"].tolist()
+                ['Station 1', 'Station 2']
+                >>> model.GaugesTable.crs.to_epsg()
+                32618
+
+                ```
+            - A CSV gauge table loads as a plain frame with no geometry:
+                ```python
+                >>> import os, tempfile
+                >>> import pandas as pd
+                >>> from hapi.catchment import Catchment
+                >>> path = os.path.join(tempfile.mkdtemp(), "gauges.csv")
+                >>> pd.DataFrame({"id": [1], "name": ["Station 1"]}).to_csv(path, index=False)
+                >>> model = Catchment("coello", "2009-01-01", "2009-01-10",
+                ...                   spatial_resolution="Distributed")
+                >>> model.read_gauge_table(path)
+                >>> model.GaugesTable["id"].tolist()
+                [1]
+                >>> hasattr(model.GaugesTable, "crs")
+                False
+
+                ```
+
+        See Also:
+            Catchment.read_discharge_gauges: Read the observed discharge series per gauge.
         """
         # read the gauge table
         if path.endswith(".geojson"):
-            self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
+            # FeatureCollection is-a GeoDataFrame, so every downstream consumer
+            # (.loc, .columns, map_to_array_coordinates) is unaffected. The old
+            # `driver="GeoJSON"` was a write-time option that pyogrio warned about
+            # and ignored on read, so it is dropped.
+            self.GaugesTable = FeatureCollection.read_file(path)
         else:
             self.GaugesTable = pd.read_csv(path)
         col_list = self.GaugesTable.columns.tolist()
