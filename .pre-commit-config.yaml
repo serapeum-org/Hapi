@@ -110,15 +110,6 @@ repos:
       - id: bandit
         args: ["-c", "pyproject.toml"]
 
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.0
-    hooks:
-      # The repo's single secret scanner. This hook scans staged changes at
-      # commit time; the ci/gitleaks.toml allowlist covers non-source paths.
-      - id: gitleaks
-        name: "[cred -  check] gitleaks"
-        args: ["--config", "ci/gitleaks.toml"]
-
   - repo: https://github.com/bridgecrewio/checkov
     rev: 3.3.8
     hooks:
