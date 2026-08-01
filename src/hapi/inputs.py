@@ -105,7 +105,6 @@ class Inputs:
             raise FileNotFoundError(f"{inputs_dir} does not exist")
 
         cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
-        cube.open_multi_dataset()
         # in-place align/crop clear the collection's file list, so capture the names first
         file_names = [Path(file).name for file in cube.files]
         cube.align(mask, inplace=True)
@@ -305,7 +304,6 @@ class Inputs:
             file_name_data_fmt=file_name_data_fmt,
             extension=extension,
         )
-        cube.open_multi_dataset()
         avg = []
         for i in range(cube.time_length):
             dataset = cube.iloc(i)

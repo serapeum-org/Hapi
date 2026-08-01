@@ -21,7 +21,6 @@ def test_prepare_inputs(
     files = list(rpath.iterdir())
     assert len(files) == 10
     cube = Datacube.read_multiple_files(str(rpath), with_order=False)
-    cube.open_multi_dataset()
     # if rpath.exists():
     #     rpath.unlink()
 
@@ -45,7 +44,6 @@ class TestExtractParameters:
         files = list(rpath.iterdir())
         assert len(files) == 19
         cube = Datacube.read_multiple_files(str(rpath), with_order=False)
-        cube.open_multi_dataset()
         # if rpath.exists():
         #     rpath.unlink()
 
@@ -155,7 +153,6 @@ def test_create_lumped_parameter():
         date=True,
         file_name_data_fmt="%Y.%m.%d",
     )
-    cube.open_multi_dataset()
     expected = []
     for i in range(cube.time_length):
         dataset = cube.iloc(i)

@@ -221,7 +221,6 @@ class Catchment:
                 file_name_data_fmt=file_name_data_fmt,
                 extension=extension,
             )
-            cube.open_multi_dataset()
             self.Prec = np.moveaxis(cube.values, 0, -1)
             self.TS = self.Prec.shape[2] + 1
             # no of time steps =length of time series +1
@@ -294,7 +293,6 @@ class Catchment:
                 file_name_data_fmt=file_name_data_fmt,
                 extension=extension,
             )
-            cube.open_multi_dataset()
             self.Temp = np.moveaxis(cube.values, 0, -1)
             assert isinstance(self.Temp, np.ndarray), (
                 "array should be of type numpy array"
@@ -368,7 +366,6 @@ class Catchment:
                 file_name_data_fmt=file_name_data_fmt,
                 extension=extension,
             )
-            cube.open_multi_dataset()
             self.ET = np.moveaxis(cube.values, 0, -1)
             assert isinstance(self.ET, np.ndarray), (
                 "array should be of type numpy array"
@@ -628,7 +625,6 @@ class Catchment:
             cube = Datacube.read_multiple_files(
                 path, with_order=True, regex_string=r"\d+", date=False
             )
-            cube.open_multi_dataset()
             self.Parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
