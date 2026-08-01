@@ -2353,7 +2353,7 @@ calibration.</p>
 <span class="sd">        this method:</span>
 
 <span class="sd">            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.</span>
-<span class="sd">            - ``FlowDirArr``: Flow direction array.</span>
+<span class="sd">            - ``flow_dir_arr``: Flow direction array.</span>
 <span class="sd">            - ``rows``, ``cols``: Grid dimensions.</span>
 <span class="sd">            - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
 <span class="sd">            - ``objective_function``: Objective function for evaluation.</span>
@@ -2387,7 +2387,7 @@ calibration.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
             <span class="n">ROWS_MISMATCH_ERROR</span>
         <span class="p">)</span>
@@ -2540,7 +2540,7 @@ calibration.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
-        <span class="c1"># [fd_rows,fd_cols] = self.FlowDirArr.shape</span>
+        <span class="c1"># [fd_rows,fd_cols] = self.flow_dir_arr.shape</span>
         <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR</span>
 
         <span class="c1"># input dimensions</span>
@@ -3119,7 +3119,7 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
-    <span class="c1"># [fd_rows,fd_cols] = self.FlowDirArr.shape</span>
+    <span class="c1"># [fd_rows,fd_cols] = self.flow_dir_arr.shape</span>
     <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR</span>
 
     <span class="c1"># input dimensions</span>
@@ -4295,7 +4295,7 @@ performance using the stored objective function.</p>
 <p>The following attributes must be set on the instance before calling
 this method:</p>
 <div class="highlight"><pre><span></span><code>- ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-- ``FlowDirArr``: Flow direction array.
+- ``flow_dir_arr``: Flow direction array.
 - ``rows``, ``cols``: Grid dimensions.
 - ``LB``, ``UB``: Lower and upper parameter bounds.
 - ``objective_function``: Objective function for evaluation.
@@ -4593,7 +4593,7 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">    this method:</span>
 
 <span class="sd">        - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.</span>
-<span class="sd">        - ``FlowDirArr``: Flow direction array.</span>
+<span class="sd">        - ``flow_dir_arr``: Flow direction array.</span>
 <span class="sd">        - ``rows``, ``cols``: Grid dimensions.</span>
 <span class="sd">        - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
 <span class="sd">        - ``objective_function``: Objective function for evaluation.</span>
@@ -4627,7 +4627,7 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
         <span class="n">ROWS_MISMATCH_ERROR</span>
     <span class="p">)</span>

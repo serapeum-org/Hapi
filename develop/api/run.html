@@ -2084,7 +2084,7 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">                row counts, column counts, or temporal lengths.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
             <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
         <span class="p">)</span>
@@ -2124,7 +2124,7 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">                dimensions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
             <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
         <span class="p">)</span>
@@ -2186,7 +2186,7 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">                does not match the distributed raster data length.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
             <span class="s2">&quot;all input data should have the same number of rows and columns&quot;</span>
         <span class="p">)</span>
@@ -2726,7 +2726,7 @@ dimensions.</p>
 <span class="sd">            dimensions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
         <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
     <span class="p">)</span>
@@ -2909,7 +2909,7 @@ row counts, column counts, or temporal lengths.</p>
 <span class="sd">            row counts, column counts, or temporal lengths.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
         <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
     <span class="p">)</span>
@@ -3261,7 +3261,7 @@ does not match the distributed raster data length.</p>
 <span class="sd">            does not match the distributed raster data length.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FlowDirArr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
         <span class="s2">&quot;all input data should have the same number of rows and columns&quot;</span>
     <span class="p">)</span>

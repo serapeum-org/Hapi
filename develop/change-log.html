@@ -1733,6 +1733,8 @@
 <li><code>HBV.simulate</code> now takes its arguments in the <code>BaseConceptualModel</code> order
   (<code>prec, temp, et, ll_temp, par, init_st, q_init, snow</code>) — previously <code>par</code> came before <code>ll_temp</code>,
   which also made <code>HBV</code> unusable through <code>Wrapper.Lumped</code>'s positional call.</li>
+<li>Attributes renamed to snake_case: <code>Catchment.FlowDirArr</code> → <code>flow_dir_arr</code>,
+  <code>Catchment.FPLArr</code> → <code>fpl_arr</code>, and <code>Parameters.raster_A</code> → <code>raster_array</code>.</li>
 </ul>
 <h3 id="dependencies"><a class="toclink" href="#dependencies">Dependencies</a><a class="headerlink" href="#dependencies" title="Permanent link">#</a></h3>
 <ul>
