@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://serapeum-org.github.io/Hapi/develop/api/hbv.html">
       
       
-        <link rel="prev" href="distrrm.html">
+        <link rel="prev" href="wrapper.html">
       
       
         <link rel="next" href="hbv-bergestrom92.html">
@@ -792,14 +792,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.html" class="md-nav__link">
+      <a href="distrrm.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall-Runoff Model
+    None
   
 
     
@@ -2470,7 +2470,7 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[float, float]: A tuple of ``(rainfall, snowfall)``</span>
-<span class="sd">                in mm.</span>
+<span class="sd">            in mm.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            Temperature above the upper threshold produces only</span>
@@ -2545,10 +2545,10 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[float, float, float]: A tuple of</span>
-<span class="sd">                ``(infiltration, wc_new, sp_new)`` where</span>
-<span class="sd">                ``infiltration`` is the water draining into the soil</span>
-<span class="sd">                [mm], ``wc_new`` is the updated water content [mm],</span>
-<span class="sd">                and ``sp_new`` is the updated snow pack [mm].</span>
+<span class="sd">            ``(infiltration, wc_new, sp_new)`` where</span>
+<span class="sd">            ``infiltration`` is the water draining into the soil</span>
+<span class="sd">            [mm], ``wc_new`` is the updated water content [mm],</span>
+<span class="sd">            and ``sp_new`` is the updated snow pack [mm].</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            When temperature exceeds the melt threshold, snow melts</span>
@@ -2649,9 +2649,9 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[float, float]: A tuple of ``(sm_new, uz_int_1)``</span>
-<span class="sd">                where ``sm_new`` is the new soil moisture [mm] and</span>
-<span class="sd">                ``uz_int_1`` is the new direct runoff into the upper</span>
-<span class="sd">                zone [mm].</span>
+<span class="sd">            where ``sm_new`` is the new soil moisture [mm] and</span>
+<span class="sd">            ``uz_int_1`` is the new direct runoff into the upper</span>
+<span class="sd">            zone [mm].</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            Compute soil moisture update for a warm day with</span>
@@ -2719,11 +2719,11 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[float, float, float, float]: A tuple of</span>
-<span class="sd">                ``(q_0, q_1, uz_new, lz_new)`` where ``q_0`` is the</span>
-<span class="sd">                upper zone discharge [mm], ``q_1`` is the lower zone</span>
-<span class="sd">                discharge [mm], ``uz_new`` is the updated upper zone</span>
-<span class="sd">                storage [mm], and ``lz_new`` is the updated lower zone</span>
-<span class="sd">                storage [mm].</span>
+<span class="sd">            ``(q_0, q_1, uz_new, lz_new)`` where ``q_0`` is the</span>
+<span class="sd">            upper zone discharge [mm], ``q_1`` is the lower zone</span>
+<span class="sd">            discharge [mm], ``uz_new`` is the updated upper zone</span>
+<span class="sd">            storage [mm], and ``lz_new`` is the updated lower zone</span>
+<span class="sd">            storage [mm].</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            Compute discharge from upper and lower zone storages:</span>
@@ -2781,7 +2781,7 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Array of normalized weights with length</span>
-<span class="sd">                ``maxbas``.</span>
+<span class="sd">            ``maxbas``.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.rrm.hbv import HBV</span>
@@ -2819,7 +2819,7 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Routed discharge time series with the same</span>
-<span class="sd">                length as ``q``.</span>
+<span class="sd">            length as ``q``.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If ``maxbas`` is less than 1.</span>
@@ -2887,10 +2887,10 @@ concrete implementations of all required subroutines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[float, float, list[float]]: A tuple of</span>
-<span class="sd">                ``(q_uz, q_lz, states)`` where ``q_uz`` is the upper</span>
-<span class="sd">                zone discharge [mm], ``q_lz`` is the lower zone</span>
-<span class="sd">                discharge [mm], and ``states`` is a list of five</span>
-<span class="sd">                updated state variables ``[sp, sm, uz, lz, wc]``.</span>
+<span class="sd">            ``(q_uz, q_lz, states)`` where ``q_uz`` is the upper</span>
+<span class="sd">            zone discharge [mm], ``q_lz`` is the lower zone</span>
+<span class="sd">            discharge [mm], and ``states`` is a list of five</span>
+<span class="sd">            updated state variables ``[sp, sm, uz, lz, wc]``.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If ``snow=1`` and the parameter vector</span>
@@ -3294,12 +3294,19 @@ between rainfall and snowfall.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of <code>(rainfall, snowfall)</code>
-in mm.</p>
+                <p>tuple[float, float]: A tuple of <code>(rainfall, snowfall)</code></p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>in mm.</p>
               </div>
             </td>
           </tr>
@@ -3424,7 +3431,7 @@ snowfall:</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple[float, float]: A tuple of ``(rainfall, snowfall)``</span>
-<span class="sd">            in mm.</span>
+<span class="sd">        in mm.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        Temperature above the upper threshold produces only</span>
@@ -3627,16 +3634,61 @@ percolation [mm].</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>tuple[float, float, float, float]: A tuple of</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(q_0, q_1, uz_new, lz_new)</code> where <code>q_0</code> is the</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>upper zone discharge [mm], <code>q_1</code> is the lower zone</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>discharge [mm], <code>uz_new</code> is the updated upper zone</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of
-<code>(q_0, q_1, uz_new, lz_new)</code> where <code>q_0</code> is the
-upper zone discharge [mm], <code>q_1</code> is the lower zone
-discharge [mm], <code>uz_new</code> is the updated upper zone
-storage [mm], and <code>lz_new</code> is the updated lower zone
-storage [mm].</p>
+                <p>storage [mm], and <code>lz_new</code> is the updated lower zone</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>storage [mm].</p>
               </div>
             </td>
           </tr>
@@ -3751,11 +3803,11 @@ storage [mm].</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple[float, float, float, float]: A tuple of</span>
-<span class="sd">            ``(q_0, q_1, uz_new, lz_new)`` where ``q_0`` is the</span>
-<span class="sd">            upper zone discharge [mm], ``q_1`` is the lower zone</span>
-<span class="sd">            discharge [mm], ``uz_new`` is the updated upper zone</span>
-<span class="sd">            storage [mm], and ``lz_new`` is the updated lower zone</span>
-<span class="sd">            storage [mm].</span>
+<span class="sd">        ``(q_0, q_1, uz_new, lz_new)`` where ``q_0`` is the</span>
+<span class="sd">        upper zone discharge [mm], ``q_1`` is the lower zone</span>
+<span class="sd">        discharge [mm], ``uz_new`` is the updated upper zone</span>
+<span class="sd">        storage [mm], and ``lz_new`` is the updated lower zone</span>
+<span class="sd">        storage [mm].</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        Compute discharge from upper and lower zone storages:</span>
@@ -3885,12 +3937,19 @@ function base. Must be &gt;= 1. Default is 1.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Routed discharge time series with the same
-length as <code>q</code>.</p>
+                <p>numpy.ndarray: Routed discharge time series with the same</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>length as <code>q</code>.</p>
               </div>
             </td>
           </tr>
@@ -3993,7 +4052,7 @@ length as <code>q</code>.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Routed discharge time series with the same</span>
-<span class="sd">            length as ``q``.</span>
+<span class="sd">        length as ``q``.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If ``maxbas`` is less than 1.</span>
@@ -4218,11 +4277,11 @@ skip it. Default is 0.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="numpy.ndarray">ndarray</span>, <span title="numpy.ndarray">ndarray</span>, <span title="numpy.ndarray">ndarray</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of <code>(q_uz, q_lz, states)</code> where:</p>
+                <p>tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]:
+A tuple of <code>(q_uz, q_lz, states)</code> where:</p>
 <ul>
 <li><code>q_uz</code>: Upper zone discharge array of length
   <code>n+1</code> (float32).</li>
@@ -4715,15 +4774,51 @@ into the soil as infiltration.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>tuple[float, float, float]: A tuple of</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(infiltration, wc_new, sp_new)</code> where</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>infiltration</code> is the water draining into the soil</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of
-<code>(infiltration, wc_new, sp_new)</code> where
-<code>infiltration</code> is the water draining into the soil
-[mm], <code>wc_new</code> is the updated water content [mm],
-and <code>sp_new</code> is the updated snow pack [mm].</p>
+                <p>[mm], <code>wc_new</code> is the updated water content [mm],</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>and <code>sp_new</code> is the updated snow pack [mm].</p>
               </div>
             </td>
           </tr>
@@ -4889,10 +4984,10 @@ refreezes:</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple[float, float, float]: A tuple of</span>
-<span class="sd">            ``(infiltration, wc_new, sp_new)`` where</span>
-<span class="sd">            ``infiltration`` is the water draining into the soil</span>
-<span class="sd">            [mm], ``wc_new`` is the updated water content [mm],</span>
-<span class="sd">            and ``sp_new`` is the updated snow pack [mm].</span>
+<span class="sd">        ``(infiltration, wc_new, sp_new)`` where</span>
+<span class="sd">        ``infiltration`` is the water draining into the soil</span>
+<span class="sd">        [mm], ``wc_new`` is the updated water content [mm],</span>
+<span class="sd">        and ``sp_new`` is the updated snow pack [mm].</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        When temperature exceeds the melt threshold, snow melts</span>
@@ -5216,14 +5311,41 @@ separation.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>tuple[float, float]: A tuple of <code>(sm_new, uz_int_1)</code></p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>where <code>sm_new</code> is the new soil moisture [mm] and</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of <code>(sm_new, uz_int_1)</code>
-where <code>sm_new</code> is the new soil moisture [mm] and
-<code>uz_int_1</code> is the new direct runoff into the upper
-zone [mm].</p>
+                <p><code>uz_int_1</code> is the new direct runoff into the upper</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>zone [mm].</p>
               </div>
             </td>
           </tr>
@@ -5352,9 +5474,9 @@ infiltration:</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple[float, float]: A tuple of ``(sm_new, uz_int_1)``</span>
-<span class="sd">            where ``sm_new`` is the new soil moisture [mm] and</span>
-<span class="sd">            ``uz_int_1`` is the new direct runoff into the upper</span>
-<span class="sd">            zone [mm].</span>
+<span class="sd">        where ``sm_new`` is the new soil moisture [mm] and</span>
+<span class="sd">        ``uz_int_1`` is the new direct runoff into the upper</span>
+<span class="sd">        zone [mm].</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        Compute soil moisture update for a warm day with</span>
@@ -5532,15 +5654,46 @@ skip it. Default is 0.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="list">list</span>[<span title="float">float</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of
-<code>(q_uz, q_lz, states)</code> where <code>q_uz</code> is the upper
-zone discharge [mm], <code>q_lz</code> is the lower zone
-discharge [mm], and <code>states</code> is a list of five
-updated state variables <code>[sp, sm, uz, lz, wc]</code>.</p>
+                <p>tuple[float, float, list[float]]: A tuple of</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(q_uz, q_lz, states)</code> where <code>q_uz</code> is the upper</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>zone discharge [mm], <code>q_lz</code> is the lower zone</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>discharge [mm], and <code>states</code> is a list of five</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>updated state variables <code>[sp, sm, uz, lz, wc]</code>.</p>
               </div>
             </td>
           </tr>
@@ -5803,10 +5956,10 @@ does not have 18 elements.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple[float, float, list[float]]: A tuple of</span>
-<span class="sd">            ``(q_uz, q_lz, states)`` where ``q_uz`` is the upper</span>
-<span class="sd">            zone discharge [mm], ``q_lz`` is the lower zone</span>
-<span class="sd">            discharge [mm], and ``states`` is a list of five</span>
-<span class="sd">            updated state variables ``[sp, sm, uz, lz, wc]``.</span>
+<span class="sd">        ``(q_uz, q_lz, states)`` where ``q_uz`` is the upper</span>
+<span class="sd">        zone discharge [mm], ``q_lz`` is the lower zone</span>
+<span class="sd">        discharge [mm], and ``states`` is a list of five</span>
+<span class="sd">        updated state variables ``[sp, sm, uz, lz, wc]``.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If ``snow=1`` and the parameter vector</span>
@@ -6020,8 +6173,17 @@ function base. Must be &gt;= 1.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Array of normalized weights with length
-<code>maxbas</code>.</p>
+                <p>numpy.ndarray: Array of normalized weights with length</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>maxbas</code>.</p>
               </div>
             </td>
           </tr>
@@ -6092,7 +6254,7 @@ function base. Must be &gt;= 1.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Array of normalized weights with length</span>
-<span class="sd">            ``maxbas``.</span>
+<span class="sd">        ``maxbas``.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from hapi.rrm.hbv import HBV</span>
@@ -6163,7 +6325,7 @@ function base. Must be &gt;= 1.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="distrrm.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Distributed Rainfall-Runoff Model">
+          <a href="wrapper.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Wrapper">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -6173,7 +6335,7 @@ function base. Must be &gt;= 1.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Distributed Rainfall-Runoff Model
+                Wrapper
               </div>
             </div>
           </a>

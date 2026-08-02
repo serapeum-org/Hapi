@@ -792,14 +792,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.html" class="md-nav__link">
+      <a href="distrrm.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall-Runoff Model
+    None
   
 
     
@@ -3392,11 +3392,10 @@ duration.  Can be a non-integer value.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Array of routing weights.  The length is
+                <p>numpy.ndarray: Array of routing weights.  The length is
 <code>floor(maxbas)</code> for integer values or
 <code>floor(maxbas) + 1</code> for non-integer values.</p>
               </div>
@@ -3686,11 +3685,10 @@ duration.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Routed output hydrograph with shape
+                <p>numpy.ndarray: Routed output hydrograph with shape
 <code>(len(q), 1)</code>.</p>
               </div>
             </td>
@@ -4060,15 +4058,13 @@ interface compatibility.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="list">list</span>[<span title="float">float</span>], <span title="list">list</span>[<span title="list">list</span>[<span title="float">float</span>]]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <ul>
-<li>Simulated discharge for <code>n + 1</code> time steps [m3/s]
-  (includes the initial value).</li>
-<li>Model states for <code>n + 1</code> time steps.</li>
-</ul>
+                <p>tuple[list[float], list[list[float]]]:
+- Simulated discharge for <code>n + 1</code> time steps [m3/s]
+  (includes the initial value).
+- Model states for <code>n + 1</code> time steps.</p>
               </div>
             </td>
           </tr>

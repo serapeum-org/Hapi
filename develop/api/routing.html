@@ -950,14 +950,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.html" class="md-nav__link">
+      <a href="distrrm.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall-Runoff Model
+    None
   
 
     
@@ -2085,7 +2085,7 @@ approaches:</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Routed outflow hydrograph with the same</span>
-<span class="sd">                length as ``inflow``, rounded to four decimal places.</span>
+<span class="sd">            length as ``inflow``, rounded to four decimal places.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; import numpy as np</span>
@@ -2142,7 +2142,7 @@ approaches:</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Routed outflow hydrograph with the same</span>
-<span class="sd">                length as ``inflow``.</span>
+<span class="sd">            length as ``inflow``.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; import numpy as np</span>
@@ -2186,7 +2186,7 @@ approaches:</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Array of normalized weights with length</span>
-<span class="sd">                ``maxbas`` that sum to 1.0.</span>
+<span class="sd">            ``maxbas`` that sum to 1.0.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.routing import Routing</span>
@@ -2227,7 +2227,7 @@ approaches:</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Routed discharge time series with the same</span>
-<span class="sd">                length as ``q``.</span>
+<span class="sd">            length as ``q``.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If ``maxbas`` is less than 1.</span>
@@ -2272,8 +2272,8 @@ approaches:</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Array of normalized routing weights. The</span>
-<span class="sd">                length is ``floor(MAXBAS)`` for integer values, or</span>
-<span class="sd">                ``floor(MAXBAS) + 1`` for non-integer values.</span>
+<span class="sd">            length is ``floor(MAXBAS)`` for integer values, or</span>
+<span class="sd">            ``floor(MAXBAS) + 1`` for non-integer values.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.routing import Routing</span>
@@ -2367,7 +2367,7 @@ approaches:</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Routed output hydrograph with the same</span>
-<span class="sd">                length as ``Q``.</span>
+<span class="sd">            length as ``Q``.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; import numpy as np</span>
@@ -2534,13 +2534,28 @@ distributed. Can be an integer or a decimal value.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Array of normalized routing weights. The
-length is <code>floor(MAXBAS)</code> for integer values, or
-<code>floor(MAXBAS) + 1</code> for non-integer values.</p>
+                <p>numpy.ndarray: Array of normalized routing weights. The</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>length is <code>floor(MAXBAS)</code> for integer values, or</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>floor(MAXBAS) + 1</code> for non-integer values.</p>
               </div>
             </td>
           </tr>
@@ -2661,8 +2676,8 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Array of normalized routing weights. The</span>
-<span class="sd">            length is ``floor(MAXBAS)`` for integer values, or</span>
-<span class="sd">            ``floor(MAXBAS) + 1`` for non-integer values.</span>
+<span class="sd">        length is ``floor(MAXBAS)`` for integer values, or</span>
+<span class="sd">        ``floor(MAXBAS) + 1`` for non-integer values.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from hapi.routing import Routing</span>
@@ -2879,12 +2894,19 @@ attenuation).</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Routed outflow hydrograph with the same
-length as <code>inflow</code>, rounded to four decimal places.</p>
+                <p>numpy.ndarray: Routed outflow hydrograph with the same</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>length as <code>inflow</code>, rounded to four decimal places.</p>
               </div>
             </td>
           </tr>
@@ -2979,7 +3001,7 @@ length as <code>inflow</code>, rounded to four decimal places.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Routed outflow hydrograph with the same</span>
-<span class="sd">            length as ``inflow``, rounded to four decimal places.</span>
+<span class="sd">        length as ``inflow``, rounded to four decimal places.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
@@ -3154,8 +3176,17 @@ same units as <code>k</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Routed outflow hydrograph with the same
-length as <code>inflow</code>.</p>
+                <p>numpy.ndarray: Routed outflow hydrograph with the same</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>length as <code>inflow</code>.</p>
               </div>
             </td>
           </tr>
@@ -3261,7 +3292,7 @@ length as <code>inflow</code>.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Routed outflow hydrograph with the same</span>
-<span class="sd">            length as ``inflow``.</span>
+<span class="sd">        length as ``inflow``.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
@@ -3365,12 +3396,19 @@ the discharge. Must be &gt;= 1.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Array of normalized weights with length
-<code>maxbas</code> that sum to 1.0.</p>
+                <p>numpy.ndarray: Array of normalized weights with length</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>maxbas</code> that sum to 1.0.</p>
               </div>
             </td>
           </tr>
@@ -3441,7 +3479,7 @@ the discharge. Must be &gt;= 1.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Array of normalized weights with length</span>
-<span class="sd">            ``maxbas`` that sum to 1.0.</span>
+<span class="sd">        ``maxbas`` that sum to 1.0.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from hapi.routing import Routing</span>
@@ -3560,12 +3598,19 @@ time steps over which the discharge is spread.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Routed output hydrograph with the same
-length as <code>Q</code>.</p>
+                <p>numpy.ndarray: Routed output hydrograph with the same</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>length as <code>Q</code>.</p>
               </div>
             </td>
           </tr>
@@ -3672,7 +3717,7 @@ length as <code>Q</code>.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Routed output hydrograph with the same</span>
-<span class="sd">            length as ``Q``.</span>
+<span class="sd">        length as ``Q``.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
@@ -3812,12 +3857,19 @@ routing kernel. Must be &gt;= 1. Defaults to 1.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Routed discharge time series with the same
-length as <code>q</code>.</p>
+                <p>numpy.ndarray: Routed discharge time series with the same</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>length as <code>q</code>.</p>
               </div>
             </td>
           </tr>
@@ -3921,7 +3973,7 @@ length as <code>q</code>.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Routed discharge time series with the same</span>
-<span class="sd">            length as ``q``.</span>
+<span class="sd">        length as ``q``.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If ``maxbas`` is less than 1.</span>
