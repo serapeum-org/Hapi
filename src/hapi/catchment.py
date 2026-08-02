@@ -18,6 +18,7 @@ from __future__ import annotations
 import datetime as dt
 import inspect
 import os
+import warnings
 from typing import TYPE_CHECKING
 
 import matplotlib.dates as dates
@@ -39,6 +40,29 @@ if TYPE_CHECKING:
     from hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
+
+
+def _warn_if_no_sentinel(dataset, label: str) -> None:
+    """Warn when a raster declares no no-data value, so the whole grid is the domain.
+
+    Before masking was delegated to pyramids, a raster with no marker raised
+    ``TypeError`` from `math.isclose(value, None)` — accidental, but loud. pyramids
+    masks nothing instead, which is the correct reading of such a raster but silently
+    makes every cell part of the catchment. Warn rather than raise: a raster legitimately
+    having no marker is valid input.
+
+    Args:
+        dataset: The opened pyramids ``Dataset``.
+        label: Human-readable name of the input, used in the message.
+    """
+    if dataset.no_data_value[0] is None:
+        warnings.warn(
+            f"the {label} raster declares no no-data value, so every cell is treated as "
+            "inside the catchment. If it has a sentinel, set it on the band; otherwise "
+            "check that a whole-grid domain is intended.",
+            UserWarning,
+            stacklevel=3,
+        )
 
 
 def _to_int_codes(array: np.ndarray) -> np.typing.NDArray:
@@ -492,6 +516,7 @@ class Catchment:
         self.cols = flow_acc.columns
         # check flow accumulation input raster
         self.NoDataValue = flow_acc.no_data_value[0]
+        _warn_if_no_sentinel(flow_acc, "flow accumulation")
         # Let pyramids resolve the no-data mask: it is vectorised and dtype-aware
         # (exact equality on integer bands, NaN-aware on float ones) and it also
         # honours the band's GDAL mask band. Filling with NaN keeps the
@@ -632,6 +657,7 @@ class Catchment:
         # FileNotFoundError, a non-path argument TypeError, and an unreadable file a
         # GDAL RuntimeError. Unlike the asserts these replace, they survive `python -O`.
         flow_dir = DEM.read_file(path)
+        _warn_if_no_sentinel(flow_dir, "flow direction")
         # No-data masking is delegated to pyramids (see read_flow_acc).
         self.flow_dir_arr = np.ma.filled(
             flow_dir.read_array(band=0, masked=True).astype(float), np.nan
@@ -722,6 +748,7 @@ class Catchment:
             fpl.read_array(band=0, masked=True).astype(float), np.nan
         )
         self.NoDataValue = fpl.no_data_value[0]
+        _warn_if_no_sentinel(fpl, "flow path length")
         # check flow accumulation input raster
         # Count the cells the pyramids mask left intact (see read_flow_acc).
         self.no_elem = int(np.count_nonzero(~np.isnan(self.fpl_arr)))

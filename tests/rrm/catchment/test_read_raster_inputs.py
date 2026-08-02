@@ -133,6 +133,29 @@ class TestReadFlowAcc:
             f"all 4 cells are real data, got no_elem={catchment.no_elem}"
         )
 
+    def test_missing_sentinel_warns(self, catchment, write_raster):
+        """Test that a raster with no no-data marker warns instead of failing silently.
+
+        Test scenario:
+            Before masking was delegated, such a raster raised ``TypeError`` from
+            ``math.isclose(value, None)`` — accidental, but loud. pyramids masks nothing,
+            which is the right reading but silently makes the whole grid the domain. A
+            raster legitimately having no marker is valid input, so this warns rather
+            than raising.
+        """
+        path = write_raster(
+            np.array([[0, 1], [2, 3]], dtype="int32"),
+            no_data_value=None,
+            name="acc_nosentinel.tif",
+        )
+
+        with pytest.warns(UserWarning, match="declares no no-data value"):
+            catchment.read_flow_acc(path)
+
+        assert catchment.no_elem == 4, (
+            f"with no sentinel every cell is domain, got {catchment.no_elem}"
+        )
+
     def test_counts_domain_cells_excluding_no_data(self, catchment, write_raster):
         """Test that ``no_elem`` counts only cells inside the domain.
 

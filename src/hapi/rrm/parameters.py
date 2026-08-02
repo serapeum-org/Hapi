@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import warnings
 
 import numpy as np
 from pyramids.dataset import Dataset
@@ -183,6 +184,14 @@ class Parameters:
         self.cols = raster.columns
         # get the no_value of in the raster
         self.noval = raster.no_data_value[0]
+        if self.noval is None:
+            warnings.warn(
+                "the raster declares no no-data value, so every cell is treated as "
+                "inside the catchment and the parameter vector is sized for the whole "
+                "grid. If it has a sentinel, set it on the band.",
+                UserWarning,
+                stacklevel=2,
+            )
 
         # count the number of non-empty cells
         if self.HRUs:
