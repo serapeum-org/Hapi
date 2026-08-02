@@ -600,9 +600,10 @@ class Catchment:
         self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr))
 
         # Cell geometry comes from the named fields of the affine transform rather than
-        # positional geotransform indices. pixel_width/pixel_height are read separately
-        # (and abs()-ed, since pixel_height is negative on a north-up grid) so non-square
-        # cells are not silently squared off.
+        # positional geotransform indices. This is a legibility change only: the
+        # expression it replaced already read the two pixel dimensions separately, so
+        # non-square grids were handled correctly before and after. What changed is that
+        # `geo_trans[-1]` no longer requires the reader to know the geotransform layout.
         transform = flow_acc.transform
         dx = abs(transform.pixel_width) / 1000.0  # dx in Km
         dy = abs(transform.pixel_height) / 1000.0  # dy in Km

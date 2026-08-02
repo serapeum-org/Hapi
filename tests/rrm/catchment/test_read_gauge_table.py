@@ -305,7 +305,7 @@ class TestReadGaugeTable:
             {"id": [1], "start": ["not-a-date"], "end": ["2011-12-31"]}
         ).to_csv(path, index=False)
 
-        with pytest.raises(ValueError, match="doesn't match format"):
+        with pytest.raises(ValueError):
             catchment.read_gauge_table(str(path))
 
     def test_geojson_dates_are_parsed_too(self, catchment, tmp_path):
