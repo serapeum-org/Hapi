@@ -237,12 +237,12 @@ class Calibration(Catchment):
         ### optimization
 
         # get arguments
-        ApiObjArgs = optimization_args[0]
+        api_obj_args = optimization_args[0]
         pll_type = optimization_args[1]
-        ApiSolveArgs = optimization_args[2]
+        api_solve_args = optimization_args[2]
         # check optimization arguement
-        assert type(ApiObjArgs) is dict, "store_history should be 0 or 1"
-        assert type(ApiSolveArgs) is dict, "history_fname should be of type string "
+        assert type(api_obj_args) is dict, "store_history should be 0 or 1"
+        assert type(api_solve_args) is dict, "history_fname should be of type string "
 
         print("Calibration starts")
 
@@ -299,12 +299,12 @@ class Calibration(Catchment):
 
         print(opt_prob)
 
-        opt_engine = HSapi(pll_type=pll_type, options=ApiObjArgs)
+        opt_engine = HSapi(pll_type=pll_type, options=api_obj_args)
 
-        store_sol = ApiSolveArgs["store_sol"]
-        display_opts = ApiSolveArgs["display_opts"]
-        store_hst = ApiSolveArgs["store_hst"]
-        hot_start = ApiSolveArgs["hot_start"]
+        store_sol = api_solve_args["store_sol"]
+        display_opts = api_solve_args["display_opts"]
+        store_hst = api_solve_args["store_hst"]
+        hot_start = api_solve_args["hot_start"]
 
         res = opt_engine(
             opt_prob,
@@ -393,12 +393,12 @@ class Calibration(Catchment):
         ### optimization
 
         # get arguments
-        ApiObjArgs = optimization_args[0]
+        api_obj_args = optimization_args[0]
         pll_type = optimization_args[1]
-        ApiSolveArgs = optimization_args[2]
+        api_solve_args = optimization_args[2]
         # check optimization arguement
-        assert type(ApiObjArgs) is dict, "store_history should be 0 or 1"
-        assert type(ApiSolveArgs) is dict, "history_fname should be of type string "
+        assert type(api_obj_args) is dict, "store_history should be 0 or 1"
+        assert type(api_solve_args) is dict, "history_fname should be of type string "
 
         print("Calibration starts")
 
@@ -440,12 +440,12 @@ class Calibration(Catchment):
 
         print(opt_prob)
 
-        opt_engine = HSapi(pll_type=pll_type, options=ApiObjArgs)
+        opt_engine = HSapi(pll_type=pll_type, options=api_obj_args)
 
-        store_sol = ApiSolveArgs["store_sol"]
-        display_opts = ApiSolveArgs["display_opts"]
-        store_hst = ApiSolveArgs["store_hst"]
-        hot_start = ApiSolveArgs["hot_start"]
+        store_sol = api_solve_args["store_sol"]
+        display_opts = api_solve_args["display_opts"]
+        store_hst = api_solve_args["store_hst"]
+        hot_start = api_solve_args["hot_start"]
 
         res = opt_engine(
             opt_prob,
@@ -486,7 +486,7 @@ class Calibration(Catchment):
         Args:
             basic_inputs (dict): Dictionary containing:
                 - ``"Route"`` (int): Routing flag (1 to enable routing).
-                - ``"routing_fn"`` (callable): Routing function to use.
+                - ``"RoutingFn"`` (callable): Routing function to use.
                 - ``"InitialValues"`` (list, optional): Initial parameter
                   values for the optimizer. Defaults to an empty list if
                   not provided.
@@ -508,31 +508,33 @@ class Calibration(Catchment):
 
         Raises:
             AssertionError: If ``basic_inputs`` is missing required keys
-                ``"Route"`` or ``"routing_fn"``, or if optimization
+                ``"Route"`` or ``"RoutingFn"``, or if optimization
                 arguments are not dictionaries.
         """
         # basic inputs
         # check if all inputs are included
-        assert all(["Route", "routing_fn"][i] in basic_inputs for i in range(2)), (
+        assert all(["Route", "RoutingFn"][i] in basic_inputs for i in range(2)), (
             "basic_inputs should contain ['p2','init_st','UB','LB'] "
         )
 
-        Route = basic_inputs["Route"]
-        routing_fn = basic_inputs["routing_fn"]
+        route = basic_inputs["Route"]
+        routing_fn = basic_inputs["RoutingFn"]
         if "InitialValues" in basic_inputs:
-            InitialValues = basic_inputs["InitialValues"]
+            initial_values = basic_inputs["InitialValues"]
         else:
-            InitialValues = []
+            initial_values = []
 
         ### optimization
 
         # get arguments
-        ApiObjArgs = optimization_args[0]
+        api_obj_args = optimization_args[0]
         pll_type = optimization_args[1]
-        ApiSolveArgs = optimization_args[2]
+        api_solve_args = optimization_args[2]
         # check optimization arguement
-        assert isinstance(ApiObjArgs, dict), "store_history should be 0 or 1"
-        assert isinstance(ApiSolveArgs, dict), "history_fname should be of type string "
+        assert isinstance(api_obj_args, dict), "store_history should be 0 or 1"
+        assert isinstance(api_solve_args, dict), (
+            "history_fname should be of type string "
+        )
 
         print("Calibration starts")
 
@@ -542,7 +544,7 @@ class Calibration(Catchment):
                 # parameters
                 self.Parameters = par
                 # run the model
-                Wrapper.Lumped(self, Route, routing_fn)
+                Wrapper.Lumped(self, route, routing_fn)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
@@ -571,14 +573,14 @@ class Calibration(Catchment):
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
 
-        if InitialValues != []:
+        if initial_values != []:
             for i in range(len(self.LB)):
                 opt_prob.addVar(
                     f"x{i}",
                     type="c",
                     lower=self.LB[i],
                     upper=self.UB[i],
-                    value=InitialValues[i],
+                    value=initial_values[i],
                 )
         else:
             for i in range(len(self.LB)):
@@ -589,19 +591,19 @@ class Calibration(Catchment):
         opt_prob.addCon("g1", "i")
         opt_prob.addCon("g2", "i")
         # print(opt_prob)
-        opt_engine = HSapi(pll_type=pll_type, options=ApiObjArgs)
+        opt_engine = HSapi(pll_type=pll_type, options=api_obj_args)
 
-        # parse the ApiSolveArgs inputs
+        # parse the api_solve_args inputs
         # availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]
-        store_sol = ApiSolveArgs["store_sol"]
-        display_opts = ApiSolveArgs["display_opts"]
-        store_hst = ApiSolveArgs["store_hst"]
-        hot_start = ApiSolveArgs["hot_start"]
+        store_sol = api_solve_args["store_sol"]
+        display_opts = api_solve_args["display_opts"]
+        store_hst = api_solve_args["store_hst"]
+        hot_start = api_solve_args["hot_start"]
 
         # for i in range(len(availablekeys)):
-        # if availablekeys[i] in ApiSolveArgs.keys():
-        # exec(availablekeys[i] + "=" + str(ApiSolveArgs[availablekeys[i]]))
-        # print(availablekeys[i] + " = " + str(ApiSolveArgs[availablekeys[i]]))
+        # if availablekeys[i] in api_solve_args.keys():
+        # exec(availablekeys[i] + "=" + str(api_solve_args[availablekeys[i]]))
+        # print(availablekeys[i] + " = " + str(api_solve_args[availablekeys[i]]))
 
         res = opt_engine(
             opt_prob,

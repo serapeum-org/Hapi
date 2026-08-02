@@ -45,7 +45,7 @@ parameters = []
 Route = 1
 routing_fn = Routing.triangular_routing_1
 
-basic_inputs = dict(Route=Route, routing_fn=routing_fn, InitialValues=parameters)
+basic_inputs = dict(Route=Route, RoutingFn=routing_fn, InitialValues=parameters)
 # %%
 ### Objective function
 # outlet discharge

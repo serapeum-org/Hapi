@@ -47,7 +47,7 @@ def test_lumped_calibration(
     Route = 1
     routing_fn = Routing.triangular_routing_1
 
-    basic_inputs = dict(Route=Route, routing_fn=routing_fn, InitialValues=parameters)
+    basic_inputs = dict(Route=Route, RoutingFn=routing_fn, InitialValues=parameters)
 
     # discharge gauges
     Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
