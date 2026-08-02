@@ -301,7 +301,9 @@ class TestParametersMasking:
             f"hru=True should override function=2, got {parameters.Function.__name__}"
         )
 
-    @pytest.mark.parametrize("bad", [0, 5, 99, -1, "2", None])
+    @pytest.mark.parametrize(
+        "bad", [0, 5, 99, -1, "2", None, True, False, 1.0, 2.0, [1], {1}]
+    )
     def test_unknown_function_is_rejected(self, bad):
         """Test that an unrecognised ``function`` selector fails at construction.
 
@@ -313,6 +315,12 @@ class TestParametersMasking:
             selector constructed happily and never bound ``Function`` at all. The mistake
             then surfaced far away, mid-calibration, as a bare ``AttributeError``. It is
             now rejected where it is supplied, and the message names the valid values.
+
+            The parametrisation covers the type traps too: ``True`` is an ``int``
+            subclass and would otherwise select strategy 1; ``1.0``/``2.0`` are caller
+            errors rather than spellings of 1 and 2; and an unhashable ``[1]``/``{1}``
+            used to raise ``TypeError`` from the membership test instead of the
+            documented ``ValueError``.
         """
         raster = self._raster(np.array([[1, 2], [3, NO_DATA]], dtype="int32"))
 

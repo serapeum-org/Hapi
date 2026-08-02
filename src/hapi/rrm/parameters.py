@@ -84,7 +84,9 @@ class Parameters:
 
         Raises:
             TypeError: If `raster` is not a pyramids Dataset.
-            ValueError: If `function` is not one of 1, 2, 3 or 4.
+            ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,
+                a `float` such as ``2.0``, and an unhashable value are all rejected
+                rather than coerced or allowed to raise `TypeError`.
             AssertionError: If `no_parameters` is not an integer, if
                 `no_lumped_par` is not an integer, or if the length of
                 `lumped_par_pos` does not match `no_lumped_par`.
@@ -247,6 +249,17 @@ class Parameters:
             3: self.par2d_lumped_k1_lake,
             4: self.hydrologic_response_units,
         }
+        # Test the type before the membership lookup: an unhashable selector (a list,
+        # a set) raises TypeError from `in` rather than the documented ValueError, and
+        # bool is a subclass of int, so True would otherwise silently select strategy 1.
+        # A float is rejected outright rather than coerced -- 2.0 is a caller error, not
+        # a spelling of 2.
+        if isinstance(function, bool) or not isinstance(function, int):
+            raise ValueError(
+                f"function must be one of {sorted(strategies)}; got {function!r} of type "
+                f"{type(function).__name__}. 1 = par3d_lumped, 2 = par3d, "
+                "3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units."
+            )
         if function not in strategies:
             raise ValueError(
                 f"function must be one of {sorted(strategies)}; got {function!r}. "
