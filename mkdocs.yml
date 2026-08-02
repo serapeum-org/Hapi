@@ -62,6 +62,11 @@ plugins:
             group_by_category: false
             inherited_members: false
             docstring_style: google
+            docstring_options:
+              # The docstrings write returns as "type: description", not
+              # "name: description", so griffe must not read the leading token
+              # as a return value name.
+              returns_named_value: false
   - table-reader
   - tags
   - mike:

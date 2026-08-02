@@ -21,7 +21,7 @@ import os
 import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
@@ -1533,7 +1533,7 @@ class Catchment:
         fmt: str = "%Y-%m-%d",
         option: int = 1,
         gauges: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ):
         """Animate distributed model results or meteorological inputs.
 

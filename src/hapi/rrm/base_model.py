@@ -95,7 +95,7 @@ class BaseConceptualModel(ABC):
 
         Returns:
             tuple[float, float]: A tuple of ``(rainfall, snowfall)``
-            in mm.
+                in mm.
 
         Examples:
             >>> from hapi.rrm.hbv import HBV
@@ -134,10 +134,10 @@ class BaseConceptualModel(ABC):
 
         Returns:
             tuple[float, float, float]: A tuple of
-            ``(infiltration, wc_new, sp_new)`` where
-            ``infiltration`` is the water draining into the soil
-            [mm], ``wc_new`` is the updated liquid water content
-            [mm], and ``sp_new`` is the updated snow pack [mm].
+                ``(infiltration, wc_new, sp_new)`` where
+                ``infiltration`` is the water draining into the soil
+                [mm], ``wc_new`` is the updated liquid water content
+                [mm], and ``sp_new`` is the updated snow pack [mm].
 
         Examples:
             >>> from hapi.rrm.hbv import HBV
@@ -196,9 +196,9 @@ class BaseConceptualModel(ABC):
 
         Returns:
             tuple[float, float]: A tuple of ``(sm_new, uz_int_1)``
-            where ``sm_new`` is the new soil moisture [mm] and
-            ``uz_int_1`` is the new direct runoff into the upper
-            zone [mm].
+                where ``sm_new`` is the new soil moisture [mm] and
+                ``uz_int_1`` is the new direct runoff into the upper
+                zone [mm].
 
         Examples:
             >>> from hapi.rrm.hbv import HBV
@@ -239,10 +239,10 @@ class BaseConceptualModel(ABC):
 
         Returns:
             tuple[float, float, float]: A tuple of
-            ``(q_new, uz_new, lz_new)`` where ``q_new`` is the total
-            discharge [m^3/s], ``uz_new`` is the updated upper zone
-            storage [mm], and ``lz_new`` is the updated lower zone
-            storage [mm].
+                ``(q_new, uz_new, lz_new)`` where ``q_new`` is the total
+                discharge [m^3/s], ``uz_new`` is the updated upper zone
+                storage [mm], and ``lz_new`` is the updated lower zone
+                storage [mm].
 
         Examples:
             >>> from hapi.rrm.hbv import HBV
@@ -269,7 +269,7 @@ class BaseConceptualModel(ABC):
 
         Returns:
             numpy.ndarray: Routed discharge time series with the same
-            length as ``q``.
+                length as ``q``.
 
         Raises:
             AssertionError: If ``maxbas`` is less than 1.
@@ -321,13 +321,13 @@ class BaseConceptualModel(ABC):
 
         Returns:
             tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]:
-            A tuple of ``(q_uz, q_lz, states)`` where:
+                A tuple of ``(q_uz, q_lz, states)`` where:
 
-            - ``q_uz``: Upper zone discharge array of length
+                - ``q_uz``: Upper zone discharge array of length
               ``n+1``.
-            - ``q_lz``: Lower zone discharge array of length
+                - ``q_lz``: Lower zone discharge array of length
               ``n+1``.
-            - ``states``: Model states array of shape ``(n+1, 5)``.
+                - ``states``: Model states array of shape ``(n+1, 5)``.
 
         Examples:
             >>> import numpy as np

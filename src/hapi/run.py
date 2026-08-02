@@ -8,11 +8,15 @@ at known locations based on a given performance function.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from loguru import logger
 
 from hapi.catchment import Catchment
+from hapi.catchment import Lake as LakeType
 
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
@@ -145,7 +149,7 @@ class Run(Catchment):
         # SV.KinematicRaster(self)
         # print("1D model Run has finished")
 
-    def runHAPIwithLake(self, Lake):
+    def runHAPIwithLake(self, lake: LakeType):
         """Run the distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -154,7 +158,7 @@ class Run(Catchment):
         the Wrapper.
 
         Args:
-            Lake: Lake object containing lake configuration and
+            lake: Lake object containing lake configuration and
                 meteorological data. Must have a ``MeteoData`` attribute
                 with shape ``(time_steps, >= 3)`` where columns are
                 rain, ET, and temperature.
@@ -187,15 +191,15 @@ class Run(Catchment):
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
-        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], (
+        assert np.shape(lake.MeteoData)[0] == np.shape(self.Prec)[2], (
             "Lake meteorological data has to have the same length as the distributed raster data"
         )
-        assert np.shape(Lake.MeteoData)[1] >= 3, (
+        assert np.shape(lake.MeteoData)[1] >= 3, (
             "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
         )
 
         # run the model
-        Wrapper.RRMWithlake(self, Lake)
+        Wrapper.RRMWithlake(self, lake)
 
         print("Model Run has finished")
 
@@ -237,7 +241,7 @@ class Run(Catchment):
 
         print("Model Run has finished")
 
-    def RunFW1withLake(self, Lake):
+    def RunFW1withLake(self, lake: LakeType):
         """Run the FW1 distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -245,7 +249,7 @@ class Run(Catchment):
         then executes the FW1 model with lake routing via the Wrapper.
 
         Args:
-            Lake: Lake object containing lake configuration and
+            lake: Lake object containing lake configuration and
                 meteorological data. Must have a ``MeteoData`` attribute
                 with shape ``(time_steps, >= 3)`` where columns are
                 rain, ET, and temperature.
@@ -291,20 +295,20 @@ class Run(Catchment):
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
-        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], (
+        assert np.shape(lake.MeteoData)[0] == np.shape(self.Prec)[2], (
             "Lake meteorological data has to have the same length as the distributed raster data"
         )
-        assert np.shape(Lake.MeteoData)[1] >= 3, (
+        assert np.shape(lake.MeteoData)[1] >= 3, (
             "Lake Meteo data has to have at least three columns rain, ET, and Temp"
         )
 
         # run the model
-        Wrapper.FW1Withlake(self, Lake)
+        Wrapper.FW1Withlake(self, lake)
 
     def runLumped(
         self,
         Route: int = 0,
-        RoutingFn=None,
+        routing_fn: Callable[..., Any] | None = None,
     ):
         """Run the lumped conceptual model.
 
@@ -317,7 +321,7 @@ class Run(Catchment):
             Route: Flag to decide whether to route the generated
                 discharge hydrograph. Use 0 for no routing or 1 to
                 enable routing. Defaults to 0.
-            RoutingFn: Function to route the discharge hydrograph.
+            routing_fn: Function to route the discharge hydrograph.
                 If None, an empty list is used. Defaults to None.
 
         Note:
@@ -339,8 +343,8 @@ class Run(Catchment):
             - ``Snow``: Whether to use the snow subroutine (0 or 1).
             - ``q_init``: Initial discharge value.
         """
-        if RoutingFn is None and Route != 0:
-            raise ValueError("RoutingFn must be a callable when Route != 0")
+        if routing_fn is None and Route != 0:
+            raise ValueError("routing_fn must be a callable when Route != 0")
         if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
@@ -348,7 +352,7 @@ class Run(Catchment):
 
         Qsim = pd.DataFrame(index=ind)
 
-        Wrapper.Lumped(self, Route, RoutingFn)
+        Wrapper.Lumped(self, Route, routing_fn)
         Qsim["q"] = self.Qsim
         self.Qsim = Qsim[:]
         logger.info("Lumped model run has finished successfully")

@@ -5,8 +5,8 @@ After preparing all the meteorological, GIS inputs required for the model, and E
 import numpy as np
 import datetime as dt
 from osgeo import gdal
-from Hapi.calibration import Calibration
-import Hapi.rrm.hbv_bergestrom92 as HBV
+from hapi.calibration import Calibration
+import hapi.rrm.hbv_bergestrom92 as HBV
 
 import statista.descriptors as metrics
 
@@ -32,20 +32,20 @@ name = "Coello"
 Coello = Calibration(name, Sdate, Edate, SpatialResolution = "Distributed")
 
 # Meteorological & GIS Data
-Coello.readRainfall(PrecPath)
-Coello.readTemperature(TempPath)
-Coello.readET(Evap_Path)
+Coello.read_rainfall(PrecPath)
+Coello.read_temperature(TempPath)
+Coello.read_et(Evap_Path)
 
-Coello.readFlowAcc(FlowAccPath)
-Coello.readFlowDir(FlowDPath)
+Coello.read_flow_acc(FlowAccPath)
+Coello.read_flow_dir(FlowDPath)
 
 # Lumped Model
-Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 # Gauges Data
-Coello.readGaugeTable(Path+"/stations/gauges.csv", FlowAccPath)
+Coello.read_gauge_table(Path+"/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path+"/stations/"
-Coello.readDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 
@@ -55,7 +55,7 @@ Coello.readDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 - The `DistParameters` distribute the parameter vector on the cells following some spatial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in an additional map)
 
 ```python
-from Hapi.rrm.distparameters import DistParameters as DP
+from hapi.rrm.parameters import Parameters as DP
 
 raster = gdal.Open(FlowAccPath)
 #-------------
@@ -84,7 +84,7 @@ coordinates = Coello.GaugesTable[['id','x','y','weight']][:]
 OF_args = [coordinates]
 
 def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
-    Coello.extractDischarge()
+    Coello.extract_discharge()
     all_errors=[]
     # error for all internal stations
     for i in range(len(coordinates)):
@@ -121,12 +121,12 @@ OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 ## Run Calibration algorithm
 
 ```python
-cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs,printError=0)
+cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs,printError=0)
 
 ```
 ## Save results
 
 ```python
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-SpatialVarFun.saveParameters(SaveTo)
+SpatialVarFun.save_parameters(SaveTo)
 ```

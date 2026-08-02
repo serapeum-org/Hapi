@@ -19,7 +19,7 @@ name = "Coello"
 Coello = Catchment(name, start, end)
 Coello.read_lumped_inputs(MeteoDataPath)
 
-### Basic_inputs
+### basic_inputs
 # catchment area
 CatArea = 1530
 # temporal resolution
@@ -49,11 +49,11 @@ Coello.read_discharge_gauges(
 )
 ### Routing
 Route = 1
-# RoutingFn=Routing.triangular_routing_2
-RoutingFn = Routing.muskingum
+# routing_fn=Routing.triangular_routing_2
+routing_fn = Routing.muskingum
 # %%
 ### run the model
-Run.runLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, routing_fn)
 # %%
 Metrics = dict()
 
@@ -88,7 +88,7 @@ the Sensitivity class takes 4 main arguments:
     for the lumped HBV model and the RMSE of the calculated discharge.
 
     the first function "Run.runLumped" takes some arguments we need to pass through
-    the one_at_a_time method [ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn]
+    the one_at_a_time method [ConceptualModel,data,p2,init_st,snow,Routing, routing_fn]
     with the same order in the defined function "wrapper"
 
     the second function is RMSE takes the calculated discharge from the first function
@@ -110,19 +110,19 @@ Each parameter has a dictionary with two keys 0: list of parameters with relativ
 
 
 # For Type 1
-def WrapperType1(Randpar, Route, RoutingFn, Qobs):
+def WrapperType1(Randpar, Route, routing_fn, Qobs):
     Coello.Parameters = Randpar
 
-    Run.runLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse
 
 
 # For Type 2
-def WrapperType2(Randpar, Route, RoutingFn, Qobs):
+def WrapperType2(Randpar, Route, routing_fn, Qobs):
     Coello.Parameters = Randpar
 
-    Run.runLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse, Coello.Qsim["q"]
 
@@ -136,7 +136,7 @@ elif Type == 2:
 
 
 Sen = SA(parameters, Coello.LB, Coello.UB, fn, n_values=5, return_values=Type)
-Sen.one_at_a_time(Route, RoutingFn, Qobs)
+Sen.one_at_a_time(Route, routing_fn, Qobs)
 # %%
 From = ""
 To = ""

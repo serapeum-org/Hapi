@@ -62,7 +62,7 @@ class Routing:
 
         Returns:
             numpy.ndarray: Routed outflow hydrograph with the same
-            length as ``inflow``, rounded to four decimal places.
+                length as ``inflow``, rounded to four decimal places.
 
         Examples:
             >>> import numpy as np
@@ -119,7 +119,7 @@ class Routing:
 
         Returns:
             numpy.ndarray: Routed outflow hydrograph with the same
-            length as ``inflow``.
+                length as ``inflow``.
 
         Examples:
             >>> import numpy as np
@@ -163,7 +163,7 @@ class Routing:
 
         Returns:
             numpy.ndarray: Array of normalized weights with length
-            ``maxbas`` that sum to 1.0.
+                ``maxbas`` that sum to 1.0.
 
         Examples:
             >>> from hapi.routing import Routing
@@ -204,7 +204,7 @@ class Routing:
 
         Returns:
             numpy.ndarray: Routed discharge time series with the same
-            length as ``q``.
+                length as ``q``.
 
         Raises:
             AssertionError: If ``maxbas`` is less than 1.
@@ -249,8 +249,8 @@ class Routing:
 
         Returns:
             numpy.ndarray: Array of normalized routing weights. The
-            length is ``floor(MAXBAS)`` for integer values, or
-            ``floor(MAXBAS) + 1`` for non-integer values.
+                length is ``floor(MAXBAS)`` for integer values, or
+                ``floor(MAXBAS) + 1`` for non-integer values.
 
         Examples:
             >>> from hapi.routing import Routing
@@ -344,7 +344,7 @@ class Routing:
 
         Returns:
             numpy.ndarray: Routed output hydrograph with the same
-            length as ``Q``.
+                length as ``Q``.
 
         Examples:
             >>> import numpy as np

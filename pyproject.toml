@@ -104,45 +104,28 @@ include = ["hapi", "hapi.*"]
 [tool.setuptools.package-data]
 hapi = ["*.yaml", "include/gdal/*.h"]
 
-# Ruff replaces black + isort + flake8 with one tool. Because a single engine
-# formats and sorts imports against one line-length, the formatter and the
-# import sorter cannot disagree the way black and isort did. Ruff lints and
-# formats both .py and .ipynb natively.
 [tool.ruff]
 line-length = 88
-target-version = "py311"  # requires-python floors at 3.11
+target-version = "py311"
 
 [tool.ruff.format]
-# black had skip-string-normalization = true → preserve existing quotes.
 quote-style = "preserve"
 
 [tool.ruff.lint]
-# The old flake8 select was E/F/W (B and T4 were inert: flake8-bugbear /
-# flake8-print were never installed). Add I (isort) and UP (pyupgrade) to fold
-# in the standalone isort hook and modern-typing upgrades.
 select = ["E", "F", "W", "I", "UP"]
-# Mirror the old [tool.flake8].ignore. W503 is dropped — ruff does not
-# implement it (formatter-owned pycodestyle code black conflicted with).
 ignore = ["E203", "E226", "E266", "E501", "E701", "E722", "C901", "E741", "E731"]
 
 [tool.ruff.lint.isort]
-# Classify the import roots explicitly so sorting never depends on the filesystem.
-# The legacy examples still import the pre-rename `Hapi.*` package: on a
-# case-insensitive filesystem (Windows/macOS) ruff resolves `Hapi` to `src/hapi` and
-# sorts those imports as first-party, while Linux CI finds no such package and sorts
-# them as third-party — so the same file failed lint on whichever platform had not
-# formatted it last. Naming both spellings pins the answer on every platform.
+# Both spellings are named so sorting does not depend on filesystem case
+# sensitivity: the legacy examples still import the pre-rename `Hapi.*` package.
 known-first-party = ["hapi"]
 known-third-party = ["Hapi"]
 
 [tool.ruff.lint.per-file-ignores]
-# flake8 excluded examples/ and tests/ from linting — drop E/F/W and UP there,
-# keeping only import-sorting (I), which isort did run everywhere. This keeps
-# the migration's lint churn on shipped src/.
+# Lint shipped src/ only; tests and examples keep import sorting (I) alone.
 "tests/**" = ["E", "F", "W", "UP"]
 "examples/**" = ["E", "F", "W", "UP"]
-# Tutorial notebooks import next to first use and run setup before imports —
-# both legitimately trip E402, which stays enforced for real modules.
+# Notebooks import next to first use, which legitimately trips E402.
 "*.ipynb" = ["E402"]
 
 [tool.bandit]
@@ -155,8 +138,7 @@ source = ["src/hapi"]
 
 [tool.coverage.report]
 show_missing = true
-# Current branch coverage is ~52%; the floor locks that level in so it can only
-# move up. Raise it as coverage improves.
+# Locks in the current level; raise it as coverage improves.
 fail_under = 50
 
 [tool.commitizen]
@@ -179,10 +161,8 @@ style = [
 ]
 
 [tool.mypy]
-# Checker target is 3.12 even though `requires-python` floors at 3.11: numpy
-# ships PEP 695 `type` statements in its stubs, which mypy only parses when the
-# target is >= 3.12. This only widens the *typing* target; actual 3.11 runtime
-# compatibility is covered by the py311 leg of the test matrix, not by mypy.
+# 3.12, not the 3.11 floor: numpy's stubs use PEP 695 `type` statements, which
+# mypy only parses at >= 3.12. The py311 test leg covers the runtime floor.
 python_version = "3.12"
 mypy_path = "src"
 packages = ["hapi"]
@@ -208,20 +188,17 @@ module = [
     "hapi.calibration",
     "hapi.wrapper",
 ]
-# These modules use a builder pattern: attributes are typed X | None in
-# __init__ and populated by separate read_*() methods before use. Methods
-# assume attributes are non-None but mypy cannot verify call order.
-# Fix: add assert-based narrowing helpers (e.g. _require_spatial_data())
-# that return non-None types, then remove these suppressions one by one.
-# Error count without overrides: ~257 across these 4 modules.
+# These modules are built by successive read_*() calls: attributes are typed
+# X | None and populated before use, which mypy cannot verify. Removing the
+# suppressions needs assert-based narrowing helpers first (~257 errors).
 disable_error_code = [
-    "union-attr",    # .attr on X | None (159 sites)
-    "attr-defined",  # .attr on None (11 sites)
-    "arg-type",      # passing X | None where X expected (13 sites)
-    "misc",          # slice index, None not callable (13 sites)
-    "operator",      # arithmetic on X | None (4 sites)
-    "index",         # indexing X | None (2 sites)
-    "call-overload", # numpy overload mismatches on X | None (2 sites)
+    "union-attr",
+    "attr-defined",
+    "arg-type",
+    "misc",
+    "operator",
+    "index",
+    "call-overload",
 ]
 
 [[tool.mypy.overrides]]
@@ -232,15 +209,12 @@ disable_error_code = ["empty-body"]
 [tool.pytest.ini_options]
 env = [
     "MPLBACKEND=Agg",
-    # D: sets the value only when the variable is not already set, so an
-    # explicitly exported HAPI_DATA_DIR still wins over this default.
+    # D: only sets the default; an exported HAPI_DATA_DIR still wins.
     "D:HAPI_DATA_DIR=src/hapi/parameters",
 ]
 pythonpath = ["src"]
 testpaths = ["tests"]
-# Fail (don't hang) on a stuck test: pytest-timeout aborts any single test that
-# runs longer than `timeout` and prints its stack; `faulthandler_timeout`
-# (stdlib) dumps an earlier all-thread traceback for diagnosis.
+# Abort a stuck test instead of hanging CI.
 timeout = 300
 faulthandler_timeout = 120
 markers = [
@@ -279,7 +253,7 @@ description = "Run all test suite"
 
 [tool.pixi.tasks.notebooks]
 cmd = "pytest --nbval --nbval-lax --verbose -p no:cacheprovider examples"
-description = "Check notebooks — currently red: every notebook still needs migration off the pre-rename Hapi package"
+description = "Check notebooks (they still need migration off the pre-rename Hapi package)"
 
 [tool.pixi.tasks.publish-pypi]
 cmd = "twine upload --non-interactive --repository pypi dist/*"
