@@ -1,4 +1,5 @@
 import ast
+import tomllib
 import warnings
 from pathlib import Path
 
@@ -354,7 +355,8 @@ class TestVectorTypes:
         offenders = []
         # tests/ too: the runtime dependency was dropped, so a geopandas import anywhere
         # the suite loads breaks collection on win_arm64, where it cannot be installed.
-        roots = [Path("src/hapi"), Path("tests")]
+        repo_root = Path(__file__).resolve().parents[2]
+        roots = [repo_root / "src" / "hapi", repo_root / "tests"]
         for module in sorted(m for root in roots for m in root.rglob("*.py")):
             with warnings.catch_warnings():
                 # Parsing every test module surfaces unrelated pre-existing escape
@@ -384,10 +386,13 @@ class TestVectorTypes:
             Pairs with the import scan: the declaration and the imports must agree, so a
             future edit cannot reinstate the pin without also reinstating a use for it.
         """
-        pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
-        block = pyproject.split("dependencies = [", 1)[1].split("]", 1)[0]
+        repo_root = Path(__file__).resolve().parents[2]
+        manifest = tomllib.loads(
+            (repo_root / "pyproject.toml").read_text(encoding="utf-8")
+        )
+        declared = manifest["project"]["dependencies"]
 
-        assert "geopandas" not in block, (
+        assert not any("geopandas" in spec for spec in declared), (
             "geopandas is declared again in [project].dependencies but nothing in "
             "src/hapi imports it; it arrives transitively via pyramids-gis, which "
             "deliberately excludes it on win_arm64"

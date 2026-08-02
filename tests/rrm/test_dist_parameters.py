@@ -441,14 +441,23 @@ class TestSaveParametersValidation:
             one, so it had to become a real ``raise``. Run in a child interpreter because
             ``-O`` is fixed at start-up.
         """
+        repo_root = Path(__file__).resolve().parents[2]
         result = subprocess.run(
             [sys.executable, "-O", "-c", SUBPROCESS_PROBE],
             capture_output=True,
             text=True,
-            cwd=str(Path.cwd()),
-            env={**os.environ, "PYTHONPATH": "src"},
+            cwd=str(repo_root),
+            env={**os.environ, "PYTHONPATH": str(repo_root / "src")},
         )
 
+        # Distinguish "the guard did not fire" from "the child could not import hapi";
+        # both exit non-zero, and conflating them reports a misleading cause.
+        assert (
+            "ImportError" not in result.stderr
+            and "ModuleNotFoundError" not in result.stderr
+        ), (
+            f"the probe could not import hapi, so it never reached the guard: {result.stderr[-400:]}"
+        )
         assert result.returncode == 0, (
             "save_parameters must still reject a missing output directory under "
             f"`python -O`; exit={result.returncode}, stderr={result.stderr[-400:]}"
