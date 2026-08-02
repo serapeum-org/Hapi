@@ -554,6 +554,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pip
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#conda" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -565,10 +576,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-python-and-gdal-dependencies" class="md-nav__link">
+  <a href="#dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installing Python and gdal dependencies
+        Dependencies
       
     </span>
   </a>
@@ -576,21 +587,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-python" class="md-nav__link">
+  <a href="#install-from-github" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installing Python
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-as-a-conda-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install as a conda environment
+        Install from GitHub
       
     </span>
   </a>
@@ -609,10 +609,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-using-pip" class="md-nav__link">
+  <a href="#development-install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install using pip
+        Development install
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development install">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-pixi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using pixi
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-if-the-installation-is-successful" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check if the installation is successful
       
     </span>
   </a>
@@ -916,14 +944,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/distrrm.md" class="md-nav__link">
+      <a href="../api/distrrm.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Distributed Rainfall-Runoff Model
   
 
     
@@ -1452,6 +1480,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pip
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#conda" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1463,10 +1502,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-python-and-gdal-dependencies" class="md-nav__link">
+  <a href="#dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installing Python and gdal dependencies
+        Dependencies
       
     </span>
   </a>
@@ -1474,21 +1513,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-python" class="md-nav__link">
+  <a href="#install-from-github" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installing Python
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-as-a-conda-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install as a conda environment
+        Install from GitHub
       
     </span>
   </a>
@@ -1507,10 +1535,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-using-pip" class="md-nav__link">
+  <a href="#development-install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install using pip
+        Development install
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development install">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-pixi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using pixi
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-if-the-installation-is-successful" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check if the installation is successful
       
     </span>
   </a>
@@ -1552,110 +1608,95 @@
 
 <h1 id="installation"><a class="toclink" href="#installation">Installation</a><a class="headerlink" href="#installation" title="Permanent link">#</a></h1>
 <h2 id="stable-release"><a class="toclink" href="#stable-release">Stable release</a><a class="headerlink" href="#stable-release" title="Permanent link">#</a></h2>
-<p>Please install Hapi in a Virtual environment so that its requirements don't tamper with your system's python
-<code>Hapi</code> works with all Python versions</p>
-<h2 id="conda"><a class="toclink" href="#conda">conda</a><a class="headerlink" href="#conda" title="Permanent link">#</a></h2>
-<p>the easiest way to install <code>Hapi</code> is using <code>conda</code> package manager. <code>Hapi</code> is available in the <a href="https://conda-forge.org/">conda-forge</a> channel. To install
-you can use the following command:</p>
-<p><div class="highlight"><pre><span></span><code>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>hapi
+<p>Please install Hapi in a virtual environment so that its requirements do not tamper with your system's Python.
+Hapi requires <strong>Python 3.11 or newer</strong>.</p>
+<p>The distribution is published as <code>HAPI-Nile</code>, and the import package is <code>hapi</code>.</p>
+<h2 id="pip"><a class="toclink" href="#pip">pip</a><a class="headerlink" href="#pip" title="Permanent link">#</a></h2>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>HAPI-Nile
 </code></pre></div>
-If this works it will install Hapi with all dependencies including Python and gdal,
-and you skip the rest of the installation instructions.</p>
-<h2 id="installing-python-and-gdal-dependencies"><a class="toclink" href="#installing-python-and-gdal-dependencies">Installing Python and gdal dependencies</a><a class="headerlink" href="#installing-python-and-gdal-dependencies" title="Permanent link">#</a></h2>
-<p>The main dependencies for Hapi are an installation of Python 2.7+, and gdal</p>
-<h2 id="installing-python"><a class="toclink" href="#installing-python">Installing Python</a><a class="headerlink" href="#installing-python" title="Permanent link">#</a></h2>
-<p>For Python we recommend using the Anaconda Distribution for Python 3, which is available
-for download from https://www.anaconda.com/download/. The installer gives the option to
-add <code>python</code> to your <code>PATH</code> environment variable. We will assume in the instructions
-below that it is available in the path, such that <code>python</code>, <code>pip</code>, and <code>conda</code> are
-all available from the command line.</p>
-<p>Note that there is no hard requirement specifically for Anaconda's Python, but often it
-makes installation of required dependencies easier using the conda package manager.</p>
-<h2 id="install-as-a-conda-environment"><a class="toclink" href="#install-as-a-conda-environment">Install as a conda environment</a><a class="headerlink" href="#install-as-a-conda-environment" title="Permanent link">#</a></h2>
-<p>The easiest and most robust way to install Hapi is by installing it in a separate
-conda environment. In the root repository directory there is an <code>environment.yml</code> file.
-This file lists all dependencies. Either use the <code>environment.yml</code> file from the master branch
-(please note that the master branch can change rapidly and break functionality without warning),
-or from one of the releases {release}.</p>
-<p>Run this command to start installing all Hapi dependencies:</p>
-<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
-</code></pre></div>
-<p>This creates a new environment with the name <code>hapi</code>. To activate this environment in
-a session, run:</p>
-<p><div class="highlight"><pre><span></span><code>activate<span class="w"> </span>hapi
-</code></pre></div>
-For the installation of Hapi there are two options (from the Python Package Index (PyPI)
-or from Github). To install a release of Hapi from the PyPI (available from release 2018.1):</p>
+<p>To install a specific release:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>HAPI-Nile<span class="o">=={</span>release<span class="o">}</span>
+</code></pre></div>
+<h2 id="conda"><a class="toclink" href="#conda">conda</a><a class="headerlink" href="#conda" title="Permanent link">#</a></h2>
+<p><code>Hapi</code> is also available in the <a href="https://conda-forge.org/">conda-forge</a> channel:</p>
+<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>hapi
+</code></pre></div>
+<h2 id="dependencies"><a class="toclink" href="#dependencies">Dependencies</a><a class="headerlink" href="#dependencies" title="Permanent link">#</a></h2>
+<p>Hapi installs its dependencies automatically. GDAL does <strong>not</strong> need to be installed
+separately: it ships vendored inside the <code>pyramids-gis</code> wheel, which Hapi depends on.</p>
+<p>You can check the versions of the libraries Hapi depends on at
+<a href="https://libraries.io/github/serapeum-org/Hapi">libraries.io</a>.</p>
+<h2 id="install-from-github"><a class="toclink" href="#install-from-github">Install from GitHub</a><a class="headerlink" href="#install-from-github" title="Permanent link">#</a></h2>
+<p>To install the latest development version (the HEAD of the <code>main</code> branch):</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/serapeum-org/Hapi.git
+</code></pre></div>
+<p>Or a specific release:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/serapeum-org/Hapi.git@<span class="o">{</span>release<span class="o">}</span>
 </code></pre></div>
 <h2 id="from-sources"><a class="toclink" href="#from-sources">From sources</a><a class="headerlink" href="#from-sources" title="Permanent link">#</a></h2>
-<p>The sources for HapiSM can be downloaded from the
-<a href="https://github.com/serapeum-org/Hapi">Github repo</a>.</p>
-<p>You can either clone the public repository:</p>
-<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>git://github.com/serapeum-org/Hapi
+<p>The sources can be downloaded from the <a href="https://github.com/serapeum-org/Hapi">GitHub repo</a>.</p>
+<p>Clone the public repository:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/serapeum-org/Hapi.git
 </code></pre></div>
-Or download the <a href="https://github.com/serapeum-org/Hapi/tarball/master">tarball</a>:</p>
-<p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>curl<span class="w"> </span>-OJL<span class="w"> </span>https://github.com/serapeum-org/Hapi/tarball/master
+<p>Or download the <a href="https://github.com/serapeum-org/Hapi/tarball/main">tarball</a>:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-OJL<span class="w"> </span>https://github.com/serapeum-org/Hapi/tarball/main
 </code></pre></div>
-Once you have a copy of the source, you can install it with:</p>
-<div class="highlight"><pre><span></span><code>$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>install
+<p>Once you have a copy of the source, install it with:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>Hapi
+pip<span class="w"> </span>install<span class="w"> </span>.
 </code></pre></div>
-<p>To install directly from GitHub (from the HEAD of the master branch):</p>
-<ul>
-<li><code>pip install git+https://github.com/serapeum-org/Hapi.git</code></li>
-</ul>
-<p>or from Github from a specific release:</p>
-<ul>
-<li><code>pip install git+https://github.com/serapeum-org/Hapi.git@{release}</code></li>
-</ul>
-<p>Now you should be able to start this environment's Python with <code>python</code>, try
-<code>import Hapi</code> to see if the package is installed.</p>
-<p>More details on how to work with conda environments can be found here:
-https://conda.io/docs/user-guide/tasks/manage-environments.html</p>
-<p>If you are planning to make changes and contribute to the development of Hapi, it is
-best to make a git clone of the repository, and do a editable install in the location
-of you clone. This will not move a copy to your Python installation directory, but
-instead create a link in your Python installation pointing to the folder you installed
-it from, such that any changes you make there are directly reflected in your install.</p>
-<ul>
-<li><code>git clone https://github.com/serapeum-org/Hapi.git</code></li>
-<li><code>cd Hapi</code></li>
-<li><code>activate Hapi</code></li>
-<li><code>pip install -e .</code></li>
-</ul>
-<p>Alternatively, if you want to avoid using <code>git</code> and simply want to test the latest
-version from the <code>master</code> branch, you can replace the first line with downloading
-a zip archive from GitHub: https://github.com/serapeum-org/Hapi/archive/master.zip
-<a href="https://libraries.io/github/serapeum-org/Hapi">libraries.io</a>.</p>
-<h2 id="install-using-pip"><a class="toclink" href="#install-using-pip">Install using pip</a><a class="headerlink" href="#install-using-pip" title="Permanent link">#</a></h2>
-<p>Besides the recommended conda environment setup described above, you can also install
-Hapi with <code>pip</code>. For the more difficult to install Python dependencies, it is best to
-use the conda package manager:</p>
-<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>scipy<span class="w"> </span>gdal<span class="w"> </span>netcdf4<span class="w"> </span>pyproj
+<h2 id="development-install"><a class="toclink" href="#development-install">Development install</a><a class="headerlink" href="#development-install" title="Permanent link">#</a></h2>
+<p>If you are planning to make changes and contribute to the development of Hapi, make a
+git clone of the repository and do an editable install, so that any change you make is
+directly reflected in your environment:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/serapeum-org/Hapi.git
+<span class="nb">cd</span><span class="w"> </span>Hapi
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </code></pre></div>
-<p>you can check <a href="https://libraries.io/github/serapeum-org/Hapi">libraries.io</a>. to check versions of the libraries</p>
-<p>Then install a release {release} of Hapi (available from release 2018.1) with pip:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>HAPI-Nile<span class="o">=={</span>release<span class="o">}</span>
-<span class="sb">````</span>
-
-<span class="c1">## Check if the installation is successful</span>
-
-To<span class="w"> </span>check<span class="w"> </span>it<span class="w"> </span>the<span class="w"> </span>install<span class="w"> </span>is<span class="w"> </span>successful,<span class="w"> </span>go<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>examples<span class="w"> </span>directory<span class="w"> </span>and<span class="w"> </span>run<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>command:
-
-<span class="sb">```</span>shell
-<span class="sb">`</span>python<span class="w"> </span>-m<span class="w"> </span>Hapi.*******<span class="sb">`</span>
+<h3 id="using-pixi"><a class="toclink" href="#using-pixi">Using pixi</a><a class="headerlink" href="#using-pixi" title="Permanent link">#</a></h3>
+<p>The repository is managed with <a href="https://pixi.sh">pixi</a>, which resolves the whole
+environment (including the test and documentation tooling) from <code>pyproject.toml</code> and
+<code>pixi.lock</code>. This is what CI runs, so it is the most reliable way to reproduce a
+development environment:</p>
+<div class="highlight"><pre><span></span><code>pixi<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>dev
+pixi<span class="w"> </span>run<span class="w"> </span>-e<span class="w"> </span>dev<span class="w"> </span>test-all
+</code></pre></div>
+<p>Useful tasks:</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run the main test suite</td>
+<td><code>pixi run -e dev main</code></td>
+</tr>
+<tr>
+<td>Run the whole test suite</td>
+<td><code>pixi run -e dev test-all</code></td>
+</tr>
+<tr>
+<td>Type check</td>
+<td><code>pixi run -e dev mypy</code></td>
+</tr>
+<tr>
+<td>Serve the documentation locally</td>
+<td><code>pixi run -e docs mkdocs serve</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="check-if-the-installation-is-successful"><a class="toclink" href="#check-if-the-installation-is-successful">Check if the installation is successful</a><a class="headerlink" href="#check-if-the-installation-is-successful" title="Permanent link">#</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import hapi; print(hapi.__name__)&quot;</span>
 </code></pre></div>
 <p>This should run without errors.</p>
 <blockquote>
 <p><strong>Note:</strong></p>
 </blockquote>
-<div class="highlight"><pre><span></span><code>  This documentation was generated on today
-
-  Documentation for the development version:
-  https://Hapi.readthedocs.org/en/latest/
-
-  Documentation for the stable version:
-  https://Hapi.readthedocs.org/en/stable/
+<div class="highlight"><pre><span></span><code>  The documentation is built with MkDocs and published to GitHub Pages:
+  https://serapeum-org.github.io/Hapi
 </code></pre></div>
 
 
