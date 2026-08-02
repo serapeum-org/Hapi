@@ -1,4 +1,5 @@
 import ast
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -55,7 +56,7 @@ class TestExtractParameters:
     #     self,
     #     download_03_parameter,
     #     coello_acc_path: str,
-    #     coello_basin: GeoDataFrame,
+    #     coello_basin: FeatureCollection,
     # ):
     #     """Test extract_parameters function in Inputs class"""
     #     inputs = Inputs(coello_acc_path)
@@ -86,7 +87,7 @@ class TestExtractParameters:
 
 
 def test_extract_parameters_boundaries(
-    download_max_min_parameter, coello_basin: GeoDataFrame
+    download_max_min_parameter, coello_basin: FeatureCollection
 ):
     """Test extract_parameters function in Inputs class"""
     par = Inputs.extract_parameters_boundaries(coello_basin)
@@ -174,45 +175,46 @@ def test_create_lumped_parameter():
 class TestChronologicalReading:
     """Tests for the date-ordered reading that replaced ``Inputs.rename_files``."""
 
-    def test_read_multiple_files_orders_by_parsed_date(self, tmp_path):
-        """Test that rasters are read chronologically regardless of directory order.
+    def test_create_lumped_inputs_orders_by_parsed_date(self, tmp_path):
+        """Test that Hapi reads a raster folder chronologically without a rename step.
 
         Args:
             tmp_path: pytest's per-test temporary directory.
 
         Test scenario:
             This is the capability that justified deleting ``Inputs.rename_files``, whose
-            only purpose was to rewrite file names with an order prefix so a later
-            directory read picked them up in sequence. Three rasters are written whose
-            dates are deliberately not in creation order, each carrying a distinct pixel
-            value identifying its date, and read back with ``with_order=True``. The values
-            must come back chronologically, so no rename step is needed.
+            only purpose was to rewrite file names with an order prefix. Three uniform
+            rasters are written whose dates are deliberately not in name order, each with
+            a distinct value, and read through ``Inputs.create_lumped_inputs`` — Hapi's
+            own consumer of ordered reading. Its per-raster spatial means must come back
+            chronologically. Exercising ``Inputs`` rather than ``Datacube`` directly is
+            what makes this a test of Hapi: the previous version called pyramids straight
+            and passed unchanged against ``main``.
         """
-        stamps = {"2020.02.01": 3, "2020.01.02": 1, "2020.01.10": 2}
-        for stamp, value in stamps.items():
+        for stamp, value in (
+            ("2020.02.01", 3.0),
+            ("2020.01.02", 1.0),
+            ("2020.01.10", 2.0),
+        ):
             Dataset.create_from_array(
-                np.full((2, 2), value, dtype="int32"),
+                np.full((2, 2), value, dtype="float32"),
                 top_left_corner=(0.0, 2.0),
                 cell_size=1.0,
                 epsg=4326,
-                no_data_value=-9999,
+                no_data_value=-9999.0,
                 path=str(tmp_path / f"prec_{stamp}.tif"),
             ).close()
 
-        cube = Datacube.read_multiple_files(
+        averages = Inputs.create_lumped_inputs(
             str(tmp_path),
-            with_order=True,
             regex_string=r"\d{4}.\d{2}.\d{2}",
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        first_pixel = [
-            int(cube.iloc(i).read_array(band=0)[0, 0]) for i in range(cube.time_length)
-        ]
 
-        assert first_pixel == [1, 2, 3], (
-            "rasters should be ordered by the date parsed from the file name, so no "
-            f"rename step is needed; got {first_pixel}"
+        assert [float(v) for v in averages] == [1.0, 2.0, 3.0], (
+            "Hapi must return the catchment averages in date order, so no rename step "
+            f"is needed; got {[float(v) for v in averages]}"
         )
 
     def test_rename_files_is_gone(self):
@@ -312,47 +314,30 @@ class TestVectorTypes:
             crs="EPSG:4326",
         )
 
-    def test_plain_geodataframe_is_still_accepted(self, basin):
-        """Test that a plain ``GeoDataFrame`` is wrapped rather than rejected.
+    def test_extract_parameters_accepts_a_frame(self, coello_basin):
+        """Test the ``FeatureCollection`` wrap on the ``as_raster=False`` branch.
 
         Args:
-            basin: A plain GeoDataFrame fixture.
+            coello_basin: The Coello catchment polygon fixture.
 
         Test scenario:
-            The annotations now name ``FeatureCollection``, which is *narrower* than
-            ``GeoDataFrame``. Wrapping at the boundary keeps the wider input working, so
-            existing callers passing a geopandas frame are unaffected.
+            ``extract_parameters(..., as_raster=False)`` wraps its ``gdf`` argument before
+            reprojecting it, and that line had no coverage: the only live test for the
+            method passes ``as_raster=True``, which skips the branch. Exercising Hapi here
+            rather than calling ``FeatureCollection(...)`` directly is the point — a test
+            that only wraps a frame proves nothing about Hapi and passes against ``main``.
         """
-        wrapped = FeatureCollection(basin)
+        inputs = Inputs("tests/rrm/data/coello/gis/acc4000.tif")
 
-        assert isinstance(wrapped, FeatureCollection), (
-            f"a GeoDataFrame should wrap cleanly, got {type(wrapped).__name__}"
+        stats = inputs.extract_parameters(coello_basin, "1", as_raster=False)
+
+        assert list(stats.columns) == ["min", "max", "mean", "std"], (
+            f"expected the four stat columns, got {list(stats.columns)}"
         )
-        assert wrapped.crs.to_epsg() == 4326, (
-            f"wrapping must preserve the CRS, got {wrapped.crs}"
-        )
-        assert len(wrapped) == len(basin), (
-            f"wrapping must preserve the rows, got {len(wrapped)} vs {len(basin)}"
-        )
-
-    def test_wrapping_a_feature_collection_is_a_no_op(self, basin):
-        """Test that wrapping an already-wrapped collection changes nothing.
-
-        Args:
-            basin: A plain GeoDataFrame fixture.
-
-        Test scenario:
-            The boundary coercion runs unconditionally, so it must be idempotent for a
-            caller that already passes a ``FeatureCollection``.
-        """
-        once = FeatureCollection(basin)
-        twice = FeatureCollection(once)
-
-        assert twice.crs == once.crs, (
-            f"CRS drifted on re-wrap: {twice.crs} vs {once.crs}"
-        )
-        assert len(twice) == len(once), (
-            f"row count drifted on re-wrap: {len(twice)} vs {len(once)}"
+        assert len(stats) == 18, f"expected one row per HBV parameter, got {len(stats)}"
+        assert stats["min"].notna().all(), (
+            "every parameter should have a statistic over the basin; got NaNs in "
+            f"{stats['min'].tolist()}"
         )
 
     def test_hapi_does_not_import_geopandas(self):
@@ -371,7 +356,12 @@ class TestVectorTypes:
         # the suite loads breaks collection on win_arm64, where it cannot be installed.
         roots = [Path("src/hapi"), Path("tests")]
         for module in sorted(m for root in roots for m in root.rglob("*.py")):
-            tree = ast.parse(module.read_text(encoding="utf-8"))
+            with warnings.catch_warnings():
+                # Parsing every test module surfaces unrelated pre-existing escape
+                # warnings (e.g. a Windows path in a calibration fixture); this guard is
+                # about imports, not lexical hygiene.
+                warnings.simplefilter("ignore", SyntaxWarning)
+                tree = ast.parse(module.read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     names = [alias.name for alias in node.names]
