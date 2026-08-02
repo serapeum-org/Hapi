@@ -13,8 +13,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from geopandas import GeoDataFrame
 from pandas import DataFrame
+from pyramids.feature import FeatureCollection
 from shapely.geometry import Point
 
 from hapi.catchment import Catchment
@@ -36,7 +36,7 @@ def gauges_geojson(tmp_path) -> str:
     Returns:
         str: Path to the written ``.geojson`` file.
     """
-    gdf = GeoDataFrame(
+    gdf = FeatureCollection(
         {
             "id": [row[0] for row in GAUGES],
             "name": [row[1] for row in GAUGES],
@@ -84,8 +84,9 @@ class TestReadGaugeTable:
         """
         catchment.read_gauge_table(gauges_geojson)
 
-        assert isinstance(catchment.GaugesTable, GeoDataFrame), (
-            f"the GeoJSON branch must yield a GeoDataFrame, got {type(catchment.GaugesTable).__name__}"
+        assert isinstance(catchment.GaugesTable, FeatureCollection), (
+            "the GeoJSON branch must yield a FeatureCollection (a GeoDataFrame subclass), "
+            f"got {type(catchment.GaugesTable).__name__}"
         )
         assert len(catchment.GaugesTable) == len(GAUGES), (
             f"expected {len(GAUGES)} gauges, got {len(catchment.GaugesTable)}"
@@ -157,8 +158,8 @@ class TestReadGaugeTable:
         assert isinstance(catchment.GaugesTable, DataFrame), (
             f"expected a DataFrame, got {type(catchment.GaugesTable).__name__}"
         )
-        assert not isinstance(catchment.GaugesTable, GeoDataFrame), (
-            "a CSV gauge table has no geometry and should not become a GeoDataFrame"
+        assert not hasattr(catchment.GaugesTable, "crs"), (
+            "a CSV gauge table has no geometry and must not become a spatial frame"
         )
 
     def test_start_and_end_columns_are_parsed_as_dates(self, catchment, tmp_path):
@@ -294,7 +295,7 @@ class TestReadGaugeTable:
             ``FeatureCollection`` a GeoJSON produces as well as on a plain DataFrame —
             assigning a datetime column onto a GeoDataFrame must not disturb its geometry.
         """
-        gdf = GeoDataFrame(
+        gdf = FeatureCollection(
             {"id": [1], "start": ["2009-01-01"], "end": ["2011-12-31"]},
             geometry=[Point(GAUGES[0][2], GAUGES[0][3])],
             crs="EPSG:32618",

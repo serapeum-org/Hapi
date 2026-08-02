@@ -3,7 +3,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from geopandas import GeoDataFrame
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
@@ -307,7 +306,7 @@ class TestVectorTypes:
         Returns:
             GeoDataFrame: One square polygon in WGS 84.
         """
-        return GeoDataFrame(
+        return FeatureCollection(
             {"id": [1]},
             geometry=[Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])],
             crs="EPSG:4326",
@@ -368,7 +367,10 @@ class TestVectorTypes:
             re-breaking that platform.
         """
         offenders = []
-        for module in sorted(Path("src/hapi").rglob("*.py")):
+        # tests/ too: the runtime dependency was dropped, so a geopandas import anywhere
+        # the suite loads breaks collection on win_arm64, where it cannot be installed.
+        roots = [Path("src/hapi"), Path("tests")]
+        for module in sorted(m for root in roots for m in root.rglob("*.py")):
             tree = ast.parse(module.read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
