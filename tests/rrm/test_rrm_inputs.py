@@ -1,6 +1,7 @@
 import ast
 import tomllib
 import warnings
+from math import ceil
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +11,14 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from shapely.geometry import Polygon
 
-from hapi.inputs import Inputs
+from hapi.inputs import PARAMETERS_LIST, Inputs
+
+# UTM 18N covers the Coello basin, which the fixtures carry in geographic coordinates.
+PARAMETER_EPSG = 32618
+PARAMETER_CELL_SIZE = 5_000.0
+PARAMETER_MARGIN = 10_000.0
+# Added to the border ring so an unmasked read is far from the in-basin value.
+PARAMETER_OUTSIDE_OFFSET = 1_000
 
 
 def test_prepare_inputs(
@@ -315,30 +323,104 @@ class TestVectorTypes:
             crs="EPSG:4326",
         )
 
-    def test_extract_parameters_accepts_a_frame(self, coello_basin):
-        """Test the ``FeatureCollection`` wrap on the ``as_raster=False`` branch.
+    @pytest.fixture(scope="function")
+    def utm_parameter_set(self, tmp_path, coello_basin, monkeypatch) -> str:
+        """Write the 18 HBV parameter rasters in UTM 18N over the Coello basin.
+
+        Each raster holds its own 1-based position in `PARAMETERS_LIST` over the basin
+        bounding box, and `PARAMETER_OUTSIDE_OFFSET` above that in a border ring that the
+        basin cannot reach. A statistic read back therefore says both which file it came
+        from and whether the basin was applied as a mask: an unmasked read would report
+        the ring value instead.
+
+        The rasters are projected while the basin is geographic, matching the real Beck
+        et al. sets, which are not necessarily in the catchment's CRS.
+
+        Args:
+            tmp_path: Pytest temporary directory.
+            coello_basin: The Coello catchment polygon fixture.
+            monkeypatch: Pytest monkeypatch fixture, used to point `HAPI_DATA_DIR` here.
+
+        Returns:
+            str: The scenario name to pass to `extract_parameters`.
+        """
+        scenario = "1"
+        directory = tmp_path / scenario
+        directory.mkdir()
+
+        x_min, y_min, x_max, y_max = coello_basin.to_crs(
+            crs=PARAMETER_EPSG
+        ).total_bounds
+        ring = int(PARAMETER_MARGIN / PARAMETER_CELL_SIZE)
+        cols = 2 * ring + ceil((x_max - x_min) / PARAMETER_CELL_SIZE)
+        rows = 2 * ring + ceil((y_max - y_min) / PARAMETER_CELL_SIZE)
+
+        for position, name in enumerate(PARAMETERS_LIST, start=1):
+            array = np.full(
+                (rows, cols), position + PARAMETER_OUTSIDE_OFFSET, dtype=np.float32
+            )
+            array[ring:-ring, ring:-ring] = position
+            Dataset.create_from_array(
+                array,
+                geo=(
+                    x_min - PARAMETER_MARGIN,
+                    PARAMETER_CELL_SIZE,
+                    0.0,
+                    y_max + PARAMETER_MARGIN,
+                    0.0,
+                    -PARAMETER_CELL_SIZE,
+                ),
+                epsg=PARAMETER_EPSG,
+                no_data_value=-9999.0,
+                path=str(directory / f"{name}.tif"),
+            ).close()
+
+        monkeypatch.setenv("HAPI_DATA_DIR", str(tmp_path))
+        return scenario
+
+    def test_extract_parameters_accepts_a_frame(self, coello_basin, utm_parameter_set):
+        """Test the zonal-statistics branch of `extract_parameters`.
 
         Args:
             coello_basin: The Coello catchment polygon fixture.
+            utm_parameter_set: Synthetic projected parameter set; its name is the scenario.
 
         Test scenario:
-            ``extract_parameters(..., as_raster=False)`` wraps its ``gdf`` argument before
-            reprojecting it, and that line had no coverage: the only live test for the
-            method passes ``as_raster=True``, which skips the branch. Exercising Hapi here
-            rather than calling ``FeatureCollection(...)`` directly is the point — a test
-            that only wraps a frame proves nothing about Hapi and passes against ``main``.
+            `as_raster=False` had no live coverage — the only other test for the method
+            passes `as_raster=True`, which takes the other branch, and it is marked
+            `fig_share` besides. Exercising Hapi here rather than calling
+            `FeatureCollection(...)` directly is the point: a test that only wraps a frame
+            proves nothing about Hapi and passes against `main` too.
+
+            The parameter set is built here rather than downloaded because the real one
+            comes from FigShare into `HAPI_DATA_DIR`, which is empty on CI.
+
+            Each raster carries its own position over the basin and a higher value in a
+            border ring, so the statistics below pin three things: the rows come back one
+            per parameter in `PARAMETERS_LIST` order, each row's statistic came from its
+            own file, and the basin was applied as a mask — reading a whole raster would
+            report the ring value instead.
         """
         inputs = Inputs("tests/rrm/data/coello/gis/acc4000.tif")
 
-        stats = inputs.extract_parameters(coello_basin, "1", as_raster=False)
+        stats = inputs.extract_parameters(
+            coello_basin, utm_parameter_set, as_raster=False
+        )
 
+        positions = [float(position) for position in range(1, len(PARAMETERS_LIST) + 1)]
         assert list(stats.columns) == ["min", "max", "mean", "std"], (
             f"expected the four stat columns, got {list(stats.columns)}"
         )
-        assert len(stats) == 18, f"expected one row per HBV parameter, got {len(stats)}"
-        assert stats["min"].notna().all(), (
-            "every parameter should have a statistic over the basin; got NaNs in "
-            f"{stats['min'].tolist()}"
+        assert list(stats.index) == PARAMETERS_LIST, (
+            f"expected one row per HBV parameter in order, got {list(stats.index)}"
+        )
+        assert stats["mean"].astype(float).tolist() == pytest.approx(positions), (
+            "each raster should report its own position as the in-basin mean; got "
+            f"{stats['mean'].tolist()}"
+        )
+        assert stats["max"].astype(float).tolist() == pytest.approx(positions), (
+            "a max above the position means the out-of-basin ring was read, so the "
+            f"basin was not applied as a mask; got {stats['max'].tolist()}"
         )
 
     def test_hapi_does_not_import_geopandas(self):
