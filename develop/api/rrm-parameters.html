@@ -1695,8 +1695,7 @@ and hydrologic response units (HRUs).</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 20</span>
-<span class="normal"> 21</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 21</span>
 <span class="normal"> 22</span>
 <span class="normal"> 23</span>
 <span class="normal"> 24</span>
@@ -2453,7 +2452,16 @@ and hydrologic response units (HRUs).</p>
 <span class="normal">775</span>
 <span class="normal">776</span>
 <span class="normal">777</span>
-<span class="normal">778</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span>
+<span class="normal">787</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter distribution class for hydrological model calibration.</span>
 
 <span class="sd">    The Parameters class distributes values from a parameter vector during</span>
@@ -2619,6 +2627,14 @@ and hydrologic response units (HRUs).</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">columns</span>
         <span class="c1"># get the no_value of in the raster</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;the raster declares no no-data value, so every cell is treated as &quot;</span>
+                <span class="s2">&quot;inside the catchment and the parameter vector is sized for the whole &quot;</span>
+                <span class="s2">&quot;grid. If it has a sentinel, set it on the band.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="c1"># count the number of non-empty cells</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">HRUs</span><span class="p">:</span>
@@ -3563,8 +3579,7 @@ real domain.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 28</span>
-<span class="normal"> 29</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
 <span class="normal"> 30</span>
 <span class="normal"> 31</span>
 <span class="normal"> 32</span>
@@ -3789,7 +3804,16 @@ real domain.</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">raster</span><span class="p">,</span>
     <span class="n">no_parameters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -3947,6 +3971,14 @@ real domain.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">columns</span>
     <span class="c1"># get the no_value of in the raster</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;the raster declares no no-data value, so every cell is treated as &quot;</span>
+            <span class="s2">&quot;inside the catchment and the parameter vector is sized for the whole &quot;</span>
+            <span class="s2">&quot;grid. If it has a sentinel, set it on the band.&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="c1"># count the number of non-empty cells</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">HRUs</span><span class="p">:</span>
@@ -4159,16 +4191,7 @@ the K parameter.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
 <span class="normal">392</span>
 <span class="normal">393</span>
 <span class="normal">394</span>
@@ -4193,7 +4216,16 @@ the K parameter.</p>
 <span class="normal">413</span>
 <span class="normal">414</span>
 <span class="normal">415</span>
-<span class="normal">416</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate K parameter for Muskingum routing.</span>
 
@@ -4390,16 +4422,7 @@ where cells with value 1 indicate river presence.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">576</span>
 <span class="normal">577</span>
 <span class="normal">578</span>
 <span class="normal">579</span>
@@ -4493,7 +4516,16 @@ where cells with value 1 indicate river presence.</p>
 <span class="normal">667</span>
 <span class="normal">668</span>
 <span class="normal">669</span>
-<span class="normal">670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">hru_hand</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="n">flow_direction</span><span class="p">,</span> <span class="n">flow_path_length</span><span class="p">,</span> <span class="n">river</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
 
@@ -4700,16 +4732,7 @@ of <code>par_g</code> does not match the expected total.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
@@ -4788,7 +4811,16 @@ of <code>par_g</code> does not match the expected total.</p>
 <span class="normal">562</span>
 <span class="normal">563</span>
 <span class="normal">564</span>
-<span class="normal">565</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters using Hydrologic Response Units (HRUs).</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
@@ -4959,16 +4991,7 @@ from the end of <code>par_g</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">427</span>
 <span class="normal">428</span>
 <span class="normal">429</span>
 <span class="normal">430</span>
@@ -5013,7 +5036,16 @@ from the end of <code>par_g</code>.</p>
 <span class="normal">469</span>
 <span class="normal">470</span>
 <span class="normal">471</span>
-<span class="normal">472</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">):</span>  <span class="c1"># ,kub,klb</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">):</span>  <span class="c1"># ,kub,klb</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters with a lumped K1 and lake parameters.</span>
 
 <span class="sd">    Takes a list of parameters and distributes them horizontally on</span>
@@ -5156,16 +5188,7 @@ elements and lumped parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
@@ -5230,7 +5253,16 @@ elements and lumped parameters.</p>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
-<span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters horizontally across grid cells.</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
@@ -5390,16 +5422,7 @@ The length should equal <code>no_parameters</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
 <span class="normal">353</span>
 <span class="normal">354</span>
 <span class="normal">355</span>
@@ -5420,7 +5443,16 @@ The length should equal <code>no_parameters</code>.</p>
 <span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
-<span class="normal">373</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Distribute lumped parameters horizontally across grid cells.</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
@@ -5491,16 +5523,7 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">681</span>
 <span class="normal">682</span>
 <span class="normal">683</span>
 <span class="normal">684</span>
@@ -5524,7 +5547,16 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 <span class="normal">702</span>
 <span class="normal">703</span>
 <span class="normal">704</span>
-<span class="normal">705</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the total number of parameters for the optimization.</span>
 
 <span class="sd">    Calculates the number of parameters that the optimization</span>
@@ -5660,16 +5692,7 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">716</span>
 <span class="normal">717</span>
 <span class="normal">718</span>
 <span class="normal">719</span>
@@ -5731,7 +5754,16 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="normal">775</span>
 <span class="normal">776</span>
 <span class="normal">777</span>
-<span class="normal">778</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span>
+<span class="normal">787</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
 
 <span class="sd">    Takes the generated 3D parameter array and saves each parameter</span>
