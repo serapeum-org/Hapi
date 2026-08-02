@@ -387,10 +387,10 @@ class TestVectorTypes:
 
         Test scenario:
             `as_raster=False` had no live coverage — the only other test for the method
-            passes `as_raster=True`, which takes the other branch, and it is marked
-            `fig_share` besides. Exercising Hapi here rather than calling
-            `FeatureCollection(...)` directly is the point: a test that only wraps a frame
-            proves nothing about Hapi and passes against `main` too.
+            passes `as_raster=True`, which takes the other branch, and it reaches its data
+            through a live FigShare download besides. Exercising Hapi here rather than
+            calling `FeatureCollection(...)` directly is the point: a test that only wraps
+            a frame proves nothing about Hapi and passes against `main` too.
 
             The parameter set is built here rather than downloaded because the real one
             comes from FigShare into `HAPI_DATA_DIR`, which is empty on CI.
