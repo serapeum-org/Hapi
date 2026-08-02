@@ -1,11 +1,10 @@
 import os
 from typing import Dict, Tuple
 
-import geopandas as gpd
 import numpy as np
 import pytest
-from geopandas import GeoDataFrame
 from pyramids.dataset import Dataset
+from pyramids.feature import FeatureCollection
 
 from hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
@@ -45,8 +44,10 @@ def rrm_test_results() -> str:
 
 
 @pytest.fixture(scope="module")
-def coello_basin() -> GeoDataFrame:
-    return gpd.read_file("tests/rrm/data/coello/coello-basin-extended.geojson")
+def coello_basin() -> FeatureCollection:
+    return FeatureCollection.read_file(
+        "tests/rrm/data/coello/coello-basin-extended.geojson"
+    )
 
 
 @pytest.fixture(scope="module")

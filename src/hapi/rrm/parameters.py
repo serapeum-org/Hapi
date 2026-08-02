@@ -9,8 +9,8 @@ generated parameters into rasters.
 from __future__ import annotations
 
 import datetime as dt
-import math
 import os
+import warnings
 
 import numpy as np
 from pyramids.dataset import Dataset
@@ -68,8 +68,13 @@ class Parameters:
                 be provided. Defaults to False.
             hru: True if the parameters will consider using HRUs.
                 Defaults to False.
-            function: Function to use for distributing parameters.
-                Defaults to 1.
+            function: Which parameter-distribution strategy to bind to
+                :attr:`Function`. One of ``1`` (:meth:`par3d_lumped`), ``2``
+                (:meth:`par3d`), ``3`` (:meth:`par2d_lumped_k1_lake`) or ``4``
+                (:meth:`hydrologic_response_units`). Defaults to 1. Any other value
+                raises :class:`ValueError`. Note that ``hru=True`` overrides the choice
+                with :meth:`hydrologic_response_units` regardless, but the selector is
+                still validated so a typo is not masked.
             k_upper_bound: Upper bound of K value (traveling time in
                 muskingum routing method). Defaults to 1 hour.
             k_lower_bound: Lower bound of K value (traveling time in
@@ -79,11 +84,63 @@ class Parameters:
 
         Raises:
             TypeError: If `raster` is not a pyramids Dataset.
+            ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,
+                a `float` such as ``2.0``, and an unhashable value are all rejected
+                rather than coerced or allowed to raise `TypeError`.
             AssertionError: If `no_parameters` is not an integer, if
                 `no_lumped_par` is not an integer, or if the length of
                 `lumped_par_pos` does not match `no_lumped_par`.
             ValueError: If `lumped_par_pos` is not a list when
                 `no_lumped_par` >= 1.
+
+        Note:
+            Cells outside the catchment are identified by pyramids via
+            ``read_array(masked=True)`` and stored as ``NaN`` in
+            :attr:`raster_array`, which is promoted to floating point so it can hold
+            them. ``no_elem``, ``celli``/``cellj`` and the width of :attr:`Par2d` all
+            derive from that mask, so the parameter vector length follows the raster's
+            real domain.
+
+        Examples:
+            - Build the distributor from a small raster and inspect the domain it
+              derived. The bottom-right cell is no-data, leaving three cells to
+              parameterise:
+                ```python
+                >>> import numpy as np
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.rrm.parameters import Parameters
+                >>> raster = Dataset.create_from_array(
+                ...     np.array([[1, 2], [3, -9999]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999,
+                ... )
+                >>> distributor = Parameters(raster, 12)
+                >>> distributor.no_elem
+                3
+                >>> distributor.Par2d.shape
+                (12, 3)
+                >>> list(zip(distributor.celli, distributor.cellj))
+                [(0, 0), (0, 1), (1, 0)]
+
+                ```
+            - A real value within 0.1% of the sentinel is kept, so it is treated as a
+              catchment cell and widens the parameter array:
+                ```python
+                >>> import numpy as np
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.rrm.parameters import Parameters
+                >>> raster = Dataset.create_from_array(
+                ...     np.array([[1, 2], [3, -9990]], dtype="int32"),
+                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     no_data_value=-9999,
+                ... )
+                >>> distributor = Parameters(raster, 12)
+                >>> distributor.no_elem
+                4
+                >>> float(distributor.raster_array[1, 1])
+                -9990.0
+
+                ```
         """
         if lumped_par_pos is None:
             lumped_par_pos = []
@@ -108,6 +165,32 @@ class Parameters:
                     "you have one or more lumped parameters, so the position has to be entered as a list"
                 )
 
+        # Reject an unrecognised selector here rather than leaving `Function` unbound:
+        # it is invoked on every calibration iteration, so a silent miss surfaces far
+        # from the mistake as a bare AttributeError.
+        strategies = {
+            1: self.par3d_lumped,
+            2: self.par3d,
+            3: self.par2d_lumped_k1_lake,
+            4: self.hydrologic_response_units,
+        }
+        # Test the type before the membership lookup: an unhashable selector (a list,
+        # a set) raises TypeError from `in` rather than the documented ValueError, and
+        # bool is a subclass of int, so True would otherwise silently select strategy 1.
+        # A float is rejected outright rather than coerced -- 2.0 is a caller error, not
+        # a spelling of 2.
+        if isinstance(function, bool) or not isinstance(function, int):
+            raise ValueError(
+                f"function must be one of {sorted(strategies)}; got {function!r} of type "
+                f"{type(function).__name__}. 1 = par3d_lumped, 2 = par3d, "
+                "3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units."
+            )
+        if function not in strategies:
+            raise ValueError(
+                f"function must be one of {sorted(strategies)}; got {function!r}. "
+                "1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, "
+                "4 = hydrologic_response_units."
+            )
         self.Lake = lake
         self.Snow = snow
         self.no_lumped_par = no_lumped_par
@@ -118,17 +201,25 @@ class Parameters:
         self.Maskingum = muskingum
         # read the raster
         self.raster = raster
-        self.raster_array = raster.read_array(band=0).astype(float)
+        # No-data masking is delegated to pyramids: vectorised, dtype-aware, and it
+        # also honours the band's GDAL mask band. Filling with NaN keeps the
+        # float-array-with-NaN contract the rest of this class relies on.
+        self.raster_array = np.ma.filled(
+            raster.read_array(band=0, masked=True).astype(float), np.nan
+        )
         # get the shape of the raster
         self.rows = raster.rows
         self.cols = raster.columns
         # get the no_value of in the raster
         self.noval = raster.no_data_value[0]
-
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if math.isclose(self.raster_array[i, j], self.noval, rel_tol=0.001):
-                    self.raster_array[i, j] = np.nan
+        if self.noval is None:
+            warnings.warn(
+                "the raster declares no no-data value, so every cell is treated as "
+                "inside the catchment and the parameter vector is sized for the whole "
+                "grid. If it has a sentinel, set it on the band.",
+                UserWarning,
+                stacklevel=2,
+            )
 
         # count the number of non-empty cells
         if self.HRUs:
@@ -144,9 +235,9 @@ class Parameters:
             )
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_array[:, :]) - np.count_nonzero(  # type: ignore[assignment]
-                self.raster_array[np.isnan(self.raster_array)]
-            )
+            # Count the cells the pyramids mask left intact (see
+            # Catchment.read_flow_acc for why not Dataset.count_domain_cells).
+            self.no_elem = int(np.count_nonzero(~np.isnan(self.raster_array)))
 
         self.no_parameters = no_parameters
 
@@ -175,14 +266,7 @@ class Parameters:
             shape=(self.no_parameters, self.no_elem), dtype=np.float32
         )
 
-        if function == 1:
-            self.Function = self.par3d_lumped
-        elif function == 2:
-            self.Function = self.par3d
-        elif function == 3:
-            self.Function = self.par2d_lumped_k1_lake  # type: ignore[assignment]
-        elif function == 4:
-            self.Function = self.hydrologic_response_units
+        self.Function = strategies[function]
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
             self.Function = self.hydrologic_response_units
@@ -705,15 +789,24 @@ class Parameters:
                 be saved.
 
         Raises:
-            AssertionError: If `path` is not a string or does not exist.
+            TypeError: `path` is not a ``str``. Output names are built by concatenation
+                (``path + name``), which a ``Path`` does not support.
+            FileNotFoundError: The output directory does not exist. Checked up front so
+                the failure does not surface midway through writing.
 
         Note:
             The Parameters object should have the following attributes
             set before calling this method: ``DistParFn``, ``raster``,
             ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.
         """
-        assert isinstance(path, str), "path should be of type string"
-        assert os.path.exists(path), f"{path} you have provided does not exist"
+        # Not delegated to pyramids: the output names are built by string concatenation
+        # below (`path + name`), so this genuinely needs a str, and the directory must
+        # exist before the first raster is written. Raised rather than asserted so the
+        # checks survive `python -O`.
+        if not isinstance(path, str):
+            raise TypeError(f"path should be of type string, given: {type(path)}")
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"{path} you have provided does not exist")
 
         # save
         if self.Snow == 0:  # now snow subroutine

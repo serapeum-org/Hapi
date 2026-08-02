@@ -13,6 +13,7 @@ from hapi.parameters.parameters import (
 )
 
 
+@pytest.mark.fig_share
 class TestFigshareAPIClient:
     def test_figshare_api_client_get_article(self):
         """
@@ -242,6 +243,7 @@ class TestParameterManagerIntegration:
         """Provide a ParameterManager with a real API client."""
         return ParameterManager(api_client=real_api_client)
 
+    @pytest.mark.fig_share
     def test_integration_get_parameter_set_details(self, parameter_manager):
         """Integration test for retrieving article details."""
         set_id = 1
@@ -254,6 +256,7 @@ class TestParameterManagerIntegration:
             "The article ID should match the requested ID."
         )
 
+    @pytest.mark.fig_share
     def test_integration_list_files(self, parameter_manager):
         """Integration test for listing files in an article."""
         set_id = 1
@@ -293,6 +296,7 @@ class TestParameterManagerIntegration:
             "The friendly ID 'avg' should map to the correct article ID."
         )
 
+    @pytest.mark.fig_share
     def test_integration_get_article_details_with_version(self, parameter_manager):
         """Integration test for retrieving article details with a specific version."""
         set_id = 1
@@ -313,6 +317,7 @@ class TestParameter:
         """Provide a temporary directory for testing file downloads."""
         return tmp_path / "integration_test_parameters"
 
+    @pytest.mark.fig_share
     def test_integration_get_parameters(self):
         """Integration test for downloading all parameter sets."""
         parameter = Parameter(version=1)

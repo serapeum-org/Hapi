@@ -3,8 +3,11 @@
 The inputs module provides the `Inputs` class for preparing meteorological
 and parameter raster data for distributed hydrological modeling. It handles
 alignment of rasters to a source DEM, extraction of HBV model parameters
-from global datasets, creation of lumped inputs from distributed data, and
-renaming of raster files with date-based ordering.
+from global datasets, and creation of lumped inputs from distributed data.
+
+Rasters are read in chronological order by
+``DatasetCollection.read_multiple_files(with_order=True, ...)``, which parses the date
+out of each file name, so the files themselves never need renaming on disk.
 
 The module relies on the ``pyramids`` library for raster I/O and
 manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
@@ -13,14 +16,13 @@ locate pre-downloaded global parameter sets (Beck et al., 2016).
 
 from __future__ import annotations
 
-import datetime as dt
 import os
 from pathlib import Path
 
 import pandas as pd
-from geopandas import GeoDataFrame
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
+from pyramids.feature import FeatureCollection
 
 PARAMETERS_LIST = [
     "01_tt",
@@ -49,8 +51,9 @@ class Inputs:
 
     The Inputs class provides methods to prepare meteorological and parameter
     raster data so they align with a reference DEM. It supports extracting
-    HBV model parameter boundaries, computing lumped inputs from distributed
-    rasters, and renaming files with date-based ordering.
+    HBV model parameter boundaries and computing lumped inputs from distributed
+    rasters. Chronological ordering is handled by pyramids at read time
+    (``read_multiple_files(with_order=True, ...)``), not by renaming files on disk.
 
     Attributes:
         source_dem: Path to the reference DEM raster used for spatial
@@ -86,26 +89,66 @@ class Inputs:
             outputs_dir: Path to the output folder where the aligned
                 rasters will be saved.
 
+        Each output keeps its source file name, so the ordering of the collection is
+        irrelevant here and the rasters are read with ``with_order=False``.
+        ``outputs_dir`` is created if it does not exist; either argument may be a
+        ``str`` or a :class:`pathlib.Path`.
+
+        Returns:
+            None: The aligned rasters are written to ``outputs_dir``.
+
         Raises:
             FileNotFoundError: If ``inputs_dir`` does not exist.
 
         Examples:
-            >>> from hapi.inputs import Inputs
-            >>> inp = Inputs("GIS/inputs/acc4000.tif")
-            >>> inp.prepare_inputs(
-            ...     "Precipitation/CHIRPS/Daily/",
-            ...     "outputs/prec",
-            ... )
-        """
-        if not isinstance(outputs_dir, str):
-            print("output_folder input should be string type")
+            - Align two rasters onto a DEM grid and read back what was written:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.inputs import Inputs
+                >>> root = tempfile.mkdtemp()
+                >>> dem_path = os.path.join(root, "dem.tif")
+                >>> Dataset.create_from_array(
+                ...     np.ones((4, 4), dtype="float32"), top_left_corner=(0.0, 4.0),
+                ...     cell_size=1.0, epsg=4326, no_data_value=-9999.0, path=dem_path,
+                ... ).close()
+                >>> src_dir = os.path.join(root, "src")
+                >>> os.makedirs(src_dir)
+                >>> for stamp in ("2020.01.01", "2020.01.02"):
+                ...     Dataset.create_from_array(
+                ...         np.full((4, 4), 5.0, dtype="float32"), top_left_corner=(0.0, 4.0),
+                ...         cell_size=1.0, epsg=4326, no_data_value=-9999.0,
+                ...         path=os.path.join(src_dir, f"prec_{stamp}.tif"),
+                ...     ).close()
+                >>> out_dir = os.path.join(root, "out")
+                >>> Inputs(dem_path).prepare_inputs(src_dir, out_dir)
+                >>> sorted(os.listdir(out_dir))
+                ['prec_2020.01.01.tif', 'prec_2020.01.02.tif']
 
-        mask = Dataset.read_file(self.source_dem)
+                ```
+            - A missing input directory fails fast, before the DEM is opened:
+                ```python
+                >>> import os, tempfile
+                >>> from hapi.inputs import Inputs
+                >>> missing = os.path.join(tempfile.mkdtemp(), "absent")
+                >>> try:
+                ...     Inputs("dem-never-opened.tif").prepare_inputs(missing, "out")
+                ... except FileNotFoundError as exc:
+                ...     print("does not exist" in str(exc))
+                True
+
+                ```
+
+        See Also:
+            Inputs.create_lumped_inputs: Reduce the same rasters to catchment averages.
+        """
+        # Validate before opening the DEM so a missing input directory fails fast
+        # rather than after a raster read.
         if not Path(inputs_dir).exists():
             raise FileNotFoundError(f"{inputs_dir} does not exist")
 
+        mask = Dataset.read_file(self.source_dem)
         cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
-        cube.open_multi_dataset()
         # in-place align/crop clear the collection's file list, so capture the names first
         file_names = [Path(file).name for file in cube.files]
         cube.align(mask, inplace=True)
@@ -114,7 +157,7 @@ class Inputs:
         cube.to_file(path)
 
     @staticmethod
-    def extract_parameters_boundaries(basin: GeoDataFrame):
+    def extract_parameters_boundaries(basin: FeatureCollection):
         """Extract upper and lower parameter boundaries for a catchment.
 
         Reads the global maximum and minimum HBV parameter rasters from
@@ -127,9 +170,10 @@ class Inputs:
         k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
 
         Args:
-            basin: A GeoDataFrame containing the catchment polygon. Must
-                contain exactly one row; merge all polygons first if the
-                shapefile has multiple features.
+            basin: The catchment polygon, as a
+                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is
+                accepted too and is wrapped on the way in. Must contain exactly one row;
+                merge all polygons first if the shapefile has multiple features.
 
         Returns:
             pandas.DataFrame: A DataFrame indexed by parameter name with
@@ -152,7 +196,9 @@ class Inputs:
             )
 
         dataset = Dataset.read_file(str(file_path))
-        basin = basin.to_crs(crs=dataset.crs)
+        # Wrap on the way in so a plain GeoDataFrame is accepted as readily as a
+        # FeatureCollection; the constructor is a no-op for one that is already wrapped.
+        basin = FeatureCollection(basin).to_crs(crs=dataset.crs)
 
         # max values
         ub = list()
@@ -177,7 +223,7 @@ class Inputs:
 
     def extract_parameters(
         self,
-        gdf: GeoDataFrame | str,
+        gdf: FeatureCollection | None,
         scenario: str,
         as_raster: bool = False,
         save_to: str = "",
@@ -203,9 +249,11 @@ class Inputs:
         k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
 
         Args:
-            gdf: A GeoDataFrame of the catchment polygon. Must contain
-                one row; merge all polygons first if the shapefile has
-                multiple features. Can be None when ``as_raster`` is True.
+            gdf: The catchment polygon, as a
+                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is
+                accepted too and is wrapped on the way in. Must contain one row; merge
+                all polygons first if the shapefile has multiple features. Ignored (and
+                may be ``None``) when ``as_raster`` is True.
             scenario: Name of the parameter set. One of ``"1"`` through
                 ``"10"``, ``"avg"``, ``"max"``, or ``"min"``.
             as_raster: If True, save aligned parameter rasters to
@@ -231,7 +279,7 @@ class Inputs:
 
         if not as_raster:
             dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
-            gdf = gdf.to_crs(crs=dataset.crs)  # type: ignore[union-attr]
+            gdf = FeatureCollection(gdf).to_crs(crs=dataset.crs)
 
             stats = pd.DataFrame(columns=["min", "max", "mean", "std"])
             for i in range(len(PARAMETERS_LIST)):
@@ -282,17 +330,56 @@ class Inputs:
             extension: File extension to filter by. Default is ``".tif"``.
 
         Returns:
-            list: A list of float values, each being the spatial mean of
-                the corresponding raster in chronological order.
+            list: The spatial mean of each raster, in chronological order. The elements
+                are NumPy scalars (``numpy.float32`` for a float32 source) rather than
+                built-in ``float``, since they come straight from the per-raster
+                statistics; wrap them in ``float()`` if a built-in is required.
 
         Examples:
-            >>> from hapi.inputs import Inputs
-            >>> avg = Inputs.create_lumped_inputs(
-            ...     "tests/rrm/data/coello/prec",
-            ...     regex_string=r"\\d{4}.\\d{2}.\\d{2}",
-            ...     date=True,
-            ...     file_name_data_fmt="%Y.%m.%d",
-            ... )
+            - Reduce two dated rasters to one catchment average each, in date order:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.inputs import Inputs
+                >>> src_dir = tempfile.mkdtemp()
+                >>> for stamp, value in (("2020.01.02", 4.0), ("2020.01.01", 2.0)):
+                ...     Dataset.create_from_array(
+                ...         np.full((2, 2), value, dtype="float32"),
+                ...         top_left_corner=(0.0, 2.0), cell_size=1.0, epsg=4326,
+                ...         no_data_value=-9999.0,
+                ...         path=os.path.join(src_dir, f"prec_{stamp}.tif"),
+                ...     ).close()
+                >>> averages = Inputs.create_lumped_inputs(
+                ...     src_dir, regex_string=r"\d{4}.\d{2}.\d{2}", date=True,
+                ...     file_name_data_fmt="%Y.%m.%d",
+                ... )
+                >>> [float(value) for value in averages]
+                [2.0, 4.0]
+
+                ```
+            - A uniform raster averages to its own value:
+                ```python
+                >>> import numpy as np, os, tempfile
+                >>> from pyramids.dataset import Dataset
+                >>> from hapi.inputs import Inputs
+                >>> src_dir = tempfile.mkdtemp()
+                >>> Dataset.create_from_array(
+                ...     np.full((3, 3), 7.5, dtype="float32"),
+                ...     top_left_corner=(0.0, 3.0), cell_size=1.0, epsg=4326,
+                ...     no_data_value=-9999.0,
+                ...     path=os.path.join(src_dir, "prec_2021.06.01.tif"),
+                ... ).close()
+                >>> averages = Inputs.create_lumped_inputs(
+                ...     src_dir, regex_string=r"\d{4}.\d{2}.\d{2}", date=True,
+                ...     file_name_data_fmt="%Y.%m.%d",
+                ... )
+                >>> float(averages[0])
+                7.5
+
+                ```
+
+        See Also:
+            Inputs.prepare_inputs: Align and crop the same rasters onto the DEM grid.
         """
         cube = Datacube.read_multiple_files(
             path,
@@ -305,7 +392,6 @@ class Inputs:
             file_name_data_fmt=file_name_data_fmt,
             extension=extension,
         )
-        cube.open_multi_dataset()
         avg = []
         for i in range(cube.time_length):
             dataset = cube.iloc(i)
@@ -313,77 +399,6 @@ class Inputs:
             avg.append(stats.loc[stats.index[0], "mean"])
 
         return avg
-
-    @staticmethod
-    def rename_files(
-        path: str, prefix: str = "", fmt: str = "%Y.%m.%d", freq: str = "daily"
-    ):
-        """Rename raster files with a sequential order prefix based on date.
-
-        Reads all ``.tif`` files in the given directory, extracts dates
-        from their names, sorts them chronologically, and renames each
-        file with a leading index number indicating its temporal order.
-
-        The new file name format is:
-        ``{order}_{prefix}_{date_string}.tif``
-
-        Args:
-            path: Path to the directory containing the raster files.
-            prefix: An optional string to include in the new file names,
-                such as a dataset identifier (e.g.,
-                ``"precipitation_ecmwf"``). Default is ``""``.
-            fmt: The date format in the original file names. Default is
-                ``"%Y.%m.%d"``.
-            freq: The temporal frequency of the data, which controls the
-                date format in the new file names. One of ``"daily"``,
-                ``"hourly"``, or any other value for minute-level.
-                Default is ``"daily"``.
-
-        Raises:
-            FileNotFoundError: If ``path`` does not exist.
-        """
-        if not os.path.exists(path):
-            raise FileNotFoundError("The directory you have entered does not exist")
-
-        files = os.listdir(path)
-        # get only the tif files
-        files = [i for i in files if i.endswith(".tif")]
-
-        # get the date
-        dates_str = [files[i].split("_")[-1][:-4] for i in range(len(files))]
-        dates = [dt.datetime.strptime(dates_str[i], fmt) for i in range(len(files))]
-
-        if freq == "daily":
-            new_date_str = [
-                str(i.year) + "_" + str(i.month) + "_" + str(i.day) for i in dates
-            ]
-        elif freq == "hourly":
-            new_date_str = [
-                str(i.year) + "_" + str(i.month) + "_" + str(i.day) + "_" + str(i.hour)
-                for i in dates
-            ]
-        else:
-            new_date_str = [
-                f"{i.year}-{i.month}-{i.day}-{i.hour}-{i.minute}" for i in dates
-            ]
-
-        df = pd.DataFrame()
-        df["files"] = files
-        df["DateStr"] = new_date_str
-        df["dates"] = dates
-        df.sort_values("dates", inplace=True)
-        df.reset_index(inplace=True)
-        df["order"] = [i for i in range(len(files))]
-
-        df["new_names"] = [
-            f"{df.loc[i, 'order']}_{prefix}_{df.loc[i, 'DateStr']}.tif"
-            for i in range(len(files))
-        ]
-        # rename the files
-        for i in range(len(files)):
-            os.rename(
-                f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
-            )
 
     @staticmethod
     def _check_data_dir() -> Path:
