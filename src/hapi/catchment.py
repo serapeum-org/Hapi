@@ -552,9 +552,23 @@ class Catchment:
         reaches the D8 check and is rejected.
 
         Validation runs on the *distinct* surviving codes, so a raster in which every
-        cell shares one direction is legitimate. The surviving codes are converted into
-        an upstream lookup table (:attr:`FDT`), keyed ``"row,col"``, mapping each cell to
-        the cells draining directly into it.
+        cell shares one direction is legitimate.
+
+        Warning:
+            :attr:`FDT` is **not** derived from the masked array above. It comes from
+            :meth:`hapi.dem.DEM.flow_direction_table`, which performs its own second read
+            of the raster and applies its own ``np.isclose(rtol=1e-5)`` comparison,
+            ignoring the band's GDAL mask. The two therefore disagree on any cell whose
+            masking depends on the mask band or on the exact-vs-tolerant comparison: such
+            a cell can be ``NaN`` in :attr:`flow_dir_arr` yet still appear as a key in
+            :attr:`FDT`. The masks already differed before masking was delegated to
+            pyramids (``rel_tol=0.001`` against ``rtol=1e-5``); delegating widened the
+            gap rather than creating it. Reconciling them means changing
+            :mod:`hapi.dem`, which is slated to move to ``digital-rivers``, so it is
+            tracked there rather than papered over here.
+
+        :attr:`FDT` is keyed ``"row,col"`` and maps each cell to the cells draining
+        directly into it.
 
         Args:
             path (str | Path): Path to the flow direction raster. Any raster format GDAL

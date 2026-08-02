@@ -525,6 +525,35 @@ class TestReadFlowDir:
         with pytest.raises(FileNotFoundError, match="does not exist"):
             catchment.read_flow_dir(str(tmp_path / "absent.tif"))
 
+    def test_fdt_and_flow_dir_arr_use_different_masks(self, catchment, write_raster):
+        """Test the documented divergence between ``FDT`` and ``flow_dir_arr``.
+
+        Test scenario:
+            Pins the warning in the docstring. ``flow_dir_arr`` is masked by pyramids,
+            but ``FDT`` comes from ``DEM.flow_direction_table``, which re-reads the raster
+            and applies its own ``np.isclose(rtol=1e-5)``. A raster whose no-data value is
+            also a valid D8 code shows the split: the cell is ``NaN`` in the array yet
+            still keyed in the table. Reconciling them means changing ``hapi.dem``, which
+            is slated to move to digital-rivers; this test makes sure the divergence
+            cannot drift further unnoticed in the meantime.
+        """
+        path = write_raster(
+            np.array([[2, 4], [1, 8]], dtype="int32"),
+            no_data_value=8,
+            name="fd_split.tif",
+        )
+
+        catchment.read_flow_dir(path)
+
+        assert np.isnan(catchment.flow_dir_arr[1, 1]), (
+            "the no-data cell should be masked in the array, got "
+            f"{catchment.flow_dir_arr[1, 1]}"
+        )
+        assert "1,1" in catchment.FDT, (
+            "FDT is built from an independent unmasked read, so the masked cell is still "
+            f"keyed; if this now fails the two masks were reconciled, got {sorted(catchment.FDT)}"
+        )
+
     def test_reads_coello_fixture(self, catchment, coello_fd_path, coello_fdt):
         """Test that the real Coello flow-direction raster is unchanged by the refactor.
 
