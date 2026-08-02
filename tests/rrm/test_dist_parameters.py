@@ -301,26 +301,60 @@ class TestParametersMasking:
             f"hru=True should override function=2, got {parameters.Function.__name__}"
         )
 
-    def test_unknown_function_leaves_strategy_unbound(self):
-        """Test the fall-through when ``function`` matches none of the four selectors.
+    @pytest.mark.parametrize("bad", [0, 5, 99, -1, "2", None])
+    def test_unknown_function_is_rejected(self, bad):
+        """Test that an unrecognised ``function`` selector fails at construction.
+
+        Args:
+            bad: A selector outside the documented set, including wrong types.
 
         Test scenario:
-            Documents current behaviour rather than endorsing it. The dispatch is a plain
-            if/elif chain with no ``else``, so an unknown selector constructs successfully
-            and simply never binds ``Function``. The mistake then surfaces much later, as
-            an opaque ``AttributeError`` the first time calibration calls the strategy,
-            instead of at construction. Tracked as a follow-up: the constructor should
-            reject an unknown ``function`` outright.
+            The dispatch used to be an if/elif chain with no ``else``, so an unknown
+            selector constructed happily and never bound ``Function`` at all. The mistake
+            then surfaced far away, mid-calibration, as a bare ``AttributeError``. It is
+            now rejected where it is supplied, and the message names the valid values.
         """
         raster = self._raster(np.array([[1, 2], [3, NO_DATA]], dtype="int32"))
 
-        parameters = DP(raster, 12, function=99)
+        with pytest.raises(ValueError, match=r"function must be one of \[1, 2, 3, 4\]"):
+            DP(raster, 12, function=bad)
 
-        assert not hasattr(parameters, "Function"), (
-            "an unknown function selector currently binds no strategy at all; if this "
-            "now fails, the constructor gained validation and the test should assert the "
-            "new error instead"
+    def test_rejection_message_names_the_strategies(self):
+        """Test that the error explains what each selector means.
+
+        Test scenario:
+            A bare list of valid integers would not tell a caller which one they wanted,
+            so the message maps each to its strategy.
+        """
+        raster = self._raster(np.array([[1, 2], [3, NO_DATA]], dtype="int32"))
+
+        with pytest.raises(ValueError) as exc_info:
+            DP(raster, 12, function=99)
+
+        message = str(exc_info.value)
+        for name in (
+            "par3d_lumped",
+            "par3d",
+            "par2d_lumped_k1_lake",
+            "hydrologic_response_units",
+        ):
+            assert name in message, f"the error should name {name}, got: {message}"
+        assert "99" in message, (
+            f"the error should echo the rejected value, got: {message}"
         )
+
+    def test_hru_override_still_validates_the_selector(self):
+        """Test that ``hru=True`` does not mask an invalid selector.
+
+        Test scenario:
+            HRU mode overrides whatever strategy was chosen, so it would be easy to skip
+            validation when it is on. A typo must still be reported rather than silently
+            absorbed by the override.
+        """
+        raster = self._raster(np.array([[1, 1], [2, NO_DATA]], dtype="int32"))
+
+        with pytest.raises(ValueError, match="function must be one of"):
+            DP(raster, 12, function=99, hru=True)
 
 
 SUBPROCESS_PROBE = """

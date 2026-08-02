@@ -67,8 +67,13 @@ class Parameters:
                 be provided. Defaults to False.
             hru: True if the parameters will consider using HRUs.
                 Defaults to False.
-            function: Function to use for distributing parameters.
-                Defaults to 1.
+            function: Which parameter-distribution strategy to bind to
+                :attr:`Function`. One of ``1`` (:meth:`par3d_lumped`), ``2``
+                (:meth:`par3d`), ``3`` (:meth:`par2d_lumped_k1_lake`) or ``4``
+                (:meth:`hydrologic_response_units`). Defaults to 1. Any other value
+                raises :class:`ValueError`. Note that ``hru=True`` overrides the choice
+                with :meth:`hydrologic_response_units` regardless, but the selector is
+                still validated so a typo is not masked.
             k_upper_bound: Upper bound of K value (traveling time in
                 muskingum routing method). Defaults to 1 hour.
             k_lower_bound: Lower bound of K value (traveling time in
@@ -78,6 +83,7 @@ class Parameters:
 
         Raises:
             TypeError: If `raster` is not a pyramids Dataset.
+            ValueError: If `function` is not one of 1, 2, 3 or 4.
             AssertionError: If `no_parameters` is not an integer, if
                 `no_lumped_par` is not an integer, or if the length of
                 `lumped_par_pos` does not match `no_lumped_par`.
@@ -223,14 +229,22 @@ class Parameters:
             shape=(self.no_parameters, self.no_elem), dtype=np.float32
         )
 
-        if function == 1:
-            self.Function = self.par3d_lumped
-        elif function == 2:
-            self.Function = self.par3d
-        elif function == 3:
-            self.Function = self.par2d_lumped_k1_lake  # type: ignore[assignment]
-        elif function == 4:
-            self.Function = self.hydrologic_response_units
+        # Reject an unrecognised selector here rather than leaving `Function` unbound:
+        # it is invoked on every calibration iteration, so a silent miss surfaces far
+        # from the mistake as a bare AttributeError.
+        strategies = {
+            1: self.par3d_lumped,
+            2: self.par3d,
+            3: self.par2d_lumped_k1_lake,
+            4: self.hydrologic_response_units,
+        }
+        if function not in strategies:
+            raise ValueError(
+                f"function must be one of {sorted(strategies)}; got {function!r}. "
+                "1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, "
+                "4 = hydrologic_response_units."
+            )
+        self.Function = strategies[function]
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
             self.Function = self.hydrologic_response_units
