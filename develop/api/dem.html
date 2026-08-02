@@ -895,14 +895,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.html" class="md-nav__link">
+      <a href="distrrm.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall-Runoff Model
+    None
   
 
     
@@ -1913,7 +1913,7 @@ raster.  Supported values:</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A 3-D array of shape <code>(rows, cols, 2)</code>.
+                <p>numpy.ndarray: A 3-D array of shape <code>(rows, cols, 2)</code>.
 The first layer (<code>[:, :, 0]</code>) holds the row index
 and the second layer (<code>[:, :, 1]</code>) holds the column
 index of the downstream cell.  Cells with no valid
@@ -2160,11 +2160,11 @@ maps to the list of cells that flow directly into it.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="list">list</span>[<span title="tuple">tuple</span>[<span title="int">int</span>, <span title="int">int</span>]]]</code>
+                  <code><span title="dict">dict</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A dictionary keyed by
+                <p>dict[str, list[tuple[int, int]]]: A dictionary keyed by
 <code>"row,col"</code> strings.  Each value is a list of
 <code>(row, col)</code> tuples identifying the cells whose
 flow direction points directly into the key cell.</p>
