@@ -14,6 +14,7 @@ equality, so such values now survive.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -343,6 +344,37 @@ class TestReadFlowAcc:
             f"expected 3 cells x 8 km2 = 24 km2, got {catchment.px_tot_area}"
         )
 
+    def test_cell_size_is_a_magnitude(self, catchment, write_raster):
+        """Test that ``CellSize`` is positive even on a flipped grid.
+
+        Test scenario:
+            ``Dataset.cell_size`` returns the *signed* geotransform pixel width. A grid
+            written west-to-east flipped therefore reports a negative width, while every
+            consumer of ``CellSize`` treats it as a magnitude — as the value it replaced
+            was, having been ``abs()``-ed.
+        """
+        path = str(Path(write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))))
+        flipped = Dataset.read_file(path)
+        gt = list(flipped.geotransform)
+        gt[1] = -gt[1]
+        flipped_path = path.replace(".tif", "_flipped.tif")
+        Dataset.create_from_array(
+            flipped.read_array(band=0),
+            geo=tuple(gt),
+            epsg=EPSG,
+            no_data_value=NO_DATA,
+            path=flipped_path,
+        ).close()
+
+        catchment.read_flow_acc(flipped_path)
+
+        assert catchment.CellSize > 0, (
+            f"CellSize must be a magnitude, got {catchment.CellSize}"
+        )
+        assert catchment.CellSize == pytest.approx(CELL_SIZE), (
+            f"expected {CELL_SIZE}, got {catchment.CellSize}"
+        )
+
     def test_missing_file_raises(self, catchment, tmp_path):
         """Test that a path which does not exist is rejected by pyramids.
 
@@ -433,6 +465,44 @@ class TestReadFlowAcc:
         assert catchment.no_elem == 89, (
             f"expected the 89 Coello domain cells to survive masking, got {catchment.no_elem}"
         )
+
+
+class TestDirectoryReaders:
+    """Tests for the meteorological readers that consume a directory of rasters."""
+
+    @pytest.mark.parametrize("method", ["read_rainfall", "read_temperature", "read_et"])
+    def test_missing_directory_error_names_the_path(self, catchment, tmp_path, method):
+        """Test that a missing input directory is reported with its path.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+            method: The reader under test.
+
+        Test scenario:
+            pyramids reports "The path you have provided does not exist" without saying
+            which path. The hand-rolled checks this replaced named it, and a model run
+            reads several directories, so the bare message does not identify the culprit.
+        """
+        missing = str(tmp_path / "absent")
+
+        with pytest.raises(FileNotFoundError, match=re.escape(missing)):
+            getattr(catchment, method)(missing)
+
+    def test_empty_directory_error_names_the_path(self, catchment, tmp_path):
+        """Test that an empty input directory is also reported with its path.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            pyramids raises the same bare ``FileNotFoundError`` for an existing but empty
+            directory; the path must survive into the message here too.
+        """
+        empty = tmp_path / "empty"
+        empty.mkdir()
+
+        with pytest.raises(FileNotFoundError, match=re.escape(str(empty))):
+            catchment.read_rainfall(str(empty))
 
 
 class TestReadFlowDir:

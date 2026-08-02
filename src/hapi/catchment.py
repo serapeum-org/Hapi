@@ -19,6 +19,8 @@ import datetime as dt
 import inspect
 import os
 import warnings
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import matplotlib.dates as dates
@@ -40,6 +42,30 @@ if TYPE_CHECKING:
     from hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
+
+
+@contextmanager
+def _name_the_path(path) -> Iterator[None]:
+    """Re-raise a pyramids `FileNotFoundError` with the offending path in the message.
+
+    ``DatasetCollection.read_multiple_files`` reports "The path you have provided does
+    not exist" / "is empty" without saying which path, where the checks this replaced
+    named it. With several directories read per model run, the bare message does not
+    identify the culprit.
+
+    Args:
+        path: The directory being read, echoed into the re-raised message.
+
+    Yields:
+        None: The wrapped read runs inside the context.
+
+    Raises:
+        FileNotFoundError: Re-raised from pyramids with `path` appended.
+    """
+    try:
+        yield
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"{exc} (path: {path})") from exc
 
 
 def _warn_if_no_sentinel(dataset, label: str) -> None:
@@ -262,18 +288,20 @@ class Catchment:
         if self.Prec is None:
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`.
-            cube = Datacube.read_multiple_files(
-                path,
-                with_order=True,
-                regex_string=regex_string,
-                date=date,
-                start=start,
-                end=end,
-                fmt=fmt,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
-            )
+            # these replace, that survives `python -O`. Its message does not name the
+            # offending directory, so _name_the_path re-raises with it.
+            with _name_the_path(path):
+                cube = Datacube.read_multiple_files(
+                    path,
+                    with_order=True,
+                    regex_string=regex_string,
+                    date=date,
+                    start=start,
+                    end=end,
+                    fmt=fmt,
+                    file_name_data_fmt=file_name_data_fmt,
+                    extension=extension,
+                )
             self.Prec = np.moveaxis(cube.values, 0, -1)
             self.TS = self.Prec.shape[2] + 1
             # no of time steps =length of time series +1
@@ -328,18 +356,20 @@ class Catchment:
         if self.Temp is None:
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`.
-            cube = Datacube.read_multiple_files(
-                path,
-                with_order=True,
-                regex_string=regex_string,
-                date=date,
-                start=start,
-                end=end,
-                fmt=fmt,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
-            )
+            # these replace, that survives `python -O`. Its message does not name the
+            # offending directory, so _name_the_path re-raises with it.
+            with _name_the_path(path):
+                cube = Datacube.read_multiple_files(
+                    path,
+                    with_order=True,
+                    regex_string=regex_string,
+                    date=date,
+                    start=start,
+                    end=end,
+                    fmt=fmt,
+                    file_name_data_fmt=file_name_data_fmt,
+                    extension=extension,
+                )
             self.Temp = np.moveaxis(cube.values, 0, -1)
             assert isinstance(self.Temp, np.ndarray), (
                 "array should be of type numpy array"
@@ -395,18 +425,20 @@ class Catchment:
         if self.ET is None:
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`.
-            cube = Datacube.read_multiple_files(
-                path,
-                with_order=True,
-                regex_string=regex_string,
-                date=date,
-                start=start,
-                end=end,
-                fmt=fmt,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
-            )
+            # these replace, that survives `python -O`. Its message does not name the
+            # offending directory, so _name_the_path re-raises with it.
+            with _name_the_path(path):
+                cube = Datacube.read_multiple_files(
+                    path,
+                    with_order=True,
+                    regex_string=regex_string,
+                    date=date,
+                    start=start,
+                    end=end,
+                    fmt=fmt,
+                    file_name_data_fmt=file_name_data_fmt,
+                    extension=extension,
+                )
             self.ET = np.moveaxis(cube.values, 0, -1)
             assert isinstance(self.ET, np.ndarray), (
                 "array should be of type numpy array"
@@ -559,7 +591,10 @@ class Catchment:
         transform = flow_acc.transform
         dx = abs(transform.pixel_width) / 1000.0  # dx in Km
         dy = abs(transform.pixel_height) / 1000.0  # dy in Km
-        self.CellSize = flow_acc.cell_size
+        # abs(): Dataset.cell_size returns the signed geotransform pixel width, so a
+        # west-to-east-flipped grid would report a negative cell size. The value this
+        # replaced was abs()-ed, and every consumer treats it as a magnitude.
+        self.CellSize = abs(flow_acc.cell_size)
 
         # area of the cell
         self.px_area = dx * dy
@@ -815,10 +850,12 @@ class Catchment:
         if self.spatial_resolution.lower() == "distributed":
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`.
-            cube = Datacube.read_multiple_files(
-                path, with_order=True, regex_string=r"\d+", date=False
-            )
+            # these replace, that survives `python -O`. Its message does not name the
+            # offending directory, so _name_the_path re-raises with it.
+            with _name_the_path(path):
+                cube = Datacube.read_multiple_files(
+                    path, with_order=True, regex_string=r"\d+", date=False
+                )
             self.Parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
