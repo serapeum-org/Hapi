@@ -792,14 +792,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.md" class="md-nav__link">
+      <a href="distrrm.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Distributed Rainfall-Runoff Model
   
 
     
@@ -2474,7 +2474,59 @@ and hydrologic response units (HRUs).</p>
 <span class="normal">797</span>
 <span class="normal">798</span>
 <span class="normal">799</span>
-<span class="normal">800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span>
+<span class="normal">811</span>
+<span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter distribution class for hydrological model calibration.</span>
 
 <span class="sd">    The Parameters class distributes values from a parameter vector during</span>
@@ -2484,7 +2536,7 @@ and hydrologic response units (HRUs).</p>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">raster</span><span class="p">,</span>
+        <span class="n">raster</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
         <span class="n">no_parameters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">no_lumped_par</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">lumped_par_pos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2621,6 +2673,32 @@ and hydrologic response units (HRUs).</p>
                     <span class="s2">&quot;you have one or more lumped parameters, so the position has to be entered as a list&quot;</span>
                 <span class="p">)</span>
 
+        <span class="c1"># Reject an unrecognised selector here rather than leaving `Function` unbound:</span>
+        <span class="c1"># it is invoked on every calibration iteration, so a silent miss surfaces far</span>
+        <span class="c1"># from the mistake as a bare AttributeError.</span>
+        <span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d_lumped</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par2d_lumped_k1_lake</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hydrologic_response_units</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># Test the type before the membership lookup: an unhashable selector (a list,</span>
+        <span class="c1"># a set) raises TypeError from `in` rather than the documented ValueError, and</span>
+        <span class="c1"># bool is a subclass of int, so True would otherwise silently select strategy 1.</span>
+        <span class="c1"># A float is rejected outright rather than coerced -- 2.0 is a caller error, not</span>
+        <span class="c1"># a spelling of 2.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, &quot;</span>
+                <span class="s2">&quot;3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">function</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, &quot;</span>
+                <span class="s2">&quot;4 = hydrologic_response_units.&quot;</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Lake</span> <span class="o">=</span> <span class="n">lake</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">=</span> <span class="n">snow</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">=</span> <span class="n">no_lumped_par</span>
@@ -2696,32 +2774,6 @@ and hydrologic response units (HRUs).</p>
             <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
         <span class="p">)</span>
 
-        <span class="c1"># Reject an unrecognised selector here rather than leaving `Function` unbound:</span>
-        <span class="c1"># it is invoked on every calibration iteration, so a silent miss surfaces far</span>
-        <span class="c1"># from the mistake as a bare AttributeError.</span>
-        <span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d_lumped</span><span class="p">,</span>
-            <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d</span><span class="p">,</span>
-            <span class="mi">3</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par2d_lumped_k1_lake</span><span class="p">,</span>
-            <span class="mi">4</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hydrologic_response_units</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="c1"># Test the type before the membership lookup: an unhashable selector (a list,</span>
-        <span class="c1"># a set) raises TypeError from `in` rather than the documented ValueError, and</span>
-        <span class="c1"># bool is a subclass of int, so True would otherwise silently select strategy 1.</span>
-        <span class="c1"># A float is rejected outright rather than coerced -- 2.0 is a caller error, not</span>
-        <span class="c1"># a spelling of 2.</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, &quot;</span>
-                <span class="s2">&quot;3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">function</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. &quot;</span>
-                <span class="s2">&quot;1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, &quot;</span>
-                <span class="s2">&quot;4 = hydrologic_response_units.&quot;</span>
-            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Function</span> <span class="o">=</span> <span class="n">strategies</span><span class="p">[</span><span class="n">function</span><span class="p">]</span>
         <span class="c1"># to overwrite any choice user choose if the is HRUs</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">HRUs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -2731,7 +2783,7 @@ and hydrologic response units (HRUs).</p>
 
         <span class="k">pass</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Distribute parameters horizontally across grid cells.</span>
 
 <span class="sd">        Takes a list of parameters (saved as one column or generated as a</span>
@@ -2818,7 +2870,9 @@ and hydrologic response units (HRUs).</p>
         <span class="c1">#               klb</span>
         <span class="c1">#              )</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Distribute lumped parameters horizontally across grid cells.</span>
 
 <span class="sd">        Takes a list of parameters (saved as one column or generated as a</span>
@@ -2858,7 +2912,9 @@ and hydrologic response units (HRUs).</p>
         <span class="c1">#         self.Par3d[self.celli[i],self.cellj[i],-1], self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate K parameter for Muskingum routing.</span>
 
 <span class="sd">        Takes the value of x parameter and generates 100 random values of</span>
@@ -2876,7 +2932,7 @@ and hydrologic response units (HRUs).</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The K parameter value corresponding to the given position</span>
-<span class="sd">            within the constrained range.</span>
+<span class="sd">                within the constrained range.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># k has to be smaller than this constraint</span>
         <span class="n">constraint1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
@@ -2891,9 +2947,11 @@ and hydrologic response units (HRUs).</p>
 
         <span class="n">generated_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">constraint1</span><span class="p">,</span> <span class="n">constraint2</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">generated_k</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">0</span><span class="p">))]</span>
-        <span class="k">return</span> <span class="n">k</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">):</span>  <span class="c1"># ,kub,klb</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">):</span>  <span class="c1"># ,kub,klb</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Distribute parameters with a lumped K1 and lake parameters.</span>
 
 <span class="sd">        Takes a list of parameters and distributes them horizontally on</span>
@@ -2952,7 +3010,7 @@ and hydrologic response units (HRUs).</p>
 
         <span class="c1"># return self.Par3d, lake_par</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Distribute parameters using Hydrologic Response Units (HRUs).</span>
 
 <span class="sd">        Takes a list of parameters (saved as one column or generated as a</span>
@@ -3043,7 +3101,12 @@ and hydrologic response units (HRUs).</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">Par3d</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">raster_array</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Par2d</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hru_hand</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="n">flow_direction</span><span class="p">,</span> <span class="n">flow_path_length</span><span class="p">,</span> <span class="n">river</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hru_hand</span><span class="p">(</span>
+        <span class="n">dem</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+        <span class="n">flow_direction</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+        <span class="n">flow_path_length</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+        <span class="n">river</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
 
 <span class="sd">        Calculates inputs for the HAND method for land use</span>
@@ -3086,66 +3149,107 @@ and hydrologic response units (HRUs).</p>
         <span class="n">fpl_a</span> <span class="o">=</span> <span class="n">flow_path_length</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># trace the flow direction to the nearest river reach and store the location</span>
-        <span class="c1"># of that nearst reach</span>
+        <span class="c1"># of that nearest reach</span>
+        <span class="n">nearest_network</span> <span class="o">=</span> <span class="n">Parameters</span><span class="o">.</span><span class="n">_trace_nearest_drainage</span><span class="p">(</span>
+            <span class="n">dem_a</span><span class="p">,</span> <span class="n">no_val</span><span class="p">,</span> <span class="n">river_a</span><span class="p">,</span> <span class="n">fd_index</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+        <span class="p">)</span>
+
+        <span class="c1"># the elevation difference to the nearest drainage cell is the height above</span>
+        <span class="c1"># nearest drainage; the same difference over the flow path length raster is</span>
+        <span class="c1"># the distance to that drainage</span>
+        <span class="n">hand</span> <span class="o">=</span> <span class="n">Parameters</span><span class="o">.</span><span class="n">_difference_to_nearest_drainage</span><span class="p">(</span>
+            <span class="n">dem_a</span><span class="p">,</span> <span class="n">dem_a</span><span class="p">,</span> <span class="n">no_val</span><span class="p">,</span> <span class="n">nearest_network</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+        <span class="p">)</span>
+        <span class="n">dist_to_nearest_drain</span> <span class="o">=</span> <span class="n">Parameters</span><span class="o">.</span><span class="n">_difference_to_nearest_drainage</span><span class="p">(</span>
+            <span class="n">fpl_a</span><span class="p">,</span> <span class="n">dem_a</span><span class="p">,</span> <span class="n">no_val</span><span class="p">,</span> <span class="n">nearest_network</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hand</span><span class="p">,</span> <span class="n">dist_to_nearest_drain</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_trace_nearest_drainage</span><span class="p">(</span>
+        <span class="n">dem_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">no_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span>
+        <span class="n">river_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">fd_index</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Locate the nearest downstream river cell for every domain cell.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dem_a (np.ndarray): DEM values, used to identify domain cells.</span>
+<span class="sd">            no_val (float): No-data value of the DEM.</span>
+<span class="sd">            river_a (np.ndarray): River raster; a value of 1 marks a river cell.</span>
+<span class="sd">            fd_index (np.ndarray): Downstream cell indices, shape (rows, cols, 2).</span>
+<span class="sd">            rows (int): Number of raster rows.</span>
+<span class="sd">            cols (int): Number of raster columns.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Array of shape (rows, cols, 2) holding the row and column</span>
+<span class="sd">                of the nearest drainage cell, NaN outside the domain.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If a flow path runs off the grid, which happens when the</span>
+<span class="sd">                catchment boundary has anomalies.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nearest_network</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
-                        <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
-                        <span class="c1"># a river cell is its own nearest drainage</span>
-                        <span class="n">new_row</span> <span class="o">=</span> <span class="n">i</span>
-                        <span class="n">new_cols</span> <span class="o">=</span> <span class="n">j</span>
-                        <span class="n">old_row</span> <span class="o">=</span> <span class="n">i</span>
-                        <span class="n">old_cols</span> <span class="o">=</span> <span class="n">j</span>
-
-                        <span class="k">while</span> <span class="n">f</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="c1"># did not reach the river yet, go to the next downstream cell</span>
-                            <span class="n">new_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-                            <span class="n">new_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                            <span class="c1"># go to the downstream cell</span>
-                            <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">new_row</span><span class="p">,</span> <span class="n">new_cols</span><span class="p">]</span>
-                            <span class="c1"># the downstream cell becomes the current position</span>
-                            <span class="n">old_row</span> <span class="o">=</span> <span class="n">new_row</span>
-                            <span class="n">old_cols</span> <span class="o">=</span> <span class="n">new_cols</span>
-                        <span class="c1"># store the position in the array</span>
-                        <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>
-                        <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_cols</span>
-
+                    <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">no_val</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># a river cell is its own nearest drainage</span>
+                    <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+                    <span class="k">while</span> <span class="n">river_a</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># not at the river yet, step to the downstream cell</span>
+                        <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">)</span>
+                    <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span>
+                    <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;please check the boundaries of your catchment. After cropping the catchment using a polygon, it &quot;</span>
                 <span class="s2">&quot;creates anomalies at the boundary&quot;</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-        <span class="c1"># calculate the elevation difference between the cell and the nearest drainage cell</span>
-        <span class="c1"># or height above nearst drainage</span>
-        <span class="n">hand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">return</span> <span class="n">nearest_network</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_difference_to_nearest_drainage</span><span class="p">(</span>
+        <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">dem_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">no_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span>
+        <span class="n">nearest_network</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subtract each cell&#39;s nearest-drainage value from the cell&#39;s own value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            values (np.ndarray): Raster to difference (elevation or flow path length).</span>
+<span class="sd">            dem_a (np.ndarray): DEM values, used to identify domain cells.</span>
+<span class="sd">            no_val (float): No-data value of the DEM.</span>
+<span class="sd">            nearest_network (np.ndarray): Nearest drainage indices from</span>
+<span class="sd">                `_trace_nearest_drainage`.</span>
+<span class="sd">            rows (int): Number of raster rows.</span>
+<span class="sd">            cols (int): Number of raster columns.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The difference for every domain cell, NaN elsewhere.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
-                    <span class="n">hand</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
-                        <span class="o">-</span> <span class="n">dem_a</span><span class="p">[</span>
-                            <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                        <span class="p">]</span>
-                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">no_val</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">drain_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="n">drain_col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">difference</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="n">drain_row</span><span class="p">,</span> <span class="n">drain_col</span><span class="p">]</span>
 
-        <span class="c1"># calculate the distance to the nearest drainage c  ell using flow path length or distance to nearest drainage</span>
-        <span class="n">dist_to_nearest_drain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
-                    <span class="n">dist_to_nearest_drain</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">fpl_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
-                        <span class="o">-</span> <span class="n">fpl_a</span><span class="p">[</span>
-                            <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                        <span class="p">]</span>
-                    <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">hand</span><span class="p">,</span> <span class="n">dist_to_nearest_drain</span>
+        <span class="k">return</span> <span class="n">difference</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the total number of parameters for the optimization.</span>
@@ -3182,7 +3286,7 @@ and hydrologic response units (HRUs).</p>
                 <span class="c1"># if there is no lumped parameters</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ParametersNO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
 
 <span class="sd">        Takes the generated 3D parameter array and saves each parameter</span>
@@ -3271,7 +3375,7 @@ and hydrologic response units (HRUs).</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.__init__" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.__init__" class="toclink">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">no_parameters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">no_lumped_par</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">lumped_par_pos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">hru</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k_upper_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k_lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">muskingum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">raster</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">no_parameters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">no_lumped_par</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">lumped_par_pos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">hru</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k_upper_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k_lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">muskingum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.parameters.Parameters.__init__" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -3299,6 +3403,7 @@ raster.</p>
                 <code>raster</code>
             </td>
             <td>
+                  <code><span title="pyramids.dataset.Dataset">Dataset</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3856,7 +3961,7 @@ real domain.</p>
 <span class="normal">275</span>
 <span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">raster</span><span class="p">,</span>
+    <span class="n">raster</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
     <span class="n">no_parameters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">no_lumped_par</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">lumped_par_pos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3993,6 +4098,32 @@ real domain.</p>
                 <span class="s2">&quot;you have one or more lumped parameters, so the position has to be entered as a list&quot;</span>
             <span class="p">)</span>
 
+    <span class="c1"># Reject an unrecognised selector here rather than leaving `Function` unbound:</span>
+    <span class="c1"># it is invoked on every calibration iteration, so a silent miss surfaces far</span>
+    <span class="c1"># from the mistake as a bare AttributeError.</span>
+    <span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d_lumped</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par2d_lumped_k1_lake</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hydrologic_response_units</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># Test the type before the membership lookup: an unhashable selector (a list,</span>
+    <span class="c1"># a set) raises TypeError from `in` rather than the documented ValueError, and</span>
+    <span class="c1"># bool is a subclass of int, so True would otherwise silently select strategy 1.</span>
+    <span class="c1"># A float is rejected outright rather than coerced -- 2.0 is a caller error, not</span>
+    <span class="c1"># a spelling of 2.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, &quot;</span>
+            <span class="s2">&quot;3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">function</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, &quot;</span>
+            <span class="s2">&quot;4 = hydrologic_response_units.&quot;</span>
+        <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Lake</span> <span class="o">=</span> <span class="n">lake</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">=</span> <span class="n">snow</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">=</span> <span class="n">no_lumped_par</span>
@@ -4068,32 +4199,6 @@ real domain.</p>
         <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
     <span class="p">)</span>
 
-    <span class="c1"># Reject an unrecognised selector here rather than leaving `Function` unbound:</span>
-    <span class="c1"># it is invoked on every calibration iteration, so a silent miss surfaces far</span>
-    <span class="c1"># from the mistake as a bare AttributeError.</span>
-    <span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d_lumped</span><span class="p">,</span>
-        <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par3d</span><span class="p">,</span>
-        <span class="mi">3</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">par2d_lumped_k1_lake</span><span class="p">,</span>
-        <span class="mi">4</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hydrologic_response_units</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="c1"># Test the type before the membership lookup: an unhashable selector (a list,</span>
-    <span class="c1"># a set) raises TypeError from `in` rather than the documented ValueError, and</span>
-    <span class="c1"># bool is a subclass of int, so True would otherwise silently select strategy 1.</span>
-    <span class="c1"># A float is rejected outright rather than coerced -- 2.0 is a caller error, not</span>
-    <span class="c1"># a spelling of 2.</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, &quot;</span>
-            <span class="s2">&quot;3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units.&quot;</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">function</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. &quot;</span>
-            <span class="s2">&quot;1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, &quot;</span>
-            <span class="s2">&quot;4 = hydrologic_response_units.&quot;</span>
-        <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Function</span> <span class="o">=</span> <span class="n">strategies</span><span class="p">[</span><span class="n">function</span><span class="p">]</span>
     <span class="c1"># to overwrite any choice user choose if the is HRUs</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">HRUs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -4117,7 +4222,7 @@ real domain.</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.calculate_k" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.calculate_k" class="toclink">
-            <code class="highlight language-python"><span class="n">calculate_k</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">calculate_k</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
@@ -4150,6 +4255,7 @@ returns the value corresponding to the given position.</p>
                 <code>x</code>
             </td>
             <td>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4167,6 +4273,7 @@ routing method).</p>
                 <code>position</code>
             </td>
             <td>
+                  <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4183,6 +4290,7 @@ the K parameter.</p>
                 <code>upper_bound</code>
             </td>
             <td>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4198,6 +4306,7 @@ the K parameter.</p>
                 <code>lower_bound</code>
             </td>
             <td>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4223,19 +4332,12 @@ the K parameter.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The K parameter value corresponding to the given position</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>within the constrained range.</p>
+                <p>The K parameter value corresponding to the given position
+within the constrained range.</p>
               </div>
             </td>
           </tr>
@@ -4245,9 +4347,7 @@ the K parameter.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
@@ -4279,8 +4379,14 @@ the K parameter.</p>
 <span class="normal">435</span>
 <span class="normal">436</span>
 <span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">):</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate K parameter for Muskingum routing.</span>
 
 <span class="sd">    Takes the value of x parameter and generates 100 random values of</span>
@@ -4298,7 +4404,7 @@ the K parameter.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The K parameter value corresponding to the given position</span>
-<span class="sd">        within the constrained range.</span>
+<span class="sd">            within the constrained range.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># k has to be smaller than this constraint</span>
     <span class="n">constraint1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
@@ -4313,7 +4419,7 @@ the K parameter.</p>
 
     <span class="n">generated_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">constraint1</span><span class="p">,</span> <span class="n">constraint2</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
     <span class="n">k</span> <span class="o">=</span> <span class="n">generated_k</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">0</span><span class="p">))]</span>
-    <span class="k">return</span> <span class="n">k</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4329,7 +4435,7 @@ the K parameter.</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.hru_hand" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.hru_hand" class="toclink">
-            <code class="highlight language-python"><span class="n">hru_hand</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="n">flow_direction</span><span class="p">,</span> <span class="n">flow_path_length</span><span class="p">,</span> <span class="n">river</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">hru_hand</span><span class="p">(</span><span class="n">dem</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">flow_direction</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">flow_path_length</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">river</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
@@ -4363,6 +4469,7 @@ and the flow path distance.</p>
                 <code>dem</code>
             </td>
             <td>
+                  <code><span title="pyramids.dataset.Dataset">Dataset</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4378,6 +4485,7 @@ and the flow path distance.</p>
                 <code>flow_direction</code>
             </td>
             <td>
+                  <code><span title="pyramids.dataset.Dataset">Dataset</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4394,6 +4502,7 @@ raster.</p>
                 <code>flow_path_length</code>
             </td>
             <td>
+                  <code><span title="pyramids.dataset.Dataset">Dataset</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4410,6 +4519,7 @@ length raster.</p>
                 <code>river</code>
             </td>
             <td>
+                  <code><span title="pyramids.dataset.Dataset">Dataset</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4436,13 +4546,15 @@ where cells with value 1 indicate river presence.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code>A tuple of two numpy ndarrays</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of two numpy ndarrays:
-- hand: Height above nearest drainage for each cell.
-- dist_to_nearest_drain: Distance to nearest drainage
-  for each cell.</p>
+                <ul>
+<li>hand: Height above nearest drainage for each cell.</li>
+<li>dist_to_nearest_drain: Distance to nearest drainage
+  for each cell.</li>
+</ul>
               </div>
             </td>
           </tr>
@@ -4476,13 +4588,7 @@ where cells with value 1 indicate river presence.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">595</span>
 <span class="normal">596</span>
 <span class="normal">597</span>
 <span class="normal">598</span>
@@ -4546,41 +4652,13 @@ where cells with value 1 indicate river presence.</p>
 <span class="normal">656</span>
 <span class="normal">657</span>
 <span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">hru_hand</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="n">flow_direction</span><span class="p">,</span> <span class="n">flow_path_length</span><span class="p">,</span> <span class="n">river</span><span class="p">):</span>
+<span class="normal">659</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hru_hand</span><span class="p">(</span>
+    <span class="n">dem</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">flow_direction</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">flow_path_length</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">river</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
 
 <span class="sd">    Calculates inputs for the HAND method for land use</span>
@@ -4623,64 +4701,20 @@ where cells with value 1 indicate river presence.</p>
     <span class="n">fpl_a</span> <span class="o">=</span> <span class="n">flow_path_length</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># trace the flow direction to the nearest river reach and store the location</span>
-    <span class="c1"># of that nearst reach</span>
-    <span class="n">nearest_network</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
-                    <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
-                    <span class="c1"># a river cell is its own nearest drainage</span>
-                    <span class="n">new_row</span> <span class="o">=</span> <span class="n">i</span>
-                    <span class="n">new_cols</span> <span class="o">=</span> <span class="n">j</span>
-                    <span class="n">old_row</span> <span class="o">=</span> <span class="n">i</span>
-                    <span class="n">old_cols</span> <span class="o">=</span> <span class="n">j</span>
+    <span class="c1"># of that nearest reach</span>
+    <span class="n">nearest_network</span> <span class="o">=</span> <span class="n">Parameters</span><span class="o">.</span><span class="n">_trace_nearest_drainage</span><span class="p">(</span>
+        <span class="n">dem_a</span><span class="p">,</span> <span class="n">no_val</span><span class="p">,</span> <span class="n">river_a</span><span class="p">,</span> <span class="n">fd_index</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+    <span class="p">)</span>
 
-                    <span class="k">while</span> <span class="n">f</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="c1"># did not reach the river yet, go to the next downstream cell</span>
-                        <span class="n">new_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-                        <span class="n">new_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fd_index</span><span class="p">[</span><span class="n">old_row</span><span class="p">,</span> <span class="n">old_cols</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                        <span class="c1"># go to the downstream cell</span>
-                        <span class="n">f</span> <span class="o">=</span> <span class="n">river_a</span><span class="p">[</span><span class="n">new_row</span><span class="p">,</span> <span class="n">new_cols</span><span class="p">]</span>
-                        <span class="c1"># the downstream cell becomes the current position</span>
-                        <span class="n">old_row</span> <span class="o">=</span> <span class="n">new_row</span>
-                        <span class="n">old_cols</span> <span class="o">=</span> <span class="n">new_cols</span>
-                    <span class="c1"># store the position in the array</span>
-                    <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>
-                    <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_cols</span>
-
-    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;please check the boundaries of your catchment. After cropping the catchment using a polygon, it &quot;</span>
-            <span class="s2">&quot;creates anomalies at the boundary&quot;</span>
-        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-
-    <span class="c1"># calculate the elevation difference between the cell and the nearest drainage cell</span>
-    <span class="c1"># or height above nearst drainage</span>
-    <span class="n">hand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
-                <span class="n">hand</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
-                    <span class="o">-</span> <span class="n">dem_a</span><span class="p">[</span>
-                        <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                    <span class="p">]</span>
-                <span class="p">)</span>
-
-    <span class="c1"># calculate the distance to the nearest drainage c  ell using flow path length or distance to nearest drainage</span>
-    <span class="n">dist_to_nearest_drain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">dem_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">no_val</span><span class="p">:</span>
-                <span class="n">dist_to_nearest_drain</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">fpl_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
-                    <span class="o">-</span> <span class="n">fpl_a</span><span class="p">[</span>
-                        <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                    <span class="p">]</span>
-                <span class="p">)</span>
+    <span class="c1"># the elevation difference to the nearest drainage cell is the height above</span>
+    <span class="c1"># nearest drainage; the same difference over the flow path length raster is</span>
+    <span class="c1"># the distance to that drainage</span>
+    <span class="n">hand</span> <span class="o">=</span> <span class="n">Parameters</span><span class="o">.</span><span class="n">_difference_to_nearest_drainage</span><span class="p">(</span>
+        <span class="n">dem_a</span><span class="p">,</span> <span class="n">dem_a</span><span class="p">,</span> <span class="n">no_val</span><span class="p">,</span> <span class="n">nearest_network</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+    <span class="p">)</span>
+    <span class="n">dist_to_nearest_drain</span> <span class="o">=</span> <span class="n">Parameters</span><span class="o">.</span><span class="n">_difference_to_nearest_drainage</span><span class="p">(</span>
+        <span class="n">fpl_a</span><span class="p">,</span> <span class="n">dem_a</span><span class="p">,</span> <span class="n">no_val</span><span class="p">,</span> <span class="n">nearest_network</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">hand</span><span class="p">,</span> <span class="n">dist_to_nearest_drain</span>
 </code></pre></div></td></tr></table></div>
@@ -4698,7 +4732,7 @@ where cells with value 1 indicate river presence.</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.hydrologic_response_units" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.hydrologic_response_units" class="toclink">
-            <code class="highlight language-python"><span class="n">hydrologic_response_units</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">hydrologic_response_units</span><span class="p">(</span><span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.parameters.Parameters.hydrologic_response_units" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -4730,6 +4764,7 @@ parameters.</p>
                 <code>par_g</code>
             </td>
             <td>
+                  <code><span title="list">list</span> | <span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4786,13 +4821,7 @@ of <code>par_g</code> does not match the expected total.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
 <span class="normal">506</span>
 <span class="normal">507</span>
 <span class="normal">508</span>
@@ -4874,7 +4903,13 @@ of <code>par_g</code> does not match the expected total.</p>
 <span class="normal">584</span>
 <span class="normal">585</span>
 <span class="normal">586</span>
-<span class="normal">587</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters using Hydrologic Response Units (HRUs).</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
@@ -4978,7 +5013,7 @@ of <code>par_g</code> does not match the expected total.</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.par2d_lumped_k1_lake" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.par2d_lumped_k1_lake" class="toclink">
-            <code class="highlight language-python"><span class="n">par2d_lumped_k1_lake</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">par2d_lumped_k1_lake</span><span class="p">(</span><span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.parameters.Parameters.par2d_lumped_k1_lake" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -5009,6 +5044,7 @@ parameters are extracted from the end of the parameter list.</p>
                 <code>par_g</code>
             </td>
             <td>
+                  <code><span title="list">list</span> | <span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5028,6 +5064,7 @@ parameters: <code>14 * 11 = 154 + 1 (K1) = 155</code>.</p>
                 <code>no_parameters_lake</code>
             </td>
             <td>
+                  <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5045,11 +5082,7 @@ from the end of <code>par_g</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">444</span>
 <span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
@@ -5099,7 +5132,15 @@ from the end of <code>par_g</code>.</p>
 <span class="normal">491</span>
 <span class="normal">492</span>
 <span class="normal">493</span>
-<span class="normal">494</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">):</span>  <span class="c1"># ,kub,klb</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">):</span>  <span class="c1"># ,kub,klb</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters with a lumped K1 and lake parameters.</span>
 
 <span class="sd">    Takes a list of parameters and distributes them horizontally on</span>
@@ -5169,7 +5210,7 @@ from the end of <code>par_g</code>.</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.par3d" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.par3d" class="toclink">
-            <code class="highlight language-python"><span class="n">par3d</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">par3d</span><span class="p">(</span><span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.parameters.Parameters.par3d" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -5198,6 +5239,7 @@ horizontally on the number of cells given by a raster.</p>
                 <code>par_g</code>
             </td>
             <td>
+                  <code><span title="list">list</span> | <span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5316,7 +5358,7 @@ elements and lumped parameters.</p>
 <span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
-<span class="normal">352</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
+<span class="normal">352</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters horizontally across grid cells.</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
@@ -5406,7 +5448,7 @@ elements and lumped parameters.</p>
 
 
 <h4 id="hapi.rrm.parameters.Parameters.par3d_lumped" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.par3d_lumped" class="toclink">
-            <code class="highlight language-python"><span class="n">par3d_lumped</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">par3d_lumped</span><span class="p">(</span><span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.parameters.Parameters.par3d_lumped" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -5436,6 +5478,7 @@ parameters are lumped (same value for every cell).</p>
                 <code>par_g</code>
             </td>
             <td>
+                  <code><span title="list">list</span> | <span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5506,7 +5549,11 @@ The length should equal <code>no_parameters</code>.</p>
 <span class="normal">392</span>
 <span class="normal">393</span>
 <span class="normal">394</span>
-<span class="normal">395</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Distribute lumped parameters horizontally across grid cells.</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
@@ -5577,40 +5624,40 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
-<span class="normal">723</span>
-<span class="normal">724</span>
-<span class="normal">725</span>
-<span class="normal">726</span>
-<span class="normal">727</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the total number of parameters for the optimization.</span>
 
 <span class="sd">    Calculates the number of parameters that the optimization</span>
@@ -5659,7 +5706,7 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 
 
 <h4 id="hapi.rrm.parameters.Parameters.save_parameters" class="doc doc-heading"><a href="#hapi.rrm.parameters.Parameters.save_parameters" class="toclink">
-            <code class="highlight language-python"><span class="n">save_parameters</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">save_parameters</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span></code>
 
 </a><a href="#hapi.rrm.parameters.Parameters.save_parameters" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -5687,6 +5734,7 @@ layer as a separate GeoTIFF raster file.</p>
                 <code>path</code>
             </td>
             <td>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5746,59 +5794,7 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/parameters.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">781</span>
 <span class="normal">782</span>
 <span class="normal">783</span>
 <span class="normal">784</span>
@@ -5817,7 +5813,59 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="normal">797</span>
 <span class="normal">798</span>
 <span class="normal">799</span>
-<span class="normal">800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span>
+<span class="normal">811</span>
+<span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
 
 <span class="sd">    Takes the generated 3D parameter array and saves each parameter</span>

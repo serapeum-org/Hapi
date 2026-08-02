@@ -787,14 +787,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/distrrm.md" class="md-nav__link">
+      <a href="../api/distrrm.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Distributed Rainfall-Runoff Model
   
 
     
@@ -1356,10 +1356,10 @@
 <ul>
 <li>First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model <code>RUN</code>.</li>
 </ul>
-<p><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">Hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBVLumped</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
+<p><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBVLumped</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
 </code></pre></div>
 - read the meteorological data, data has be in the form of numpy array with the following order [rainfall, ET, Temp, Tm], ET is the potential evapotranspiration, Temp is the temperature (C), and Tm is the long term monthly average temperature.</p>
 <p><div class="highlight"><pre><span></span><code><span class="n">Parameterpath</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/lumped/Coello_Lumped2021-03-08_muskingum.txt&quot;</span>
@@ -1370,14 +1370,14 @@
 <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
 <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
 <span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedInputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_inputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
 </code></pre></div>
 - Meteorological data</p>
 <p><div class="highlight"><pre><span></span><code><span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
 <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
 <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
 <span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedInputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_inputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
 </code></pre></div>
 - Lumped model
 prepare the initial conditions, cathcment area and the lumped model.</p>
@@ -1386,13 +1386,13 @@ prepare the initial conditions, cathcment area and the lumped model.</p>
 <span class="c1"># [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]</span>
 <span class="n">InitialCond</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedModel</span><span class="p">(</span><span class="n">HBVLumped</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_model</span><span class="p">(</span><span class="n">HBVLumped</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
 </code></pre></div>
 - Load the pre-estimated parameters
     snow option (if you want to simulate snow accumulation and snow melt or not)</p>
 <p><div class="highlight"><pre><span></span><code><span class="n">Snow</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># no snow subroutine</span>
 <span class="c1"># if routing using Maxbas True, if Muskingum False</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">readParameters</span><span class="p">(</span><span class="n">Parameterpath</span><span class="p">,</span> <span class="n">Snow</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_parameters</span><span class="p">(</span><span class="n">Parameterpath</span><span class="p">,</span> <span class="n">Snow</span><span class="p">)</span>
 </code></pre></div>
 - Prepare the routing options.</p>
 <p><div class="highlight"><pre><span></span><code><span class="c1"># RoutingFn = Routing.triangular_routing_2</span>
@@ -1427,17 +1427,17 @@ To plot the calculated and measured discharge import matplotlib</p>
 <p><div class="highlight"><pre><span></span><code><span class="n">gaugei</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">plotstart</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
 <span class="n">plotend</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">plotHydrograph</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">gaugei</span><span class="p">,</span> <span class="n">Title</span><span class="o">=</span> <span class="s2">&quot;Lumped Model&quot;</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">plot_hydrograph</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">gaugei</span><span class="p">,</span> <span class="n">Title</span><span class="o">=</span> <span class="s2">&quot;Lumped Model&quot;</span><span class="p">)</span>
 </code></pre></div>
 <img alt="lumped-model" src="../img/lumpedmodel.png" /></p>
 <ul>
 <li>To save the results</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">StartDate</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
-<span class="n">EndDate</span> <span class="o">=</span> <span class="s2">&quot;2010-04-20&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
+<span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2010-04-20&quot;</span>
 
 <span class="n">Path</span> <span class="o">=</span> <span class="n">SaveTo</span> <span class="o">+</span> <span class="s2">&quot;Results-Lumped-Model&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">saveResults</span><span class="p">(</span><span class="n">Result</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">StartDate</span><span class="o">=</span><span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="o">=</span><span class="n">EndDate</span><span class="p">,</span> <span class="n">Path</span><span class="o">=</span><span class="n">Path</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">)</span>
 </code></pre></div>
 
 
