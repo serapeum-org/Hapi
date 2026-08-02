@@ -20,7 +20,7 @@ name = "Coello"
 Coello = Catchment(name, start, end)
 Coello.read_lumped_inputs(MeteoDataPath)
 # %%
-### Basic_inputs
+### basic_inputs
 # catchment area
 AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
@@ -34,11 +34,11 @@ Coello.read_parameters(Parameterpath, Snow)
 # %% observed flow
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Routing
-# RoutingFn = Routing.triangular_routing_2
-RoutingFn = Routing.muskingum_v
+# routing_fn = Routing.triangular_routing_2
+routing_fn = Routing.muskingum_v
 Route = 1
 ### run the model
-Run.runLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, routing_fn)
 # %% calculate performance criteria
 Metrics = dict()
 

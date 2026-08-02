@@ -1,50 +1,24 @@
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/mafarrag/hapi)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5758979.svg)](https://doi.org/10.5281/zenodo.5758979)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
-[![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.png)](https://img.shields.io/pypi/pyversions/HAPI-Nile)
-[![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MAfarrag/Hapi.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MAfarrag/Hapi/context:python)
-
-
-[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/MAfarrag/Hapi/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge) [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/MAfarrag)
-
-Current build status
-====================
-
-
-<table><tr><td>All platforms:</td>
-    <td>
-      <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=12419&branchName=master">
-        <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/hapi-feedstock?branchName=master">
-      </a>
-    </td>
-  </tr>
-</table>
-
-[![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/hapi)
+[![Tests](https://github.com/serapeum-org/Hapi/actions/workflows/tests.yml/badge.svg)](https://github.com/serapeum-org/Hapi/actions/workflows/tests.yml)
+[![Lint](https://github.com/serapeum-org/Hapi/actions/workflows/lint.yml/badge.svg)](https://github.com/serapeum-org/Hapi/actions/workflows/lint.yml)
 [![codecov](https://codecov.io/gh/serapeum-org/Hapi/branch/main/graph/badge.svg?token=EMQSR7K2YV)](https://codecov.io/gh/serapeum-org/Hapi)
-![GitHub last commit](https://img.shields.io/github/last-commit/MAfarrag/Hapi)
-![GitHub forks](https://img.shields.io/github/forks/MAfarrag/hapi?style=social)
-![GitHub Repo stars](https://img.shields.io/github/stars/MAfarrag/Hapi?style=social)
-![AppVeyor tests (branch)](https://img.shields.io/appveyor/tests/MAfarrag/Ha%5Bi/hydraulic-model)
+[![Documentation](https://img.shields.io/badge/docs-serapeum--org.github.io%2FHapi-blue)](https://serapeum-org.github.io/Hapi)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5758979.svg)](https://doi.org/10.5281/zenodo.5758979)
 
+[![PyPI version](https://img.shields.io/pypi/v/HAPI-Nile.svg)](https://pypi.org/project/HAPI-Nile/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi)
+[![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.svg)](https://pypi.org/project/HAPI-Nile/)
+[![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi)
+[![Downloads](https://static.pepy.tech/badge/hapi-nile)](https://pepy.tech/project/hapi-nile)
+[![Downloads](https://static.pepy.tech/badge/hapi-nile/month)](https://pepy.tech/project/hapi-nile)
+[![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi)
 
-[![Github all releases](https://img.shields.io/github/downloads/Naereen/StrapDown.js/total.svg)](https://GitHub.com/Naereen/StrapDown.js/releases/)
+[![GitHub last commit](https://img.shields.io/github/last-commit/serapeum-org/Hapi)](https://github.com/serapeum-org/Hapi/commits/main)
+[![GitHub Repo stars](https://img.shields.io/github/stars/serapeum-org/Hapi?style=social)](https://github.com/serapeum-org/Hapi/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/serapeum-org/Hapi?style=social)](https://github.com/serapeum-org/Hapi/network/members)
 
-![Profile views](https://gpvc.arturio.dev/MAfarrag)
-
-
-Current release info
-====================
-
-| Name | Downloads                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Version | Platforms |
-| --- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| --- | --- |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-hapi-green.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Downloads](https://pepy.tech/badge/hapi-nile)](https://pepy.tech/project/hapi-nile) [![Downloads](https://pepy.tech/badge/hapi-nile/month)](https://pepy.tech/project/hapi-nile)  [![Downloads](https://pepy.tech/badge/hapi-nile/week)](https://pepy.tech/project/hapi-nile)  ![PyPI - Downloads](https://img.shields.io/pypi/dd/hapi-nile?color=blue&style=flat-square) ![GitHub all releases](https://img.shields.io/github/downloads/MAfarrag/Hapi/total) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/hapi/badges/version.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Join the chat at https://gitter.im/Hapi-Nile/Hapi](https://badges.gitter.im/Hapi-Nile/Hapi.svg)](https://gitter.im/Hapi-Nile/Hapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
-
-
-![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
+![Hapi](docs/img/Hapi4.png) ![Hapi](docs/img/name.png)
 
 
 Hapi - Hydrological library for Python
@@ -54,7 +28,7 @@ model & Muskingum routing method at a catchment scale (Farrag & Corzo, 2021), Ha
 (spatial discretization - cell size, temporal resolution, parameterization approaches and calibration (Farrag et al., 2021)).
 
 
-![1](/docs/img/Picture1.png)  ![2](/docs/img/Picture2.png)
+![1](docs/img/Picture1.png)  ![2](docs/img/Picture2.png)
 
 Hapi
 
@@ -73,8 +47,8 @@ Main Features
   - Visualization module for animating the results of the distributed model, and the meteorological inputs
   - Optimization module, for calibrating the model based on the Harmony search method
 
-The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016),
-to reduce model complexity and uncertainty of parameters.
+Hapi integrates the global hydrological parameters obtained by Beck et al., (2016), to reduce model complexity
+and uncertainty of parameters.
 
 Future work
 -------------
@@ -105,6 +79,16 @@ Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability
 Installing hapi
 ===============
 
+## pip
+
+To install the last release, use pip. The distribution is named `HAPI-Nile` and the import package is `hapi`.
+
+```
+pip install HAPI-Nile
+```
+
+## conda
+
 Installing `hapi` from the `conda-forge` channel can be achieved by:
 
 ```
@@ -117,29 +101,28 @@ It is possible to list all of the versions of `hapi` available on your platform 
 conda search hapi --channel conda-forge
 ```
 
-## Install from Github
-to install the last development to time you can install the library from github
-```
-pip install git+https://github.com/MAfarrag/HAPI
-```
+## Install from GitHub
 
-## pip
-to install the last release you can easly use pip
+To install the latest development version, install the library from GitHub:
+
 ```
-pip install HAPI-Nile==1.6.0
+pip install git+https://github.com/serapeum-org/Hapi
 ```
 
 Quick start
 ===========
 
 ```
-  >>> import Hapi
+  >>> import hapi
 ```
 
-[other code samples](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
+[other code samples](https://serapeum-org.github.io/Hapi)
 
 ## Naming Convention
 [PEP8](https://peps.python.org/pep-0008/#naming-conventions)
 - module names: lower case word, preferably one word if not, separate words with underscores (module.py, my_module.py).
 - class names: PascalCase (Model, MyClass).
-- class method/function: CamelCase(getFile, readConfig).should have a verb one them, because they perform some action
+- class method/function: snake_case (get_file, read_config). They should have a verb in them, because they perform some action.
+
+Some CamelCase entry points survive from earlier releases (for example `Run.RunHapi` and `Wrapper.RRMModel`)
+because examples and downstream code still call them. New methods are written in snake_case.

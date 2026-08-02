@@ -43,7 +43,7 @@ class DistributedRRM:
         ``state_variables``, ``quz``, and ``qlz``.
 
         Args:
-            Model: A catchment model object carrying the following
+            Model (Catchment): A catchment model object carrying the following
                 attributes:
 
                 - ``rows`` (int): Number of grid rows.
@@ -120,7 +120,7 @@ class DistributedRRM:
         ``quz_routed``, ``qlz_translated``, and ``Qtot``.
 
         Args:
-            Model: A catchment model object carrying the following
+            Model (Catchment): A catchment model object carrying the following
                 attributes:
 
                 - ``rows`` (int): Number of grid rows.
@@ -225,7 +225,7 @@ class DistributedRRM:
         The ``Model.quz`` array is modified in place.
 
         Args:
-            Model: A catchment model object carrying the following
+            Model (Catchment): A catchment model object carrying the following
                 attributes:
 
                 - ``rows`` (int): Number of grid rows.
@@ -257,7 +257,7 @@ class DistributedRRM:
         The ``Model.quz`` array is modified in place.
 
         Args:
-            Model: A catchment model object carrying the following
+            Model (Catchment): A catchment model object carrying the following
                 attributes:
 
                 - ``rows`` (int): Number of grid rows.
@@ -319,7 +319,7 @@ class DistributedRRM:
         cells and converted to m3/s.
 
         Args:
-            conceptual_model: Lumped model object with a ``simulate``
+            conceptual_model (BaseConceptualModel): Lumped model object with a ``simulate``
                 method.
             lakecell (list[int]): Two-element list ``[row, col]``
                 giving the grid indices of the lake cell.

@@ -133,7 +133,7 @@ class HBV(BaseConceptualModel):
 
         Returns:
             tuple[float, float]: A tuple of ``(rainfall, snowfall)``
-            in mm.
+                in mm.
 
         Examples:
             Temperature above the upper threshold produces only
@@ -208,10 +208,10 @@ class HBV(BaseConceptualModel):
 
         Returns:
             tuple[float, float, float]: A tuple of
-            ``(infiltration, wc_new, sp_new)`` where
-            ``infiltration`` is the water draining into the soil
-            [mm], ``wc_new`` is the updated water content [mm],
-            and ``sp_new`` is the updated snow pack [mm].
+                ``(infiltration, wc_new, sp_new)`` where
+                ``infiltration`` is the water draining into the soil
+                [mm], ``wc_new`` is the updated water content [mm],
+                and ``sp_new`` is the updated snow pack [mm].
 
         Examples:
             When temperature exceeds the melt threshold, snow melts
@@ -312,9 +312,9 @@ class HBV(BaseConceptualModel):
 
         Returns:
             tuple[float, float]: A tuple of ``(sm_new, uz_int_1)``
-            where ``sm_new`` is the new soil moisture [mm] and
-            ``uz_int_1`` is the new direct runoff into the upper
-            zone [mm].
+                where ``sm_new`` is the new soil moisture [mm] and
+                ``uz_int_1`` is the new direct runoff into the upper
+                zone [mm].
 
         Examples:
             Compute soil moisture update for a warm day with
@@ -382,11 +382,11 @@ class HBV(BaseConceptualModel):
 
         Returns:
             tuple[float, float, float, float]: A tuple of
-            ``(q_0, q_1, uz_new, lz_new)`` where ``q_0`` is the
-            upper zone discharge [mm], ``q_1`` is the lower zone
-            discharge [mm], ``uz_new`` is the updated upper zone
-            storage [mm], and ``lz_new`` is the updated lower zone
-            storage [mm].
+                ``(q_0, q_1, uz_new, lz_new)`` where ``q_0`` is the
+                upper zone discharge [mm], ``q_1`` is the lower zone
+                discharge [mm], ``uz_new`` is the updated upper zone
+                storage [mm], and ``lz_new`` is the updated lower zone
+                storage [mm].
 
         Examples:
             Compute discharge from upper and lower zone storages:
@@ -444,7 +444,7 @@ class HBV(BaseConceptualModel):
 
         Returns:
             numpy.ndarray: Array of normalized weights with length
-            ``maxbas``.
+                ``maxbas``.
 
         Examples:
             >>> from hapi.rrm.hbv import HBV
@@ -482,7 +482,7 @@ class HBV(BaseConceptualModel):
 
         Returns:
             numpy.ndarray: Routed discharge time series with the same
-            length as ``q``.
+                length as ``q``.
 
         Raises:
             AssertionError: If ``maxbas`` is less than 1.
@@ -550,10 +550,10 @@ class HBV(BaseConceptualModel):
 
         Returns:
             tuple[float, float, list[float]]: A tuple of
-            ``(q_uz, q_lz, states)`` where ``q_uz`` is the upper
-            zone discharge [mm], ``q_lz`` is the lower zone
-            discharge [mm], and ``states`` is a list of five
-            updated state variables ``[sp, sm, uz, lz, wc]``.
+                ``(q_uz, q_lz, states)`` where ``q_uz`` is the upper
+                zone discharge [mm], ``q_lz`` is the lower zone
+                discharge [mm], and ``states`` is a list of five
+                updated state variables ``[sp, sm, uz, lz, wc]``.
 
         Raises:
             AssertionError: If ``snow=1`` and the parameter vector
