@@ -24,7 +24,7 @@ FlowAccPath = Path + "/GIS/acc4000.tif"
 FlowDPath = Path + "/GIS/fd4000.tif"
 CalibPath = Path + "/calibration"
 SaveTo = Path + "/results"
-# %% Basic_inputs
+# %% basic_inputs
 AreaCoeff = 1530
 # [sp,sm,uz,lz,wc]
 InitialCond = [0, 5, 5, 5, 0]
@@ -58,7 +58,7 @@ for the whole catchment or HRUs or HRUs with some lumped parameters
 for muskingum parameters k & x include the upper and lower bound in both
 UB & LB with the order of Klb then kub
 function inside the calibration algorithm is written as following
-par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
+par_dist=spatial_var_fun(par,*SpatialVarArgs,kub=kub,klb=klb)
 
 """
 raster = Dataset.read_file(FlowAccPath)
@@ -71,7 +71,7 @@ kub = 1
 no_lumped_par = 1
 lumped_par_pos = [7]
 
-SpatialVarFun = DP(
+spatial_var_fun = DP(
     raster,
     no_parameters,
     no_lumped_par=no_lumped_par,
@@ -81,7 +81,7 @@ SpatialVarFun = DP(
     kub=kub,
 )
 # calculate no of parameters that optimization algorithm is going to generate
-SpatialVarFun.ParametersNO
+spatial_var_fun.ParametersNO
 # %% Gauges
 Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
@@ -134,10 +134,14 @@ pll_type = None
 
 ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start=False)
 
-OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
+optimization_args = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% run calibration
-cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=0)
+cal_parameters = Coello.runCalibration(
+    spatial_var_fun, optimization_args, print_error=0
+)
 # %% convert parameters to rasters
 # Coello.Parameters = [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241, 94.91, 0.2075]
-SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-SpatialVarFun.save_parameters(SaveTo)
+spatial_var_fun.Function(
+    Coello.Parameters, kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
+)
+spatial_var_fun.save_parameters(SaveTo)

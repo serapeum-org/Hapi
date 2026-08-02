@@ -161,15 +161,15 @@ class Calibration(Catchment):
 
     def run_calibration(
         self,
-        SpatialVarFun: Callable[..., Any],
-        OptimizationArgs: list,
-        printError: int | None = None,
+        spatial_var_fun: Callable[..., Any],
+        optimization_args: list,
+        print_error: int | None = None,
     ):
         """Run the calibration algorithm for the distributed hydrological model.
 
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the conceptual distributed hydrological model.
-        The method distributes parameters spatially using ``SpatialVarFun``,
+        The method distributes parameters spatially using ``spatial_var_fun``,
         runs the RRM model via ``Wrapper.RRMModel``, and evaluates
         performance using the stored objective function.
 
@@ -185,19 +185,19 @@ class Calibration(Catchment):
               gauge metadata.
 
         Args:
-            SpatialVarFun: Spatial variable function object with a
+            spatial_var_fun: Spatial variable function object with a
                 ``Function`` method that distributes parameters and a
                 ``Par3d`` attribute holding the 3D parameter array, plus
                 ``no_parameters`` and ``no_elem`` attributes.
-            OptimizationArgs: A list of three elements:
-                - ``OptimizationArgs[0]`` (dict): Harmony Search API
+            optimization_args: A list of three elements:
+                - ``optimization_args[0]`` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
-                - ``OptimizationArgs[1]``: Parallel type for the
+                - ``optimization_args[1]``: Parallel type for the
                   optimizer.
-                - ``OptimizationArgs[2]`` (dict): Solver arguments with
+                - ``optimization_args[2]`` (dict): Solver arguments with
                   keys ``"store_sol"``, ``"display_opts"``,
                   ``"store_hst"``, and ``"hot_start"``.
-            printError: If not 0, prints the error value and parameters
+            print_error: If not 0, prints the error value and parameters
                 at each iteration. Default is None.
 
         Returns:
@@ -231,15 +231,15 @@ class Calibration(Catchment):
 
         # basic inputs
         # check if all inputs are included
-        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys()
-        #     for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB']"
+        # assert all(["p2","init_st","UB","LB","snow "][i] in basic_inputs.keys()
+        #     for i in range(4)), "basic_inputs should contain ['p2','init_st','UB','LB']"
 
         ### optimization
 
         # get arguments
-        ApiObjArgs = OptimizationArgs[0]
-        pll_type = OptimizationArgs[1]
-        ApiSolveArgs = OptimizationArgs[2]
+        ApiObjArgs = optimization_args[0]
+        pll_type = optimization_args[1]
+        ApiSolveArgs = optimization_args[2]
         # check optimization arguement
         assert type(ApiObjArgs) is dict, "store_history should be 0 or 1"
         assert type(ApiSolveArgs) is dict, "history_fname should be of type string "
@@ -250,10 +250,10 @@ class Calibration(Catchment):
         def opt_fun(par):
             try:
                 # distribute the parameters
-                SpatialVarFun.Function(
+                spatial_var_fun.Function(
                     par
-                )  # , kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb
-                self.Parameters = SpatialVarFun.Par3d
+                )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
+                self.Parameters = spatial_var_fun.Par3d
                 # run the model
                 Wrapper.RRMModel(self)
                 # calculate performance of the model
@@ -261,7 +261,7 @@ class Calibration(Catchment):
                     error = self.objective_function(
                         self.QGauges, *[self.GaugesTable]
                     )  # self.qout, self.quz_routed, self.qlz_translated,
-                    f = list(range(9, len(par), SpatialVarFun.no_parameters))
+                    f = list(range(9, len(par), spatial_var_fun.no_parameters))
                     g = list()
                     for i in range(len(f)):
                         k = par[f[i]]
@@ -274,7 +274,7 @@ class Calibration(Catchment):
                     raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
-                if printError != 0:
+                if print_error != 0:
                     print(round(error, 3))
                     print(par)
 
@@ -293,7 +293,7 @@ class Calibration(Catchment):
 
         opt_prob.addObj("f")
 
-        for i in range(SpatialVarFun.no_elem):
+        for i in range(spatial_var_fun.no_elem):
             opt_prob.addCon("g" + str(i) + "-1", "i")
             opt_prob.addCon("g" + str(i) + "-2", "i")
 
@@ -321,9 +321,9 @@ class Calibration(Catchment):
 
     def FW1Calibration(
         self,
-        SpatialVarFun: Callable[..., Any],
-        OptimizationArgs: list,
-        printError: int | None = None,
+        spatial_var_fun: Callable[..., Any],
+        optimization_args: list,
+        print_error: int | None = None,
     ):
         """Run calibration using the FW1 (Focussed Width-1) routing scheme.
 
@@ -342,18 +342,18 @@ class Calibration(Catchment):
               gauge metadata.
 
         Args:
-            SpatialVarFun: Spatial variable function object with a
+            spatial_var_fun: Spatial variable function object with a
                 ``Function`` method that distributes parameters and a
                 ``Par3d`` attribute holding the 3D parameter array.
-            OptimizationArgs: A list of three elements:
-                - ``OptimizationArgs[0]`` (dict): Harmony Search API
+            optimization_args: A list of three elements:
+                - ``optimization_args[0]`` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
-                - ``OptimizationArgs[1]``: Parallel type for the
+                - ``optimization_args[1]``: Parallel type for the
                   optimizer.
-                - ``OptimizationArgs[2]`` (dict): Solver arguments with
+                - ``optimization_args[2]`` (dict): Solver arguments with
                   keys ``"store_sol"``, ``"display_opts"``,
                   ``"store_hst"``, and ``"hot_start"``.
-            printError: If not 0, prints the error value and parameters
+            print_error: If not 0, prints the error value and parameters
                 at each iteration. Default is None.
 
         Returns:
@@ -387,15 +387,15 @@ class Calibration(Catchment):
 
         # basic inputs
         # check if all inputs are included
-        # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys()
-        #     for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB']"
+        # assert all(["p2","init_st","UB","LB","snow "][i] in basic_inputs.keys()
+        #     for i in range(4)), "basic_inputs should contain ['p2','init_st','UB','LB']"
 
         ### optimization
 
         # get arguments
-        ApiObjArgs = OptimizationArgs[0]
-        pll_type = OptimizationArgs[1]
-        ApiSolveArgs = OptimizationArgs[2]
+        ApiObjArgs = optimization_args[0]
+        pll_type = optimization_args[1]
+        ApiSolveArgs = optimization_args[2]
         # check optimization arguement
         assert type(ApiObjArgs) is dict, "store_history should be 0 or 1"
         assert type(ApiSolveArgs) is dict, "history_fname should be of type string "
@@ -406,10 +406,10 @@ class Calibration(Catchment):
         def opt_fun(par):
             try:
                 # distribute the parameters
-                SpatialVarFun.Function(
+                spatial_var_fun.Function(
                     par
-                )  # , kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb, Maskingum=SpatialVarFun.Maskingum
-                self.Parameters = SpatialVarFun.Par3d
+                )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum
+                self.Parameters = spatial_var_fun.Par3d
                 # run the model
                 Wrapper.FW1(self)
                 # calculate performance of the model
@@ -422,7 +422,7 @@ class Calibration(Catchment):
                     raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
-                if printError != 0:
+                if print_error != 0:
                     print(round(error, 3))
                     print(par)
 
@@ -462,9 +462,9 @@ class Calibration(Catchment):
 
     def lumpedCalibration(
         self,
-        Basic_inputs: dict,
-        OptimizationArgs: list,
-        printError: int | None = None,
+        basic_inputs: dict,
+        optimization_args: list,
+        print_error: int | None = None,
     ):
         """Run the calibration algorithm for the lumped hydrological model.
 
@@ -484,21 +484,21 @@ class Calibration(Catchment):
             - ``dt``: Time step duration.
 
         Args:
-            Basic_inputs (dict): Dictionary containing:
+            basic_inputs (dict): Dictionary containing:
                 - ``"Route"`` (int): Routing flag (1 to enable routing).
-                - ``"RoutingFn"`` (callable): Routing function to use.
+                - ``"routing_fn"`` (callable): Routing function to use.
                 - ``"InitialValues"`` (list, optional): Initial parameter
                   values for the optimizer. Defaults to an empty list if
                   not provided.
-            OptimizationArgs: A list of three elements:
-                - ``OptimizationArgs[0]`` (dict): Harmony Search API
+            optimization_args: A list of three elements:
+                - ``optimization_args[0]`` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
-                - ``OptimizationArgs[1]``: Parallel type for the
+                - ``optimization_args[1]``: Parallel type for the
                   optimizer.
-                - ``OptimizationArgs[2]`` (dict): Solver arguments with
+                - ``optimization_args[2]`` (dict): Solver arguments with
                   keys ``"store_sol"``, ``"display_opts"``,
                   ``"store_hst"``, and ``"hot_start"``.
-            printError: If not 0, prints the error value and constraint
+            print_error: If not 0, prints the error value and constraint
                 values at each iteration. Default is None.
 
         Returns:
@@ -507,29 +507,29 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            AssertionError: If ``Basic_inputs`` is missing required keys
-                ``"Route"`` or ``"RoutingFn"``, or if optimization
+            AssertionError: If ``basic_inputs`` is missing required keys
+                ``"Route"`` or ``"routing_fn"``, or if optimization
                 arguments are not dictionaries.
         """
         # basic inputs
         # check if all inputs are included
-        assert all(
-            ["Route", "RoutingFn"][i] in Basic_inputs.keys() for i in range(2)
-        ), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        assert all(["Route", "routing_fn"][i] in basic_inputs for i in range(2)), (
+            "basic_inputs should contain ['p2','init_st','UB','LB'] "
+        )
 
-        Route = Basic_inputs["Route"]
-        RoutingFn = Basic_inputs["RoutingFn"]
-        if "InitialValues" in Basic_inputs.keys():
-            InitialValues = Basic_inputs["InitialValues"]
+        Route = basic_inputs["Route"]
+        routing_fn = basic_inputs["routing_fn"]
+        if "InitialValues" in basic_inputs:
+            InitialValues = basic_inputs["InitialValues"]
         else:
             InitialValues = []
 
         ### optimization
 
         # get arguments
-        ApiObjArgs = OptimizationArgs[0]
-        pll_type = OptimizationArgs[1]
-        ApiSolveArgs = OptimizationArgs[2]
+        ApiObjArgs = optimization_args[0]
+        pll_type = optimization_args[1]
+        ApiSolveArgs = optimization_args[2]
         # check optimization arguement
         assert isinstance(ApiObjArgs, dict), "store_history should be 0 or 1"
         assert isinstance(ApiSolveArgs, dict), "history_fname should be of type string "
@@ -542,7 +542,7 @@ class Calibration(Catchment):
                 # parameters
                 self.Parameters = par
                 # run the model
-                Wrapper.Lumped(self, Route, RoutingFn)
+                Wrapper.Lumped(self, Route, routing_fn)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
@@ -556,7 +556,7 @@ class Calibration(Catchment):
                     # the objective function received fewer inputs than it needs
                     raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
 
-                if printError != 0:
+                if print_error != 0:
                     print(
                         f"Error = {round(error, 3)} Inequality Const = {np.round(g, 2)}"
                     )

@@ -278,7 +278,9 @@ class Parameters:
         #               klb
         #              )
 
-    def par3d_lumped(self, par_g: list | np.ndarray):  # , kub=1, klb=0.5, Maskingum = True
+    def par3d_lumped(
+        self, par_g: list | np.ndarray
+    ):  # , kub=1, klb=0.5, Maskingum = True
         r"""Distribute lumped parameters horizontally across grid cells.
 
         Takes a list of parameters (saved as one column or generated as a
@@ -555,66 +557,107 @@ class Parameters:
         fpl_a = flow_path_length.read_array(band=0)
 
         # trace the flow direction to the nearest river reach and store the location
-        # of that nearst reach
+        # of that nearest reach
+        nearest_network = Parameters._trace_nearest_drainage(
+            dem_a, no_val, river_a, fd_index, rows, cols
+        )
+
+        # the elevation difference to the nearest drainage cell is the height above
+        # nearest drainage; the same difference over the flow path length raster is
+        # the distance to that drainage
+        hand = Parameters._difference_to_nearest_drainage(
+            dem_a, dem_a, no_val, nearest_network, rows, cols
+        )
+        dist_to_nearest_drain = Parameters._difference_to_nearest_drainage(
+            fpl_a, dem_a, no_val, nearest_network, rows, cols
+        )
+
+        return hand, dist_to_nearest_drain
+
+    @staticmethod
+    def _trace_nearest_drainage(
+        dem_a: np.ndarray,
+        no_val: float | np.floating,
+        river_a: np.ndarray,
+        fd_index: np.ndarray,
+        rows: int,
+        cols: int,
+    ) -> np.ndarray:
+        """Locate the nearest downstream river cell for every domain cell.
+
+        Args:
+            dem_a (np.ndarray): DEM values, used to identify domain cells.
+            no_val (float): No-data value of the DEM.
+            river_a (np.ndarray): River raster; a value of 1 marks a river cell.
+            fd_index (np.ndarray): Downstream cell indices, shape (rows, cols, 2).
+            rows (int): Number of raster rows.
+            cols (int): Number of raster columns.
+
+        Returns:
+            np.ndarray: Array of shape (rows, cols, 2) holding the row and column
+                of the nearest drainage cell, NaN outside the domain.
+
+        Raises:
+            ValueError: If a flow path runs off the grid, which happens when the
+                catchment boundary has anomalies.
+        """
         nearest_network = np.ones((rows, cols, 2)) * np.nan
         try:
             for i in range(rows):
                 for j in range(cols):
-                    if dem_a[i, j] != no_val:
-                        f = river_a[i, j]
-                        # a river cell is its own nearest drainage
-                        new_row = i
-                        new_cols = j
-                        old_row = i
-                        old_cols = j
-
-                        while f != 1:
-                            # did not reach the river yet, go to the next downstream cell
-                            new_row = int(fd_index[old_row, old_cols, 0])
-                            new_cols = int(fd_index[old_row, old_cols, 1])
-                            # go to the downstream cell
-                            f = river_a[new_row, new_cols]
-                            # the downstream cell becomes the current position
-                            old_row = new_row
-                            old_cols = new_cols
-                        # store the position in the array
-                        nearest_network[i, j, 0] = new_row
-                        nearest_network[i, j, 1] = new_cols
-
+                    if dem_a[i, j] == no_val:
+                        continue
+                    # a river cell is its own nearest drainage
+                    row, col = i, j
+                    while river_a[row, col] != 1:
+                        # not at the river yet, step to the downstream cell
+                        row, col = (
+                            int(fd_index[row, col, 0]),
+                            int(fd_index[row, col, 1]),
+                        )
+                    nearest_network[i, j, 0] = row
+                    nearest_network[i, j, 1] = col
         except (IndexError, ValueError) as e:
             raise ValueError(
                 "please check the boundaries of your catchment. After cropping the catchment using a polygon, it "
                 "creates anomalies at the boundary"
             ) from e
 
-        # calculate the elevation difference between the cell and the nearest drainage cell
-        # or height above nearst drainage
-        hand = np.ones((rows, cols)) * np.nan
+        return nearest_network
 
+    @staticmethod
+    def _difference_to_nearest_drainage(
+        values: np.ndarray,
+        dem_a: np.ndarray,
+        no_val: float | np.floating,
+        nearest_network: np.ndarray,
+        rows: int,
+        cols: int,
+    ) -> np.ndarray:
+        """Subtract each cell's nearest-drainage value from the cell's own value.
+
+        Args:
+            values (np.ndarray): Raster to difference (elevation or flow path length).
+            dem_a (np.ndarray): DEM values, used to identify domain cells.
+            no_val (float): No-data value of the DEM.
+            nearest_network (np.ndarray): Nearest drainage indices from
+                `_trace_nearest_drainage`.
+            rows (int): Number of raster rows.
+            cols (int): Number of raster columns.
+
+        Returns:
+            np.ndarray: The difference for every domain cell, NaN elsewhere.
+        """
+        difference = np.ones((rows, cols)) * np.nan
         for i in range(rows):
             for j in range(cols):
-                if dem_a[i, j] != no_val:
-                    hand[i, j] = (
-                        dem_a[i, j]
-                        - dem_a[
-                            int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
-                        ]
-                    )
+                if dem_a[i, j] == no_val:
+                    continue
+                drain_row = int(nearest_network[i, j, 0])
+                drain_col = int(nearest_network[i, j, 1])
+                difference[i, j] = values[i, j] - values[drain_row, drain_col]
 
-        # calculate the distance to the nearest drainage c  ell using flow path length or distance to nearest drainage
-        dist_to_nearest_drain = np.ones((rows, cols)) * np.nan
-
-        for i in range(rows):
-            for j in range(cols):
-                if dem_a[i, j] != no_val:
-                    dist_to_nearest_drain[i, j] = (
-                        fpl_a[i, j]
-                        - fpl_a[
-                            int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
-                        ]
-                    )
-
-        return hand, dist_to_nearest_drain
+        return difference
 
     def parameters_number(self):
         """Calculate the total number of parameters for the optimization.

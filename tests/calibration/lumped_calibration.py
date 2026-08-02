@@ -20,7 +20,7 @@ name = "Coello"
 
 Coello = Calibration(name, start, end)
 Coello.read_lumped_inputs(MeteoDataPath)
-# %% Basic_inputs
+# %% basic_inputs
 # catchment area
 AreaCoeff = 1530
 # temporal resolution
@@ -43,9 +43,9 @@ Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 parameters = []
 # Routing
 Route = 1
-RoutingFn = Routing.triangular_routing_1
+routing_fn = Routing.triangular_routing_1
 
-Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
+basic_inputs = dict(Route=Route, routing_fn=routing_fn, InitialValues=parameters)
 # %%
 ### Objective function
 # outlet discharge
@@ -84,11 +84,11 @@ pll_type = None
 
 ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start=False)
 
-OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
+optimization_args = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %%
 # run calibration
 cal_parameters = Coello.lumpedCalibration(
-    Basic_inputs, OptimizationArgs, printError=None
+    basic_inputs, optimization_args, print_error=None
 )
 
 print("Objective Function = " + str(round(cal_parameters[0], 2)))
@@ -96,7 +96,7 @@ print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% run the model
 Coello.Parameters = cal_parameters[1]
-Run.runLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, routing_fn)
 # %% calculate performance criteria
 Metrics = dict()
 

@@ -45,9 +45,9 @@ def test_lumped_calibration(
     parameters = []
     # Routing
     Route = 1
-    RoutingFn = Routing.triangular_routing_1
+    routing_fn = Routing.triangular_routing_1
 
-    Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
+    basic_inputs = dict(Route=Route, routing_fn=routing_fn, InitialValues=parameters)
 
     # discharge gauges
     Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
@@ -77,9 +77,9 @@ def test_lumped_calibration(
         store_sol=True, display_opts=True, store_hst=False, hot_start=False
     )
 
-    OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
+    optimization_args = [ApiObjArgs, pll_type, ApiSolveArgs]
 
-    # cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
+    # cal_parameters = Coello.lumpedCalibration(basic_inputs, optimization_args, print_error=None)
 
     # assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']
 
