@@ -40,6 +40,7 @@ def test_prepare_inputs(
 
 
 class TestExtractParameters:
+    @pytest.mark.fig_share
     def test_as_raster(
         self,
         download_03_parameter,
@@ -95,6 +96,7 @@ class TestExtractParameters:
     #     ).all()
 
 
+@pytest.mark.fig_share
 def test_extract_parameters_boundaries(
     download_max_min_parameter, coello_basin: FeatureCollection
 ):
