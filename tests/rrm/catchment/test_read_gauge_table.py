@@ -266,6 +266,30 @@ class TestReadGaugeTable:
             f"expected 3 April 2009 under a day-first format, got {parsed}"
         )
 
+    def test_blank_date_raises(self, catchment, tmp_path):
+        """Test that a blank ``start``/``end`` cell is rejected rather than becoming NaT.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            ``pd.to_datetime`` maps a blank cell to ``NaT`` instead of raising, where the
+            per-cell ``strptime`` it replaced rejected it. A gauge with no validity period
+            is almost always a data-entry slip, and a silent ``NaT`` would flow into the
+            period comparisons unnoticed.
+        """
+        path = tmp_path / "gauges_blank.csv"
+        pd.DataFrame(
+            {
+                "id": [1, 2],
+                "start": ["2009-01-01", ""],
+                "end": ["2011-12-31", "2011-12-31"],
+            }
+        ).to_csv(path, index=False)
+
+        with pytest.raises(ValueError, match="no usable date"):
+            catchment.read_gauge_table(str(path))
+
     def test_date_not_matching_the_format_raises(self, catchment, tmp_path):
         """Test that an unparseable date is rejected.
 

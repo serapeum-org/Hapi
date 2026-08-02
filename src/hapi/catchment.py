@@ -455,7 +455,16 @@ class Catchment:
         No-data handling is delegated to pyramids via ``read_array(masked=True)``,
         which compares integer bands for exact equality with the sentinel and float
         bands with a NaN-aware comparison, and additionally honours the band's GDAL
-        mask band. The array is promoted to floating point so masked cells can hold
+        mask band.
+
+        Note:
+            Two consequences worth knowing. The array is promoted to ``float64``
+            regardless of the source dtype, so a ``float32`` raster costs twice its
+            on-disk size in memory — the price of a representable ``NaN`` mask. And
+            because the GDAL mask band is honoured, a raster carrying an alpha or
+            internal mask yields a **smaller** domain than before this was delegated,
+            which changes :attr:`no_elem` and, through it, the width of the parameter
+            arrays: calibration vectors saved against the old domain will not fit. The array is promoted to floating point so masked cells can hold
         ``NaN``, and every downstream attribute (``no_elem``, ``acc_val``, ``Outlet``)
         is derived from that masked array.
 
@@ -553,6 +562,12 @@ class Catchment:
         # (exact equality on integer bands, NaN-aware on float ones) and it also
         # honours the band's GDAL mask band. Filling with NaN keeps the
         # float-array-with-NaN contract the rest of this class relies on.
+        #
+        # astype(float) is unconditional and promotes a float32 raster to float64,
+        # doubling resident size. That is the price of a single representable NaN
+        # mask: the alternative -- promoting only integer bands -- leaves float32
+        # rasters unable to hold NaN at full precision and reintroduces the dtype
+        # branch whose `== "int"` test silently failed for int32.
         self.FlowAccArr = np.ma.filled(
             flow_acc.read_array(band=0, masked=True).astype(float), np.nan
         )
@@ -1120,9 +1135,20 @@ class Catchment:
         # a table carrying only one of the two does not raise KeyError on the other.
         for column in ("start", "end"):
             if column in col_list:
-                self.GaugesTable[column] = pd.to_datetime(
-                    self.GaugesTable[column], format=fmt
-                )
+                parsed = pd.to_datetime(self.GaugesTable[column], format=fmt)
+                # to_datetime maps a blank or missing cell to NaT rather than raising,
+                # where the per-cell strptime this replaced rejected it. A gauge with no
+                # validity period is almost always a data-entry slip, and silently
+                # carrying NaT into the period comparisons hides it.
+                blank = parsed.isna() & self.GaugesTable[column].notna()
+                if blank.any() or parsed.isna().any():
+                    bad = self.GaugesTable.index[parsed.isna()].tolist()
+                    raise ValueError(
+                        f"the {column!r} column has no usable date at row(s) {bad}; "
+                        f"every gauge needs a {column} parseable with {fmt!r}, or the "
+                        "column should be omitted entirely."
+                    )
+                self.GaugesTable[column] = parsed
         if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
             # calculate the nearest cell to each station
