@@ -165,6 +165,32 @@ class Parameters:
                     "you have one or more lumped parameters, so the position has to be entered as a list"
                 )
 
+        # Reject an unrecognised selector here rather than leaving `Function` unbound:
+        # it is invoked on every calibration iteration, so a silent miss surfaces far
+        # from the mistake as a bare AttributeError.
+        strategies = {
+            1: self.par3d_lumped,
+            2: self.par3d,
+            3: self.par2d_lumped_k1_lake,
+            4: self.hydrologic_response_units,
+        }
+        # Test the type before the membership lookup: an unhashable selector (a list,
+        # a set) raises TypeError from `in` rather than the documented ValueError, and
+        # bool is a subclass of int, so True would otherwise silently select strategy 1.
+        # A float is rejected outright rather than coerced -- 2.0 is a caller error, not
+        # a spelling of 2.
+        if isinstance(function, bool) or not isinstance(function, int):
+            raise ValueError(
+                f"function must be one of {sorted(strategies)}; got {function!r} of type "
+                f"{type(function).__name__}. 1 = par3d_lumped, 2 = par3d, "
+                "3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units."
+            )
+        if function not in strategies:
+            raise ValueError(
+                f"function must be one of {sorted(strategies)}; got {function!r}. "
+                "1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, "
+                "4 = hydrologic_response_units."
+            )
         self.Lake = lake
         self.Snow = snow
         self.no_lumped_par = no_lumped_par
@@ -240,32 +266,6 @@ class Parameters:
             shape=(self.no_parameters, self.no_elem), dtype=np.float32
         )
 
-        # Reject an unrecognised selector here rather than leaving `Function` unbound:
-        # it is invoked on every calibration iteration, so a silent miss surfaces far
-        # from the mistake as a bare AttributeError.
-        strategies = {
-            1: self.par3d_lumped,
-            2: self.par3d,
-            3: self.par2d_lumped_k1_lake,
-            4: self.hydrologic_response_units,
-        }
-        # Test the type before the membership lookup: an unhashable selector (a list,
-        # a set) raises TypeError from `in` rather than the documented ValueError, and
-        # bool is a subclass of int, so True would otherwise silently select strategy 1.
-        # A float is rejected outright rather than coerced -- 2.0 is a caller error, not
-        # a spelling of 2.
-        if isinstance(function, bool) or not isinstance(function, int):
-            raise ValueError(
-                f"function must be one of {sorted(strategies)}; got {function!r} of type "
-                f"{type(function).__name__}. 1 = par3d_lumped, 2 = par3d, "
-                "3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units."
-            )
-        if function not in strategies:
-            raise ValueError(
-                f"function must be one of {sorted(strategies)}; got {function!r}. "
-                "1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, "
-                "4 = hydrologic_response_units."
-            )
         self.Function = strategies[function]
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
