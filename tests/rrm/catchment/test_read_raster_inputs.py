@@ -204,6 +204,46 @@ class TestReadFlowAcc:
             f"expected built-in ints, got {[type(v).__name__ for v in catchment.acc_val]}"
         )
 
+    def test_acc_val_truncates_before_deduplicating(self, catchment, write_raster):
+        """Test that a float raster yields distinct *integer* accumulation values.
+
+        Test scenario:
+            The regression guarding H1. ``np.unique`` on the float values keeps 1.2 and
+            1.8 apart and only then truncates, producing a repeated ``1``; truncating
+            first collapses them, which is what the per-cell ``set(int(...))`` this
+            replaced did. The sibling test uses an int32 raster, where the ordering
+            cannot matter, so it could never have caught this.
+        """
+        path = write_raster(
+            np.array([[0.0, 1.2], [1.8, NO_DATA]], dtype="float32"),
+            no_data_value=float(NO_DATA),
+            name="acc_float.tif",
+        )
+
+        catchment.read_flow_acc(path)
+
+        assert catchment.acc_val == [0, 1], (
+            "float cells must be truncated before de-duplication, so 1.2 and 1.8 "
+            f"collapse to a single 1; got {catchment.acc_val}"
+        )
+
+    def test_infinite_values_are_rejected(self, catchment, write_raster):
+        """Test that a raster holding infinity fails loudly rather than saturating.
+
+        Test scenario:
+            ``astype(int)`` maps ``inf`` to ``INT64_MIN`` with only a ``RuntimeWarning``,
+            so a corrupt raster would silently acquire a huge negative accumulation
+            value. The conversion rejects it instead (L2).
+        """
+        path = write_raster(
+            np.array([[0.0, np.inf], [1.0, NO_DATA]], dtype="float32"),
+            no_data_value=float(NO_DATA),
+            name="acc_inf.tif",
+        )
+
+        with pytest.raises(ValueError, match="infinite values"):
+            catchment.read_flow_acc(path)
+
     def test_all_no_data_raster_raises(self, catchment, write_raster):
         """Test the degenerate all-no-data raster.
 

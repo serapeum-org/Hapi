@@ -41,6 +41,43 @@ if TYPE_CHECKING:
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
 
+def _to_int_codes(array: np.ndarray) -> np.typing.NDArray:
+    """Return the finite cells of `array` truncated to 64-bit integers.
+
+    Shared by the flow-accumulation and flow-direction readers, which both need the
+    distinct *integer* values of a masked raster.
+
+    Truncation happens before the caller de-duplicates: collapsing to integers first is
+    what makes 1.2 and 1.8 a single value, matching the per-cell ``set(int(...))`` this
+    replaced. De-duplicating first would leave both and yield a repeated ``1``.
+
+    Args:
+        array: A 2-D array whose masked cells are ``NaN``.
+
+    Returns:
+        np.ndarray: 1-D ``int64`` array of the finite cells, unsorted and not
+            de-duplicated.
+
+    Raises:
+        ValueError: A cell is infinite, or is too large for ``int64``. ``astype`` would
+            otherwise saturate silently to ``INT64_MIN``/``INT64_MAX`` with only a
+            ``RuntimeWarning``.
+    """
+    finite = array[~np.isnan(array)]
+    if not np.isfinite(finite).all():
+        raise ValueError(
+            "raster contains infinite values, which cannot be converted to integer "
+            "cell codes; check the source raster's no-data handling."
+        )
+    info = np.iinfo(np.int64)
+    if finite.size and (finite.min() < info.min or finite.max() > info.max):
+        raise ValueError(
+            f"raster values fall outside the int64 range [{info.min}, {info.max}]; "
+            "converting them would silently saturate."
+        )
+    return finite.astype(np.int64)
+
+
 class Catchment:
     """Catchment for reading meteorological/spatial inputs and running the model.
 
@@ -468,11 +505,11 @@ class Catchment:
         # is_no_data's default rel. tolerance, which masks values within 0.1% of the
         # sentinel -- the defect this branch removed.
         self.no_elem = int(np.count_nonzero(~np.isnan(self.FlowAccArr)))
-        # np.unique already returns sorted, de-duplicated values, so it replaces the
-        # per-cell comprehension plus set() plus sort().
-        self.acc_val = (
-            np.unique(self.FlowAccArr[~np.isnan(self.FlowAccArr)]).astype(int).tolist()
-        )
+        # Truncate BEFORE de-duplicating. np.unique on the float values would keep
+        # 1.2 and 1.8 apart and only then collapse them to 1, yielding duplicates; the
+        # per-cell `set(int(...))` this replaced truncated first, so distinct *integer*
+        # accumulation values is the contract.
+        self.acc_val = np.unique(_to_int_codes(self.FlowAccArr)).tolist()
         acc_val_mx = max(self.acc_val)
 
         if not (acc_val_mx == self.no_elem or acc_val_mx == self.no_elem - 1):
@@ -586,7 +623,7 @@ class Catchment:
             flow_dir.read_array(band=0, masked=True).astype(float), np.nan
         )
 
-        fd_val = np.unique(self.flow_dir_arr[~np.isnan(self.flow_dir_arr)]).astype(int)
+        fd_val = np.unique(_to_int_codes(self.flow_dir_arr))
         fd_should = {1, 2, 4, 8, 16, 32, 64, 128}
         assert set(fd_val.tolist()) <= fd_should, (
             "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
