@@ -194,6 +194,35 @@ class TestReadFlowAcc:
             "the fuzzy tolerance; if it now returns 4, the helper is safe to adopt"
         )
 
+    def test_gdal_mask_band_shrinks_the_domain(self, catchment, write_raster):
+        """Test that an internal GDAL mask band excludes cells from the domain.
+
+        Test scenario:
+            Documents a deliberate behaviour change. Masking used to compare against the
+            no-data value only; delegating to pyramids also honours the band's GDAL mask,
+            so a raster carrying one yields a *smaller* domain than before. That changes
+            ``no_elem`` and, through it, the width of the parameter arrays — calibration
+            vectors saved against the old domain will not fit. Keeping the behaviour is
+            the correct reading of such a raster; pinning it is what stops the change
+            being silent.
+        """
+        path = write_raster(
+            np.array([[0, 1], [2, 3]], dtype="int32"), name="acc_maskband.tif"
+        )
+        ds = Dataset.read_file(path, read_only=False)
+        ds.create_mask_band()
+        band = ds.raster.GetRasterBand(1).GetMaskBand()
+        band.WriteArray(np.array([[255, 255], [0, 255]], dtype="uint8"))
+        ds.raster.FlushCache()
+        ds.close()
+
+        catchment.read_flow_acc(path)
+
+        assert catchment.no_elem == 3, (
+            "the cell zeroed in the mask band must be excluded from the domain, so 3 of "
+            f"4 cells remain; got {catchment.no_elem}"
+        )
+
     def test_returns_float_array_for_integer_raster(self, catchment, write_raster):
         """Test that an integer raster is promoted to float so NaN is representable.
 
