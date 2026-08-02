@@ -787,14 +787,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/distrrm.html" class="md-nav__link">
+      <a href="../api/distrrm.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Distributed Rainfall-Runoff Model
+    None
   
 
     
@@ -1355,10 +1355,10 @@
 <p>To calibrate the HBV lumped model inside Hapi you need to follow the same steps of running the lumped model with few extra steps to define the requirement of the calibration algorithm.</p>
 <p><div class="highlight"><pre><span></span><code>    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBVLumped</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">Hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBVLumped</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">statista.metrics</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metrics</span>
 
     <span class="n">Parameterpath</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/lumped/Coello_Lumped2021-03-08_muskingum.txt&quot;</span>
@@ -1370,7 +1370,7 @@
     <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
 
     <span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_inputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
+    <span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedInputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
 
 
     <span class="c1"># catchment area</span>
@@ -1380,7 +1380,7 @@
     <span class="n">InitialCond</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
     <span class="c1"># no snow subroutine</span>
     <span class="n">Snow</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_model</span><span class="p">(</span><span class="n">HBVLumped</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
+    <span class="n">Coello</span><span class="o">.</span><span class="n">readLumpedModel</span><span class="p">(</span><span class="n">HBVLumped</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
 
     <span class="c1"># Calibration boundaries</span>
     <span class="n">UB</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/lumped/UB-3.txt&quot;</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
@@ -1390,7 +1390,7 @@
     <span class="n">LB</span> <span class="o">=</span> <span class="n">LB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
     <span class="n">Maxbas</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_parameters_bound</span><span class="p">(</span><span class="n">UB</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">Snow</span><span class="p">,</span> <span class="n">Maxbas</span><span class="o">=</span><span class="n">Maxbas</span><span class="p">)</span>
+    <span class="n">Coello</span><span class="o">.</span><span class="n">readParametersBounds</span><span class="p">(</span><span class="n">UB</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">Snow</span><span class="p">,</span> <span class="n">Maxbas</span><span class="o">=</span><span class="n">Maxbas</span><span class="p">)</span>
 
     <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># Routing</span>
@@ -1401,7 +1401,7 @@
 
     <span class="c1">### Objective function</span>
     <span class="c1"># outlet discharge</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">Path</span><span class="o">+</span><span class="s2">&quot;Qout_c.csv&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">Coello</span><span class="o">.</span><span class="n">readDischargeGauges</span><span class="p">(</span><span class="n">Path</span><span class="o">+</span><span class="s2">&quot;Qout_c.csv&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">OF_args</span><span class="o">=</span><span class="p">[]</span>
     <span class="n">OF</span><span class="o">=</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span>
