@@ -2953,6 +2953,7 @@ packages:
   - oasis-optimization>=1.0.3
   - cleopatra>=0.26.1
   - matplotlib>=3.11.0
+  - earthlens[ecmwf]>=0.12.0 ; extra == 'inputs'
   requires_python: '>=3.11,<4'
 - pypi: https://files.pythonhosted.org/packages/01/bd/f8607e908605262e4926cbfd2560094bc5d04ef7f8aff1340e7fff503016/traitlets-5.16.0-py3-none-any.whl
   name: traitlets
