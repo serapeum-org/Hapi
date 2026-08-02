@@ -792,14 +792,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.md" class="md-nav__link">
+      <a href="distrrm.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Distributed Rainfall-Runoff Model
   
 
     
@@ -3047,10 +3047,11 @@ component.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>tuple[float, float]: A tuple of <code>(rf, sf)</code> where:
+                <p>A tuple of <code>(rf, sf)</code> where:
 - <strong>rf</strong> (<em>float</em>): Rainfall [mm].
 - <strong>sf</strong> (<em>float</em>): Snowfall [mm].</p>
               </div>
@@ -3372,10 +3373,11 @@ coefficient [-].</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>tuple[float, float, float, float]: A tuple of
+                <p>A tuple of
 <code>(q_uz, q_lz, uz_new, lz_new)</code> where:
 - <strong>q_uz</strong> (<em>float</em>): Upper zone discharge
   (surface runoff + interflow) [mm/timestep].
@@ -3661,10 +3663,11 @@ Must be &gt;= 1. Defaults to 1.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>numpy.ndarray: Routed discharge array with the same
+                <p>Routed discharge array with the same
 shape as <code>q</code>.</p>
               </div>
             </td>
@@ -3997,8 +4000,7 @@ Defaults to 0.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]:
-A tuple of <code>(q_uz, q_lz, st)</code> where:
+                <p>A tuple of <code>(q_uz, q_lz, st)</code> where:
 - <strong>q_uz</strong> (<em>numpy.ndarray</em>): Upper zone discharge
   (surface runoff + interflow) for <code>n+1</code> time
   steps [mm/timestep].
@@ -4612,10 +4614,11 @@ as a fraction [-].</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>tuple[float, float, float]: A tuple of
+                <p>A tuple of
 <code>(inf, wc_new, sp_new)</code> where:
 - <strong>inf</strong> (<em>float</em>): Infiltration into the soil [mm].
 - <strong>wc_new</strong> (<em>float</em>): New liquid water content in
@@ -5052,10 +5055,11 @@ capacity [-].</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>tuple[float, float]: A tuple of
+                <p>A tuple of
 <code>(sm_new, uz_int_1)</code> where:
 - <strong>sm_new</strong> (<em>float</em>): New soil moisture value [mm].
 - <strong>uz_int_1</strong> (<em>float</em>): New value of direct runoff
@@ -5308,10 +5312,11 @@ transfer function.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>numpy.ndarray: Normalized weights for the transfer
+                <p>Normalized weights for the transfer
 function, summing to 1.0.</p>
               </div>
             </td>

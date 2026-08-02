@@ -787,14 +787,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/distrrm.md" class="md-nav__link">
+      <a href="../api/distrrm.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Distributed Rainfall-Runoff Model
   
 
     
@@ -1363,93 +1363,24 @@
 - Temperature
 </code></pre></div>
 <p>Distributed meteorological data can be obtain from gauge data with some interpolation method or from remote sensing data</p>
-<h1 id="remote-sensing-module"><a class="toclink" href="#remote-sensing-module">Remote Sensing Module</a><a class="headerlink" href="#remote-sensing-module" title="Permanent link">#</a></h1>
-<p>The remote sensing module includes two classes to download ECMWF, and CHRIPS data</p>
-<h1 id="chrips"><a class="toclink" href="#chrips">CHRIPS</a><a class="headerlink" href="#chrips" title="Permanent link">#</a></h1>
-<p>The Climate Hazards Group InfraRed Precipitation with Station data (CHIRPS) is a quasi-global rainfall data set. As its title suggests it combines data from real-time observing meteorological stations with infra-red data to estimate precipitation. The data set runs from 1981 to the near present.</p>
-<p>CHIRPS incorporates 0.05° resolution satellite imagery with in-situ station data to create gridded rainfall time series for trend analysis and seasonal drought monitoring</p>
-<p>There are two main data sets. The first is quasi-global and covers the whole world from 50°N to 50°S. The second covers Africa and parts of the Middle-East. It covers the area from 40°N to 40°S and from 20°W to 55°E. The global data set has data on a 0.05° grid at monthly, pentad and daily times steps. This is equivalent to 31 km2. The ‘Africa’ data set also includes data at a 0.10° grid at a 6-hour time step.</p>
-<p>CHRIPS data are uploaded into a ftp server therefore and can be downloaded through the <code>CHRIPS</code> class in the <code>remotesensing</code> module</p>
-<ul>
-<li>First import the class from the remotesensing module</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.remotesensing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CHIRPS</span>
+<h1 id="remote-sensing-data"><a class="toclink" href="#remote-sensing-data">Remote Sensing Data</a><a class="headerlink" href="#remote-sensing-data" title="Permanent link">#</a></h1>
+<p>The remote sensing module that used to download CHIRPS and ECMWF data was moved out of
+Hapi into its own package, <a href="https://pypi.org/project/earth2observe/">earth2observe</a>:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>earth2observe
 </code></pre></div>
+<p>earth2observe covers the same sources Hapi used to handle:</p>
 <ul>
-<li>Create the object with the following information<ul>
-<li>Period of time (start and end date)</li>
-<li>Temporal resolution (daily/monthy)</li>
-<li>Extend (Longitude/Latitude)</li>
-<li>Path (directory to save the downloaded data)</li>
+<li><strong>CHIRPS</strong> — the Climate Hazards Group InfraRed Precipitation with Station data, a
+  quasi-global rainfall data set combining satellite imagery with in-situ station data
+  on a 0.05 degree grid, from 1981 to near present.</li>
+<li><strong>ECMWF</strong> — the ERA-Interim archive, which requires a registered account and an API
+  key set up on your machine (see the
+  <a href="https://apps.ecmwf.int/registration/">ECMWF registration</a> and the
+  <a href="https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key">API key instructions</a>).</li>
 </ul>
-</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="n">StartDate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-01&#39;</span>
-<span class="n">EndDate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-10&#39;</span>
-<span class="n">Time</span> <span class="o">=</span> <span class="s1">&#39;daily&#39;</span>
-<span class="n">lat</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.190755</span><span class="p">,</span><span class="mf">4.643963</span><span class="p">]</span>
-<span class="n">lon</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">75.649243</span><span class="p">,</span><span class="o">-</span><span class="mf">74.727286</span><span class="p">]</span>
-<span class="n">Path</span> <span class="o">=</span> <span class="s2">&quot;directory to save the data&quot;</span>
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">CHIRPS</span><span class="p">(</span><span class="n">StartDate</span><span class="o">=</span><span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="o">=</span><span class="n">EndDate</span><span class="p">,</span> <span class="n">Time</span><span class="o">=</span><span class="n">Time</span><span class="p">,</span>
-            <span class="n">latlim</span><span class="o">=</span><span class="n">lat</span> <span class="p">,</span> <span class="n">lonlim</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span> <span class="n">Path</span><span class="o">=</span><span class="n">Path</span><span class="p">)</span>
-</code></pre></div>
-<ul>
-<li>Call the <code>Download</code> method</li>
-</ul>
-<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">Download</span><span class="p">()</span>
-</code></pre></div>
-- A Progress bar will appear and be updated with percent of the download</p>
-<p><img alt="progress" src="../img/progress.png" /></p>
-<ul>
-<li>If the period is long and the Download method can run in parallel, to activate the parallel mode enter the number of cores with the keyword argument <code>cores</code></li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">Download</span><span class="p">(</span><span class="n">cores</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-</code></pre></div>
-<h1 id="ecmwf"><a class="toclink" href="#ecmwf">ECMWF</a><a class="headerlink" href="#ecmwf" title="Permanent link">#</a></h1>
-<p>ERA-Interim data set is a global atmospheric reanalysis that is available from 1 January 1979 to 31 August 2019</p>
-<p>The ERA-Interim data assimilation and forecast suite produces:
-• four analyses per day, at 00, 06, 12 and 18 UTC;
-• two 10-day forecasts per day, initialized from analyses at 00 and 12 UTC</p>
-<ul>
-<li>
-<p>Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at <a href="http://data.ecmwf.int/data">http://data.ecmwf.int/data</a>.</p>
-</li>
-<li>
-<p>The ERA-Interim Archive is part of ECMWF’s Meteorological Archive and Retrieval System (MARS), which is accessible to registered users</p>
-</li>
-<li>The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine</li>
-</ul>
-<p>so inorder to be able to use the following code to download ECMWF data you need to
-- register and setup your account on the <a href="https://apps.ecmwf.int/registration/">ECMWF website</a>.</p>
-<ul>
-<li>
-<p>Install ECMWF key — <a href="https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key">instructions here</a>.</p>
-</li>
-<li>
-<p>ERA-Interim data set has a lot of meteorological variables which you can download</p>
-</li>
-<li>You need to provide the name of the variable using the <code>Variables</code> object</li>
-<li><code>Variables</code> contains the tame of the variable you need to give to the <code>ECMWF</code> object to get and the unit and description</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">Hapi.remotesensing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Variables</span>
-<span class="n">Vars</span> <span class="o">=</span> <span class="n">Variables</span><span class="p">(</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span>
-<span class="n">Vars</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
-</code></pre></div>
-<p>For information about ECMWF data, see <a href="https://apps.ecmwf.int/codes/grib/param-db/">https://apps.ecmwf.int/codes/grib/param-db/</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">StartDate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-01&#39;</span>
-<span class="n">EndDate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-10&#39;</span>
-<span class="n">Time</span> <span class="o">=</span> <span class="s1">&#39;daily&#39;</span>
-<span class="n">lat</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.190755</span><span class="p">,</span><span class="mf">4.643963</span><span class="p">]</span>
-<span class="n">lon</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">75.649243</span><span class="p">,</span><span class="o">-</span><span class="mf">74.727286</span><span class="p">]</span>
-<span class="n">Path</span> <span class="o">=</span> <span class="s2">&quot;/data/satellite_data/&quot;</span>
-<span class="c1"># Temperature, Evapotranspiration</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;E&#39;</span><span class="p">]</span>
-
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">RS</span><span class="p">(</span><span class="n">StartDate</span><span class="o">=</span><span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="o">=</span><span class="n">EndDate</span><span class="p">,</span> <span class="n">Time</span><span class="o">=</span><span class="n">Time</span><span class="p">,</span>
-    <span class="n">latlim</span><span class="o">=</span><span class="n">lat</span> <span class="p">,</span> <span class="n">lonlim</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span> <span class="n">Path</span><span class="o">=</span><span class="n">Path</span><span class="p">,</span> <span class="n">Vars</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
-
-<span class="n">Coello</span><span class="o">.</span><span class="n">ECMWF</span><span class="p">(</span><span class="n">Waitbar</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</code></pre></div>
+<p>Once the rasters are downloaded, prepare them for the model with <code>hapi.inputs.Inputs</code>,
+which aligns every raster to the catchment DEM — see
+<a href="gis-inputs.html">GIS inputs</a> and <a href="parameters.html">Parameters</a>.</p>
 
 
 

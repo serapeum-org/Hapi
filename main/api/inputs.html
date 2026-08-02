@@ -939,14 +939,14 @@
   
   
     <li class="md-nav__item">
-      <a href="distrrm.md" class="md-nav__link">
+      <a href="distrrm.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Distributed Rainfall-Runoff Model
   
 
     
@@ -2229,7 +2229,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="n">date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">file_name_data_fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2485,7 +2485,7 @@ extension (e.g., <code>"data/dem.tif"</code>).</p>
 
 
 <h4 id="hapi.inputs.Inputs.create_lumped_inputs" class="doc doc-heading"><a href="#hapi.inputs.Inputs.create_lumped_inputs" class="toclink">
-            <code class="highlight language-python"><span class="n">create_lumped_inputs</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">d</span><span class="si">{4}</span><span class="s1">.</span><span class="se">\\</span><span class="s1">d</span><span class="si">{2}</span><span class="s1">.</span><span class="se">\\</span><span class="s1">d</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">file_name_data_fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;.tif&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span></code>
+            <code class="highlight language-python"><span class="n">create_lumped_inputs</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">d</span><span class="si">{4}</span><span class="s1">.</span><span class="se">\\</span><span class="s1">d</span><span class="si">{2}</span><span class="s1">.</span><span class="se">\\</span><span class="s1">d</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">file_name_data_fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;.tif&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
@@ -2535,6 +2535,7 @@ parameter data into lumped (catchment-average) values.</p>
                 <code>regex_string</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2656,13 +2657,13 @@ Default is <code>"%Y-%m-%d"</code>.</p>
     <table>
       <thead>
         <tr>
-<th>Name</th>          <th>Type</th>
+          <th>Type</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-<td><code>list</code></td>            <td>
+            <td>
                   <code><span title="list">list</span></code>
             </td>
             <td>
@@ -2758,7 +2759,7 @@ the corresponding raster in chronological order.</p>
 <span class="normal">315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="n">date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">file_name_data_fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2961,10 +2962,11 @@ will be saved. Only used when <code>as_raster</code> is True.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>pandas.DataFrame: When <code>as_raster</code> is False, a DataFrame
+                <p>When <code>as_raster</code> is False, a DataFrame
 indexed by parameter name with columns <code>"min"</code>,
 <code>"max"</code>, <code>"mean"</code>, and <code>"std"</code>. Returns None when
 <code>as_raster</code> is True.</p>
@@ -3231,10 +3233,11 @@ shapefile has multiple features.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>pandas.DataFrame: A DataFrame indexed by parameter name with
+                <p>A DataFrame indexed by parameter name with
 columns <code>"ub"</code> (upper bound) and <code>"lb"</code> (lower bound).</p>
               </div>
             </td>
