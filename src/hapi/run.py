@@ -130,16 +130,16 @@ class Run(Catchment):
         ), "all meteorological input data should have the same length"
 
         assert (
-            np.shape(self.BankfullDepth)[0] == self.rows
-            and np.shape(self.RiverWidth)[0] == self.rows
-            and np.shape(self.RiverRoughness)[0] == self.rows
-            and np.shape(self.FloodPlainRoughness)[0] == self.rows
+            np.shape(self.bankfull_depth)[0] == self.rows
+            and np.shape(self.river_width)[0] == self.rows
+            and np.shape(self.roughness)[0] == self.rows
+            and np.shape(self.flood_plain_roughness)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.BankfullDepth)[1] == self.cols
-            and np.shape(self.RiverWidth)[1] == self.cols
-            and np.shape(self.RiverRoughness)[1] == self.cols
-            and np.shape(self.FloodPlainRoughness)[1] == self.cols
+            np.shape(self.bankfull_depth)[1] == self.cols
+            and np.shape(self.river_width)[1] == self.cols
+            and np.shape(self.roughness)[1] == self.cols
+            and np.shape(self.flood_plain_roughness)[1] == self.cols
         ), "all input data should have the same number of columns"
 
         # run the model

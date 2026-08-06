@@ -455,8 +455,8 @@ class TestFW1:
         Run.runFW1(coello)
 
         coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
-        assert isinstance(coello.Metrics, DataFrame)
-        assert len(coello.Metrics) == 7
+        assert isinstance(coello.metrics, DataFrame)
+        assert len(coello.metrics) == 7
         assert len(coello.Qsim) == 10
 
 
@@ -579,6 +579,6 @@ class TestMuskingum:
         Run.runFW1(coello)
 
         coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
-        assert isinstance(coello.Metrics, DataFrame)
-        assert len(coello.Metrics) == 7
+        assert isinstance(coello.metrics, DataFrame)
+        assert len(coello.metrics) == 7
         assert len(coello.Qsim) == 10

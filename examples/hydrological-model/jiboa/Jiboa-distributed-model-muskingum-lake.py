@@ -130,13 +130,13 @@ for i in range(len(Jiboa.GaugesTable)):
     gaugeid = Jiboa.GaugesTable.loc[i, "id"]
     print("----------------------------------")
     print("Gauge - " + str(gaugeid))
-    print("RMSE= " + str(round(Jiboa.Metrics.loc["RMSE", gaugeid], 2)))
-    print("NSE= " + str(round(Jiboa.Metrics.loc["NSE", gaugeid], 2)))
-    print("NSEhf= " + str(round(Jiboa.Metrics.loc["NSEhf", gaugeid], 2)))
-    print("KGE= " + str(round(Jiboa.Metrics.loc["KGE", gaugeid], 2)))
-    print("WB= " + str(round(Jiboa.Metrics.loc["WB", gaugeid], 2)))
-    print("Pearson CC= " + str(round(Jiboa.Metrics.loc["Pearson-CC", gaugeid], 2)))
-    print("R2 = " + str(round(Jiboa.Metrics.loc["R2", gaugeid], 2)))
+    print("RMSE= " + str(round(Jiboa.metrics.loc["RMSE", gaugeid], 2)))
+    print("NSE= " + str(round(Jiboa.metrics.loc["NSE", gaugeid], 2)))
+    print("NSEhf= " + str(round(Jiboa.metrics.loc["NSEhf", gaugeid], 2)))
+    print("KGE= " + str(round(Jiboa.metrics.loc["KGE", gaugeid], 2)))
+    print("WB= " + str(round(Jiboa.metrics.loc["WB", gaugeid], 2)))
+    print("Pearson CC= " + str(round(Jiboa.metrics.loc["Pearson-CC", gaugeid], 2)))
+    print("R2 = " + str(round(Jiboa.metrics.loc["R2", gaugeid], 2)))
 # %%
 Qobs = Jiboa.QGauges[Jiboa.GaugesTable.loc[0, "id"]]
 

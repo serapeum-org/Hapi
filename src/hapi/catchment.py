@@ -218,22 +218,22 @@ class Catchment:
         self.LB: np.ndarray | None = None
         self.cols: int | None = None
         self.rows: int | None = None
-        self.NoDataValue: float | None = None
-        self.FlowAccArr: np.ndarray | None = None
+        self.no_data_value: float | None = None
+        self.flow_acc_arr: np.ndarray | None = None
         self.no_elem: int | None = None
         self.acc_val: list[int] | None = None
         self.Outlet: tuple | None = None
-        self.CellSize: float | None = None
+        self.cell_size: float | None = None
         self.px_area: float | None = None
         self.px_tot_area: float | None = None
         self.flow_dir_arr: np.ndarray | None = None
         self.FDT: dict | None = None
-        self.fpl_arr: np.ndarray | None = None
+        self.flow_path_length_arr: np.ndarray | None = None
         self.DEM: np.ndarray | None = None
-        self.BankfullDepth: np.ndarray | None = None
-        self.RiverWidth: np.ndarray | None = None
-        self.RiverRoughness: np.ndarray | None = None
-        self.FloodPlainRoughness: np.ndarray | None = None
+        self.bankfull_depth: np.ndarray | None = None
+        self.river_width: np.ndarray | None = None
+        self.river_roughness: np.ndarray | None = None
+        self.flood_plain_roughness: np.ndarray | None = None
         self.qout: np.ndarray | None = None
         self.Qtot: np.ndarray | None = None
         self.quz_routed: np.ndarray | None = None
@@ -244,7 +244,7 @@ class Catchment:
         self.quz: np.ndarray | None = None
         self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
-        self.Metrics: pd.DataFrame | None = None
+        self.metrics: pd.DataFrame | None = None
 
     def read_rainfall(
         self,
@@ -449,7 +449,7 @@ class Catchment:
         """Read flow accumulation raster and compute cell properties.
 
         Reads the flow accumulation raster, extracts the number of rows,
-        columns, NoDataValue, number of domain cells, outlet location,
+        columns, no_data_value, number of domain cells, outlet location,
         cell size, and pixel area.
 
         No-data handling is delegated to pyramids via ``read_array(masked=True)``,
@@ -475,7 +475,7 @@ class Catchment:
         one.
 
         Cell geometry is read from the named fields of :attr:`~pyramids.dataset.Dataset.transform`.
-        :attr:`CellSize` is the pixel **width** in map units (what
+        :attr:`cell_size` is the pixel **width** in map units (what
         :attr:`~pyramids.dataset.Dataset.cell_size` means), while :attr:`px_area` multiplies the
         pixel width by the pixel height, so a non-square grid is not silently squared off.
         :attr:`px_area` and :attr:`px_tot_area` are in km^2 and assume the raster CRS is
@@ -513,9 +513,9 @@ class Catchment:
                 3
                 >>> float(model.px_area)
                 16.0
-                >>> model.CellSize
+                >>> model.cell_size
                 4000.0
-                >>> bool(np.isnan(model.FlowAccArr[1, 1]))
+                >>> bool(np.isnan(model.flow_acc_arr[1, 1]))
                 True
                 >>> model.acc_val
                 [0, 1, 2]
@@ -538,7 +538,7 @@ class Catchment:
                 >>> model = Catchment("example", "2000-01-01", "2000-01-02",
                 ...                   spatial_resolution="Distributed")
                 >>> model.read_flow_acc(path)
-                >>> float(model.FlowAccArr[1, 1])
+                >>> float(model.flow_acc_arr[1, 1])
                 -9990.0
                 >>> model.no_elem
                 4
@@ -556,7 +556,7 @@ class Catchment:
         self.rows = flow_acc.rows
         self.cols = flow_acc.columns
         # check flow accumulation input raster
-        self.NoDataValue = flow_acc.no_data_value[0]
+        self.no_data_value = flow_acc.no_data_value[0]
         _warn_if_no_sentinel(flow_acc, "flow accumulation")
         # Let pyramids resolve the no-data mask: it is vectorised and dtype-aware
         # (exact equality on integer bands, NaN-aware on float ones) and it also
@@ -568,7 +568,7 @@ class Catchment:
         # mask: the alternative -- promoting only integer bands -- leaves float32
         # rasters unable to hold NaN at full precision and reintroduces the dtype
         # branch whose `== "int"` test silently failed for int32.
-        self.FlowAccArr = np.ma.filled(
+        self.flow_acc_arr = np.ma.filled(
             flow_acc.read_array(band=0, masked=True).astype(float), np.nan
         )
 
@@ -576,12 +576,12 @@ class Catchment:
         # Dataset.count_domain_cells(): that re-reads the raster and compares with
         # is_no_data's default rel. tolerance, which masks values within 0.1% of the
         # sentinel -- the defect this branch removed.
-        self.no_elem = int(np.count_nonzero(~np.isnan(self.FlowAccArr)))
+        self.no_elem = int(np.count_nonzero(~np.isnan(self.flow_acc_arr)))
         # Truncate BEFORE de-duplicating. np.unique on the float values would keep
         # 1.2 and 1.8 apart and only then collapse them to 1, yielding duplicates; the
         # per-cell `set(int(...))` this replaced truncated first, so distinct *integer*
         # accumulation values is the contract.
-        self.acc_val = np.unique(_to_int_codes(self.FlowAccArr)).tolist()
+        self.acc_val = np.unique(_to_int_codes(self.flow_acc_arr)).tolist()
         acc_val_mx = max(self.acc_val)
 
         if not (acc_val_mx == self.no_elem or acc_val_mx == self.no_elem - 1):
@@ -597,7 +597,7 @@ class Catchment:
 
         # location of the outlet
         # outlet is the cell that has the max flow_acc
-        self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr))
+        self.Outlet = np.where(self.flow_acc_arr == np.nanmax(self.flow_acc_arr))
 
         # Cell geometry comes from the named fields of the affine transform rather than
         # positional geotransform indices. This is a legibility change only: the
@@ -610,7 +610,7 @@ class Catchment:
         # abs(): Dataset.cell_size returns the signed geotransform pixel width, so a
         # west-to-east-flipped grid would report a negative cell size. The value this
         # replaced was abs()-ed, and every consumer treats it as a magnitude.
-        self.CellSize = abs(flow_acc.cell_size)
+        self.cell_size = abs(flow_acc.cell_size)
 
         # area of the cell
         self.px_area = dx * dy
@@ -728,7 +728,7 @@ class Catchment:
         """Read the flow path length raster.
 
         Reads the flow path length raster and extracts rows, columns,
-        NoDataValue, and the number of domain cells.
+        no_data_value, and the number of domain cells.
 
         No-data handling is delegated to pyramids via ``read_array(masked=True)``, so
         cells outside the catchment become ``NaN`` and ``no_elem`` counts only the
@@ -762,7 +762,7 @@ class Catchment:
                 >>> model.read_flow_path_length(path)
                 >>> model.no_elem
                 3
-                >>> float(model.fpl_arr[0, 1])
+                >>> float(model.flow_path_length_arr[0, 1])
                 20.0
 
                 ```
@@ -795,14 +795,14 @@ class Catchment:
         self.rows = fpl.rows
         self.cols = fpl.columns
         # No-data masking is delegated to pyramids (see read_flow_acc).
-        self.fpl_arr = np.ma.filled(
+        self.flow_path_length_arr = np.ma.filled(
             fpl.read_array(band=0, masked=True).astype(float), np.nan
         )
-        self.NoDataValue = fpl.no_data_value[0]
+        self.no_data_value = fpl.no_data_value[0]
         _warn_if_no_sentinel(fpl, "flow path length")
         # check flow accumulation input raster
         # Count the cells the pyramids mask left intact (see read_flow_acc).
-        self.no_elem = int(np.count_nonzero(~np.isnan(self.fpl_arr)))
+        self.no_elem = int(np.count_nonzero(~np.isnan(self.flow_path_length_arr)))
 
         logger.debug("Flow path length input is read successfully")
 
@@ -833,10 +833,10 @@ class Catchment:
         """
         for name, fpath in [
             ("DEM", dem_file),
-            ("BankfullDepth", bankfull_depth_file),
-            ("RiverWidth", river_width_file),
-            ("RiverRoughness", river_roughness_file),
-            ("FloodPlainRoughness", floodplain_roughness_file),
+            ("bankfull_depth", bankfull_depth_file),
+            ("river_width", river_width_file),
+            ("river_roughness", river_roughness_file),
+            ("flood_plain_roughness", floodplain_roughness_file),
         ]:
             ds = Dataset.read_file(fpath)
             setattr(self, name, ds.read_array(band=0))
@@ -1321,7 +1321,7 @@ class Catchment:
             self.Qsim = pd.DataFrame(index=self.Index, columns=self.QGauges.columns)
             if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
-                self.Metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
+                self.metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
             # sum the lower zone and the upper zone discharge
             outlet_x = self.Outlet[0][0]
             outlet_y = self.Outlet[1][0]
@@ -1347,25 +1347,25 @@ class Catchment:
 
                 if calculate_metrics:
                     q_obs = self.QGauges.loc[:, gauge_id]
-                    self.Metrics.loc["RMSE", gauge_id] = round(
+                    self.metrics.loc["RMSE", gauge_id] = round(
                         metrics.rmse(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["NSE", gauge_id] = round(
+                    self.metrics.loc["NSE", gauge_id] = round(
                         metrics.nse(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["NSEhf", gauge_id] = round(
+                    self.metrics.loc["NSEhf", gauge_id] = round(
                         metrics.nse_hf(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["KGE", gauge_id] = round(
+                    self.metrics.loc["KGE", gauge_id] = round(
                         metrics.kge(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["WB", gauge_id] = round(
+                    self.metrics.loc["WB", gauge_id] = round(
                         metrics.wb(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["Pearson-CC", gauge_id] = round(
+                    self.metrics.loc["Pearson-CC", gauge_id] = round(
                         metrics.pearson_corr_coeff(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["R2", gauge_id] = round(
+                    self.metrics.loc["R2", gauge_id] = round(
                         metrics.r2(q_obs, q_sim), 3
                     )
         elif frame_work_1 or only_outlet:
@@ -1376,23 +1376,23 @@ class Catchment:
 
             if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
-                self.Metrics = pd.DataFrame(index=index)
+                self.metrics = pd.DataFrame(index=index)
 
                 # if CalculateMetrics:
                 q_obs = self.QGauges.loc[:, gauge_id]
-                self.Metrics.loc["RMSE", gauge_id] = round(
+                self.metrics.loc["RMSE", gauge_id] = round(
                     metrics.rmse(q_obs, q_sim), 3
                 )
-                self.Metrics.loc["NSE", gauge_id] = round(metrics.nse(q_obs, q_sim), 3)
-                self.Metrics.loc["NSEhf", gauge_id] = round(
+                self.metrics.loc["NSE", gauge_id] = round(metrics.nse(q_obs, q_sim), 3)
+                self.metrics.loc["NSEhf", gauge_id] = round(
                     metrics.nse_hf(q_obs, q_sim), 3
                 )
-                self.Metrics.loc["KGE", gauge_id] = round(metrics.kge(q_obs, q_sim), 3)
-                self.Metrics.loc["WB", gauge_id] = round(metrics.wb(q_obs, q_sim), 3)
-                self.Metrics.loc["Pearson-CC", gauge_id] = round(
+                self.metrics.loc["KGE", gauge_id] = round(metrics.kge(q_obs, q_sim), 3)
+                self.metrics.loc["WB", gauge_id] = round(metrics.wb(q_obs, q_sim), 3)
+                self.metrics.loc["Pearson-CC", gauge_id] = round(
                     metrics.pearson_corr_coeff(q_obs, q_sim), 3
                 )
-                self.Metrics.loc["R2", gauge_id] = round(metrics.r2(q_obs, q_sim), 3)
+                self.metrics.loc["R2", gauge_id] = round(metrics.r2(q_obs, q_sim), 3)
 
     def plot_hydrograph(
         self,
@@ -1511,18 +1511,18 @@ class Catchment:
         ax.set_ylabel("Discharge m3/s", fontsize=12)
         plt.tight_layout()
 
-        if self.Metrics:
+        if self.metrics:
             logger.debug("----------------------------------")
             logger.debug("Gauge - " + str(gauge_id))
-            logger.debug("RMSE= " + str(round(self.Metrics.loc["RMSE", gauge_id], 2)))
-            logger.debug("NSE= " + str(round(self.Metrics.loc["NSE", gauge_id], 2)))
-            logger.debug("NSEhf= " + str(round(self.Metrics.loc["NSEhf", gauge_id], 2)))
-            logger.debug("KGE= " + str(round(self.Metrics.loc["KGE", gauge_id], 2)))
-            logger.debug("WB= " + str(round(self.Metrics.loc["WB", gauge_id], 2)))
+            logger.debug("RMSE= " + str(round(self.metrics.loc["RMSE", gauge_id], 2)))
+            logger.debug("NSE= " + str(round(self.metrics.loc["NSE", gauge_id], 2)))
+            logger.debug("NSEhf= " + str(round(self.metrics.loc["NSEhf", gauge_id], 2)))
+            logger.debug("KGE= " + str(round(self.metrics.loc["KGE", gauge_id], 2)))
+            logger.debug("WB= " + str(round(self.metrics.loc["WB", gauge_id], 2)))
             logger.debug(
-                "Pearson-CC= " + str(round(self.Metrics.loc["Pearson-CC", gauge_id], 2))
+                "Pearson-CC= " + str(round(self.metrics.loc["Pearson-CC", gauge_id], 2))
             )
-            logger.debug("R2= " + str(round(self.Metrics.loc["R2", gauge_id], 2)))
+            logger.debug("R2= " + str(round(self.metrics.loc["R2", gauge_id], 2)))
 
         return fig, ax
 
@@ -1622,7 +1622,7 @@ class Catchment:
         # mask the no-data cells on a copy so plotting never mutates the model
         # result arrays stored on the instance
         arr = arr.copy()
-        arr[np.isnan(self.FlowAccArr), :] = np.nan
+        arr[np.isnan(self.flow_acc_arr), :] = np.nan
 
         time = self.Index[start_i:end_i]
 

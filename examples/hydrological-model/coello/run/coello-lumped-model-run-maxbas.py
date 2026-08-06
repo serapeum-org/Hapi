@@ -54,22 +54,22 @@ Route = 1
 
 Run.runLumped(Coello, Route, RoutingFn)
 # %% ### Calculate performance criteria
-Metrics = dict()
+metrics = dict()
 
 # gaugeid = Coello.QGauges.columns[-1]
 Qobs = Coello.QGauges["q"]
 
-Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(metrics["RMSE"], 2)))
+print("NSE= " + str(round(metrics["NSE"], 2)))
+print("NSEhf= " + str(round(metrics["NSEhf"], 2)))
+print("KGE= " + str(round(metrics["KGE"], 2)))
+print("WB= " + str(round(metrics["WB"], 2)))
 # %% ### Plot Hydrograph
 gaugei = 0
 plotstart = "2009-01-01"

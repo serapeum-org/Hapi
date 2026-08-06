@@ -49,7 +49,7 @@ class DistributedRRM:
                 - ``rows`` (int): Number of grid rows.
                 - ``cols`` (int): Number of grid columns.
                 - ``TS`` (int): Number of time steps.
-                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                - ``flow_acc_arr`` (numpy.ndarray): 2-D flow accumulation
                   array; NaN marks cells outside the domain.
                 - ``LumpedModel``: Lumped model instance with a
                   ``simulate`` method.
@@ -80,7 +80,7 @@ class DistributedRRM:
         for x in range(Model.rows):
             for y in range(Model.cols):
                 # only for cells in the domain
-                if not np.isnan(Model.FlowAccArr[x, y]):
+                if not np.isnan(Model.flow_acc_arr[x, y]):
                     (
                         Model.quz[x, y, :],
                         Model.qlz[x, y, :],
@@ -91,9 +91,9 @@ class DistributedRRM:
                         et=Model.ET[x, y, :],
                         ll_temp=Model.ll_temp[x, y, :],
                         par=Model.Parameters[x, y, :],
-                        init_st=Model.InitialCond,
+                        init_st=Model.initial_cond,
                         q_init=Model.q_init,
-                        snow=Model.Snow,
+                        snow=Model.snow,
                     )
 
         area_coef = Model.CatArea / Model.px_tot_area
@@ -126,7 +126,7 @@ class DistributedRRM:
                 - ``rows`` (int): Number of grid rows.
                 - ``cols`` (int): Number of grid columns.
                 - ``TS`` (int): Number of time steps.
-                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                - ``flow_acc_arr`` (numpy.ndarray): 2-D flow accumulation
                   array; NaN marks cells outside the domain.
                 - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
                   array ``(rows, cols, TS)`` in m3/s.
@@ -142,7 +142,7 @@ class DistributedRRM:
                 - ``dt`` (float): Time-step factor (``tfac``).
                 - ``routing_method`` (str): Routing method name (e.g.,
                   ``"Muskingum"``).
-                - ``BankfullDepth`` (numpy.ndarray): 2-D bankfull
+                - ``bankfull_depth`` (numpy.ndarray): 2-D bankfull
                   depth array used for non-Muskingum methods.
         """
         #    # routing lake discharge with DS cell k & x and adding to cell Q
@@ -164,7 +164,7 @@ class DistributedRRM:
         # for all cells with 0 flow acc put the quz
         for x in range(Model.rows):  # no of rows
             for y in range(Model.cols):  # no of columns
-                if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr[x, y] == 0:
+                if not np.isnan(Model.flow_acc_arr[x, y]) and Model.flow_acc_arr[x, y] == 0:
                     Model.quz_routed[x, y, :] = Model.quz[x, y, :]
                     Model.qlz_translated[x, y, :] = Model.qlz[x, y, :]
 
@@ -176,12 +176,12 @@ class DistributedRRM:
                 for y in range(Model.cols):  # no of columns
                     # check from total flow accumulation
                     if (
-                        not np.isnan(Model.FlowAccArr[x, y])
-                        and Model.FlowAccArr[x, y] == Model.acc_val[j]
+                        not np.isnan(Model.flow_acc_arr[x, y])
+                        and Model.flow_acc_arr[x, y] == Model.acc_val[j]
                     ):
                         if (
                             Model.routing_method != "Muskingum"
-                            and Model.BankfullDepth[x, y] > 0
+                            and Model.bankfull_depth[x, y] > 0
                         ):
                             continue
                         else:
@@ -230,7 +230,7 @@ class DistributedRRM:
 
                 - ``rows`` (int): Number of grid rows.
                 - ``cols`` (int): Number of grid columns.
-                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                - ``flow_acc_arr`` (numpy.ndarray): 2-D flow accumulation
                   array; NaN marks cells outside the domain.
                 - ``Parameters`` (numpy.ndarray): 3-D parameter array
                   where the last index holds the MAXBAS value.
@@ -241,7 +241,7 @@ class DistributedRRM:
 
         for x in range(Model.rows):
             for y in range(Model.cols):
-                if not np.isnan(Model.FlowAccArr[x, y]):
+                if not np.isnan(Model.flow_acc_arr[x, y]):
                     Model.quz[x, y, :] = routing.triangular_routing_1(
                         Model.quz[x, y, :], Maxbas[x, y]
                     )
@@ -262,11 +262,11 @@ class DistributedRRM:
 
                 - ``rows`` (int): Number of grid rows.
                 - ``cols`` (int): Number of grid columns.
-                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation
+                - ``flow_acc_arr`` (numpy.ndarray): 2-D flow accumulation
                   array; NaN marks cells outside the domain.
-                - ``fpl_arr`` (numpy.ndarray): 2-D flow path length
+                - ``flow_path_length_arr`` (numpy.ndarray): 2-D flow path length
                   array.
-                - ``NoDataValue`` (float): No-data value used in the
+                - ``no_data_value`` (float): No-data value used in the
                   flow path length raster.
                 - ``Parameters`` (numpy.ndarray): 3-D parameter array
                   where the last index holds the maximum MAXBAS value.
@@ -275,20 +275,20 @@ class DistributedRRM:
         """
         MAXBAS = np.nanmax(Model.Parameters[:, :, -1])
         # replace novalue cells by nan
-        Model.fpl_arr[Model.fpl_arr == Model.NoDataValue] = np.nan
+        Model.flow_path_length_arr[Model.flow_path_length_arr == Model.no_data_value] = np.nan
 
-        MaxFPL = np.nanmax(Model.fpl_arr)
-        MinFPL = np.nanmin(Model.fpl_arr)
+        MaxFPL = np.nanmax(Model.flow_path_length_arr)
+        MinFPL = np.nanmin(Model.flow_path_length_arr)
         # resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
         resize_fun = lambda g: (
             (((g - MinFPL) / (MaxFPL - MinFPL)) * (1 * MAXBAS - 1)) + 1
         )
 
-        NormalizedFPL = resize_fun(Model.fpl_arr)
+        NormalizedFPL = resize_fun(Model.flow_path_length_arr)
 
         for x in range(Model.rows):
             for y in range(Model.cols):
-                if not np.isnan(Model.fpl_arr[x, y]):
+                if not np.isnan(Model.flow_path_length_arr[x, y]):
                     Model.quz[x, y, :] = routing.triangular_routing_2(
                         Model.quz[x, y, :], NormalizedFPL[x, y]
                     )

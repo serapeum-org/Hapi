@@ -101,14 +101,14 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(path)
 
-        assert np.isnan(catchment.FlowAccArr[1, 1]), (
-            f"the no-data cell should be NaN, got {catchment.FlowAccArr[1, 1]}"
+        assert np.isnan(catchment.flow_acc_arr[1, 1]), (
+            f"the no-data cell should be NaN, got {catchment.flow_acc_arr[1, 1]}"
         )
-        assert not np.isnan(catchment.FlowAccArr[:1, :]).any(), (
-            f"real accumulation values must not be masked, got {catchment.FlowAccArr}"
+        assert not np.isnan(catchment.flow_acc_arr[:1, :]).any(), (
+            f"real accumulation values must not be masked, got {catchment.flow_acc_arr}"
         )
-        assert catchment.FlowAccArr[0, 1] == 1.0, (
-            f"expected the value 1 to survive unchanged, got {catchment.FlowAccArr[0, 1]}"
+        assert catchment.flow_acc_arr[0, 1] == 1.0, (
+            f"expected the value 1 to survive unchanged, got {catchment.flow_acc_arr[0, 1]}"
         )
 
     def test_preserves_value_near_sentinel(self, catchment, write_raster):
@@ -124,11 +124,11 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(path)
 
-        assert not np.isnan(catchment.FlowAccArr).any(), (
-            f"no cell holds the sentinel, so nothing should be masked, got {catchment.FlowAccArr}"
+        assert not np.isnan(catchment.flow_acc_arr).any(), (
+            f"no cell holds the sentinel, so nothing should be masked, got {catchment.flow_acc_arr}"
         )
-        assert catchment.FlowAccArr[1, 1] == float(NEAR_SENTINEL), (
-            f"expected {NEAR_SENTINEL} to survive masking, got {catchment.FlowAccArr[1, 1]}"
+        assert catchment.flow_acc_arr[1, 1] == float(NEAR_SENTINEL), (
+            f"expected {NEAR_SENTINEL} to survive masking, got {catchment.flow_acc_arr[1, 1]}"
         )
         assert catchment.no_elem == 4, (
             f"all 4 cells are real data, got no_elem={catchment.no_elem}"
@@ -239,8 +239,8 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(path)
 
-        assert catchment.FlowAccArr.dtype.kind == "f", (
-            f"expected a floating dtype so NaN can be stored, got {catchment.FlowAccArr.dtype}"
+        assert catchment.flow_acc_arr.dtype.kind == "f", (
+            f"expected a floating dtype so NaN can be stored, got {catchment.flow_acc_arr.dtype}"
         )
 
     def test_acc_val_is_sorted_unique_python_ints(self, catchment, write_raster):
@@ -341,8 +341,8 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(path)
 
-        assert catchment.CellSize == pytest.approx(CELL_SIZE), (
-            f"expected a {CELL_SIZE} m cell, got {catchment.CellSize}"
+        assert catchment.cell_size == pytest.approx(CELL_SIZE), (
+            f"expected a {CELL_SIZE} m cell, got {catchment.cell_size}"
         )
         assert catchment.px_area == pytest.approx(16.0), (
             f"expected a 16 km2 pixel for a {CELL_SIZE} m cell, got {catchment.px_area}"
@@ -355,7 +355,7 @@ class TestReadFlowAcc:
         """Test that pixel area uses width and height separately, not cell size squared.
 
         Test scenario:
-            A grid of 4000 m wide by 2000 m tall cells. ``CellSize`` reports the pixel
+            A grid of 4000 m wide by 2000 m tall cells. ``cell_size`` reports the pixel
             *width* only (that is what ``Dataset.cell_size`` means), while ``px_area``
             multiplies both axes — 4 km x 2 km = 8 km^2, not 16 km^2. Three domain cells
             give 24 km^2.
@@ -373,8 +373,8 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(path)
 
-        assert catchment.CellSize == pytest.approx(4000.0), (
-            f"CellSize should report the pixel width, got {catchment.CellSize}"
+        assert catchment.cell_size == pytest.approx(4000.0), (
+            f"cell_size should report the pixel width, got {catchment.cell_size}"
         )
         assert catchment.px_area == pytest.approx(8.0), (
             f"expected 4 km x 2 km = 8 km2 for a non-square cell, got {catchment.px_area}"
@@ -384,12 +384,12 @@ class TestReadFlowAcc:
         )
 
     def test_cell_size_is_a_magnitude(self, catchment, write_raster):
-        """Test that ``CellSize`` is positive even on a flipped grid.
+        """Test that ``cell_size`` is positive even on a flipped grid.
 
         Test scenario:
             ``Dataset.cell_size`` returns the *signed* geotransform pixel width. A grid
             written west-to-east flipped therefore reports a negative width, while every
-            consumer of ``CellSize`` treats it as a magnitude — as the value it replaced
+            consumer of ``cell_size`` treats it as a magnitude — as the value it replaced
             was, having been ``abs()``-ed.
         """
         path = str(Path(write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))))
@@ -407,11 +407,11 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(flipped_path)
 
-        assert catchment.CellSize > 0, (
-            f"CellSize must be a magnitude, got {catchment.CellSize}"
+        assert catchment.cell_size > 0, (
+            f"cell_size must be a magnitude, got {catchment.cell_size}"
         )
-        assert catchment.CellSize == pytest.approx(CELL_SIZE), (
-            f"expected {CELL_SIZE}, got {catchment.CellSize}"
+        assert catchment.cell_size == pytest.approx(CELL_SIZE), (
+            f"expected {CELL_SIZE}, got {catchment.cell_size}"
         )
 
     def test_missing_file_raises(self, catchment, tmp_path):
@@ -719,11 +719,11 @@ class TestReadFlowPathLength:
 
         catchment.read_flow_path_length(path)
 
-        assert np.isnan(catchment.fpl_arr[1, 1]), (
-            f"the no-data cell should be NaN, got {catchment.fpl_arr[1, 1]}"
+        assert np.isnan(catchment.flow_path_length_arr[1, 1]), (
+            f"the no-data cell should be NaN, got {catchment.flow_path_length_arr[1, 1]}"
         )
-        assert catchment.fpl_arr[0, 0] == 10.0, (
-            f"the path length 10 should survive unchanged, got {catchment.fpl_arr[0, 0]}"
+        assert catchment.flow_path_length_arr[0, 0] == 10.0, (
+            f"the path length 10 should survive unchanged, got {catchment.flow_path_length_arr[0, 0]}"
         )
 
     def test_preserves_value_near_sentinel(self, catchment, write_raster):
@@ -740,8 +740,8 @@ class TestReadFlowPathLength:
 
         catchment.read_flow_path_length(path)
 
-        assert not np.isnan(catchment.fpl_arr).any(), (
-            f"no cell holds the sentinel, so nothing should be masked, got {catchment.fpl_arr}"
+        assert not np.isnan(catchment.flow_path_length_arr).any(), (
+            f"no cell holds the sentinel, so nothing should be masked, got {catchment.flow_path_length_arr}"
         )
         assert catchment.no_elem == 4, (
             f"all 4 cells are real data, got no_elem={catchment.no_elem}"

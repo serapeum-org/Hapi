@@ -62,25 +62,25 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
     Test scenario:
         After a Muskingum run, extract_discharge with the default
         frame_work_1=False walks the gauge table, extracts Qsim per gauge
-        from Qtot, and fills the Metrics frame (RMSE, NSE, NSEhf, KGE, WB,
+        from Qtot, and fills the metrics frame (RMSE, NSE, NSEhf, KGE, WB,
         Pearson-CC, R2) with finite numbers.
     """
     coello = coello_muskingum_run
     coello.extract_discharge(calculate_metrics=True)
 
-    assert isinstance(coello.Metrics, DataFrame), (
-        f"Metrics should be a DataFrame, got {type(coello.Metrics)}"
+    assert isinstance(coello.metrics, DataFrame), (
+        f"metrics should be a DataFrame, got {type(coello.metrics)}"
     )
     expected_rows = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
-    assert list(coello.Metrics.index) == expected_rows, (
-        f"Metrics rows mismatch: {list(coello.Metrics.index)}"
+    assert list(coello.metrics.index) == expected_rows, (
+        f"metrics rows mismatch: {list(coello.metrics.index)}"
     )
     n_gauges = len(coello.GaugesTable)
-    assert coello.Metrics.shape[1] == n_gauges, (
+    assert coello.metrics.shape[1] == n_gauges, (
         f"Expected one metrics column per gauge ({n_gauges}), "
-        f"got {coello.Metrics.shape[1]}"
+        f"got {coello.metrics.shape[1]}"
     )
-    assert np.isfinite(coello.Metrics.to_numpy(dtype=float)).all(), (
+    assert np.isfinite(coello.metrics.to_numpy(dtype=float)).all(), (
         "All metric values should be finite"
     )
     assert coello.Qsim.shape == (len(coello.Index), n_gauges), (
@@ -91,7 +91,7 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
 def test_extract_discharge_distributed_without_metrics(
     coello_muskingum_run: Catchment,
 ):
-    """The distributed branch fills Qsim without touching Metrics.
+    """The distributed branch fills Qsim without touching metrics.
 
     Test scenario:
         calculate_metrics=False extracts the simulated hydrographs only;

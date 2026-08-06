@@ -62,7 +62,7 @@ class Wrapper:
 
                 - DEM (numpy.ndarray): DEM raster array clipped to
                   the catchment.
-                - FlowAccArr (numpy.ndarray): Flow accumulation
+                - flow_acc_arr (numpy.ndarray): Flow accumulation
                   raster array clipped to the catchment.
                 - flow_dir_arr (numpy.ndarray): Flow direction raster
                   array clipped to the catchment.

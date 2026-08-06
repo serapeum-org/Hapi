@@ -64,11 +64,11 @@ Coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
 gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[-1], "id"]
 print("----------------------------------")
 print("Gauge - " + str(gaugeid))
-print("RMSE= " + str(round(Coello.Metrics.loc["RMSE", gaugeid], 2)))
-print("NSE= " + str(round(Coello.Metrics.loc["NSE", gaugeid], 2)))
-print("NSEhf= " + str(round(Coello.Metrics.loc["NSEhf", gaugeid], 2)))
-print("KGE= " + str(round(Coello.Metrics.loc["KGE", gaugeid], 2)))
-print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
+print("RMSE= " + str(round(Coello.metrics.loc["RMSE", gaugeid], 2)))
+print("NSE= " + str(round(Coello.metrics.loc["NSE", gaugeid], 2)))
+print("NSEhf= " + str(round(Coello.metrics.loc["NSEhf", gaugeid], 2)))
+print("KGE= " + str(round(Coello.metrics.loc["KGE", gaugeid], 2)))
+print("WB= " + str(round(Coello.metrics.loc["WB", gaugeid], 2)))
 # %% plot
 i = 5
 gaugei = 5
