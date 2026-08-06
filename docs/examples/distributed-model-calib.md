@@ -63,7 +63,7 @@ ParPathRun = Path + "/Parameter set-Avg/"
 ```python
 Coello.read_rainfall(PrecPath)
 Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.read_evapotranspiration(Evap_Path)
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_flow_dir(FlowDPath)
 ```

@@ -182,7 +182,7 @@ class TestDistributed:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_et(
+        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -376,7 +376,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_et(
+        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -435,7 +435,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_et(
+        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -499,7 +499,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_et(
+        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -559,7 +559,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_et(
+        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,

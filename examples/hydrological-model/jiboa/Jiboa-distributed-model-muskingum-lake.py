@@ -63,7 +63,7 @@ Jiboa.read_rainfall(
 Jiboa.read_temperature(
     str(temp_path), regex_string=regex_exp, file_name_data_fmt=date_format
 )
-Jiboa.read_et(str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format)
+Jiboa.read_evapotranspiration(str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format)
 
 Jiboa.read_flow_acc(str(flow_acc_path))
 Jiboa.read_flow_dir(str(flow_direction_path))

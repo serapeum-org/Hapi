@@ -26,7 +26,7 @@ name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
 Coello.read_rainfall(PrecPath)
 Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.read_evapotranspiration(Evap_Path)
 
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_flow_dir(FlowDPath)

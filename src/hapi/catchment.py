@@ -431,7 +431,7 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def read_et(
+    def read_evapotranspiration(
         self,
         path: str,
         start: str | None = None,

@@ -30,7 +30,7 @@ name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
 Coello.read_rainfall(PrecPath, file_name_data_fmt="%Y.%m.%d")
 Coello.read_temperature(TempPath, file_name_data_fmt="%Y.%m.%d")
-Coello.read_et(Evap_Path, file_name_data_fmt="%Y.%m.%d")
+Coello.read_evapotranspiration(Evap_Path, file_name_data_fmt="%Y.%m.%d")
 
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_parameters(ParPath, Snow, maxbas=True)

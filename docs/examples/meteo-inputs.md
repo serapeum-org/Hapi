@@ -107,7 +107,7 @@ are positive — so the values must be flipped before the model reads them. `Dat
 
 ## Matching the file names when reading the rasters
 
-`read_rainfall`, `read_temperature` and `read_et` locate the date in each file name with `regex_string` and parse it
+`read_rainfall`, `read_temperature` and `read_evapotranspiration` locate the date in each file name with `regex_string` and parse it
 with `file_name_data_fmt`, so the two must match the names the backend produced:
 
 | Source | Example file name | `regex_string` | `file_name_data_fmt` |

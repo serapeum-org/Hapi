@@ -10,6 +10,7 @@ import hapi.rrm.hbv_bergestrom92 as HBV
 
 import statista.descriptors as metrics
 
+
 Path = Comp + "/data/distributed/coello"
 PrecPath = Path + "/prec"
 Evap_Path = Path + "/evap"
@@ -20,8 +21,8 @@ CalibPath = Path + "/calibration"
 SaveTo = Path + "/results"
 
 AreaCoeff = 1530
-#[sp,sm,uz,lz,wc]
-InitialCond = [0,5,5,5,0]
+# [sp,sm,uz,lz,wc]
+InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
 
 # Create the model object and read the input data
@@ -29,12 +30,12 @@ Snow = 0
 Sdate = '2009-01-01'
 Edate = '2011-12-31'
 name = "Coello"
-Coello = Calibration(name, Sdate, Edate, SpatialResolution = "Distributed")
+Coello = Calibration(name, Sdate, Edate, SpatialResolution="Distributed")
 
 # Meteorological & GIS Data
 Coello.read_rainfall(PrecPath)
 Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.read_evapotranspiration(Evap_Path)
 
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_flow_dir(FlowDPath)
@@ -43,8 +44,8 @@ Coello.read_flow_dir(FlowDPath)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 # Gauges Data
-Coello.read_gauge_table(Path+"/stations/gauges.csv", FlowAccPath)
-GaugesPath = Path+"/stations/"
+Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
+GaugesPath = Path + "/stations/"
 Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 

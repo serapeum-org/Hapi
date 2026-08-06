@@ -38,7 +38,7 @@ def coello_animated(
     )
     coello.read_rainfall(coello_prec_path, **kwargs)
     coello.read_temperature(coello_temp_path, **kwargs)
-    coello.read_et(coello_evap_path, **kwargs)
+    coello.read_evapotranspiration(coello_evap_path, **kwargs)
     coello.read_flow_acc(coello_acc_path)
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
