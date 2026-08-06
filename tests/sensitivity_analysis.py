@@ -111,7 +111,7 @@ Each parameter has a dictionary with two keys 0: list of parameters with relativ
 
 # For Type 1
 def WrapperType1(Randpar, Route, routing_fn, Qobs):
-    Coello.Parameters = Randpar
+    Coello.parameters = Randpar
 
     Run.runLumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
@@ -120,7 +120,7 @@ def WrapperType1(Randpar, Route, routing_fn, Qobs):
 
 # For Type 2
 def WrapperType2(Randpar, Route, routing_fn, Qobs):
-    Coello.Parameters = Randpar
+    Coello.parameters = Randpar
 
     Run.runLumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])

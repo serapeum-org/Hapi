@@ -15,7 +15,7 @@ from hapi.run import Run
 def test_create_catchment_instance(coello_rrm_date: list):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
     assert Coello.dt == 1
-    assert isinstance(Coello.Index, DatetimeIndex)
+    assert isinstance(Coello.date_index, DatetimeIndex)
     assert isinstance(Coello.routing_method, str)
 
 
@@ -49,8 +49,8 @@ class TestLumped:
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
         Coello.read_parameters(lumped_parameters_path, coello_Snow)
-        assert isinstance(Coello.Parameters, list)
-        assert Coello.Snow == coello_Snow
+        assert isinstance(Coello.parameters, list)
+        assert Coello.snow == coello_Snow
 
     def test_read_discharge_gauges(
         self,
@@ -262,8 +262,8 @@ class TestDistributed:
         coello.read_parameters_bound(UB, LB, Snow)
         assert all(coello.LB == LB)
         assert all(coello.UB == UB)
-        assert coello.Snow == Snow
-        assert coello.Maxbas == False
+        assert coello.snow == Snow
+        assert coello.maxbas == False
 
     def test_read_gauge_table(
         self,
@@ -327,13 +327,13 @@ class TestDistributed:
         )
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
-        assert coello.Parameters.shape == (
+        assert coello.parameters.shape == (
             coello_rows,
             coello_cols,
             coello_no_parameters - 1,
         )
-        assert coello.Snow == Snow
-        assert coello.Maxbas is True
+        assert coello.snow == Snow
+        assert coello.maxbas is True
 
 
 class TestFW1:

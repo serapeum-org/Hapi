@@ -74,16 +74,16 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
@@ -114,16 +114,16 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
@@ -176,16 +176,16 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
@@ -221,16 +221,16 @@ class Run(Catchment):
                 row counts, column counts, or temporal lengths.
         """
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
@@ -280,16 +280,16 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
             np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]

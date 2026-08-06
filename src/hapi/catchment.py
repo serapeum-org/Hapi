@@ -38,10 +38,10 @@ from hapi.dem import DEM
 
 if TYPE_CHECKING:
     import matplotlib.animation
-
     from hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
+CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000 ** 2)
 
 
 @contextmanager
@@ -183,15 +183,14 @@ class Catchment:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
         self.temporal_resolution = temporal_resolution.lower()
         # assuming the default dt is 1 day
-        conversion_factor = (1000 * 24 * 60 * 60) / (1000**2)
         if temporal_resolution.lower() == "daily":
             self.dt = 1  # 24
-            self.conversion_factor = conversion_factor * 1
-            self.Index = pd.date_range(self.start, self.end, freq="D")
+            self.conversion_factor = CONVERSION_FACTOR * 1
+            self.date_index = pd.date_range(self.start, self.end, freq="D")
         elif temporal_resolution.lower() == "hourly":
             self.dt = 1  # 24
-            self.conversion_factor = conversion_factor * 1 / 24
-            self.Index = pd.date_range(self.start, self.end, freq="h")
+            self.conversion_factor = CONVERSION_FACTOR * 1 / 24
+            self.date_index = pd.date_range(self.start, self.end, freq="h")
         else:
             # TODO calculate the temporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
@@ -199,7 +198,7 @@ class Catchment:
             self.conversion_factor = 24
 
         self.routing_method = routing_method
-        self.Parameters: np.ndarray | list | None = None
+        self.parameters: np.ndarray | list | None = None
         self.data: np.ndarray | None = None
         self.Prec: np.ndarray | None = None
         self.TS: int | None = None
@@ -207,8 +206,8 @@ class Catchment:
         self.ET: np.ndarray | None = None
         self.ll_temp: np.ndarray | float | None = None
         self.QGauges: pd.DataFrame | None = None
-        self.Snow: int | None = None
-        self.Maxbas: bool | None = None
+        self.snow: int | None = None
+        self.maxbas: bool | None = None
         self.LumpedModel: BaseConceptualModel | None = None
         self.CatArea: float | int | None = None
         self.InitialCond: list | None = None
@@ -872,74 +871,74 @@ class Catchment:
                 cube = Datacube.read_multiple_files(
                     path, with_order=True, regex_string=r"\d+", date=False
                 )
-            self.Parameters = np.moveaxis(cube.values, 0, -1)
+            self.parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
                 raise FileNotFoundError(
                     "The parameter file you have entered does not exist"
                 )
 
-            self.Parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
+            self.parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
 
         if not (not snow or snow):
             raise ValueError(
                 "snow input defines whether to consider snow subroutine or not it has to be True or False"
             )
 
-        self.Snow = snow
-        self.Maxbas = maxbas
+        self.snow = snow
+        self.maxbas = maxbas
 
         if self.spatial_resolution == "distributed":
             if snow and maxbas:
-                if not self.Parameters.shape[2] == 16:
+                if not self.parameters.shape[2] == 16:
                     raise ValueError(
                         "current version of HBV (with snow) takes 16 parameters you have entered "
-                        f"{self.Parameters.shape[2]}"
+                        f"{self.parameters.shape[2]}"
                     )
             elif not snow and maxbas:
-                if not self.Parameters.shape[2] == 11:
+                if not self.parameters.shape[2] == 11:
                     raise ValueError(
                         "current version of HBV (with snow) takes 11 parameters you have entered "
-                        f"{self.Parameters.shape[2]}"
+                        f"{self.parameters.shape[2]}"
                     )
             elif snow and not maxbas:
-                if not self.Parameters.shape[2] == 17:
+                if not self.parameters.shape[2] == 17:
                     raise ValueError(
                         "current version of HBV (with snow) takes 17 parameters you have entered "
-                        f"{self.Parameters.shape[2]}"
+                        f"{self.parameters.shape[2]}"
                     )
             elif not snow and not maxbas:
-                if not self.Parameters.shape[2] == 12:
+                if not self.parameters.shape[2] == 12:
                     raise ValueError(
                         "current version of HBV (with snow) takes 12 parameters you have entered "
-                        f"{self.Parameters.shape[2]}"
+                        f"{self.parameters.shape[2]}"
                     )
         else:
             if snow and maxbas:
-                if not len(self.Parameters) == 16:
+                if not len(self.parameters) == 16:
                     raise ValueError(
                         f"current version of HBV (with snow) takes 16 parameters you have entered"
-                        f" {len(self.Parameters)}"
+                        f" {len(self.parameters)}"
                     )
 
             elif not snow and maxbas:
-                if len(self.Parameters) != 11:
+                if len(self.parameters) != 11:
                     raise ValueError(
                         f"current version of HBV (with snow) takes 11 parameters you have entered"
-                        f" {len(self.Parameters)}"
+                        f" {len(self.parameters)}"
                     )
 
             elif snow and not maxbas:
-                if not len(self.Parameters) == 17:
+                if not len(self.parameters) == 17:
                     raise ValueError(
-                        f"current version of HBV (with snow) takes 17 parameters you have entered{len(self.Parameters)}"
+                        f"current version of HBV (with snow) takes 17 parameters you have entered{len(self.parameters)}"
                     )
 
             elif not snow and not maxbas:
-                if not len(self.Parameters) == 12:
+                if not len(self.parameters) == 12:
                     raise ValueError(
                         f"current version of HBV (with snow) takes 12 parameters you have entered"
-                        f" {len(self.Parameters)}"
+                        f" {len(self.parameters)}"
                     )
 
         logger.debug("Parameters are read successfully")
@@ -1285,8 +1284,8 @@ class Catchment:
             raise ValueError(
                 " snow input defines whether to consider snow subroutine or not it has to be True or False"
             )
-        self.Snow = snow
-        self.Maxbas = maxbas
+        self.snow = snow
+        self.maxbas = maxbas
 
         logger.debug("Parameters' bounds are read successfully")
 
@@ -1318,7 +1317,7 @@ class Catchment:
             raise ValueError("please read the gauges' table first.")
 
         if not frame_work_1:
-            self.Qsim = pd.DataFrame(index=self.Index, columns=self.QGauges.columns)
+            self.Qsim = pd.DataFrame(index=self.date_index, columns=self.QGauges.columns)
             if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
@@ -1369,7 +1368,7 @@ class Catchment:
                         metrics.r2(q_obs, q_sim), 3
                     )
         elif frame_work_1 or only_outlet:
-            self.Qsim = pd.DataFrame(index=self.Index)
+            self.Qsim = pd.DataFrame(index=self.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
             q_sim = np.reshape(self.qout, self.TS - 1)
             self.Qsim.loc[:, gauge_id] = q_sim
@@ -1580,8 +1579,8 @@ class Catchment:
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.where(self.Index == start)[0][0]
-        end_i = np.where(self.Index == end)[0][0]
+        start_i = np.where(self.date_index == start)[0][0]
+        end_i = np.where(self.date_index == end)[0][0]
 
         if option == 1:
             arr = self.Qtot[:, :, start_i:end_i]
@@ -1624,7 +1623,7 @@ class Catchment:
         arr = arr.copy()
         arr[np.isnan(self.flow_acc_arr), :] = np.nan
 
-        time = self.Index[start_i:end_i]
+        time = self.date_index[start_i:end_i]
 
         if gauges:
             # animate expects a 3-column array: [value to display, cell row, cell column]
@@ -1708,17 +1707,17 @@ class Catchment:
             ValueError: If `result` is not a valid option.
         """
         if start == "":
-            start = self.Index[0]
+            start = self.date_index[0]
         else:
             start = dt.datetime.strptime(start, fmt)
 
         if end == "":
-            end = self.Index[-1]
+            end = self.date_index[-1]
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.where(self.Index == start)[0][0]
-        end_i = np.where(self.Index == end)[0][0] + 1
+        start_i = np.where(self.date_index == start)[0][0]
+        end_i = np.where(self.date_index == end)[0][0] + 1
 
         if self.spatial_resolution == "distributed":
             if flow_acc_path == "":
@@ -1733,7 +1732,7 @@ class Catchment:
 
             # create a list of names
             path = path + prefix
-            names = [path + str(i)[:10] for i in self.Index[start_i:end_i]]
+            names = [path + str(i)[:10] for i in self.date_index[start_i:end_i]]
             # names = [i.replace("-", "_") for i in names]
             # names = [i.replace(" ", "_") for i in names]
             names = [i + ".tif" for i in names]

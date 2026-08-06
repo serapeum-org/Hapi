@@ -19,8 +19,8 @@ def test_read_parameters_bounds(
     Coello.read_parameters_bound(lower_bound, upper_bound, Snow, maxbas=Maxbas)
     assert isinstance(Coello.UB, np.ndarray)
     assert isinstance(Coello.LB, np.ndarray)
-    assert isinstance(Coello.Snow, bool)
-    assert isinstance(Coello.Maxbas, bool)
+    assert isinstance(Coello.snow, bool)
+    assert isinstance(Coello.maxbas, bool)
 
 
 def test_lumped_calibration(

@@ -90,7 +90,7 @@ class DistributedRRM:
                         temp=Model.Temp[x, y, :],
                         et=Model.ET[x, y, :],
                         ll_temp=Model.ll_temp[x, y, :],
-                        par=Model.Parameters[x, y, :],
+                        par=Model.parameters[x, y, :],
                         init_st=Model.initial_cond,
                         q_init=Model.q_init,
                         snow=Model.snow,
@@ -99,11 +99,11 @@ class DistributedRRM:
         area_coef = Model.CatArea / Model.px_tot_area
         # convert quz from mm/time step to m3/sec
         Model.quz = (
-            Model.quz * Model.px_area * area_coef / Model.conversion_factor
+            Model.quz * Model.px_area * area_coef / Model.CONVERSION_FACTOR
         )  # Timef*3.6
         # convert Qlz to m3/sec
         Model.qlz = (
-            Model.qlz * Model.px_area * area_coef / Model.conversion_factor
+            Model.qlz * Model.px_area * area_coef / Model.CONVERSION_FACTOR
         )  # Timef*3.6
 
     @staticmethod
@@ -201,8 +201,8 @@ class DistributedRRM:
                                 q_uzi = q_uzi + routing.muskingum_v(
                                     Model.quz_routed[x_ind, y_ind, :],
                                     Model.quz_routed[x_ind, y_ind, 0],
-                                    Model.Parameters[x_ind, y_ind, 10],
-                                    Model.Parameters[x_ind, y_ind, 11],
+                                    Model.parameters[x_ind, y_ind, 10],
+                                    Model.parameters[x_ind, y_ind, 11],
                                     Model.dt,
                                 )
 
@@ -237,7 +237,7 @@ class DistributedRRM:
                 - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
                   array ``(rows, cols, TS)`` in m3/s.
         """
-        Maxbas = Model.Parameters[:, :, -1]
+        Maxbas = Model.parameters[:, :, -1]
 
         for x in range(Model.rows):
             for y in range(Model.cols):
@@ -273,7 +273,7 @@ class DistributedRRM:
                 - ``quz`` (numpy.ndarray): 3-D upper-zone discharge
                   array ``(rows, cols, TS)`` in m3/s.
         """
-        MAXBAS = np.nanmax(Model.Parameters[:, :, -1])
+        MAXBAS = np.nanmax(Model.parameters[:, :, -1])
         # replace novalue cells by nan
         Model.flow_path_length_arr[Model.flow_path_length_arr == Model.no_data_value] = np.nan
 

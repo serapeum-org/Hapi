@@ -127,6 +127,6 @@ cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs,printErr
 ## Save results
 
 ```python
-SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+SpatialVarFun.Function(Coello.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.save_parameters(SaveTo)
 ```

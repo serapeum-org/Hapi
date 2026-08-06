@@ -164,8 +164,8 @@ class Wrapper:
         qlake = routing.muskingum_v(
             Lake.QlakeR,
             Lake.QlakeR[0],
-            Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
-            Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
+            Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
+            Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
             Model.conversion_factor,
         )
 
@@ -287,13 +287,13 @@ class Wrapper:
         qlz1 = np.array(
             [
                 np.nansum(Model.qlz[:, :, i])
-                for i in range(Model.Parameters.shape[2] + 1)
+                for i in range(Model.parameters.shape[2] + 1)
             ]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
             [
                 np.nansum(Model.quz[:, :, i])
-                for i in range(Model.Parameters.shape[2] + 1)
+                for i in range(Model.parameters.shape[2] + 1)
             ]
         )  # average of all cells (routed mm/timestep)
 
@@ -367,10 +367,10 @@ class Wrapper:
             t,
             et,
             tm,
-            Model.Parameters,
+            Model.parameters,
             init_st=Model.InitialCond,
             q_init=Model.q_init,
-            snow=Model.Snow,
+            snow=Model.snow,
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
@@ -379,14 +379,14 @@ class Wrapper:
 
         Model.Qsim = Model.quz + Model.qlz
 
-        if Routing != 0 and Model.Maxbas:
-            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])
+        if Routing != 0 and Model.maxbas:
+            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.parameters[-1])
         elif Routing != 0:
             Model.Qsim = RoutingFn(
                 np.array(Model.Qsim[:-1]),
                 Model.Qsim[0],
-                Model.Parameters[-2],
-                Model.Parameters[-1],
+                Model.parameters[-2],
+                Model.parameters[-1],
                 Model.dt,
             )
 
