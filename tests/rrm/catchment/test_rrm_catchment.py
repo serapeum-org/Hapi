@@ -39,7 +39,7 @@ class TestLumped:
         Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
         assert isinstance(Coello.LumpedModel, HBVLumped)
         assert isinstance(Coello.CatArea, float)
-        assert isinstance(Coello.InitialCond, list)
+        assert isinstance(Coello.initial_cond, list)
 
     def test_read_lumped_read_parameters(
         self,
@@ -215,8 +215,8 @@ class TestDistributed:
         )
         coello.read_flow_acc(coello_acc_path)
         coello.read_flow_dir(coello_fd_path)
-        assert coello.Outlet[0][0] == 10
-        assert coello.Outlet[1][0] == 13
+        assert coello.outlet[0][0] == 10
+        assert coello.outlet[1][0] == 13
         assert coello.acc_val == coello_acc_values
         assert isinstance(coello.flow_dir_arr, np.ndarray)
         assert coello.flow_dir_arr.shape == (13, 14)
@@ -240,7 +240,7 @@ class TestDistributed:
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
         assert isinstance(coello.LumpedModel, HBVLumped)
         assert coello.CatArea == coello_cat_area
-        assert coello.InitialCond == coello_initial_cond
+        assert coello.initial_cond == coello_initial_cond
 
     def test_read_parameters_bound(
         self,
@@ -337,6 +337,7 @@ class TestDistributed:
 
 
 class TestFW1:
+
     def test_run_dist(
         self,
         coello_start_date: str,

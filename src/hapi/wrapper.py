@@ -368,7 +368,7 @@ class Wrapper:
             et,
             tm,
             Model.parameters,
-            init_st=Model.InitialCond,
+            init_st=Model.initial_cond,
             q_init=Model.q_init,
             snow=Model.snow,
         )

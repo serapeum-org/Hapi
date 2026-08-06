@@ -99,11 +99,11 @@ class DistributedRRM:
         area_coef = Model.CatArea / Model.px_tot_area
         # convert quz from mm/time step to m3/sec
         Model.quz = (
-            Model.quz * Model.px_area * area_coef / Model.CONVERSION_FACTOR
+            Model.quz * Model.px_area * area_coef / Model.conversion_factor
         )  # Timef*3.6
         # convert Qlz to m3/sec
         Model.qlz = (
-            Model.qlz * Model.px_area * area_coef / Model.CONVERSION_FACTOR
+            Model.qlz * Model.px_area * area_coef / Model.conversion_factor
         )  # Timef*3.6
 
     @staticmethod

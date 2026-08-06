@@ -210,7 +210,7 @@ class Catchment:
         self.maxbas: bool | None = None
         self.LumpedModel: BaseConceptualModel | None = None
         self.CatArea: float | int | None = None
-        self.InitialCond: list | None = None
+        self.initial_cond: list | None = None
         self.q_init: float | None = None
         self.GaugesTable: FeatureCollection | pd.DataFrame | None = None
         self.UB: np.ndarray | None = None
@@ -221,7 +221,7 @@ class Catchment:
         self.flow_acc_arr: np.ndarray | None = None
         self.no_elem: int | None = None
         self.acc_val: list[int] | None = None
-        self.Outlet: tuple | None = None
+        self.outlet: tuple | None = None
         self.cell_size: float | None = None
         self.px_area: float | None = None
         self.px_tot_area: float | None = None
@@ -596,7 +596,7 @@ class Catchment:
 
         # location of the outlet
         # outlet is the cell that has the max flow_acc
-        self.Outlet = np.where(self.flow_acc_arr == np.nanmax(self.flow_acc_arr))
+        self.outlet = np.where(self.flow_acc_arr == np.nanmax(self.flow_acc_arr))
 
         # Cell geometry comes from the named fields of the affine transform rather than
         # positional geotransform indices. This is a legibility change only: the
@@ -890,32 +890,32 @@ class Catchment:
 
         if self.spatial_resolution == "distributed":
             if snow and maxbas:
-                if not self.parameters.shape[2] == 16:
+                if self.parameters.shape[2] != 16:
                     raise ValueError(
                         "current version of HBV (with snow) takes 16 parameters you have entered "
                         f"{self.parameters.shape[2]}"
                     )
             elif not snow and maxbas:
-                if not self.parameters.shape[2] == 11:
+                if self.parameters.shape[2] != 11:
                     raise ValueError(
                         "current version of HBV (with snow) takes 11 parameters you have entered "
                         f"{self.parameters.shape[2]}"
                     )
             elif snow and not maxbas:
-                if not self.parameters.shape[2] == 17:
+                if self.parameters.shape[2] != 17:
                     raise ValueError(
                         "current version of HBV (with snow) takes 17 parameters you have entered "
                         f"{self.parameters.shape[2]}"
                     )
             elif not snow and not maxbas:
-                if not self.parameters.shape[2] == 12:
+                if self.parameters.shape[2] != 12:
                     raise ValueError(
                         "current version of HBV (with snow) takes 12 parameters you have entered "
                         f"{self.parameters.shape[2]}"
                     )
         else:
             if snow and maxbas:
-                if not len(self.parameters) == 16:
+                if len(self.parameters) != 16:
                     raise ValueError(
                         f"current version of HBV (with snow) takes 16 parameters you have entered"
                         f" {len(self.parameters)}"
@@ -982,14 +982,14 @@ class Catchment:
                 f"state variables are 5 and the given initial values are {len(initial_condition)}"
             )
 
-        self.InitialCond = initial_condition
+        self.initial_cond = initial_condition
 
         if q_init is not None:
             assert not isinstance(q_init, float), "q_init should be of type float"
         self.q_init = q_init
 
-        if self.InitialCond is not None:
-            assert isinstance(self.InitialCond, list), "init_st should be of type list"
+        if self.initial_cond is not None:
+            assert isinstance(self.initial_cond, list), "init_st should be of type list"
 
         logger.debug("Lumped model is read successfully")
 
@@ -1322,8 +1322,8 @@ class Catchment:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
             # sum the lower zone and the upper zone discharge
-            outlet_x = self.Outlet[0][0]
-            outlet_y = self.Outlet[1][0]
+            outlet_x = self.outlet[0][0]
+            outlet_y = self.outlet[1][0]
 
             # self.qout = self.qlz_translated[outlet_x,outlet_y,:] + self.quz_routed[outlet_x,outlet_y,:]
             # self.Qtot = self.qlz_translated + self.quz_routed

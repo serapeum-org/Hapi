@@ -327,8 +327,8 @@ class TestReadFlowAcc:
 
         catchment.read_flow_acc(path)
 
-        assert catchment.Outlet[0][0] == 1 and catchment.Outlet[1][0] == 0, (
-            f"expected the outlet at row 1, column 0, got {catchment.Outlet}"
+        assert catchment.outlet[0][0] == 1 and catchment.outlet[1][0] == 0, (
+            f"expected the outlet at row 1, column 0, got {catchment.outlet}"
         )
 
     def test_derives_cell_size_and_pixel_area(self, catchment, write_raster):
