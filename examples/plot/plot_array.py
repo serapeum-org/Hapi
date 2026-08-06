@@ -1,6 +1,6 @@
 """Plot a raster with pyramids/cleopatra.
 
-The old ``Hapi.plot`` module moved to the ``cleopatra`` package. Rasters are
+The old ``hapi.plot`` module moved to the ``cleopatra`` package. Rasters are
 read with ``pyramids.dataset.Dataset`` and plotted either with the
 ``Dataset.plot`` facade or directly with ``cleopatra.array_glyph.ArrayGlyph``.
 """

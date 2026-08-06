@@ -21,18 +21,18 @@ path = "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/
 from datetime import datetime
 
 # import Wrapper
-# import Hapi.GISpy as GIS
-import Hapi.gis.giscatchment as GC
-import Hapi.rrm.hbv as HBV
-import Hapi.rrm.parameters as DP
-import Hapi.sm.performancecriteria as PC
+# import hapi.GISpy as GIS
+import hapi.gis.giscatchment as GC
+import hapi.rrm.hbv as HBV
+import hapi.rrm.parameters as DP
+import hapi.sm.performancecriteria as PC
 
 # %library
 import numpy as np
 import pandas as pd
 
 # functions
-from Hapi.calibration import RunCalibration
+from hapi.calibration import RunCalibration
 from osgeo import gdal
 
 # from pyOpt import Optimization, ALHSO,Optimizer

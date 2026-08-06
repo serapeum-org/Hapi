@@ -1,8 +1,8 @@
 """Hydrological model parameters.
 
-The ``Hapi.parameters.parameters`` module provides classes for
+The ``hapi.parameters.parameters`` module provides classes for
 interacting with the Figshare API to retrieve, download, and manage
-global hydrological parameter sets used by the Hapi framework.
+global hydrological parameter sets used by the hapi framework.
 
 The module contains four main classes:
 
@@ -544,7 +544,7 @@ class Parameter:
 
 
 def main():
-    r"""Run the Hapi CLI for hydrological parameter operations.
+    r"""Run the hapi CLI for hydrological parameter operations.
 
     This entry point provides three sub-commands:
 
@@ -575,9 +575,9 @@ def main():
             list-parameter-names
 
     See Also:
-        ``Hapi.parameters.parameters.Parameter``: For details on the
+        ``hapi.parameters.parameters.Parameter``: For details on the
             ``Parameter`` class and its methods.
-        ``Hapi.parameters.parameters.ParameterManager``: For managing
+        ``hapi.parameters.parameters.ParameterManager``: For managing
             parameter-related operations.
     """
     import argparse

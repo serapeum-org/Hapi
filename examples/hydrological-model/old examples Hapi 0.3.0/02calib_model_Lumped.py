@@ -6,8 +6,8 @@ import pandas as pd
 # The HBVLumped module exists in the `examples/conceptual-model`
 # import Hapi.rrm.hbvlumped as HBVLumped
 import statista.descriptors as PC
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
+from hapi.calibration import Calibration
+from hapi.routing import Routing
 
 # %%
 ### meteorological data
