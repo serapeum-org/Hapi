@@ -15,10 +15,10 @@ import random
 
 import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 ### Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"

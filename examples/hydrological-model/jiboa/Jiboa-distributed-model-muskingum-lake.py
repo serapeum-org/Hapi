@@ -12,10 +12,10 @@ import numpy as np
 
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
-from Hapi.catchment import Catchment, Lake
-from Hapi.rrm.hbv import HBV
-from Hapi.rrm.hbv_lake import HBVLake
-from Hapi.run import Run
+from hapi.catchment import Catchment, Lake
+from hapi.rrm.hbv import HBV
+from hapi.rrm.hbv_lake import HBVLake
+from hapi.run import Run
 
 # %%
 root_dir = Path(r"examples/hydrological-model/jiboa/data")
