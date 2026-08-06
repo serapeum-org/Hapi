@@ -37,8 +37,8 @@ class TestLumped:
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
         Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        assert isinstance(Coello.LumpedModel, HBVLumped)
-        assert isinstance(Coello.CatArea, float)
+        assert isinstance(Coello.lumped_model, HBVLumped)
+        assert isinstance(Coello.area, float)
         assert isinstance(Coello.initial_cond, list)
 
     def test_read_lumped_read_parameters(
@@ -238,8 +238,8 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        assert isinstance(coello.LumpedModel, HBVLumped)
-        assert coello.CatArea == coello_cat_area
+        assert isinstance(coello.lumped_model, HBVLumped)
+        assert coello.area == coello_cat_area
         assert coello.initial_cond == coello_initial_cond
 
     def test_read_parameters_bound(
@@ -386,8 +386,7 @@ class TestFW1:
         )
         coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
-        Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)

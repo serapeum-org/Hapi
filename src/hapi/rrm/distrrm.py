@@ -85,7 +85,7 @@ class DistributedRRM:
                         Model.quz[x, y, :],
                         Model.qlz[x, y, :],
                         Model.state_variables[x, y, :, :],
-                    ) = Model.LumpedModel.simulate(
+                    ) = Model.lumped_model.simulate(
                         prec=Model.Prec[x, y, :],
                         temp=Model.Temp[x, y, :],
                         et=Model.ET[x, y, :],
@@ -96,7 +96,7 @@ class DistributedRRM:
                         snow=Model.snow,
                     )
 
-        area_coef = Model.CatArea / Model.px_tot_area
+        area_coef = Model.area / Model.px_tot_area
         # convert quz from mm/time step to m3/sec
         Model.quz = (
             Model.quz * Model.px_area * area_coef / Model.conversion_factor

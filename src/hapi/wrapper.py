@@ -362,7 +362,7 @@ class Wrapper:
         tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.state_variables = Model.LumpedModel.simulate(
+        Model.quz, Model.qlz, Model.state_variables = Model.lumped_model.simulate(
             p,
             t,
             et,
@@ -374,8 +374,8 @@ class Wrapper:
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        Model.quz = Model.quz * Model.CatArea / Model.conversion_factor
-        Model.qlz = Model.qlz * Model.CatArea / Model.conversion_factor
+        Model.quz = Model.quz * Model.area / Model.conversion_factor
+        Model.qlz = Model.qlz * Model.area / Model.conversion_factor
 
         Model.Qsim = Model.quz + Model.qlz
 

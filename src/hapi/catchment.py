@@ -208,8 +208,8 @@ class Catchment:
         self.QGauges: pd.DataFrame | None = None
         self.snow: int | None = None
         self.maxbas: bool | None = None
-        self.LumpedModel: BaseConceptualModel | None = None
-        self.CatArea: float | int | None = None
+        self.lumped_model: BaseConceptualModel | None = None
+        self.area: float | int | None = None
         self.initial_cond: list | None = None
         self.q_init: float | None = None
         self.GaugesTable: FeatureCollection | pd.DataFrame | None = None
@@ -974,8 +974,8 @@ class Catchment:
                 "ConceptualModel should be a module or a python file contains functions "
             )
 
-        self.LumpedModel = lumped_model()
-        self.CatArea = catchment_area
+        self.lumped_model = lumped_model()
+        self.area = catchment_area
 
         if len(initial_condition) != 5:
             raise ValueError(
