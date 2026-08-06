@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000 ** 2)
-
+DATE_PATTERN = r"\d{4}.\d{2}.\d{2}"
 
 @contextmanager
 def _name_the_path(path) -> Iterator[None]:
@@ -144,9 +144,9 @@ class Catchment:
         start_data: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: str | None = "Lumped",
-        temporal_resolution: str | None = "Daily",
-        routing_method: str | None = "Muskingum",
+        spatial_resolution: str = "Lumped",
+        temporal_resolution: str = "Daily",
+        routing_method: str = "Muskingum",
     ):
         """Initialize a Catchment instance.
 
@@ -251,7 +251,7 @@ class Catchment:
         start: str | None = None,
         end: str | None = None,
         fmt: str = "%Y-%m-%d",
-        regex_string=r"\d{4}.\d{2}.\d{2}",
+        regex_string: str = DATE_PATTERN,
         date: bool = True,
         file_name_data_fmt: str | None = None,
         extension: str = ".tif",
@@ -316,7 +316,7 @@ class Catchment:
         start: str | None = None,
         end: str | None = None,
         fmt: str = "%Y-%m-%d",
-        regex_string=r"\d{4}.\d{2}.\d{2}",
+        regex_string: str = DATE_PATTERN,
         date: bool = True,
         file_name_data_fmt: str | None = None,
         extension: str = ".tif",
@@ -389,7 +389,7 @@ class Catchment:
         start: str | None = None,
         end: str | None = None,
         fmt: str = "%Y-%m-%d",
-        regex_string=r"\d{4}.\d{2}.\d{2}",
+        regex_string: str = DATE_PATTERN,
         date: bool = True,
         file_name_data_fmt: str | None = None,
         extension: str = ".tif",
