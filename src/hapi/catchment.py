@@ -245,6 +245,70 @@ class Catchment:
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
 
+    def _read_dated_rasters(
+        self,
+        path: str,
+        label: str,
+        start: str | int | None = None,
+        end: str | int | None = None,
+        fmt: str = "%Y-%m-%d",
+        regex_string: str = DATE_PATTERN,
+        date: bool = True,
+        file_name_data_fmt: str | None = None,
+        extension: str = ".tif",
+    ) -> np.ndarray:
+        r"""Read a folder of date-stamped rasters into a ``(rows, cols, time)`` array.
+
+        Shared by :meth:`read_rainfall`, :meth:`read_temperature` and :meth:`read_et`,
+        which differ only in the attribute they populate and what they derive from it.
+
+        Args:
+            path (str): Path to the folder containing the rasters.
+            label (str): Human-readable name of the variable, used in the error message.
+            start (str | int, optional): Start date to read a specific period only. If
+                not given, all rasters in the path will be read. Default is None.
+            end (str | int, optional): End date to read a specific period only. If not
+                given, all rasters in the path will be read. Default is None.
+            fmt (str, optional): Format of the given date. Default is "%Y-%m-%d".
+            regex_string (str, optional): A regex string to locate the date in the file
+                names. Default is r"\d{4}.\d{2}.\d{2}".
+            date (bool, optional): True if the number in the file name is a date.
+                Default is True.
+            file_name_data_fmt (str, optional): Date format in file names for ordered
+                reading. Default is None.
+            extension (str, optional): The extension of the files to read from the given
+                path. Default is ".tif".
+
+        Returns:
+            np.ndarray: The stacked rasters with time as the last axis.
+
+        Raises:
+            FileNotFoundError: The directory does not exist or holds no matching
+                rasters. Raised by ``DatasetCollection.read_multiple_files``.
+            TypeError: The resulting array is not a numpy ndarray.
+        """
+        # Path validation is delegated to pyramids: read_multiple_files raises
+        # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
+        # these replace, that survives `python -O`. Its message does not name the
+        # offending directory, so _name_the_path re-raises with it.
+        with _name_the_path(path):
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
+            )
+        values = np.moveaxis(cube.values, 0, -1)
+        if not isinstance(values, np.ndarray):
+            raise TypeError(f"{label} should be of type numpy array")
+
+        return values
+
     def read_rainfall(
         self,
         path: str,
@@ -285,27 +349,19 @@ class Catchment:
             TypeError: The resulting precipitation array is not a numpy ndarray.
         """
         if self.precipitation is None:
-            # Path validation is delegated to pyramids: read_multiple_files raises
-            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`. Its message does not name the
-            # offending directory, so _name_the_path re-raises with it.
-            with _name_the_path(path):
-                cube = Datacube.read_multiple_files(
-                    path,
-                    with_order=True,
-                    regex_string=regex_string,
-                    date=date,
-                    start=start,
-                    end=end,
-                    fmt=fmt,
-                    file_name_data_fmt=file_name_data_fmt,
-                    extension=extension,
-                )
-            self.precipitation = np.moveaxis(cube.values, 0, -1)
-            self.time_steps = self.precipitation.shape[2] + 1
+            self.precipitation = self._read_dated_rasters(
+                path,
+                "Prec",
+                start=start,
+                end=end,
+                fmt=fmt,
+                regex_string=regex_string,
+                date=date,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
+            )
             # no of time steps =length of time series +1
-            if not isinstance(self.precipitation, np.ndarray):
-                raise TypeError("Prec should be of type numpy array")
+            self.time_steps = self.precipitation.shape[2] + 1
 
             logger.debug("Rainfall data are read successfully")
 
@@ -313,8 +369,8 @@ class Catchment:
         self,
         path: str,
         ll_temp: list | np.ndarray | None = None,
-        start: str | None = None,
-        end: str | None = None,
+        start: str | int | None = None,
+        end: str | int | None = None,
         fmt: str = "%Y-%m-%d",
         regex_string: str = DATE_PATTERN,
         date: bool = True,
@@ -351,27 +407,19 @@ class Catchment:
         Raises:
             FileNotFoundError: The directory does not exist or holds no matching
                 rasters. Raised by ``DatasetCollection.read_multiple_files``.
+            TypeError: The resulting array is not a numpy ndarray.
         """
         if self.temperature is None:
-            # Path validation is delegated to pyramids: read_multiple_files raises
-            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`. Its message does not name the
-            # offending directory, so _name_the_path re-raises with it.
-            with _name_the_path(path):
-                cube = Datacube.read_multiple_files(
-                    path,
-                    with_order=True,
-                    regex_string=regex_string,
-                    date=date,
-                    start=start,
-                    end=end,
-                    fmt=fmt,
-                    file_name_data_fmt=file_name_data_fmt,
-                    extension=extension,
-                )
-            self.temperature = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(self.temperature, np.ndarray), (
-                "array should be of type numpy array"
+            self.temperature = self._read_dated_rasters(
+                path,
+                "Temperature",
+                start=start,
+                end=end,
+                fmt=fmt,
+                regex_string=regex_string,
+                date=date,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
             )
 
             if ll_temp is None:
@@ -420,27 +468,19 @@ class Catchment:
         Raises:
             FileNotFoundError: The directory does not exist or holds no matching
                 rasters. Raised by ``DatasetCollection.read_multiple_files``.
+            TypeError: The resulting array is not a numpy ndarray.
         """
         if self.evapotranspiration is None:
-            # Path validation is delegated to pyramids: read_multiple_files raises
-            # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-            # these replace, that survives `python -O`. Its message does not name the
-            # offending directory, so _name_the_path re-raises with it.
-            with _name_the_path(path):
-                cube = Datacube.read_multiple_files(
-                    path,
-                    with_order=True,
-                    regex_string=regex_string,
-                    date=date,
-                    start=start,
-                    end=end,
-                    fmt=fmt,
-                    file_name_data_fmt=file_name_data_fmt,
-                    extension=extension,
-                )
-            self.evapotranspiration = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(self.evapotranspiration, np.ndarray), (
-                "array should be of type numpy array"
+            self.evapotranspiration = self._read_dated_rasters(
+                path,
+                "Evapotranspiration",
+                start=start,
+                end=end,
+                fmt=fmt,
+                regex_string=regex_string,
+                date=date,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
             )
             logger.debug("Potential Evapotranspiration data are read successfully")
 
