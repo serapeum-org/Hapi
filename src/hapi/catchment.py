@@ -200,10 +200,10 @@ class Catchment:
         self.routing_method = routing_method
         self.parameters: np.ndarray | list | None = None
         self.data: np.ndarray | None = None
-        self.Prec: np.ndarray | None = None
-        self.TS: int | None = None
-        self.Temp: np.ndarray | None = None
-        self.ET: np.ndarray | None = None
+        self.precipitation: np.ndarray | None = None
+        self.time_steps: int | None = None
+        self.temperature: np.ndarray | None = None
+        self.evapotranspiration: np.ndarray | None = None
         self.ll_temp: np.ndarray | float | None = None
         self.QGauges: pd.DataFrame | None = None
         self.snow: int | None = None
@@ -284,7 +284,7 @@ class Catchment:
                 rasters. Raised by ``DatasetCollection.read_multiple_files``.
             TypeError: The resulting precipitation array is not a numpy ndarray.
         """
-        if self.Prec is None:
+        if self.precipitation is None:
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
             # these replace, that survives `python -O`. Its message does not name the
@@ -301,10 +301,10 @@ class Catchment:
                     file_name_data_fmt=file_name_data_fmt,
                     extension=extension,
                 )
-            self.Prec = np.moveaxis(cube.values, 0, -1)
-            self.TS = self.Prec.shape[2] + 1
+            self.precipitation = np.moveaxis(cube.values, 0, -1)
+            self.time_steps = self.precipitation.shape[2] + 1
             # no of time steps =length of time series +1
-            if not isinstance(self.Prec, np.ndarray):
+            if not isinstance(self.precipitation, np.ndarray):
                 raise TypeError("Prec should be of type numpy array")
 
             logger.debug("Rainfall data are read successfully")
@@ -352,7 +352,7 @@ class Catchment:
             FileNotFoundError: The directory does not exist or holds no matching
                 rasters. Raised by ``DatasetCollection.read_multiple_files``.
         """
-        if self.Temp is None:
+        if self.temperature is None:
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
             # these replace, that survives `python -O`. Its message does not name the
@@ -369,16 +369,16 @@ class Catchment:
                     file_name_data_fmt=file_name_data_fmt,
                     extension=extension,
                 )
-            self.Temp = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(self.Temp, np.ndarray), (
+            self.temperature = np.moveaxis(cube.values, 0, -1)
+            assert isinstance(self.temperature, np.ndarray), (
                 "array should be of type numpy array"
             )
 
             if ll_temp is None:
-                self.ll_temp = np.zeros_like(self.Temp, dtype=np.float32)
-                avg = self.Temp.mean(axis=2)
-                for i in range(self.Temp.shape[0]):
-                    for j in range(self.Temp.shape[1]):
+                self.ll_temp = np.zeros_like(self.temperature, dtype=np.float32)
+                avg = self.temperature.mean(axis=2)
+                for i in range(self.temperature.shape[0]):
+                    for j in range(self.temperature.shape[1]):
                         self.ll_temp[i, j, :] = avg[i, j]
 
             logger.debug("Temperature data are read successfully")
@@ -421,7 +421,7 @@ class Catchment:
             FileNotFoundError: The directory does not exist or holds no matching
                 rasters. Raised by ``DatasetCollection.read_multiple_files``.
         """
-        if self.ET is None:
+        if self.evapotranspiration is None:
             # Path validation is delegated to pyramids: read_multiple_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
             # these replace, that survives `python -O`. Its message does not name the
@@ -438,8 +438,8 @@ class Catchment:
                     file_name_data_fmt=file_name_data_fmt,
                     extension=extension,
                 )
-            self.ET = np.moveaxis(cube.values, 0, -1)
-            assert isinstance(self.ET, np.ndarray), (
+            self.evapotranspiration = np.moveaxis(cube.values, 0, -1)
+            assert isinstance(self.evapotranspiration, np.ndarray), (
                 "array should be of type numpy array"
             )
             logger.debug("Potential Evapotranspiration data are read successfully")
@@ -1338,7 +1338,7 @@ class Catchment:
                 # Qlz = np.reshape(self.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
                 # q_sim = Quz + Qlz
 
-                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.TS - 1)
+                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.time_steps - 1)
                 if factor is not None:
                     self.Qsim.loc[:, gauge_id] = q_sim * factor[i]
                 else:
@@ -1370,7 +1370,7 @@ class Catchment:
         elif frame_work_1 or only_outlet:
             self.Qsim = pd.DataFrame(index=self.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            q_sim = np.reshape(self.qout, self.TS - 1)
+            q_sim = np.reshape(self.qout, self.time_steps - 1)
             self.Qsim.loc[:, gauge_id] = q_sim
 
             if calculate_metrics:
@@ -1607,13 +1607,13 @@ class Catchment:
             arr = self.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
-            arr = self.Prec[:, :, start_i:end_i]
+            arr = self.precipitation[:, :, start_i:end_i]
             title = "Precipitation"
         elif option == 10:
-            arr = self.ET[:, :, start_i:end_i]
+            arr = self.evapotranspiration[:, :, start_i:end_i]
             title = "ET"
         elif option == 11:
-            arr = self.Temp[:, :, start_i:end_i]
+            arr = self.temperature[:, :, start_i:end_i]
             title = "Temperature"
         else:
             raise ValueError("Plotting options are from 1 to 11")

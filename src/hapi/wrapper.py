@@ -206,10 +206,10 @@ class Wrapper:
         distrrm.DistMaxbas1(Model)
 
         qlz1 = np.array(
-            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.TS)]
+            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.time_steps)]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
-            [np.nansum(Model.quz[:, :, i]) for i in range(Model.TS)]
+            [np.nansum(Model.quz[:, :, i]) for i in range(Model.time_steps)]
         )  # average of all cells (routed mm/timestep)
 
         Model.qout = qlz1 + quz1

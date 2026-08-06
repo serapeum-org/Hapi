@@ -136,7 +136,7 @@ class Calibration(Catchment):
                 only at the outlet cell. Not used in this override but
                 kept for signature compatibility. Default is False.
         """
-        self.Qsim = np.zeros((self.TS - 1, len(self.GaugesTable)))
+        self.Qsim = np.zeros((self.time_steps - 1, len(self.GaugesTable)))
         # error = 0
         for i in range(len(self.GaugesTable)):
             Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
@@ -147,7 +147,7 @@ class Calibration(Catchment):
             # Qlz = self.qlz_translated[Xind,Yind,:-1]
             # self.Qsim[:,i] = Quz + Qlz
 
-            Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.TS - 1)
+            Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.time_steps - 1)
 
             if factor is not None:
                 self.Qsim[:, i] = Qsim * factor[i]
@@ -216,17 +216,17 @@ class Calibration(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
+                np.shape(self.precipitation)[0] == self.rows
+                and np.shape(self.evapotranspiration)[0] == self.rows
+                and np.shape(self.temperature)[0] == self.rows
         ), ROWS_MISMATCH_ERROR
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
+                np.shape(self.precipitation)[1] == self.cols
+                and np.shape(self.evapotranspiration)[1] == self.cols
+                and np.shape(self.temperature)[1] == self.cols
         ), COLUMNS_MISMATCH_ERROR
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] and np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
@@ -372,17 +372,17 @@ class Calibration(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
+                np.shape(self.precipitation)[0] == self.rows
+                and np.shape(self.evapotranspiration)[0] == self.rows
+                and np.shape(self.temperature)[0] == self.rows
         ), ROWS_MISMATCH_ERROR
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
+                np.shape(self.precipitation)[1] == self.cols
+                and np.shape(self.evapotranspiration)[1] == self.cols
+                and np.shape(self.temperature)[1] == self.cols
         ), COLUMNS_MISMATCH_ERROR
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] and np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs

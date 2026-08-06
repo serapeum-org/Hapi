@@ -190,11 +190,11 @@ class TestDistributed:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        assert isinstance(coello.Prec, np.ndarray)
-        assert isinstance(coello.Temp, np.ndarray)
-        assert isinstance(coello.ET, np.ndarray)
-        assert coello.Prec.shape == (13, 14, 10)
-        assert coello.ET.shape == (13, 14, 10)
+        assert isinstance(coello.precipitation, np.ndarray)
+        assert isinstance(coello.temperature, np.ndarray)
+        assert isinstance(coello.evapotranspiration, np.ndarray)
+        assert coello.precipitation.shape == (13, 14, 10)
+        assert coello.evapotranspiration.shape == (13, 14, 10)
 
     def test_read_gis_inputs(
         self,
