@@ -35,6 +35,7 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
 from hapi.dem import DEM
+from hapi.inputs import read_rasters
 
 if TYPE_CHECKING:
     import matplotlib.animation
@@ -48,7 +49,7 @@ DATE_PATTERN = r"\d{4}.\d{2}.\d{2}"
 def _name_the_path(path) -> Iterator[None]:
     """Re-raise a pyramids `FileNotFoundError` with the offending path in the message.
 
-    ``DatasetCollection.read_multiple_files`` reports "The path you have provided does
+    ``DatasetCollection.from_files`` reports "The path you have provided does
     not exist" / "is empty" without saying which path, where the checks this replaced
     named it. With several directories read per model run, the bare message does not
     identify the culprit.
@@ -284,24 +285,24 @@ class Catchment:
 
         Raises:
             FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.read_multiple_files``.
+                rasters. Raised by ``DatasetCollection.from_files``.
             TypeError: The resulting array is not a numpy ndarray.
         """
-        # Path validation is delegated to pyramids: read_multiple_files raises
+        # Path validation is delegated to pyramids: from_files raises
         # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
         # these replace, that survives `python -O`. Its message does not name the
         # offending directory, so _name_the_path re-raises with it.
         with _name_the_path(path):
-            cube = Datacube.read_multiple_files(
+            cube = read_rasters(
                 path,
-                with_order=True,
+                # pyramids 0.50 replaced `extension` with an fnmatch `glob`.
+                glob=f"*{extension}",
                 regex_string=regex_string,
                 date=date,
+                file_name_data_fmt=file_name_data_fmt,
                 start=start,
                 end=end,
                 fmt=fmt,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
             )
         values = np.moveaxis(cube.values, 0, -1)
         if not isinstance(values, np.ndarray):
@@ -345,7 +346,7 @@ class Catchment:
 
         Raises:
             FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.read_multiple_files``.
+                rasters. Raised by ``DatasetCollection.from_files``.
             TypeError: The resulting precipitation array is not a numpy ndarray.
         """
         if self.precipitation is None:
@@ -406,7 +407,7 @@ class Catchment:
 
         Raises:
             FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.read_multiple_files``.
+                rasters. Raised by ``DatasetCollection.from_files``.
             TypeError: The resulting array is not a numpy ndarray.
         """
         if self.temperature is None:
@@ -467,7 +468,7 @@ class Catchment:
 
         Raises:
             FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.read_multiple_files``.
+                rasters. Raised by ``DatasetCollection.from_files``.
             TypeError: The resulting array is not a numpy ndarray.
         """
         if self.evapotranspiration is None:
@@ -903,14 +904,12 @@ class Catchment:
                 the given snow/maxbas configuration.
         """
         if self.spatial_resolution.lower() == "distributed":
-            # Path validation is delegated to pyramids: read_multiple_files raises
+            # Path validation is delegated to pyramids: from_files raises
             # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
             # these replace, that survives `python -O`. Its message does not name the
             # offending directory, so _name_the_path re-raises with it.
             with _name_the_path(path):
-                cube = Datacube.read_multiple_files(
-                    path, with_order=True, regex_string=r"\d+", date=False
-                )
+                cube = read_rasters(path, regex_string=r"\d+", date=False)
             self.parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):

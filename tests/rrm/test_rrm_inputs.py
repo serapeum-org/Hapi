@@ -11,7 +11,7 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from shapely.geometry import Polygon
 
-from hapi.inputs import PARAMETERS_LIST, Inputs
+from hapi.inputs import PARAMETERS_LIST, Inputs, read_rasters
 
 # UTM 18N covers the Coello basin, which the fixtures carry in geographic coordinates.
 PARAMETER_EPSG = 32618
@@ -34,7 +34,7 @@ def test_prepare_inputs(
     assert rpath.exists()
     files = list(rpath.iterdir())
     assert len(files) == 10
-    cube = Datacube.read_multiple_files(str(rpath), with_order=False)
+    cube = Datacube.from_files(str(rpath))
     # if rpath.exists():
     #     rpath.unlink()
 
@@ -58,7 +58,7 @@ class TestExtractParameters:
         assert rpath.exists()
         files = list(rpath.iterdir())
         assert len(files) == 19
-        cube = Datacube.read_multiple_files(str(rpath), with_order=False)
+        cube = Datacube.from_files(str(rpath))
         # if rpath.exists():
         #     rpath.unlink()
 
@@ -162,12 +162,8 @@ def test_create_lumped_parameter():
     # each raster, bypassing the GDAL band-statistics path that
     # create_lumped_inputs relies on (pyramids >= 0.32 returns exact band
     # statistics instead of the sampled values returned by older versions)
-    cube = Datacube.read_multiple_files(
-        path,
-        with_order=True,
-        regex_string=r"\d{4}.\d{2}.\d{2}",
-        date=True,
-        file_name_data_fmt="%Y.%m.%d",
+    cube = Datacube.from_files(
+        path, date_format="%Y.%m.%d", date_regex=r"\d{4}.\d{2}.\d{2}"
     )
     expected = []
     for i in range(cube.time_length):
@@ -480,4 +476,62 @@ class TestVectorTypes:
             "geopandas is declared again in [project].dependencies but nothing in "
             "src/hapi imports it; it arrives transitively via pyramids-gis, which "
             "deliberately excludes it on win_arm64"
+        )
+
+
+class TestReadRastersOrdering:
+    """Tests for ``read_rasters``, the adapter over ``DatasetCollection.from_files``."""
+
+    @pytest.fixture
+    def unpadded_rasters(self, tmp_path):
+        """Write 12 rasters whose index is not zero-padded, each holding its own index.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Returns:
+            Path: The folder holding ``0_Par_x.tif`` ... ``11_Par_x.tif``.
+        """
+        for i in range(12):
+            Dataset.create_from_array(
+                np.full((4, 4), float(i), dtype=np.float32),
+                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
+                epsg=4326,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"{i}_Par_x.tif"))
+        return tmp_path
+
+    def test_numeric_mode_orders_by_value_not_lexicographically(self, unpadded_rasters):
+        """Test that a non zero-padded index is ordered numerically.
+
+        Test scenario:
+            ``from_files`` sorts only by date; its default order is lexicographic, which puts
+            ``10_`` before ``2_``. Parameter rasters and the Rhine meteo rasters are not
+            zero-padded, so relying on that order would silently scramble the cube --
+            assigning each parameter to the wrong HBV slot. Each raster carries its own index
+            as its pixel value, so the cube's values spell out the recovered order.
+        """
+        cube = read_rasters(unpadded_rasters, regex_string=r"\d+", date=False)
+
+        recovered = [int(cube.values[i].flat[0]) for i in range(cube.time_length)]
+
+        assert recovered == list(range(12)), (
+            f"expected the rasters in numeric index order, got {recovered}"
+        )
+
+    def test_numeric_mode_start_end_filter_on_the_index(self, unpadded_rasters):
+        """Test that integer ``start``/``end`` select an inclusive index range.
+
+        Test scenario:
+            ``03run_model.py`` reads a season with ``date=False, start=1, end=365``, so the
+            bounds must be read as indices rather than parsed as dates.
+        """
+        cube = read_rasters(
+            unpadded_rasters, regex_string=r"\d+", date=False, start=3, end=7
+        )
+
+        recovered = [int(cube.values[i].flat[0]) for i in range(cube.time_length)]
+
+        assert recovered == [3, 4, 5, 6, 7], (
+            f"expected indices 3..7 inclusive, got {recovered}"
         )

@@ -5,9 +5,8 @@ and parameter raster data for distributed hydrological modeling. It handles
 alignment of rasters to a source DEM, extraction of HBV model parameters
 from global datasets, and creation of lumped inputs from distributed data.
 
-Rasters are read in chronological order by
-``DatasetCollection.read_multiple_files(with_order=True, ...)``, which parses the date
-out of each file name, so the files themselves never need renaming on disk.
+Rasters are read in chronological order by ``DatasetCollection.from_files``, which parses the
+date out of each file name, so the files themselves never need renaming on disk.
 
 The module relies on the ``pyramids`` library for raster I/O and
 manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
@@ -16,13 +15,122 @@ locate pre-downloaded global parameter sets (Beck et al., 2016).
 
 from __future__ import annotations
 
+import datetime as dt
 import os
+import re
 from pathlib import Path
 
 import pandas as pd
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
+
+
+def _as_datetime(value: str | int | None, fmt: str) -> dt.datetime | None:
+    """Parse a `start` / `end` bound into a datetime for the date-ordered read.
+
+    Args:
+        value: The bound as given by the caller, or None for "unbounded". Declared
+            `str | int` because the numeric ordering takes integer indices; in the date
+            branch it is a date string, and anything else fails the parse below.
+        fmt: `strptime` format of the bound.
+
+    Returns:
+        dt.datetime | None: The parsed bound, or None when `value` is None.
+
+    Raises:
+        ValueError: `value` does not match `fmt`.
+    """
+    return None if value is None else dt.datetime.strptime(str(value), fmt)
+
+
+def read_rasters(
+    path: str | Path,
+    *,
+    glob: str = "*.tif",
+    regex_string: str = r"\d{4}.\d{2}.\d{2}",
+    date: bool = True,
+    file_name_data_fmt: str | None = None,
+    start: str | int | None = None,
+    end: str | int | None = None,
+    fmt: str = "%Y-%m-%d",
+) -> Datacube:
+    r"""Read a folder of rasters into a `DatasetCollection` in the right order.
+
+    A thin adapter over :meth:`DatasetCollection.from_files` -- pyramids does every bit of the
+    resolving and reading; this only decides the order the files are handed over in, and
+    translates Hapi's string/int `start` / `end` into what `from_files` accepts.
+
+    Three orderings are supported, matching Hapi's public reader arguments:
+
+    * **By date** (`date=True` with a `file_name_data_fmt`) -- delegated wholesale to
+      `from_files(date_format=..., date_regex=...)`, which sorts and builds the time axis.
+    * **By number** (`date=False`) -- for names carrying a plain index, e.g.
+      `01_Par_RFCF.tif` or `1000_Temp_..._1981_9_27.tif`. `from_files` sorts only by date, and
+      its default order is lexicographic, which puts `10_` before `2_` whenever the index is
+      not zero-padded. So the files are resolved through `from_files`, sorted on the integer in
+      each name, and handed back to `from_files` as an explicit sequence -- which it keeps in
+      the given order.
+    * **Unordered** (`date=True`, no format) -- a plain `from_files(path, glob=...)`.
+
+    Args:
+        path: Folder holding the rasters.
+        glob: :mod:`fnmatch` pattern selecting them. Defaults to `"*.tif"`.
+        regex_string: Where the date (or the index, when `date=False`) sits in each name.
+        date: Whether the matched value is a date. `False` selects the numeric ordering.
+        file_name_data_fmt: `strptime` format of the date in the names. Without it there is
+            nothing to sort dates on, so the read is unordered.
+        start: Inclusive lower bound -- a date string parsed with `fmt`, or an integer index
+            when `date=False`.
+        end: Inclusive upper bound; see `start`.
+        fmt: `strptime` format of `start` / `end` when they are date strings.
+
+    Returns:
+        DatasetCollection: The collection, ordered as described above.
+
+    Raises:
+        FileNotFoundError: The folder does not exist, matched no file, or `start` / `end`
+            excluded every file.
+        ValueError: `regex_string` matched no number in a file name (numeric ordering only).
+    """
+    if date and file_name_data_fmt is not None:
+        return Datacube.from_files(
+            path,
+            glob=glob,
+            date_format=file_name_data_fmt,
+            date_regex=regex_string,
+            start=_as_datetime(start, fmt),
+            end=_as_datetime(end, fmt),
+        )
+
+    if not date:
+        keyed = []
+        for file in Datacube.from_files(path, glob=glob).files:
+            match = re.search(regex_string, Path(file).name)
+            if match is None:
+                raise ValueError(
+                    f"regex {regex_string!r} matched no number in {Path(file).name!r}"
+                )
+            keyed.append((int(match.group()), file))
+        keyed.sort()
+
+        if start is not None or end is not None:
+            low = int(start) if start is not None else None
+            high = int(end) if end is not None else None
+            keyed = [
+                (number, file)
+                for number, file in keyed
+                if (low is None or number >= low) and (high is None or number <= high)
+            ]
+            if not keyed:
+                raise FileNotFoundError(
+                    f"no file in {path} carries an index within [{start}, {end}]"
+                )
+
+        return Datacube.from_files([file for _, file in keyed])
+
+    return Datacube.from_files(path, glob=glob)
+
 
 PARAMETERS_LIST = [
     "01_tt",
@@ -53,7 +161,7 @@ class Inputs:
     raster data so they align with a reference DEM. It supports extracting
     HBV model parameter boundaries and computing lumped inputs from distributed
     rasters. Chronological ordering is handled by pyramids at read time
-    (``read_multiple_files(with_order=True, ...)``), not by renaming files on disk.
+    (``from_files(date_format=...)``), not by renaming files on disk.
 
     Attributes:
         source_dem: Path to the reference DEM raster used for spatial
@@ -148,7 +256,9 @@ class Inputs:
             raise FileNotFoundError(f"{inputs_dir} does not exist")
 
         mask = Dataset.read_file(self.source_dem)
-        cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
+        # Unordered: prepare_inputs realigns every raster in the folder, so no time axis
+        # is needed and the files can be taken in whatever order they resolve.
+        cube = Datacube.from_files(inputs_dir)
         # in-place align/crop clear the collection's file list, so capture the names first
         file_names = [Path(file).name for file in cube.files]
         cube.align(mask, inplace=True)
@@ -381,16 +491,16 @@ class Inputs:
         See Also:
             Inputs.prepare_inputs: Align and crop the same rasters onto the DEM grid.
         """
-        cube = Datacube.read_multiple_files(
+        cube = read_rasters(
             path,
-            with_order=True,
+            # pyramids 0.50 replaced `extension` with an fnmatch `glob`.
+            glob=f"*{extension}",
             regex_string=regex_string,
             date=date,
+            file_name_data_fmt=file_name_data_fmt,
             start=start,
             end=end,
             fmt=fmt,
-            file_name_data_fmt=file_name_data_fmt,
-            extension=extension,
         )
         avg = []
         for i in range(cube.time_length):

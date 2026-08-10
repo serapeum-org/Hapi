@@ -509,7 +509,9 @@ class TestReadFlowAcc:
 class TestDirectoryReaders:
     """Tests for the meteorological readers that consume a directory of rasters."""
 
-    @pytest.mark.parametrize("method", ["read_rainfall", "read_temperature", "read_et"])
+    @pytest.mark.parametrize(
+        "method", ["read_rainfall", "read_temperature", "read_evapotranspiration"]
+    )
     def test_missing_directory_error_names_the_path(self, catchment, tmp_path, method):
         """Test that a missing input directory is reported with its path.
 
