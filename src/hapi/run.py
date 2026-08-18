@@ -74,19 +74,21 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-                and np.shape(self.parameters)[0] == self.rows
+            np.shape(self.precipitation)[0] == self.rows
+            and np.shape(self.evapotranspiration)[0] == self.rows
+            and np.shape(self.temperature)[0] == self.rows
+            and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-                and np.shape(self.parameters)[1] == self.cols
+            np.shape(self.precipitation)[1] == self.cols
+            and np.shape(self.evapotranspiration)[1] == self.cols
+            and np.shape(self.temperature)[1] == self.cols
+            and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] == np.shape(self.temperature)[2]
+            np.shape(self.precipitation)[2]
+            == np.shape(self.evapotranspiration)[2]
+            == np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -114,19 +116,21 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-                and np.shape(self.parameters)[0] == self.rows
+            np.shape(self.precipitation)[0] == self.rows
+            and np.shape(self.evapotranspiration)[0] == self.rows
+            and np.shape(self.temperature)[0] == self.rows
+            and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-                and np.shape(self.parameters)[1] == self.cols
+            np.shape(self.precipitation)[1] == self.cols
+            and np.shape(self.evapotranspiration)[1] == self.cols
+            and np.shape(self.temperature)[1] == self.cols
+            and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] == np.shape(self.temperature)[2]
+            np.shape(self.precipitation)[2]
+            == np.shape(self.evapotranspiration)[2]
+            == np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         assert (
@@ -176,19 +180,21 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-                and np.shape(self.parameters)[0] == self.rows
+            np.shape(self.precipitation)[0] == self.rows
+            and np.shape(self.evapotranspiration)[0] == self.rows
+            and np.shape(self.temperature)[0] == self.rows
+            and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-                and np.shape(self.parameters)[1] == self.cols
+            np.shape(self.precipitation)[1] == self.cols
+            and np.shape(self.evapotranspiration)[1] == self.cols
+            and np.shape(self.temperature)[1] == self.cols
+            and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] == np.shape(self.temperature)[2]
+            np.shape(self.precipitation)[2]
+            == np.shape(self.evapotranspiration)[2]
+            == np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         assert np.shape(lake.MeteoData)[0] == np.shape(self.precipitation)[2], (
@@ -213,27 +219,36 @@ class Run(Catchment):
 
         - ``st``: 4D array of state variables.
         - ``q_out``: 1D array of calculated discharge at the catchment
-          outlet.
+          outlet, summed over every cell.
         - ``q_uz``: 3D array of distributed discharge for each cell.
+        - ``Qtot``, ``quz_routed``, ``qlz_translated``: 3D per-cell fields
+          read by ``save_results`` and ``plot_distributed_results``. MAXBAS
+          routes each cell straight to the outlet, so a cell of ``Qtot`` is
+          that cell's *contribution* to the outlet — ``np.nansum`` over the
+          domain reproduces ``q_out``. Use
+          ``extract_discharge(frame_work_1=True)``; the default outlet-cell
+          shortcut is invalid for this path and raises.
 
         Raises:
             AssertionError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
         assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-                and np.shape(self.parameters)[0] == self.rows
+            np.shape(self.precipitation)[0] == self.rows
+            and np.shape(self.evapotranspiration)[0] == self.rows
+            and np.shape(self.temperature)[0] == self.rows
+            and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-                and np.shape(self.parameters)[1] == self.cols
+            np.shape(self.precipitation)[1] == self.cols
+            and np.shape(self.evapotranspiration)[1] == self.cols
+            and np.shape(self.temperature)[1] == self.cols
+            and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] == np.shape(self.temperature)[2]
+            np.shape(self.precipitation)[2]
+            == np.shape(self.evapotranspiration)[2]
+            == np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -280,19 +295,21 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-                and np.shape(self.parameters)[0] == self.rows
+            np.shape(self.precipitation)[0] == self.rows
+            and np.shape(self.evapotranspiration)[0] == self.rows
+            and np.shape(self.temperature)[0] == self.rows
+            and np.shape(self.parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-                and np.shape(self.parameters)[1] == self.cols
+            np.shape(self.precipitation)[1] == self.cols
+            and np.shape(self.evapotranspiration)[1] == self.cols
+            and np.shape(self.temperature)[1] == self.cols
+            and np.shape(self.parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] == np.shape(self.temperature)[2]
+            np.shape(self.precipitation)[2]
+            == np.shape(self.evapotranspiration)[2]
+            == np.shape(self.temperature)[2]
         ), "all meteorological input data should have the same length"
 
         assert np.shape(lake.MeteoData)[0] == np.shape(self.precipitation)[2], (

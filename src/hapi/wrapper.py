@@ -181,6 +181,39 @@ class Wrapper:
         # Model.qout = Model.qout[:-1]
 
     @staticmethod
+    def _set_maxbas_output_fields(Model: Catchment):
+        """Fill the distributed output fields after a triangular (MAXBAS) run.
+
+        ``save_results`` and ``plot_distributed_results`` read ``Qtot``,
+        ``quz_routed`` and ``qlz_translated`` for their discharge options. Only
+        :meth:`DistRRM.SpatialRouting` (the Muskingum path) used to set them, so
+        after a MAXBAS run they stayed ``None`` and every discharge option raised
+        ``TypeError: 'NoneType' object is not subscriptable``.
+
+        MAXBAS routes each cell's upper zone straight to the outlet with that
+        cell's own ``maxbas``, in place, and applies no cell-to-cell translation
+        to the lower zone. So the routed/translated fields *are* the per-cell
+        arrays, and their sum is the per-cell contribution to the outlet
+        hydrograph — ``np.nansum(Qtot[:, :, i])`` reproduces ``qout[i]``. That
+        differs from the Muskingum path, where the fields accumulate downstream
+        and ``Qtot`` at the outlet cell *is* the outlet discharge.
+
+        ``quz_routed`` / ``qlz_translated`` alias ``quz`` / ``qlz`` rather than
+        copying them: they hold the same data, and a copy would double the memory
+        of a ``(rows, cols, time_steps)`` array for no gain. They are outputs, so
+        nothing downstream writes through the alias.
+
+        Args:
+            Model: Catchment whose ``quz`` / ``qlz`` have been routed by
+                :meth:`DistRRM.DistMaxbas1`.
+        """
+        Model.quz_routed = Model.quz
+        Model.qlz_translated = Model.qlz
+        Model.Qtot = Model.qlz + Model.quz
+        # Flags the outlet-cell shortcut in `extract_discharge` as invalid here.
+        Model._maxbas_routed = True
+
+    @staticmethod
     def FW1(Model: Catchment, ll_temp=None, q_0=None):
         """Run the distributed RRM with triangular function-1 routing.
 
@@ -191,6 +224,11 @@ class Wrapper:
 
         The output discharge is computed as the sum of routed upper
         zone and unrouted lower zone discharge across all cells.
+
+        Also fills the per-cell output fields (``Qtot``, ``quz_routed``,
+        ``qlz_translated``) via :meth:`_set_maxbas_output_fields`, so the
+        discharge options of ``save_results`` / ``plot_distributed_results``
+        work on this path; see that method for the MAXBAS semantics.
 
         Args:
             Model: Catchment model object containing the distributed
@@ -204,6 +242,8 @@ class Wrapper:
         distrrm.run_lumped_model(Model)
 
         distrrm.DistMaxbas1(Model)
+
+        Wrapper._set_maxbas_output_fields(Model)
 
         qlz1 = np.array(
             [np.nansum(Model.qlz[:, :, i]) for i in range(Model.time_steps)]
@@ -283,6 +323,10 @@ class Wrapper:
         distrrm.run_lumped_model(Model)
 
         distrrm.DistMaxbas1(Model)
+
+        # Subcatchment fields only: the lake is a lumped inflow with no spatial
+        # extent, so it enters `qout` below but never `Qtot`.
+        Wrapper._set_maxbas_output_fields(Model)
 
         qlz1 = np.array(
             [

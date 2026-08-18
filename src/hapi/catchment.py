@@ -240,6 +240,11 @@ class Catchment:
         self.Qtot: np.ndarray | None = None
         self.quz_routed: np.ndarray | None = None
         self.qlz_translated: np.ndarray | None = None
+        # True once a triangular (MAXBAS) run has filled the output fields. The
+        # MAXBAS routing sends every cell straight to the outlet, so a single cell of
+        # `Qtot` is that cell's contribution, not the discharge at it — which makes
+        # the outlet-cell shortcut in `extract_discharge` invalid. See its guard.
+        self._maxbas_routed: bool = False
         self.state_variables: np.ndarray | None = None
         self.anim: matplotlib.animation.FuncAnimation | None = None
         self._animation_glyph: ArrayGlyph | None = None
@@ -1358,6 +1363,15 @@ class Catchment:
             raise ValueError("please read the gauges' table first.")
 
         if not frame_work_1:
+            if self._maxbas_routed:
+                raise ValueError(
+                    "this catchment was run with triangular (MAXBAS) routing, which "
+                    "sends every cell straight to the outlet: a single cell of Qtot is "
+                    "that cell's contribution, not the discharge at it, so reading the "
+                    "outlet cell would under-report the hydrograph. Call "
+                    "extract_discharge(frame_work_1=True) to use the basin-wide sum "
+                    "that Run.runFW1 computed."
+                )
             self.Qsim = pd.DataFrame(
                 index=self.date_index, columns=self.QGauges.columns
             )
