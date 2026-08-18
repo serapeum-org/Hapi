@@ -12,6 +12,10 @@ import numpy as np
 
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
+from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.styling.params import CellValues
+from cleopatra.styling.scaling import ColorScaling
+
 from hapi.catchment import Catchment, Lake
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_lake import HBVLake
@@ -63,7 +67,9 @@ Jiboa.read_rainfall(
 Jiboa.read_temperature(
     str(temp_path), regex_string=regex_exp, file_name_data_fmt=date_format
 )
-Jiboa.read_evapotranspiration(str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format)
+Jiboa.read_evapotranspiration(
+    str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format
+)
 
 Jiboa.read_flow_acc(str(flow_acc_path))
 Jiboa.read_flow_dir(str(flow_direction_path))
@@ -174,8 +180,10 @@ Animate the distributed results.
 plot_distributed_results animates the time series of the meteorological
 inputs and the results calculated by the model, like the total discharge,
 upper zone and lower zone discharge, and the state variables. The keyword
-arguments are forwarded to ``cleopatra.array_glyph.ArrayGlyph.animate``;
-see its docstring for the full list of supported options.
+arguments are forwarded to
+``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
+for the full list of supported options. Since cleopatra 0.30 the styling
+keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
 """
 
 plotstart = "2012-07-20"
@@ -186,18 +194,13 @@ Anim = Jiboa.plot_distributed_results(
     plotend,
     figsize=(8, 8),
     option=3,
-    background_color_threshold=160,
-    display_cell_value=False,
+    cells=CellValues(show=False, background_threshold=160),
     ticks_spacing=10,
     interval=10,
     gauges=False,
     cmap="inferno",
-    text_loc=[0.6, 0.8],
-    point_color="red",
-    color_scale="power",
-    pid_color="blue",
-    pid_size=25,
-    gamma=0.08,
+    frame_label=FrameLabel(location=[0.6, 0.8]),
+    color=ColorScaling.power(gamma=0.08),
 )
 # %%
 Path = save_to + "anim.mov"

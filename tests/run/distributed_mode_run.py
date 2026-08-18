@@ -1,5 +1,9 @@
 Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
+from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.styling.params import CellValues
+from cleopatra.styling.scaling import ColorScaling
+
 import hapi.rrm.hbv_bergestrom92 as HBV
 from hapi.catchment import Catchment
 from hapi.run import Run
@@ -81,8 +85,9 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 Animate the distributed results.
 
 plot_distributed_results forwards the keyword arguments to
-``cleopatra.array_glyph.ArrayGlyph.animate``; see its docstring for the
-full list of supported options.
+``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
+for the full list of supported options. Since cleopatra 0.30 the styling
+keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
 """
 
 plotstart = "2009-01-01"
@@ -93,17 +98,13 @@ Anim = Coello.plot_distributed_results(
     plotend,
     figsize=(9, 9),
     option=1,
-    background_color_threshold=160,
-    display_cell_value=True,
+    cells=CellValues(show=True, background_threshold=160),
     ticks_spacing=5,
     interval=200,
     gauges=True,
     cmap="inferno",
-    text_loc=[0.1, 0.2],
-    point_color="red",
-    color_scale="linear",
-    pid_color="blue",
-    pid_size=25,
+    frame_label=FrameLabel(location=[0.1, 0.2]),
+    color=ColorScaling.linear(),
 )
 
 # %%

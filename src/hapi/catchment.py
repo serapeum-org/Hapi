@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
-from cleopatra.array_glyph import ArrayGlyph
+from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
 from loguru import logger
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
@@ -39,11 +39,13 @@ from hapi.inputs import read_rasters
 
 if TYPE_CHECKING:
     import matplotlib.animation
+
     from hapi.rrm.base_model import BaseConceptualModel
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
-CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000 ** 2)
+CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000**2)
 DATE_PATTERN = r"\d{4}.\d{2}.\d{2}"
+
 
 @contextmanager
 def _name_the_path(path) -> Iterator[None]:
@@ -1356,7 +1358,9 @@ class Catchment:
             raise ValueError("please read the gauges' table first.")
 
         if not frame_work_1:
-            self.Qsim = pd.DataFrame(index=self.date_index, columns=self.QGauges.columns)
+            self.Qsim = pd.DataFrame(
+                index=self.date_index, columns=self.QGauges.columns
+            )
             if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
@@ -1596,18 +1600,25 @@ class Catchment:
             gauges (bool, optional): Whether to plot gauge locations
                 on the animation. Default is False.
             **kwargs: Additional keyword arguments passed to
-                `ArrayGlyph.animate`. Common options include:
-                title (str), interval (int),
-                cell_value_text_colors (tuple),
-                frame_label (cleopatra `FrameLabel`),
-                title_size (int), cmap (str), vmin (float),
-                vmax (float), color_scale (str), ticks_spacing (int),
-                cbar_label (str), cbar_label_size (int),
-                cbar_length (float), cbar_orientation (str),
-                display_cell_value (bool), num_size (int),
-                background_color_threshold (float), figsize (tuple).
-                See `cleopatra.array_glyph.ArrayGlyph.animate` for
-                the full list.
+                `ArrayGlyph.animate`. Loose styling keywords still
+                accepted: title (str), title_size (int), cmap (str),
+                vmin (float), vmax (float), interval (int),
+                figsize (tuple), cell_value_text_colors (tuple),
+                ticks_spacing (int), cbar_label (str),
+                cbar_label_size (int), cbar_length (float),
+                cbar_orientation (str).
+                Styling that cleopatra 0.30 moved onto typed group
+                objects is passed as those objects instead:
+                color=`ColorScaling` (was color_scale / gamma /
+                bounds / midpoint), cells=`CellValues` (was
+                display_cell_value / num_size /
+                background_color_threshold),
+                contour=`Contour` (was levels),
+                data_style=`DataStyle` (was style / hillshade),
+                frame_label=`FrameLabel` (was label_location /
+                label_color / text_loc). See
+                `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`
+                for the full list.
 
         Returns:
             matplotlib.animation.FuncAnimation: The animation object.
@@ -1665,10 +1676,12 @@ class Catchment:
         time = self.date_index[start_i:end_i]
 
         if gauges:
-            # animate expects a 3-column array: [value to display, cell row, cell column]
-            kwargs["points"] = self.GaugesTable[
-                ["id", "cell_row", "cell_col"]
-            ].to_numpy()
+            # animate expects a 3-column array: [value to display, cell row, cell column].
+            # cleopatra 0.30 stopped accepting a bare array; it must be wrapped in a
+            # PointOverlay, which also carries the marker/label styling.
+            kwargs["points"] = PointOverlay(
+                self.GaugesTable[["id", "cell_row", "cell_col"]].to_numpy()
+            )
 
         # animate iterates over the first dimension, so move the time axis to the front
         array = ArrayGlyph(np.moveaxis(arr, -1, 0))
@@ -1796,7 +1809,10 @@ class Catchment:
                     f" The result parameter takes a value between 1 and 8, given: {result}"
                 )
 
-            cube = Datacube(src, time_length=arr.shape[2])
+            # from_dataset is pyramids' named constructor for an in-memory
+            # scaffold off a template raster; the bare Datacube(src, time_length=)
+            # form it replaced is kept only as a legacy fallback upstream.
+            cube = Datacube.from_dataset(src, arr.shape[2])
             arr = np.moveaxis(arr, -1, 0)
             cube.values = arr
             cube.to_file(names)

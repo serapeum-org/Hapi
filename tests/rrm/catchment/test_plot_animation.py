@@ -84,6 +84,74 @@ def test_plot_title_override(coello_animated: Catchment):
 
 
 @pytest.mark.plot
+def test_plot_accepts_grouped_style_objects(coello_animated: Catchment):
+    """Test that cleopatra's typed style groups reach `ArrayGlyph.animate` intact.
+
+    Test scenario:
+        cleopatra 0.30 replaced the loose styling keywords (`color_scale`,
+        `display_cell_value`, `num_size`, `background_color_threshold`,
+        `text_loc`) with typed group objects, and a removed keyword now raises
+        rather than being silently ignored. `plot_distributed_results` forwards
+        `**kwargs` untouched, so this pins that the group objects pass through —
+        and that Hapi never re-introduces a loose keyword that would raise.
+    """
+    import matplotlib.animation
+    from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+    from cleopatra.styling.params import CellValues
+    from cleopatra.styling.scaling import ColorScaling
+
+    anim = coello_animated.plot_distributed_results(
+        "2009-01-01",
+        "2009-01-09",
+        option=9,
+        gauges=True,
+        interval=100,
+        color=ColorScaling.power(gamma=0.5),
+        cells=CellValues(show=True, size=8, background_threshold=None),
+        frame_label=FrameLabel(location=[0.1, 0.2], color="black"),
+        ticks_spacing=5,
+        cmap="inferno",
+    )
+    assert isinstance(anim, matplotlib.animation.FuncAnimation)
+
+
+@pytest.mark.plot
+def test_plot_gauges_are_wrapped_in_a_point_overlay(
+    coello_animated: Catchment, monkeypatch
+):
+    """Test that the gauge markers are handed to cleopatra as a `PointOverlay`.
+
+    Args:
+        coello_animated: Distributed Coello catchment with a completed run.
+        monkeypatch: Used to spy on the `ArrayGlyph.animate` call.
+
+    Test scenario:
+        cleopatra 0.30 stopped accepting a bare `(N, 3)` array for `points`, so
+        Hapi must wrap the gauge table itself. Pins the wrapping and that the
+        overlay still carries the `[id, row, col]` triples the animation draws.
+    """
+    from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
+
+    seen = {}
+    original = ArrayGlyph.animate
+
+    def spy(self, time, *args, **kwargs):
+        seen.update(kwargs)
+        return original(self, time, *args, **kwargs)
+
+    monkeypatch.setattr(ArrayGlyph, "animate", spy)
+    coello_animated.plot_distributed_results(
+        "2009-01-01", "2009-01-09", option=9, gauges=True
+    )
+
+    points = seen["points"]
+    assert isinstance(points, PointOverlay), (
+        "gauges=True must pass a PointOverlay; a bare array raises on cleopatra >=0.30"
+    )
+    assert points.points.shape[1] == 3, "points must stay [value, row, col]"
+
+
+@pytest.mark.plot
 def test_save_animation_gif(coello_animated: Catchment, tmp_path):
     """save_animation writes a non-empty gif after plotting."""
     coello_animated.plot_distributed_results("2009-01-01", "2009-01-09", option=9)

@@ -172,11 +172,15 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 - The best way to visualize a time series of distributed data is an animation. The `Catchment` object
   has a `plot_distributed_results` method which animates any of the model results.
 
-The keyword arguments are forwarded to `cleopatra.array_glyph.ArrayGlyph.animate`; see its
-documentation for the full list. The commonly used ones are `figsize`, `interval`, `cmap`,
-`ticks_spacing`, `color_scale` (`"linear"`, `"power"`, `"sym-lognorm"`, `"boundary-norm"`,
-`"midpoint"`), `display_cell_value`, `background_color_threshold`, `text_loc`, `point_color`,
-`pid_color` and `pid_size`.
+The keyword arguments are forwarded to
+`cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`; see its documentation for the full list.
+The plain ones are `figsize`, `interval`, `cmap`, `vmin`/`vmax`, `title` and `ticks_spacing`.
+cleopatra 0.30 moved the styling keywords onto typed group objects, so the colour scale is
+`color=ColorScaling.linear()` (also `.power(gamma=...)`, `.sym_log(...)`, `.midpoint(at=...)`,
+`.boundary(bounds=...)`), the cell-value labels are
+`cells=CellValues(show=True, size=..., background_threshold=...)`, and the frame time-stamp is
+`frame_label=FrameLabel(location=[...], color=...)`. The gauge markers are built by Hapi itself
+when `gauges=True`.
 
 `option` selects the variable to animate:
 
@@ -190,6 +194,10 @@ documentation for the full list. The commonly used ones are `figsize`, `interval
 | 6 | Upper zone | | |
 
 ```python
+from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.styling.params import CellValues
+from cleopatra.styling.scaling import ColorScaling
+
 plotstart = "2009-01-01"
 plotend = "2009-04-20"
 
@@ -202,12 +210,9 @@ anim = Coello.plot_distributed_results(
     ticks_spacing=5,
     interval=200,
     cmap="inferno",
-    color_scale="linear",
-    display_cell_value=True,
-    text_loc=[0.1, 0.2],
-    point_color="red",
-    pid_color="blue",
-    pid_size=25,
+    color=ColorScaling.linear(),
+    cells=CellValues(show=True),
+    frame_label=FrameLabel(location=[0.1, 0.2]),
 )
 ```
 ![Animation](../img/anim.gif)
