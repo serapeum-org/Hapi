@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from pandas import DataFrame
 from pyramids.netcdf import NetCDF
 
 from hapi.catchment import Catchment
@@ -335,4 +336,93 @@ class TestRunEquivalence:
             raster_run.Qsim.to_numpy(dtype=float),
             rtol=1e-9,
             err_msg="the per-gauge hydrographs differ between the two sources",
+        )
+
+
+@pytest.fixture(scope="module")
+def coello_muskingum_from_netcdf(
+    from_combined_netcdf: MeteoInputs, fixtures: dict
+) -> Catchment:
+    """Distributed Coello with a completed Muskingum run, driven from one NetCDF.
+
+    The `coello_muskingum_run` fixture of `test_extract_discharge_distributed`, with its three
+    raster reader calls replaced by a single `MeteoInputs.from_netcdf` load of `meteo.nc`.
+
+    Returns:
+        Catchment: Model with `Qtot` populated by the spatial routing.
+    """
+    return _run("coello-combined-netcdf", from_combined_netcdf, fixtures)
+
+
+@pytest.mark.e2e
+class TestMuskingumFromCombinedNetcdf:
+    """End-to-end Muskingum run whose drivers came from the single multi-variable NetCDF."""
+
+    def test_metrics(self, coello_muskingum_from_netcdf: Catchment):
+        """Test that the run yields finite metrics for every gauge.
+
+        Test scenario:
+            The same claim `test_extract_discharge_distributed_metrics` makes of the
+            raster-driven run: after routing, `extract_discharge` walks the gauge table and
+            fills all seven metrics with finite numbers. Driving the model from one NetCDF has
+            to reach the same place, which is what makes the loader usable rather than merely
+            correct at the array level.
+        """
+        coello = coello_muskingum_from_netcdf
+        coello.extract_discharge(calculate_metrics=True)
+
+        assert isinstance(coello.metrics, DataFrame), (
+            f"metrics should be a DataFrame, got {type(coello.metrics)}"
+        )
+        assert list(coello.metrics.index) == [
+            "RMSE",
+            "NSE",
+            "NSEhf",
+            "KGE",
+            "WB",
+            "Pearson-CC",
+            "R2",
+        ], f"metrics rows mismatch: {list(coello.metrics.index)}"
+
+        n_gauges = len(coello.GaugesTable)
+        assert coello.metrics.shape[1] == n_gauges, (
+            f"expected one metrics column per gauge ({n_gauges}), "
+            f"got {coello.metrics.shape[1]}"
+        )
+        assert np.isfinite(coello.metrics.to_numpy(dtype=float)).all(), (
+            "all metric values should be finite"
+        )
+        assert coello.Qsim.shape == (len(coello.date_index), n_gauges), (
+            f"Qsim shape mismatch: {coello.Qsim.shape}"
+        )
+
+    def test_reproduces_the_raster_run(
+        self,
+        coello_muskingum_from_netcdf: Catchment,
+        from_rasters: MeteoInputs,
+        fixtures: dict,
+    ):
+        """Test that the one-file run matches the raster-driven run exactly.
+
+        Test scenario:
+            Packing all three drivers into one file, with the caller naming which variable is
+            which, must not move the hydrograph. Compares the routed `Qtot` field and the
+            per-gauge `Qsim` against a run fed from the raster folders.
+        """
+        raster_run = _run("coello-rasters-vs-combined", from_rasters, fixtures)
+        combined = coello_muskingum_from_netcdf
+
+        np.testing.assert_allclose(
+            combined.Qtot,
+            raster_run.Qtot,
+            rtol=1e-9,
+            err_msg="the routed discharge field differs from the raster-driven run",
+        )
+        raster_run.extract_discharge(calculate_metrics=False)
+        combined.extract_discharge(calculate_metrics=False)
+        np.testing.assert_allclose(
+            combined.Qsim.to_numpy(dtype=float),
+            raster_run.Qsim.to_numpy(dtype=float),
+            rtol=1e-9,
+            err_msg="the per-gauge hydrographs differ from the raster-driven run",
         )
