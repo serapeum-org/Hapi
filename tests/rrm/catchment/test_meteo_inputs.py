@@ -54,7 +54,7 @@ def from_netcdf_files() -> MeteoInputs:
 
 
 #: One NetCDF holding all three drivers, its variables named after them. Regenerate with
-#: `tests/rrm/data/coello/make_meteo_netcdf.py`.
+#: `tests/rrm/data/coello/combine_netcdf.py`.
 COMBINED_NC = f"{NC_DIR}/meteo.nc"
 
 
