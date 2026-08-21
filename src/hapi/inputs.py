@@ -363,7 +363,7 @@ class MeteoInputs:
             KeyError: One of the named variables is not in the file.
             ValueError: The three variables do not share a shape.
         """
-        nc = NetCDF.read_file(str(path))
+        nc = NetCDF.read_file(path)
         cubes = {
             name: _cube_from_netcdf(nc, var)
             for name, var in zip(
@@ -376,19 +376,35 @@ class MeteoInputs:
     def _calendar(nc: NetCDF) -> pd.DatetimeIndex | None:
         """Return a NetCDF's decoded time axis, or None when it carries no calendar.
 
+        `NetCDF.time_stamp` decodes the axis only for a file holding a single data variable; on
+        one holding all three drivers it returns None even though the `time` array is there and
+        correct. So fall back to the raw values, which `to_netcdf` writes as nanoseconds since
+        the epoch.
+
         Args:
             nc: An open :class:`~pyramids.netcdf.NetCDF`.
 
         Returns:
-            pd.DatetimeIndex | None: The decoded stamps, or None when the file has no usable
-                time axis (`to_netcdf` writes a positional index for an undated collection).
+            pd.DatetimeIndex | None: The decoded stamps, or None when the file carries no
+                calendar -- `to_netcdf` writes a positional index for an undated collection,
+                and those values are left alone rather than misread as 1970.
         """
         try:
             stamps = nc.time_stamp
         except (AttributeError, KeyError, ValueError):
+            stamps = None
+        if stamps:
+            return pd.DatetimeIndex(list(stamps))
+
+        try:
+            values = np.asarray(nc.get_time_values())
+        except (AttributeError, KeyError, ValueError):
             return None
-        # `time_stamp` is None when the file carries no decodable calendar.
-        return pd.DatetimeIndex(list(stamps)) if stamps else None
+        # A positional index runs 0..n-1; a nanosecond epoch stamp is astronomically larger, so
+        # the magnitude tells the two apart without depending on an attribute GDAL may not expose.
+        if values.size and values.dtype.kind in "iu" and values.min() > 10**12:
+            return pd.DatetimeIndex(pd.to_datetime(values))
+        return None
 
 
 PARAMETERS_LIST = [

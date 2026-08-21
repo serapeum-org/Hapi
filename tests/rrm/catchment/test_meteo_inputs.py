@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from pyramids.dataset import Dataset, DatasetCollection
+from pyramids.netcdf import NetCDF
 
 from hapi.catchment import Catchment
 from hapi.inputs import METEO_VARIABLES, MeteoInputs
@@ -53,41 +53,20 @@ def from_netcdf_files() -> MeteoInputs:
     )
 
 
+#: One NetCDF holding all three drivers, its variables named after them. Regenerate with
+#: `tests/rrm/data/coello/make_meteo_netcdf.py`.
+COMBINED_NC = f"{NC_DIR}/meteo.nc"
+
+
 @pytest.fixture(scope="module")
-def combined_netcdf(tmp_path_factory, from_netcdf_files: MeteoInputs) -> str:
-    """Write one NetCDF holding all three drivers as separate variables.
-
-    Args:
-        tmp_path_factory: pytest's session-scoped temporary directory factory.
-        from_netcdf_files: Source cubes, so the combined file carries identical values.
-
-    Returns:
-        str: Path to a NetCDF whose ``Band_1`` / ``Band_2`` / ``Band_3`` variables are
-            precipitation / temperature / evapotranspiration.
-
-    Test scenario:
-        Hapi has no writer for this layout, so it is built from three-band rasters: one band per
-        driver, which ``to_netcdf`` turns into one variable per band.
-    """
-    folder = tmp_path_factory.mktemp("combined")
-    cubes = [getattr(from_netcdf_files, name) for name in METEO_VARIABLES]
-    for step in range(from_netcdf_files.time_steps):
-        bands = np.stack([cube[:, :, step] for cube in cubes]).astype("float32")
-        Dataset.create_from_array(
-            bands,
-            geo=(0.0, 4000.0, 0.0, bands.shape[1] * 4000.0, 0.0, -4000.0),
-            epsg=32618,
-            no_data_value=-9999.0,
-        ).to_file(str(folder / f"{step}_all_2009_1_{step + 1}.tif"))
-
-    out = folder / "all.nc"
-    DatasetCollection.from_files(
-        folder,
-        glob="*.tif",
-        date_format="%Y_%m_%d",
-        date_regex=r"\d{4}_\d{1,2}_\d{1,2}",
-    ).to_netcdf(str(out))
-    return str(out)
+def from_combined_netcdf() -> MeteoInputs:
+    """The three drivers loaded from the single multi-variable NetCDF."""
+    return MeteoInputs.from_netcdf(
+        COMBINED_NC,
+        precipitation="precipitation",
+        temperature="temperature",
+        evapotranspiration="evapotranspiration",
+    )
 
 
 def _run(model_name: str, inputs: MeteoInputs, fixtures: dict) -> Catchment:
@@ -157,7 +136,7 @@ class TestLoaders:
             )
 
     def test_combined_netcdf_agrees(
-        self, from_netcdf_files: MeteoInputs, combined_netcdf: str
+        self, from_netcdf_files: MeteoInputs, from_combined_netcdf: MeteoInputs
     ):
         """Test that one file holding all three variables loads the same cubes.
 
@@ -165,18 +144,32 @@ class TestLoaders:
             Same values, different packaging: the caller names which variable is which, and the
             result must be indistinguishable from the one-file-per-variable load.
         """
-        combined = MeteoInputs.from_netcdf(
-            combined_netcdf,
-            precipitation="Band_1",
-            temperature="Band_2",
-            evapotranspiration="Band_3",
-        )
         for name in METEO_VARIABLES:
-            np.testing.assert_allclose(
-                getattr(combined, name),
+            np.testing.assert_array_equal(
+                getattr(from_combined_netcdf, name),
                 getattr(from_netcdf_files, name),
                 err_msg=f"{name} differs when read from the combined NetCDF",
             )
+
+    def test_combined_netcdf_names_its_variables(
+        self, from_combined_netcdf: MeteoInputs
+    ):
+        """Test that the shipped file names its variables after the drivers.
+
+        Test scenario:
+            The file is a committed fixture, so its contract is fixed: a caller must be able to
+            ask for "precipitation" rather than guess at "Band_1". Also pins the calendar, which
+            `NetCDF.time_stamp` does not decode for a multi-variable file.
+        """
+        nc = NetCDF.read_file(COMBINED_NC)
+        assert sorted(nc.variable_names) == sorted(METEO_VARIABLES), (
+            f"expected the drivers as variable names, got {nc.variable_names}"
+        )
+        assert from_combined_netcdf.time is not None, (
+            "the calendar must survive the load"
+        )
+        assert str(from_combined_netcdf.time[0].date()) == "2009-01-01"
+        assert str(from_combined_netcdf.time[-1].date()) == "2009-01-10"
 
     def test_shape_and_calendar(self, from_netcdf_files: MeteoInputs):
         """Test the reported geometry and the decoded calendar.
@@ -245,15 +238,15 @@ class TestValidation:
         Test scenario:
             Variable names are caller-supplied strings, so the error has to be self-correcting.
         """
-        with pytest.raises(KeyError, match="Band_1"):
+        with pytest.raises(KeyError, match="precipitation"):
             MeteoInputs.from_netcdf(
-                f"{NC_DIR}/prec.nc",
+                COMBINED_NC,
                 precipitation="nope",
-                temperature="Band_1",
-                evapotranspiration="Band_1",
+                temperature="temperature",
+                evapotranspiration="evapotranspiration",
             )
 
-    def test_multi_variable_file_needs_an_explicit_variable(self, combined_netcdf: str):
+    def test_multi_variable_file_needs_an_explicit_variable(self):
         """Test that from_netcdf_files refuses an ambiguous file.
 
         Test scenario:
@@ -261,9 +254,7 @@ class TestValidation:
             taking the first variable would load precipitation three times.
         """
         with pytest.raises(ValueError, match="from_netcdf"):
-            MeteoInputs.from_netcdf_files(
-                combined_netcdf, combined_netcdf, combined_netcdf
-            )
+            MeteoInputs.from_netcdf_files(COMBINED_NC, COMBINED_NC, COMBINED_NC)
 
 
 class TestRunEquivalence:
