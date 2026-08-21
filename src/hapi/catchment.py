@@ -35,7 +35,7 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
 from hapi.dem import DEM
-from hapi.inputs import read_rasters
+from hapi.inputs import MeteoInputs, read_rasters
 
 if TYPE_CHECKING:
     import matplotlib.animation
@@ -491,6 +491,63 @@ class Catchment:
                 extension=extension,
             )
             logger.debug("Potential Evapotranspiration data are read successfully")
+
+    def read_meteo(
+        self, inputs: MeteoInputs, ll_temp: list | np.ndarray | None = None
+    ) -> None:
+        """Populate the three meteorological drivers from a prepared :class:`MeteoInputs`.
+
+        The single-call equivalent of `read_rainfall` + `read_temperature` +
+        `read_evapotranspiration`, for data already loaded into a
+        :class:`~hapi.inputs.MeteoInputs` -- from rasters, from one NetCDF per variable, or
+        from a single NetCDF holding all three. It sets exactly the attributes the run and
+        calibration layers read, so the model behaves identically whichever source was used.
+
+        Unlike the three raster readers, this overwrites whatever was loaded before: it is the
+        way to state the model's drivers outright rather than to fill in a missing one.
+
+        Args:
+            inputs: The three aligned cubes. Their shared shape becomes the model's grid and
+                time extent.
+            ll_temp: Long-term average temperature, as a `(rows, cols, time)` array. `None`
+                (default) derives it from `inputs.temperature` as the per-cell mean over time,
+                broadcast back across the time axis.
+
+        Returns:
+            None: The cubes are attached to the model.
+
+        Raises:
+            ValueError: `ll_temp` is given but does not match the temperature cube's shape.
+
+        Examples:
+            >>> from hapi.catchment import Catchment
+            >>> from hapi.inputs import MeteoInputs
+            >>> model = Catchment("coello", "2009-01-01", "2009-01-10")  # doctest: +SKIP
+            >>> model.read_meteo(  # doctest: +SKIP
+            ...     MeteoInputs.from_netcdf_files("prec.nc", "temp.nc", "evap.nc")
+            ... )
+        """
+        self.precipitation = inputs.precipitation
+        self.temperature = inputs.temperature
+        self.evapotranspiration = inputs.evapotranspiration
+        # no of time steps = length of time series + 1
+        self.time_steps = inputs.time_steps + 1
+
+        if ll_temp is None:
+            avg = self.temperature.mean(axis=2)
+            self.ll_temp = np.repeat(
+                avg[:, :, np.newaxis], inputs.time_steps, axis=2
+            ).astype(np.float32)
+        else:
+            ll_temp = np.asarray(ll_temp)
+            if ll_temp.shape != inputs.shape:
+                raise ValueError(
+                    f"ll_temp must match the temperature cube {inputs.shape}, "
+                    f"got {ll_temp.shape}"
+                )
+            self.ll_temp = ll_temp
+
+        logger.debug("Meteorological inputs are read successfully")
 
     def read_flow_acc(self, path: str):
         """Read flow accumulation raster and compute cell properties.

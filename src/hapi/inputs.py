@@ -18,12 +18,15 @@ from __future__ import annotations
 import datetime as dt
 import os
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
+from pyramids.netcdf import NetCDF
 
 
 def _as_datetime(value: str | int | None, fmt: str) -> dt.datetime | None:
@@ -130,6 +133,262 @@ def read_rasters(
         return Datacube.from_files([file for _, file in keyed])
 
     return Datacube.from_files(path, glob=glob)
+
+
+#: The meteorological drivers the conceptual model consumes, in the order the readers report them.
+METEO_VARIABLES = ("precipitation", "temperature", "evapotranspiration")
+
+
+def _cube_from_netcdf(nc: NetCDF, variable: str) -> np.ndarray:
+    """Read one NetCDF variable as a ``(rows, cols, time)`` cube.
+
+    Args:
+        nc: An open :class:`~pyramids.netcdf.NetCDF`.
+        variable: Name of the variable to read.
+
+    Returns:
+        np.ndarray: The variable with time moved to the last axis, matching the layout the
+            raster readers produce.
+
+    Raises:
+        KeyError: `variable` is not in the file.
+    """
+    if variable not in nc.variable_names:
+        raise KeyError(
+            f"variable {variable!r} is not in the NetCDF. Available: {nc.variable_names}."
+        )
+    values = np.asarray(nc.get_variable(variable).read_array())
+    # NetCDF stores (time, y, x); the model indexes cells then time.
+    return np.moveaxis(values, 0, -1)
+
+
+@dataclass
+class MeteoInputs:
+    r"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.
+
+    Each field is a ``(rows, cols, time)`` array — cell first, time last — which is the layout
+    :class:`~hapi.catchment.Catchment` and the conceptual models index. The three cubes must
+    agree on all three axes; that is checked on construction, because a silent mismatch surfaces
+    much later as a confusing index error inside the run loop.
+
+    No-data cells are carried through **as stored**, not converted to NaN. The distributed model
+    takes its domain from the flow-accumulation raster rather than from the meteorological
+    no-data mask, so masking here would change what the run sees.
+
+    Build one with whichever classmethod matches how the data is stored:
+
+    * :meth:`from_rasters` -- three folders of date-stamped rasters (the historical layout).
+    * :meth:`from_netcdf_files` -- one NetCDF per variable.
+    * :meth:`from_netcdf` -- a single NetCDF holding all three as separate variables.
+
+    Attributes:
+        precipitation: `(rows, cols, time)` rainfall cube.
+        temperature: `(rows, cols, time)` temperature cube.
+        evapotranspiration: `(rows, cols, time)` potential-evapotranspiration cube.
+        time: Optional calendar axis, one entry per timestep. Carried for reference and for
+            cross-checking against the model's own date index; the run itself is positional.
+
+    Examples:
+        - From three folders of rasters:
+            ```python
+            >>> from hapi.inputs import MeteoInputs
+            >>> data = MeteoInputs.from_rasters(  # doctest: +SKIP
+            ...     "data/prec", "data/temp", "data/evap", file_name_data_fmt="%Y.%m.%d"
+            ... )
+
+            ```
+        - From one NetCDF per variable:
+            ```python
+            >>> data = MeteoInputs.from_netcdf_files(  # doctest: +SKIP
+            ...     "data/prec.nc", "data/temp.nc", "data/evap.nc"
+            ... )
+
+            ```
+    """
+
+    precipitation: np.ndarray
+    temperature: np.ndarray
+    evapotranspiration: np.ndarray
+    time: pd.DatetimeIndex | None = field(default=None)
+
+    def __post_init__(self):
+        """Check the three cubes are 3D and share a shape.
+
+        Raises:
+            ValueError: A cube is not 3-dimensional, the three shapes disagree, or `time` does
+                not have one entry per timestep.
+        """
+        for name in METEO_VARIABLES:
+            cube = getattr(self, name)
+            if not isinstance(cube, np.ndarray):
+                raise TypeError(
+                    f"{name} must be a numpy array, got {type(cube).__name__}"
+                )
+            if cube.ndim != 3:
+                raise ValueError(
+                    f"{name} must be a 3D (rows, cols, time) array, got shape {cube.shape}"
+                )
+
+        shapes = {name: getattr(self, name).shape for name in METEO_VARIABLES}
+        if len(set(shapes.values())) != 1:
+            raise ValueError(f"the three cubes must share one shape, got {shapes}")
+
+        if self.time is not None and len(self.time) != self.time_steps:
+            raise ValueError(
+                f"time has {len(self.time)} entries but the cubes hold {self.time_steps} steps"
+            )
+
+    @property
+    def shape(self) -> tuple[int, int, int]:
+        """tuple[int, int, int]: The shared `(rows, cols, time)` shape."""
+        return self.precipitation.shape
+
+    @property
+    def rows(self) -> int:
+        """int: Number of grid rows."""
+        return self.shape[0]
+
+    @property
+    def cols(self) -> int:
+        """int: Number of grid columns."""
+        return self.shape[1]
+
+    @property
+    def time_steps(self) -> int:
+        """int: Number of timesteps."""
+        return self.shape[2]
+
+    @classmethod
+    def from_rasters(
+        cls,
+        precipitation: str | Path,
+        temperature: str | Path,
+        evapotranspiration: str | Path,
+        **kwargs,
+    ) -> MeteoInputs:
+        r"""Read the three drivers from folders of date-stamped rasters.
+
+        Args:
+            precipitation: Folder of rainfall rasters.
+            temperature: Folder of temperature rasters.
+            evapotranspiration: Folder of evapotranspiration rasters.
+            **kwargs: Forwarded verbatim to :func:`read_rasters` for all three folders -- e.g.
+                `regex_string`, `date`, `file_name_data_fmt`, `start`, `end`, `fmt`, `glob`.
+                They are shared deliberately: the three folders describe one model run, so a
+                per-folder date format would be a mistake rather than a feature.
+
+        Returns:
+            MeteoInputs: The three cubes plus the calendar taken from the rainfall folder.
+
+        Raises:
+            FileNotFoundError: A folder does not exist or holds no matching raster.
+            ValueError: The three folders do not yield the same shape.
+        """
+        cubes, calendar = {}, None
+        for name, path in zip(
+            METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
+        ):
+            collection = read_rasters(path, **kwargs)
+            cubes[name] = np.moveaxis(np.asarray(collection.values), 0, -1)
+            if calendar is None and collection.time is not None:
+                calendar = pd.DatetimeIndex(list(collection.time))
+        return cls(**cubes, time=calendar)
+
+    @classmethod
+    def from_netcdf_files(
+        cls,
+        precipitation: str | Path,
+        temperature: str | Path,
+        evapotranspiration: str | Path,
+        variable: str | None = None,
+    ) -> MeteoInputs:
+        """Read the three drivers from one NetCDF per variable.
+
+        Args:
+            precipitation: NetCDF holding the rainfall cube.
+            temperature: NetCDF holding the temperature cube.
+            evapotranspiration: NetCDF holding the evapotranspiration cube.
+            variable: Name of the variable to take from each file. `None` (default) takes each
+                file's only variable, which is what `DatasetCollection.to_netcdf` writes for a
+                single-band collection.
+
+        Returns:
+            MeteoInputs: The three cubes plus the calendar taken from the rainfall file.
+
+        Raises:
+            KeyError: `variable` is not in one of the files.
+            ValueError: A file holds several variables and `variable` was not given, or the
+                three files do not yield the same shape.
+        """
+        cubes, calendar = {}, None
+        for name, path in zip(
+            METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
+        ):
+            nc = NetCDF.read_file(str(path))
+            if variable is None:
+                if len(nc.variable_names) != 1:
+                    raise ValueError(
+                        f"{path} holds {len(nc.variable_names)} variables "
+                        f"({nc.variable_names}); pass variable= to pick one, or use "
+                        "from_netcdf() for a single file holding all three drivers."
+                    )
+                target = nc.variable_names[0]
+            else:
+                target = variable
+            cubes[name] = _cube_from_netcdf(nc, target)
+            if calendar is None:
+                calendar = cls._calendar(nc)
+        return cls(**cubes, time=calendar)
+
+    @classmethod
+    def from_netcdf(
+        cls,
+        path: str | Path,
+        precipitation: str,
+        temperature: str,
+        evapotranspiration: str,
+    ) -> MeteoInputs:
+        """Read all three drivers from one NetCDF holding them as separate variables.
+
+        Args:
+            path: The NetCDF file.
+            precipitation: Name of the rainfall variable inside it.
+            temperature: Name of the temperature variable.
+            evapotranspiration: Name of the evapotranspiration variable.
+
+        Returns:
+            MeteoInputs: The three cubes plus the file's calendar.
+
+        Raises:
+            KeyError: One of the named variables is not in the file.
+            ValueError: The three variables do not share a shape.
+        """
+        nc = NetCDF.read_file(str(path))
+        cubes = {
+            name: _cube_from_netcdf(nc, var)
+            for name, var in zip(
+                METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
+            )
+        }
+        return cls(**cubes, time=cls._calendar(nc))
+
+    @staticmethod
+    def _calendar(nc: NetCDF) -> pd.DatetimeIndex | None:
+        """Return a NetCDF's decoded time axis, or None when it carries no calendar.
+
+        Args:
+            nc: An open :class:`~pyramids.netcdf.NetCDF`.
+
+        Returns:
+            pd.DatetimeIndex | None: The decoded stamps, or None when the file has no usable
+                time axis (`to_netcdf` writes a positional index for an undated collection).
+        """
+        try:
+            stamps = nc.time_stamp
+        except (AttributeError, KeyError, ValueError):
+            return None
+        # `time_stamp` is None when the file carries no decodable calendar.
+        return pd.DatetimeIndex(list(stamps)) if stamps else None
 
 
 PARAMETERS_LIST = [
