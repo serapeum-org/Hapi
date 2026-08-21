@@ -13,10 +13,10 @@ from hapi.run import Run
 
 
 def test_create_catchment_instance(coello_rrm_date: list):
-    Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    assert Coello.dt == 1
-    assert isinstance(Coello.date_index, DatetimeIndex)
-    assert isinstance(Coello.routing_method, str)
+    coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+    assert coello.dt == 1
+    assert isinstance(coello.date_index, DatetimeIndex)
+    assert isinstance(coello.routing_method, str)
 
 
 class TestLumped:
@@ -25,9 +25,9 @@ class TestLumped:
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_lumped_inputs(lumped_meteo_data_path)
-        assert isinstance(Coello.data, np.ndarray)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        assert isinstance(coello.data, np.ndarray)
 
     def test_read_lumped_model(
         self,
@@ -35,11 +35,11 @@ class TestLumped:
         coello_AreaCoeff: float,
         coello_InitialCond: list,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        assert isinstance(Coello.lumped_model, HBVLumped)
-        assert isinstance(Coello.area, float)
-        assert isinstance(Coello.initial_cond, list)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        assert isinstance(coello.lumped_model, HBVLumped)
+        assert isinstance(coello.area, float)
+        assert isinstance(coello.initial_cond, list)
 
     def test_read_lumped_read_parameters(
         self,
@@ -47,10 +47,10 @@ class TestLumped:
         lumped_parameters_path: str,
         coello_Snow: int,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_parameters(lumped_parameters_path, coello_Snow)
-        assert isinstance(Coello.parameters, list)
-        assert Coello.snow == coello_Snow
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_parameters(lumped_parameters_path, coello_Snow)
+        assert isinstance(coello.parameters, list)
+        assert coello.snow == coello_Snow
 
     def test_read_discharge_gauges(
         self,
@@ -58,9 +58,9 @@ class TestLumped:
         lumped_gauges_path: str,
         coello_gauges_date_fmt: str,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
-        assert isinstance(Coello.QGauges, DataFrame)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        assert isinstance(coello.QGauges, DataFrame)
 
     def test_run_lumped(
         self,
@@ -100,15 +100,15 @@ class TestLumped:
         path = "tests/rrm/data/test-Lumped-Model_results.txt"
         if os.path.exists(path):
             os.remove(path)
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_lumped_inputs(lumped_meteo_data_path)
-        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        Coello.read_parameters(lumped_parameters_path, coello_Snow)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        coello.read_parameters(lumped_parameters_path, coello_Snow)
         # discharge gauges
-        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         Route = 1
-        Run.runLumped(Coello, Route, Routing.muskingum_v)
-        Coello.save_results(result=5, path=path)
+        Run.runLumped(coello, Route, Routing.muskingum_v)
+        coello.save_results(result=5, path=path)
 
     # # TODO: still not finished as it does not run the plotHydrograph method
     # def test_PlotHydrograph(
@@ -122,16 +122,16 @@ class TestLumped:
     #         lumped_gauges_path: str,
     #         coello_gauges_date_fmt: str,
     # ):
-    #     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    #     Coello.readLumpedInputs(lumped_meteo_data_path)
-    #     Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-    #     Coello.readParameters(lumped_parameters_path, coello_Snow)
+    #     coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+    #     coello.readLumpedInputs(lumped_meteo_data_path)
+    #     coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    #     coello.readParameters(lumped_parameters_path, coello_Snow)
     #     # discharge gauges
-    #     Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    #     coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     #     RoutingFn = Routing.muskingum_v
     #     Route = 1
-    #     Run.runLumped(Coello, Route, RoutingFn)
-    #     assert len(Coello.Qsim) == 10 and Coello.Qsim.columns.to_list() == ["q"]
+    #     Run.runLumped(coello, Route, RoutingFn)
+    #     assert len(coello.Qsim) == 10 and coello.Qsim.columns.to_list() == ["q"]
 
 
 class TestDistributed:
