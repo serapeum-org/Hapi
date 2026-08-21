@@ -72,10 +72,14 @@ class DistributedRRM:
                   factor (``tfac * 3.6``).
         """
         Model.state_variables = np.zeros(
-            [Model.rows, Model.cols, Model.time_steps, 5], dtype=np.float32
+            [Model.rows, Model.cols, Model.meteo.simulation_steps, 5], dtype=np.float32
         )
-        Model.quz = np.zeros([Model.rows, Model.cols, Model.time_steps], dtype=np.float32)
-        Model.qlz = np.zeros([Model.rows, Model.cols, Model.time_steps], dtype=np.float32)
+        Model.quz = np.zeros(
+            [Model.rows, Model.cols, Model.meteo.simulation_steps], dtype=np.float32
+        )
+        Model.qlz = np.zeros(
+            [Model.rows, Model.cols, Model.meteo.simulation_steps], dtype=np.float32
+        )
 
         for x in range(Model.rows):
             for y in range(Model.cols):
@@ -86,10 +90,10 @@ class DistributedRRM:
                         Model.qlz[x, y, :],
                         Model.state_variables[x, y, :, :],
                     ) = Model.lumped_model.simulate(
-                        prec=Model.precipitation[x, y, :],
-                        temp=Model.temperature[x, y, :],
-                        et=Model.evapotranspiration[x, y, :],
-                        ll_temp=Model.ll_temp[x, y, :],
+                        prec=Model.meteo.precipitation[x, y, :],
+                        temp=Model.meteo.temperature[x, y, :],
+                        et=Model.meteo.evapotranspiration[x, y, :],
+                        ll_temp=Model.meteo.ll_temp[x, y, :],
                         par=Model.parameters[x, y, :],
                         init_st=Model.initial_cond,
                         q_init=Model.q_init,
@@ -164,7 +168,10 @@ class DistributedRRM:
         # for all cells with 0 flow acc put the quz
         for x in range(Model.rows):  # no of rows
             for y in range(Model.cols):  # no of columns
-                if not np.isnan(Model.flow_acc_arr[x, y]) and Model.flow_acc_arr[x, y] == 0:
+                if (
+                    not np.isnan(Model.flow_acc_arr[x, y])
+                    and Model.flow_acc_arr[x, y] == 0
+                ):
                     Model.quz_routed[x, y, :] = Model.quz[x, y, :]
                     Model.qlz_translated[x, y, :] = Model.qlz[x, y, :]
 
@@ -186,9 +193,9 @@ class DistributedRRM:
                             continue
                         else:
                             # for UZ
-                            q_uzi = np.zeros(Model.time_steps)
+                            q_uzi = np.zeros(Model.meteo.simulation_steps)
                             # for lz
-                            qlzi = np.zeros(Model.time_steps)
+                            qlzi = np.zeros(Model.meteo.simulation_steps)
                             # iterate to route uz and translate lz
                             for i in range(
                                 len(Model.FDT[str(x) + "," + str(y)])
@@ -275,7 +282,9 @@ class DistributedRRM:
         """
         MAXBAS = np.nanmax(Model.parameters[:, :, -1])
         # replace novalue cells by nan
-        Model.flow_path_length_arr[Model.flow_path_length_arr == Model.no_data_value] = np.nan
+        Model.flow_path_length_arr[
+            Model.flow_path_length_arr == Model.no_data_value
+        ] = np.nan
 
         MaxFPL = np.nanmax(Model.flow_path_length_arr)
         MinFPL = np.nanmin(Model.flow_path_length_arr)

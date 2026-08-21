@@ -210,6 +210,8 @@ class MeteoInputs:
     temperature: np.ndarray
     evapotranspiration: np.ndarray
     time: pd.DatetimeIndex | None = field(default=None)
+    #: Cache behind the :attr:`ll_temp` property; not part of the constructor signature.
+    _ll_temp: np.ndarray | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self):
         """Check the three cubes are 3D and share a shape.
@@ -255,8 +257,105 @@ class MeteoInputs:
 
     @property
     def time_steps(self) -> int:
-        """int: Number of timesteps."""
+        """int: Number of timesteps the drivers cover."""
         return self.shape[2]
+
+    @property
+    def simulation_steps(self) -> int:
+        """int: `time_steps` plus one, the length the run's state arrays need.
+
+        The conceptual model carries an initial state before the first driver step, so the
+        per-cell result arrays hold one slot more than there is data.
+
+        Examples:
+            >>> import numpy as np
+            >>> from hapi.inputs import MeteoInputs
+            >>> cube = np.zeros((2, 3, 4), dtype="float32")
+            >>> data = MeteoInputs(cube, cube, cube)
+            >>> data.time_steps, data.simulation_steps
+            (4, 5)
+
+        """
+        return self.time_steps + 1
+
+    @property
+    def ll_temp(self) -> np.ndarray:
+        """np.ndarray: Long-term average temperature, `(rows, cols, time)`.
+
+        Each cell's mean over the whole record, broadcast back across the time axis -- the
+        reference the snow routine compares each step against. Derived on first use and cached,
+        since the run reads it per cell and it never changes once the cubes are set.
+
+        Assign to this to override the derived value; the replacement must match
+        :attr:`shape`.
+
+        Examples:
+            - Each cell's own mean, repeated across time:
+
+                >>> import numpy as np
+                >>> from hapi.inputs import MeteoInputs
+                >>> temp = np.arange(8, dtype="float32").reshape(1, 2, 4)
+                >>> data = MeteoInputs(temp, temp, temp)
+                >>> data.ll_temp[0, 0, :]
+                array([1.5, 1.5, 1.5, 1.5], dtype=float32)
+                >>> data.ll_temp[0, 1, :]
+                array([5.5, 5.5, 5.5, 5.5], dtype=float32)
+
+        """
+        if self._ll_temp is None:
+            avg = self.temperature.mean(axis=2)
+            self._ll_temp = np.repeat(
+                avg[:, :, np.newaxis], self.time_steps, axis=2
+            ).astype(np.float32)
+        return self._ll_temp
+
+    @ll_temp.setter
+    def ll_temp(self, value: np.ndarray) -> None:
+        """Override the derived long-term average temperature.
+
+        Args:
+            value: A `(rows, cols, time)` array matching :attr:`shape`.
+
+        Raises:
+            ValueError: `value` does not match the cubes' shape.
+        """
+        value = np.asarray(value)
+        if value.shape != self.shape:
+            raise ValueError(
+                f"ll_temp must match the cubes {self.shape}, got {value.shape}"
+            )
+        self._ll_temp = value
+
+    def validate_against(self, rows: int, cols: int) -> None:
+        """Check the cubes cover the model's grid.
+
+        The three cubes already agree with each other -- that is settled at construction. This
+        is the other half: that they agree with the grid the GIS inputs defined.
+
+        Args:
+            rows: Number of grid rows the model expects.
+            cols: Number of grid columns.
+
+        Raises:
+            ValueError: The cubes do not cover that grid.
+
+        Examples:
+            >>> import numpy as np
+            >>> from hapi.inputs import MeteoInputs
+            >>> cube = np.zeros((2, 3, 4), dtype="float32")
+            >>> data = MeteoInputs(cube, cube, cube)
+            >>> data.validate_against(2, 3)
+            >>> data.validate_against(5, 5)  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: the meteorological inputs are 2x3 but the model grid is 5x5...
+
+        """
+        if (self.rows, self.cols) != (rows, cols):
+            raise ValueError(
+                f"the meteorological inputs are {self.rows}x{self.cols} but the model grid is "
+                f"{rows}x{cols}; every input must share the catchment's grid"
+            )
 
     @classmethod
     def from_rasters(

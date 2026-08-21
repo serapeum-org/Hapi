@@ -136,7 +136,7 @@ class Calibration(Catchment):
                 only at the outlet cell. Not used in this override but
                 kept for signature compatibility. Default is False.
         """
-        self.Qsim = np.zeros((self.time_steps - 1, len(self.GaugesTable)))
+        self.Qsim = np.zeros((self.meteo.time_steps, len(self.GaugesTable)))
         # error = 0
         for i in range(len(self.GaugesTable)):
             Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
@@ -147,7 +147,7 @@ class Calibration(Catchment):
             # Qlz = self.qlz_translated[Xind,Yind,:-1]
             # self.Qsim[:,i] = Quz + Qlz
 
-            Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.time_steps - 1)
+            Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.meteo.time_steps)
 
             if factor is not None:
                 self.Qsim[:, i] = Qsim * factor[i]
@@ -214,20 +214,9 @@ class Calibration(Catchment):
         [fd_rows, fd_cols] = self.flow_dir_arr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
-        # input dimensions
-        assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-        ), ROWS_MISMATCH_ERROR
-        assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-        ), COLUMNS_MISMATCH_ERROR
-        assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] and np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
 
         # basic inputs
         # check if all inputs are included
@@ -370,20 +359,9 @@ class Calibration(Catchment):
         # [fd_rows,fd_cols] = self.flow_dir_arr.shape
         # assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
-        # input dimensions
-        assert (
-                np.shape(self.precipitation)[0] == self.rows
-                and np.shape(self.evapotranspiration)[0] == self.rows
-                and np.shape(self.temperature)[0] == self.rows
-        ), ROWS_MISMATCH_ERROR
-        assert (
-                np.shape(self.precipitation)[1] == self.cols
-                and np.shape(self.evapotranspiration)[1] == self.cols
-                and np.shape(self.temperature)[1] == self.cols
-        ), COLUMNS_MISMATCH_ERROR
-        assert (
-                np.shape(self.precipitation)[2] == np.shape(self.evapotranspiration)[2] and np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
 
         # basic inputs
         # check if all inputs are included

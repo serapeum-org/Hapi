@@ -17,6 +17,7 @@ from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
 from hapi.catchment import Catchment, Lake
+from hapi.inputs import MeteoInputs
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_lake import HBVLake
 from hapi.run import Run
@@ -61,14 +62,12 @@ Jiboa = Catchment(
 )
 regex_exp = r"\d{4}_\d{1,2}_\d{1,2}_\d{1,2}"
 date_format = "%Y_%m_%d_%H"
-Jiboa.read_rainfall(
-    str(prec_path), regex_string=regex_exp, file_name_data_fmt=date_format
-)
-Jiboa.read_temperature(
-    str(temp_path), regex_string=regex_exp, file_name_data_fmt=date_format
-)
-Jiboa.read_evapotranspiration(
-    str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format
+Jiboa.meteo = MeteoInputs.from_rasters(
+    str(prec_path),
+    str(temp_path),
+    str(evap_path),
+    regex_string=regex_exp,
+    file_name_data_fmt=date_format,
 )
 
 Jiboa.read_flow_acc(str(flow_acc_path))

@@ -22,6 +22,7 @@ import pytest
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
+from hapi.inputs import MeteoInputs
 
 CELL_SIZE = 4000.0
 """Cell size in metres used by every synthetic raster here (matches the Coello grid)."""
@@ -507,43 +508,42 @@ class TestReadFlowAcc:
 
 
 class TestDirectoryReaders:
-    """Tests for the meteorological readers that consume a directory of rasters."""
+    """Tests for the meteorological loader that consumes directories of rasters."""
 
-    @pytest.mark.parametrize(
-        "method", ["read_rainfall", "read_temperature", "read_evapotranspiration"]
-    )
-    def test_missing_directory_error_names_the_path(self, catchment, tmp_path, method):
+    def test_missing_directory_error_names_the_path(self, tmp_path):
         """Test that a missing input directory is reported with its path.
 
         Args:
             tmp_path: pytest's per-test temporary directory.
-            method: The reader under test.
 
         Test scenario:
-            pyramids reports "The path you have provided does not exist" without saying
-            which path. The hand-rolled checks this replaced named it, and a model run
-            reads several directories, so the bare message does not identify the culprit.
+            A model run reads three directories, so a bare "the path does not exist" does not
+            identify the culprit.
         """
         missing = str(tmp_path / "absent")
 
         with pytest.raises(FileNotFoundError, match=re.escape(missing)):
-            getattr(catchment, method)(missing)
+            MeteoInputs.from_rasters(
+                missing, missing, missing, file_name_data_fmt="%Y.%m.%d"
+            )
 
-    def test_empty_directory_error_names_the_path(self, catchment, tmp_path):
-        """Test that an empty input directory is also reported with its path.
+    def test_empty_directory_error_names_the_path(self, tmp_path):
+        """Test that an existing but empty input directory is also reported with its path.
 
         Args:
             tmp_path: pytest's per-test temporary directory.
 
         Test scenario:
-            pyramids raises the same bare ``FileNotFoundError`` for an existing but empty
-            directory; the path must survive into the message here too.
+            An empty folder fails differently from a missing one, and the path has to survive
+            into that message too.
         """
         empty = tmp_path / "empty"
         empty.mkdir()
 
         with pytest.raises(FileNotFoundError, match=re.escape(str(empty))):
-            catchment.read_rainfall(str(empty))
+            MeteoInputs.from_rasters(
+                str(empty), str(empty), str(empty), file_name_data_fmt="%Y.%m.%d"
+            )
 
 
 class TestReadFlowDir:

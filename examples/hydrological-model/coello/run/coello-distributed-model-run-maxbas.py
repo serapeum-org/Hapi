@@ -6,6 +6,7 @@ import pandas as pd
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
+from hapi.inputs import MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.run import Run
 
@@ -28,9 +29,9 @@ start = "2009-01-01"
 end = "2009-04-10"
 name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
-Coello.read_rainfall(PrecPath, file_name_data_fmt="%Y.%m.%d")
-Coello.read_temperature(TempPath, file_name_data_fmt="%Y.%m.%d")
-Coello.read_evapotranspiration(Evap_Path, file_name_data_fmt="%Y.%m.%d")
+Coello.meteo = MeteoInputs.from_rasters(
+    PrecPath, TempPath, Evap_Path, file_name_data_fmt="%Y.%m.%d"
+)
 
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_parameters(ParPath, Snow, maxbas=True)

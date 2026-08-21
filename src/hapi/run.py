@@ -21,6 +21,8 @@ from hapi.catchment import Lake as LakeType
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
 
+PARAMS_MISMATCH_ERROR = "the parameters must share the catchment grid"
+
 
 class Run(Catchment):
     """Run the catchment model.
@@ -73,23 +75,11 @@ class Run(Catchment):
         )
 
         # input dimensions
-        assert (
-            np.shape(self.precipitation)[0] == self.rows
-            and np.shape(self.evapotranspiration)[0] == self.rows
-            and np.shape(self.temperature)[0] == self.rows
-            and np.shape(self.parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.precipitation)[1] == self.cols
-            and np.shape(self.evapotranspiration)[1] == self.cols
-            and np.shape(self.temperature)[1] == self.cols
-            and np.shape(self.parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.precipitation)[2]
-            == np.shape(self.evapotranspiration)[2]
-            == np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
+        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
+        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
 
         # run the model
         Wrapper.RRMModel(self)
@@ -115,23 +105,11 @@ class Run(Catchment):
         )
 
         # input dimensions
-        assert (
-            np.shape(self.precipitation)[0] == self.rows
-            and np.shape(self.evapotranspiration)[0] == self.rows
-            and np.shape(self.temperature)[0] == self.rows
-            and np.shape(self.parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.precipitation)[1] == self.cols
-            and np.shape(self.evapotranspiration)[1] == self.cols
-            and np.shape(self.temperature)[1] == self.cols
-            and np.shape(self.parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.precipitation)[2]
-            == np.shape(self.evapotranspiration)[2]
-            == np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
+        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
+        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
 
         assert (
             np.shape(self.bankfull_depth)[0] == self.rows
@@ -179,25 +157,13 @@ class Run(Catchment):
         )
 
         # input dimensions
-        assert (
-            np.shape(self.precipitation)[0] == self.rows
-            and np.shape(self.evapotranspiration)[0] == self.rows
-            and np.shape(self.temperature)[0] == self.rows
-            and np.shape(self.parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.precipitation)[1] == self.cols
-            and np.shape(self.evapotranspiration)[1] == self.cols
-            and np.shape(self.temperature)[1] == self.cols
-            and np.shape(self.parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.precipitation)[2]
-            == np.shape(self.evapotranspiration)[2]
-            == np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
+        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
+        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
 
-        assert np.shape(lake.MeteoData)[0] == np.shape(self.precipitation)[2], (
+        assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
             "Lake meteorological data has to have the same length as the distributed raster data"
         )
         assert np.shape(lake.MeteoData)[1] >= 3, (
@@ -233,23 +199,11 @@ class Run(Catchment):
             AssertionError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        assert (
-            np.shape(self.precipitation)[0] == self.rows
-            and np.shape(self.evapotranspiration)[0] == self.rows
-            and np.shape(self.temperature)[0] == self.rows
-            and np.shape(self.parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.precipitation)[1] == self.cols
-            and np.shape(self.evapotranspiration)[1] == self.cols
-            and np.shape(self.temperature)[1] == self.cols
-            and np.shape(self.parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.precipitation)[2]
-            == np.shape(self.evapotranspiration)[2]
-            == np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
+        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
+        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
 
         # run the model
         Wrapper.FW1(self)
@@ -294,25 +248,13 @@ class Run(Catchment):
         # input data validation
 
         # input dimensions
-        assert (
-            np.shape(self.precipitation)[0] == self.rows
-            and np.shape(self.evapotranspiration)[0] == self.rows
-            and np.shape(self.temperature)[0] == self.rows
-            and np.shape(self.parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.precipitation)[1] == self.cols
-            and np.shape(self.evapotranspiration)[1] == self.cols
-            and np.shape(self.temperature)[1] == self.cols
-            and np.shape(self.parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.precipitation)[2]
-            == np.shape(self.evapotranspiration)[2]
-            == np.shape(self.temperature)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(self.rows, self.cols)
+        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
+        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
 
-        assert np.shape(lake.MeteoData)[0] == np.shape(self.precipitation)[2], (
+        assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
             "Lake meteorological data has to have the same length as the distributed raster data"
         )
         assert np.shape(lake.MeteoData)[1] >= 3, (

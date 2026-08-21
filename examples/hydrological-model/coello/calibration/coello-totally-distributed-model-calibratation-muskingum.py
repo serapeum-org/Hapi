@@ -32,9 +32,9 @@ name = "Coello"
 Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
 # %% Meteorological & GIS Data
 
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_evapotranspiration(Evap_Path)
+Coello.meteo = MeteoInputs.from_rasters(
+    PrecPath, TempPath, Evap_Path
+)
 
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_flow_dir(FlowDPath)

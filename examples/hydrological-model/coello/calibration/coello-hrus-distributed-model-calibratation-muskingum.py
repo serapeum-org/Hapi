@@ -33,9 +33,9 @@ start_date = "2009-01-01"
 end_date = "2011-12-31"
 name = "Coello"
 Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_evapotranspiration(Evap_Path)
+Coello.meteo = MeteoInputs.from_rasters(
+    PrecPath, TempPath, Evap_Path
+)
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_flow_dir(FlowDPath)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)

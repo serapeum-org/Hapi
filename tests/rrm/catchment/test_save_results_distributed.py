@@ -13,6 +13,7 @@ import pytest
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
+from hapi.inputs import MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
@@ -44,9 +45,9 @@ def coello_run(
         date=True,
         file_name_data_fmt="%Y.%m.%d",
     )
-    coello.read_rainfall(coello_prec_path, **kwargs)
-    coello.read_temperature(coello_temp_path, **kwargs)
-    coello.read_evapotranspiration(coello_evap_path, **kwargs)
+    coello.meteo = MeteoInputs.from_rasters(
+        coello_prec_path, coello_temp_path, coello_evap_path, **kwargs
+    )
     coello.read_flow_acc(coello_acc_path)
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)

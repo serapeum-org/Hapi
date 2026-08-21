@@ -36,6 +36,7 @@ class Catchment:
 
 ```python
 from hapi.catchment import Catchment
+from hapi.inputs import MeteoInputs
 
 start = "2009-01-01"
 end = "2011-12-31"
@@ -61,9 +62,7 @@ ParPathRun = Path + "/Parameter set-Avg/"
 - Then use the each method in the object to read the coresponding data
 
 ```python
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_evapotranspiration(Evap_Path)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 Coello.read_flow_acc(FlowAccPath)
 Coello.read_flow_dir(FlowDPath)
 ```

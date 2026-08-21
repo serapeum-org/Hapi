@@ -7,6 +7,7 @@ from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import DatetimeIndex
 
 from hapi.catchment import Catchment
+from hapi.inputs import MeteoInputs
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -166,23 +167,9 @@ class TestDistributed:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
             coello_evap_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_temperature(
             coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -190,11 +177,10 @@ class TestDistributed:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        assert isinstance(coello.precipitation, np.ndarray)
-        assert isinstance(coello.temperature, np.ndarray)
-        assert isinstance(coello.evapotranspiration, np.ndarray)
-        assert coello.precipitation.shape == (13, 14, 10)
-        assert coello.evapotranspiration.shape == (13, 14, 10)
+        assert isinstance(coello.meteo.precipitation, np.ndarray)
+        assert isinstance(coello.meteo.temperature, np.ndarray)
+        assert isinstance(coello.meteo.evapotranspiration, np.ndarray)
+        assert coello.meteo.shape == (13, 14, 10)
 
     def test_read_gis_inputs(
         self,
@@ -360,23 +346,9 @@ class TestFW1:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
             coello_evap_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_temperature(
             coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -419,23 +391,9 @@ class TestFW1:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
             coello_evap_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_temperature(
             coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -483,23 +441,9 @@ class TestMuskingum:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
             coello_evap_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_temperature(
             coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -543,23 +487,9 @@ class TestMuskingum:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
             coello_evap_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_temperature(
             coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_evapotranspiration(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,

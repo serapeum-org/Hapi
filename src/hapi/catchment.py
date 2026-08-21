@@ -203,11 +203,9 @@ class Catchment:
         self.routing_method = routing_method
         self.parameters: np.ndarray | list | None = None
         self.data: np.ndarray | None = None
-        self.precipitation: np.ndarray | None = None
-        self.time_steps: int | None = None
-        self.temperature: np.ndarray | None = None
-        self.evapotranspiration: np.ndarray | None = None
-        self.ll_temp: np.ndarray | float | None = None
+        #: The three meteorological drivers. Assign a :class:`~hapi.inputs.MeteoInputs`
+        #: built by one of its loaders; everything meteorological hangs off it.
+        self.meteo: MeteoInputs | None = None
         self.QGauges: pd.DataFrame | None = None
         self.snow: int | None = None
         self.maxbas: bool | None = None
@@ -252,302 +250,6 @@ class Catchment:
         self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
-
-    def _read_dated_rasters(
-        self,
-        path: str,
-        label: str,
-        start: str | int | None = None,
-        end: str | int | None = None,
-        fmt: str = "%Y-%m-%d",
-        regex_string: str = DATE_PATTERN,
-        date: bool = True,
-        file_name_data_fmt: str | None = None,
-        extension: str = ".tif",
-    ) -> np.ndarray:
-        r"""Read a folder of date-stamped rasters into a ``(rows, cols, time)`` array.
-
-        Shared by :meth:`read_rainfall`, :meth:`read_temperature` and :meth:`read_et`,
-        which differ only in the attribute they populate and what they derive from it.
-
-        Args:
-            path (str): Path to the folder containing the rasters.
-            label (str): Human-readable name of the variable, used in the error message.
-            start (str | int, optional): Start date to read a specific period only. If
-                not given, all rasters in the path will be read. Default is None.
-            end (str | int, optional): End date to read a specific period only. If not
-                given, all rasters in the path will be read. Default is None.
-            fmt (str, optional): Format of the given date. Default is "%Y-%m-%d".
-            regex_string (str, optional): A regex string to locate the date in the file
-                names. Default is r"\d{4}.\d{2}.\d{2}".
-            date (bool, optional): True if the number in the file name is a date.
-                Default is True.
-            file_name_data_fmt (str, optional): Date format in file names for ordered
-                reading. Default is None.
-            extension (str, optional): The extension of the files to read from the given
-                path. Default is ".tif".
-
-        Returns:
-            np.ndarray: The stacked rasters with time as the last axis.
-
-        Raises:
-            FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.from_files``.
-            TypeError: The resulting array is not a numpy ndarray.
-        """
-        # Path validation is delegated to pyramids: from_files raises
-        # FileNotFoundError for a missing *or* empty directory. Unlike the asserts
-        # these replace, that survives `python -O`. Its message does not name the
-        # offending directory, so _name_the_path re-raises with it.
-        with _name_the_path(path):
-            cube = read_rasters(
-                path,
-                # pyramids 0.50 replaced `extension` with an fnmatch `glob`.
-                glob=f"*{extension}",
-                regex_string=regex_string,
-                date=date,
-                file_name_data_fmt=file_name_data_fmt,
-                start=start,
-                end=end,
-                fmt=fmt,
-            )
-        values = np.moveaxis(cube.values, 0, -1)
-        if not isinstance(values, np.ndarray):
-            raise TypeError(f"{label} should be of type numpy array")
-
-        return values
-
-    def read_rainfall(
-        self,
-        path: str,
-        start: str | None = None,
-        end: str | None = None,
-        fmt: str = "%Y-%m-%d",
-        regex_string: str = DATE_PATTERN,
-        date: bool = True,
-        file_name_data_fmt: str | None = None,
-        extension: str = ".tif",
-    ):
-        r"""Read rainfall rasters into a 3D numpy array.
-
-        Args:
-            path (str): Path to the folder containing precipitation
-                rasters.
-            start (str, optional): Start date to read a specific
-                period only. If not given, all rasters in the path
-                will be read. Default is None.
-            end (str, optional): End date to read a specific period
-                only. If not given, all rasters in the path will be
-                read. Default is None.
-            fmt (str, optional): Format of the given date. Default
-                is "%Y-%m-%d".
-            regex_string (str, optional): A regex string to locate
-                the date in the file names. Default is
-                r"\d{4}.\d{2}.\d{2}".
-            date (bool, optional): True if the number in the file
-                name is a date. Default is True.
-            file_name_data_fmt (str, optional): Date format in file
-                names for ordered reading. Default is None.
-            extension (str, optional): The extension of the files to
-                read from the given path. Default is ".tif".
-
-        Raises:
-            FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.from_files``.
-            TypeError: The resulting precipitation array is not a numpy ndarray.
-        """
-        if self.precipitation is None:
-            self.precipitation = self._read_dated_rasters(
-                path,
-                "Prec",
-                start=start,
-                end=end,
-                fmt=fmt,
-                regex_string=regex_string,
-                date=date,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
-            )
-            # no of time steps =length of time series +1
-            self.time_steps = self.precipitation.shape[2] + 1
-
-            logger.debug("Rainfall data are read successfully")
-
-    def read_temperature(
-        self,
-        path: str,
-        ll_temp: list | np.ndarray | None = None,
-        start: str | int | None = None,
-        end: str | int | None = None,
-        fmt: str = "%Y-%m-%d",
-        regex_string: str = DATE_PATTERN,
-        date: bool = True,
-        file_name_data_fmt: str | None = None,
-        extension: str = ".tif",
-    ):
-        r"""Read temperature rasters into a 3D numpy array.
-
-        Args:
-            path (str): Path to the folder containing temperature
-                rasters.
-            ll_temp (list | np.ndarray, optional): Long-term
-                average temperature array. If None, it is computed
-                from the mean of the temperature data. Default is
-                None.
-            start (str, optional): Start date to read a specific
-                period only. If not given, all rasters in the path
-                will be read. Default is None.
-            end (str, optional): End date to read a specific period
-                only. If not given, all rasters in the path will be
-                read. Default is None.
-            fmt (str, optional): Format of the given date. Default
-                is "%Y-%m-%d".
-            regex_string (str, optional): A regex string to locate
-                the date in the file names. Default is
-                r"\d{4}.\d{2}.\d{2}".
-            date (bool, optional): True if the number in the file
-                name is a date. Default is True.
-            file_name_data_fmt (str, optional): Date format in file
-                names for ordered reading. Default is None.
-            extension (str, optional): The extension of the files to
-                read from the given path. Default is ".tif".
-
-        Raises:
-            FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.from_files``.
-            TypeError: The resulting array is not a numpy ndarray.
-        """
-        if self.temperature is None:
-            self.temperature = self._read_dated_rasters(
-                path,
-                "Temperature",
-                start=start,
-                end=end,
-                fmt=fmt,
-                regex_string=regex_string,
-                date=date,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
-            )
-
-            if ll_temp is None:
-                self.ll_temp = np.zeros_like(self.temperature, dtype=np.float32)
-                avg = self.temperature.mean(axis=2)
-                for i in range(self.temperature.shape[0]):
-                    for j in range(self.temperature.shape[1]):
-                        self.ll_temp[i, j, :] = avg[i, j]
-
-            logger.debug("Temperature data are read successfully")
-
-    def read_evapotranspiration(
-        self,
-        path: str,
-        start: str | None = None,
-        end: str | None = None,
-        fmt: str = "%Y-%m-%d",
-        regex_string: str = DATE_PATTERN,
-        date: bool = True,
-        file_name_data_fmt: str | None = None,
-        extension: str = ".tif",
-    ):
-        r"""Read evapotranspiration rasters into a 3D numpy array.
-
-        Args:
-            path (str): Path to the folder containing
-                evapotranspiration rasters.
-            start (str, optional): Start date to read a specific
-                period only. If not given, all rasters in the path
-                will be read. Default is None.
-            end (str, optional): End date to read a specific period
-                only. If not given, all rasters in the path will be
-                read. Default is None.
-            fmt (str, optional): Format of the given date. Default
-                is "%Y-%m-%d".
-            regex_string (str, optional): A regex string to locate
-                the date in the file names. Default is
-                r"\d{4}.\d{2}.\d{2}".
-            date (bool, optional): True if the number in the file
-                name is a date. Default is True.
-            file_name_data_fmt (str, optional): Date format in file
-                names for ordered reading. Default is None.
-            extension (str, optional): The extension of the files to
-                read from the given path. Default is ".tif".
-
-        Raises:
-            FileNotFoundError: The directory does not exist or holds no matching
-                rasters. Raised by ``DatasetCollection.from_files``.
-            TypeError: The resulting array is not a numpy ndarray.
-        """
-        if self.evapotranspiration is None:
-            self.evapotranspiration = self._read_dated_rasters(
-                path,
-                "Evapotranspiration",
-                start=start,
-                end=end,
-                fmt=fmt,
-                regex_string=regex_string,
-                date=date,
-                file_name_data_fmt=file_name_data_fmt,
-                extension=extension,
-            )
-            logger.debug("Potential Evapotranspiration data are read successfully")
-
-    def read_meteo(
-        self, inputs: MeteoInputs, ll_temp: list | np.ndarray | None = None
-    ) -> None:
-        """Populate the three meteorological drivers from a prepared :class:`MeteoInputs`.
-
-        The single-call equivalent of `read_rainfall` + `read_temperature` +
-        `read_evapotranspiration`, for data already loaded into a
-        :class:`~hapi.inputs.MeteoInputs` -- from rasters, from one NetCDF per variable, or
-        from a single NetCDF holding all three. It sets exactly the attributes the run and
-        calibration layers read, so the model behaves identically whichever source was used.
-
-        Unlike the three raster readers, this overwrites whatever was loaded before: it is the
-        way to state the model's drivers outright rather than to fill in a missing one.
-
-        Args:
-            inputs: The three aligned cubes. Their shared shape becomes the model's grid and
-                time extent.
-            ll_temp: Long-term average temperature, as a `(rows, cols, time)` array. `None`
-                (default) derives it from `inputs.temperature` as the per-cell mean over time,
-                broadcast back across the time axis.
-
-        Returns:
-            None: The cubes are attached to the model.
-
-        Raises:
-            ValueError: `ll_temp` is given but does not match the temperature cube's shape.
-
-        Examples:
-            >>> from hapi.catchment import Catchment
-            >>> from hapi.inputs import MeteoInputs
-            >>> model = Catchment("coello", "2009-01-01", "2009-01-10")  # doctest: +SKIP
-            >>> model.read_meteo(  # doctest: +SKIP
-            ...     MeteoInputs.from_netcdf_files("prec.nc", "temp.nc", "evap.nc")
-            ... )
-        """
-        self.precipitation = inputs.precipitation
-        self.temperature = inputs.temperature
-        self.evapotranspiration = inputs.evapotranspiration
-        # no of time steps = length of time series + 1
-        self.time_steps = inputs.time_steps + 1
-
-        if ll_temp is None:
-            avg = self.temperature.mean(axis=2)
-            self.ll_temp = np.repeat(
-                avg[:, :, np.newaxis], inputs.time_steps, axis=2
-            ).astype(np.float32)
-        else:
-            ll_temp = np.asarray(ll_temp)
-            if ll_temp.shape != inputs.shape:
-                raise ValueError(
-                    f"ll_temp must match the temperature cube {inputs.shape}, "
-                    f"got {ll_temp.shape}"
-                )
-            self.ll_temp = ll_temp
-
-        logger.debug("Meteorological inputs are read successfully")
 
     def read_flow_acc(self, path: str):
         """Read flow accumulation raster and compute cell properties.
@@ -1096,18 +798,17 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def read_lumped_inputs(self, path: str, ll_temp: list | np.ndarray | None = None):
+    def read_lumped_inputs(self, path: str):
         """Read meteorological inputs for lumped mode.
 
-        Reads precipitation, evapotranspiration, temperature, and
-        optionally long-term average temperature from a CSV file.
+        The lumped counterpart of :class:`~hapi.inputs.MeteoInputs`, which carries the
+        distributed drivers: the lumped model works on one column per variable rather than a
+        grid, and `Wrapper.Lumped` reads the long-term average straight out of the fourth
+        column.
 
         Args:
             path (str): Path to the input CSV file. Data columns must
                 be in the order [date, precipitation, ET, Temp].
-            ll_temp (list | np.ndarray, optional): Average
-                long-term temperature. If None, it is calculated as
-                the mean of the temperature column. Default is None.
 
         Raises:
             ValueError: If the input data does not have 3 or 4
@@ -1115,10 +816,6 @@ class Catchment:
         """
         self.data = pd.read_csv(path, header=0, delimiter=",", index_col=0)
         self.data = self.data.values
-
-        if ll_temp is None:
-            # self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
-            self.ll_temp = self.data[:, 2].mean()
 
         if not (np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4):
             raise ValueError(
@@ -1452,7 +1149,7 @@ class Catchment:
                 # Qlz = np.reshape(self.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
                 # q_sim = Quz + Qlz
 
-                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.time_steps - 1)
+                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.meteo.time_steps)
                 if factor is not None:
                     self.Qsim.loc[:, gauge_id] = q_sim * factor[i]
                 else:
@@ -1484,7 +1181,7 @@ class Catchment:
         elif frame_work_1 or only_outlet:
             self.Qsim = pd.DataFrame(index=self.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            q_sim = np.reshape(self.qout, self.time_steps - 1)
+            q_sim = np.reshape(self.qout, self.meteo.time_steps)
             self.Qsim.loc[:, gauge_id] = q_sim
 
             if calculate_metrics:
@@ -1728,13 +1425,13 @@ class Catchment:
             arr = self.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
-            arr = self.precipitation[:, :, start_i:end_i]
+            arr = self.meteo.precipitation[:, :, start_i:end_i]
             title = "Precipitation"
         elif option == 10:
-            arr = self.evapotranspiration[:, :, start_i:end_i]
+            arr = self.meteo.evapotranspiration[:, :, start_i:end_i]
             title = "ET"
         elif option == 11:
-            arr = self.temperature[:, :, start_i:end_i]
+            arr = self.meteo.temperature[:, :, start_i:end_i]
             title = "Temperature"
         else:
             raise ValueError("Plotting options are from 1 to 11")

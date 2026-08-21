@@ -1,4 +1,4 @@
-"""Tests for ``MeteoInputs`` and the ``Catchment.read_meteo`` entry point.
+"""Tests for ``MeteoInputs``, which owns the model's meteorological drivers.
 
 The three loaders must be interchangeable: a distributed Muskingum run driven from folders of
 rasters, from one NetCDF per variable, or from a single NetCDF holding all three, has to produce
@@ -8,13 +8,16 @@ against the raster-driven run that ``test_extract_discharge_distributed`` alread
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from pandas import DataFrame
+from pyramids.dataset import Dataset, DatasetCollection
 from pyramids.netcdf import NetCDF
 
 from hapi.catchment import Catchment
-from hapi.inputs import METEO_VARIABLES, MeteoInputs
+from hapi.inputs import METEO_VARIABLES, MeteoInputs, read_rasters
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
@@ -79,7 +82,7 @@ def _run(model_name: str, inputs: MeteoInputs, fixtures: dict) -> Catchment:
         spatial_resolution="Distributed",
         temporal_resolution="Daily",
     )
-    coello.read_meteo(inputs)
+    coello.meteo = inputs
     coello.read_flow_acc(fixtures["acc"])
     coello.read_flow_dir(fixtures["fd"])
     coello.read_parameters(fixtures["parameters"], False)
@@ -206,6 +209,23 @@ class TestValidation:
                 evapotranspiration=from_netcdf_files.evapotranspiration,
             )
 
+    def test_non_array_cube_rejected(self, from_netcdf_files: MeteoInputs):
+        """Test that a cube which is not a numpy array is refused.
+
+        Args:
+            from_netcdf_files: A valid set of cubes to fill the other two fields.
+
+        Test scenario:
+            Handing in a nested list is an easy slip, and it would only fail much later at the
+            first `[x, y, :]` index inside the run loop.
+        """
+        with pytest.raises(TypeError, match="must be a numpy array"):
+            MeteoInputs(
+                precipitation=[[1.0, 2.0], [3.0, 4.0]],
+                temperature=from_netcdf_files.temperature,
+                evapotranspiration=from_netcdf_files.evapotranspiration,
+            )
+
     def test_non_3d_cube_rejected(self, from_netcdf_files: MeteoInputs):
         """Test that a 2D array is refused.
 
@@ -261,54 +281,59 @@ class TestValidation:
 class TestRunEquivalence:
     """Tests that the model runs identically whichever source fed it."""
 
-    def test_read_meteo_matches_the_raster_readers(
-        self,
-        from_rasters: MeteoInputs,
-        fixtures: dict,
-        coello_prec_path: str,
-        coello_temp_path: str,
-        coello_evap_path: str,
-        raster_kwargs: dict,
-    ):
-        """Test that read_meteo sets the same state as the three raster readers.
+    def test_ll_temp_is_the_per_cell_mean_broadcast(self, from_rasters: MeteoInputs):
+        """Test the long-term average temperature derived on MeteoInputs.
 
         Test scenario:
-            `read_meteo` has to be a drop-in for `read_rainfall` + `read_temperature` +
-            `read_evapotranspiration`, including the derived `time_steps` and `ll_temp` that
-            the run depends on.
+            `ll_temp` is the reference the snow routine compares each step against, and it
+            moved off Catchment when MeteoInputs took ownership. It is each cell's mean over
+            the whole record, repeated across the time axis, so every step of a cell holds the
+            same number.
         """
-        via_readers = Catchment(
-            "readers",
-            fixtures["start"],
-            fixtures["end"],
-            spatial_resolution="Distributed",
-            temporal_resolution="Daily",
-        )
-        via_readers.read_rainfall(coello_prec_path, **raster_kwargs)
-        via_readers.read_temperature(coello_temp_path, **raster_kwargs)
-        via_readers.read_evapotranspiration(coello_evap_path, **raster_kwargs)
+        expected = from_rasters.temperature.mean(axis=2)
 
-        via_structure = Catchment(
-            "structure",
-            fixtures["start"],
-            fixtures["end"],
-            spatial_resolution="Distributed",
-            temporal_resolution="Daily",
-        )
-        via_structure.read_meteo(from_rasters)
+        ll_temp = from_rasters.ll_temp
 
-        for name in METEO_VARIABLES:
-            np.testing.assert_array_equal(
-                getattr(via_structure, name),
-                getattr(via_readers, name),
-                err_msg=f"{name} differs between read_meteo and the raster readers",
-            )
-        assert via_structure.time_steps == via_readers.time_steps
+        assert ll_temp.shape == from_rasters.shape, (
+            f"ll_temp must match the cubes {from_rasters.shape}, got {ll_temp.shape}"
+        )
         np.testing.assert_allclose(
-            via_structure.ll_temp,
-            via_readers.ll_temp,
-            err_msg="ll_temp must match what read_temperature derives",
+            ll_temp[:, :, 0],
+            expected,
+            rtol=1e-6,
+            err_msg="ll_temp must hold each cell's mean over time",
         )
+        np.testing.assert_allclose(
+            ll_temp[:, :, -1],
+            ll_temp[:, :, 0],
+            rtol=1e-12,
+            err_msg="ll_temp must be constant along the time axis",
+        )
+        assert from_rasters.ll_temp is ll_temp, (
+            "ll_temp should be cached, not recomputed"
+        )
+
+    def test_ll_temp_can_be_overridden(self, from_netcdf_files: MeteoInputs):
+        """Test that a caller-supplied long-term average replaces the derived one.
+
+        Test scenario:
+            The reader this replaced accepted an `ll_temp` argument and then silently ignored
+            it. Assigning to the property must actually take effect, and must reject an array
+            that does not match the cubes.
+        """
+        # a private copy: the fixture is module-scoped and later tests run on it
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+        override = np.full(inputs.shape, 7.5, dtype="float32")
+
+        inputs.ll_temp = override
+
+        np.testing.assert_array_equal(inputs.ll_temp, override)
+        with pytest.raises(ValueError, match="ll_temp must match"):
+            inputs.ll_temp = override[:, :, :3]
 
     def test_netcdf_run_reproduces_the_raster_run(
         self, from_rasters: MeteoInputs, from_netcdf_files: MeteoInputs, fixtures: dict
@@ -425,4 +450,291 @@ class TestMuskingumFromCombinedNetcdf:
             raster_run.Qsim.to_numpy(dtype=float),
             rtol=1e-9,
             err_msg="the per-gauge hydrographs differ from the raster-driven run",
+        )
+
+
+@pytest.fixture(scope="function")
+def numbered_rasters(tmp_path) -> Path:
+    """Write four rasters whose names carry a plain index, not a date.
+
+    Args:
+        tmp_path: pytest's per-test temporary directory.
+
+    Returns:
+        Path: Folder holding ``0_par.tif`` ... ``3_par.tif``, each filled with its own index.
+    """
+    for i in range(4):
+        Dataset.create_from_array(
+            np.full((3, 3), float(i), dtype="float32"),
+            geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
+            epsg=32618,
+            no_data_value=-9999.0,
+        ).to_file(str(tmp_path / f"{i}_par.tif"))
+    return tmp_path
+
+
+class TestReadRasters:
+    """Tests for ``read_rasters``, the adapter over ``DatasetCollection.from_files``."""
+
+    def test_numeric_mode_rejects_a_name_without_a_number(self, tmp_path):
+        """Test that numeric ordering fails loudly when a name carries no index.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The numeric mode sorts on an integer pulled out of each file name. A file matching
+            the glob but carrying no number cannot be placed in that order, and silently
+            dropping or appending it would scramble the cube.
+        """
+        Dataset.create_from_array(
+            np.zeros((2, 2), dtype="float32"),
+            geo=(0.0, 4000.0, 0.0, 8000.0, 0.0, -4000.0),
+            epsg=32618,
+            no_data_value=-9999.0,
+        ).to_file(str(tmp_path / "no_index_here.tif"))
+
+        with pytest.raises(ValueError, match="matched no number"):
+            read_rasters(tmp_path, regex_string=r"\d+", date=False)
+
+    def test_numeric_range_that_excludes_everything_raises(self, numbered_rasters):
+        """Test that an index window matching no file is reported, not returned empty.
+
+        Args:
+            numbered_rasters: Folder of index-named rasters.
+
+        Test scenario:
+            The Rhine model selects a season with integer bounds. Bounds outside the available
+            indices must fail here rather than hand back an empty collection that only breaks
+            later, inside the run loop.
+        """
+        with pytest.raises(FileNotFoundError, match=r"index within \[90, 99\]"):
+            read_rasters(
+                numbered_rasters, regex_string=r"\d+", date=False, start=90, end=99
+            )
+
+    def test_numeric_range_selects_an_inclusive_window(self, numbered_rasters):
+        """Test that integer bounds keep both endpoints.
+
+        Args:
+            numbered_rasters: Folder of index-named rasters.
+
+        Test scenario:
+            Each raster holds its own index as its pixel value, so the recovered values name
+            exactly which files survived the filter.
+        """
+        collection = read_rasters(
+            numbered_rasters, regex_string=r"\d+", date=False, start=1, end=2
+        )
+
+        recovered = [
+            int(collection.values[i].flat[0]) for i in range(collection.time_length)
+        ]
+        assert recovered == [1, 2], (
+            f"expected indices 1 and 2 inclusive, got {recovered}"
+        )
+
+    def test_unordered_read_when_no_date_format_is_given(self, numbered_rasters):
+        """Test the fallback branch that reads a folder without ordering it.
+
+        Args:
+            numbered_rasters: Folder of index-named rasters.
+
+        Test scenario:
+            With ``date=True`` but no ``file_name_data_fmt`` there is nothing to sort on, and
+            pyramids rejects an ordered read in that state. The reader falls back to a plain
+            unordered one, which is what ``Inputs.prepare_inputs`` relies on.
+        """
+        collection = read_rasters(numbered_rasters, date=True, file_name_data_fmt=None)
+
+        assert collection.time_length == 4, (
+            f"expected all 4 rasters, got {collection.time_length}"
+        )
+
+
+class TestValidateAgainst:
+    """Tests for ``MeteoInputs.validate_against``."""
+
+    def test_accepts_the_matching_grid(self, from_netcdf_files: MeteoInputs):
+        """Test that the cubes' own grid passes silently.
+
+        Args:
+            from_netcdf_files: The Coello drivers, a 13x14 grid.
+
+        Test scenario:
+            The check must be silent when the meteorology covers the catchment, which is the
+            normal case on every run.
+        """
+        from_netcdf_files.validate_against(13, 14)
+
+    @pytest.mark.parametrize(
+        "rows, cols", [(12, 14), (13, 15), (1, 1)], ids=["rows", "cols", "both"]
+    )
+    def test_rejects_a_grid_the_cubes_do_not_cover(
+        self, from_netcdf_files: MeteoInputs, rows: int, cols: int
+    ):
+        """Test that a grid mismatch is refused and both shapes are named.
+
+        Args:
+            from_netcdf_files: The Coello drivers, a 13x14 grid.
+            rows: Row count to check against.
+            cols: Column count to check against.
+
+        Test scenario:
+            This replaced seven copies of a bare assert in ``run.py`` and ``calibration.py``.
+            The message has to name the meteorology's grid *and* the model's, since the point
+            is telling the user which input is the odd one out.
+        """
+        with pytest.raises(ValueError, match="13x14") as exc:
+            from_netcdf_files.validate_against(rows, cols)
+
+        assert f"{rows}x{cols}" in str(exc.value), (
+            f"the error should name the model grid {rows}x{cols}, got: {exc.value}"
+        )
+
+
+class TestVariableSelectionAndCalendar:
+    """Tests for the NetCDF loaders' variable picking and calendar decoding."""
+
+    def test_explicit_variable_name_is_used_for_every_file(self):
+        """Test that ``variable=`` overrides the single-variable default.
+
+        Test scenario:
+            The per-variable loader normally takes each file's only variable. Naming one
+            explicitly must be honoured -- here the same file is passed three times with its
+            real variable name, so all three cubes come back identical.
+        """
+        inputs = MeteoInputs.from_netcdf_files(
+            f"{NC_DIR}/prec.nc",
+            f"{NC_DIR}/prec.nc",
+            f"{NC_DIR}/prec.nc",
+            variable="Band_1",
+        )
+
+        np.testing.assert_array_equal(inputs.precipitation, inputs.temperature)
+        np.testing.assert_array_equal(inputs.precipitation, inputs.evapotranspiration)
+
+    def test_file_without_a_calendar_loads_with_time_none(self, tmp_path):
+        """Test that a positional time axis is left alone rather than read as 1970.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            ``to_netcdf`` writes a positional index for an undated collection. Those values are
+            small integers; decoding them as nanoseconds since the epoch would silently date the
+            run to 1970, so the loader must report no calendar instead.
+        """
+        for i in range(2):
+            Dataset.create_from_array(
+                np.full((3, 3), float(i), dtype="float32"),
+                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
+                epsg=32618,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"plain_{i}.tif"))
+        undated = str(tmp_path / "undated.nc")
+        DatasetCollection.from_files(tmp_path, glob="*.tif").to_netcdf(undated)
+
+        inputs = MeteoInputs.from_netcdf_files(
+            undated, undated, undated, variable="Band_1"
+        )
+
+        assert inputs.time is None, (
+            f"a positional axis carries no calendar, got {inputs.time}"
+        )
+
+
+class TestCalendarFallbacks:
+    """Tests for ``MeteoInputs._calendar``, which decodes a file's time axis."""
+
+    class _Stub:
+        """Minimal stand-in for a NetCDF, exposing only what ``_calendar`` reads."""
+
+        def __init__(self, time_stamp, time_values):
+            """Store the two accessors' behaviour.
+
+            Args:
+                time_stamp: Value to return, or an exception instance to raise.
+                time_values: Value to return, or an exception instance to raise.
+            """
+            self._time_stamp = time_stamp
+            self._time_values = time_values
+
+        @property
+        def time_stamp(self):
+            """Return the decoded stamps, or raise what the test asked for."""
+            if isinstance(self._time_stamp, Exception):
+                raise self._time_stamp
+            return self._time_stamp
+
+        def get_time_values(self):
+            """Return the raw time values, or raise what the test asked for."""
+            if isinstance(self._time_values, Exception):
+                raise self._time_values
+            return self._time_values
+
+    def test_decoded_stamps_are_preferred(self):
+        """Test that a file whose ``time_stamp`` decodes is used as-is.
+
+        Test scenario:
+            The single-variable case, where pyramids already hands back date strings; the raw
+            values should not be consulted at all.
+        """
+        stub = self._Stub(["2009-01-01", "2009-01-02"], np.array([0, 1]))
+
+        calendar = MeteoInputs._calendar(stub)
+
+        assert calendar is not None, "decoded stamps should produce a calendar"
+        assert str(calendar[0].date()) == "2009-01-01", f"got {calendar[0]}"
+
+    @pytest.mark.parametrize(
+        "raised",
+        [AttributeError("no such attribute"), KeyError("time"), ValueError("bad axis")],
+        ids=["attribute", "key", "value"],
+    )
+    def test_falls_back_to_raw_values_when_time_stamp_raises(self, raised: Exception):
+        """Test that a failing ``time_stamp`` falls through to the raw values.
+
+        Args:
+            raised: The exception ``time_stamp`` raises.
+
+        Test scenario:
+            A multi-variable file returns None from ``time_stamp``, but older or odder files
+            raise instead. Either way the nanosecond stamps are still readable, so the calendar
+            must survive rather than being lost.
+        """
+        epoch_ns = np.array([1230768000000000000, 1230854400000000000], dtype="int64")
+        stub = self._Stub(raised, epoch_ns)
+
+        calendar = MeteoInputs._calendar(stub)
+
+        assert calendar is not None, (
+            f"{type(raised).__name__} should fall back, not give up"
+        )
+        assert str(calendar[0].date()) == "2009-01-01", f"got {calendar[0]}"
+
+    def test_returns_none_when_both_accessors_fail(self):
+        """Test that a file with no readable time axis yields no calendar.
+
+        Test scenario:
+            The calendar is optional on ``MeteoInputs``, so an unreadable axis must degrade to
+            None rather than propagate an error out of a loader.
+        """
+        stub = self._Stub(AttributeError("none"), ValueError("none"))
+
+        assert MeteoInputs._calendar(stub) is None, (
+            "an unreadable axis should give no calendar"
+        )
+
+    def test_positional_index_is_not_read_as_a_date(self):
+        """Test that small integers are treated as an index, not as epoch nanoseconds.
+
+        Test scenario:
+            ``to_netcdf`` writes 0..n-1 for an undated collection. Passing those to a datetime
+            decoder would silently date every run to 1970-01-01.
+        """
+        stub = self._Stub(None, np.arange(5, dtype="int64"))
+
+        assert MeteoInputs._calendar(stub) is None, (
+            "a positional index carries no calendar"
         )
