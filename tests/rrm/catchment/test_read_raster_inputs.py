@@ -42,7 +42,7 @@ Exact integer comparison keeps it.
 """
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def write_raster(tmp_path):
     """Return a factory that writes a small GeoTIFF and yields its path.
 
@@ -76,7 +76,7 @@ def write_raster(tmp_path):
     return _write
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def acc_for_shape(write_raster):
     """Return a factory that writes a valid flow-accumulation raster of a given shape.
 
@@ -97,7 +97,7 @@ def acc_for_shape(write_raster):
     return _acc
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def acc_for(acc_for_shape):
     """Return a factory giving an accumulation raster matching another raster's grid.
 
@@ -116,7 +116,7 @@ def acc_for(acc_for_shape):
     return _acc
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def catchment() -> Catchment:
     """Return a minimal distributed Catchment with a two-day window.
 

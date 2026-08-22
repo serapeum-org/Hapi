@@ -106,7 +106,7 @@ def _build_coello(
     return coello
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def coello_with_lake_inputs(
     coello_start_date: str,
     coello_end_date: str,
@@ -141,7 +141,7 @@ def coello_with_lake_inputs(
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def coello_no_lake(
     coello_start_date: str,
     coello_end_date: str,

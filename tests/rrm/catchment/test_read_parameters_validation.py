@@ -18,7 +18,7 @@ MAXBAS_BANDS = 11
 MUSKINGUM_BANDS = 12
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def distributed(coello_start_date: str, coello_end_date: str) -> Catchment:
     """Provide an empty distributed daily catchment.
 
@@ -266,7 +266,7 @@ class TestReadParametersLumped:
 class TestReadLumpedInputs:
     """Tests for the column handling in `Catchment.read_lumped_inputs`."""
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def three_column_csv(self, tmp_path) -> str:
         """Write a lumped input file without the long-term average column.
 

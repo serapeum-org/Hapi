@@ -195,7 +195,7 @@ class TestLoaders:
 class TestPerVariableOverrides:
     """Tests for reading folders that do not share a naming convention."""
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def mixed_convention(self, tmp_path) -> dict:
         """Write three folders: CHIRPS-style rainfall, ERA5-style temperature and ET.
 
@@ -748,7 +748,7 @@ class TestMuskingumFromCombinedNetcdf:
         )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def numbered_rasters(tmp_path) -> Path:
     """Write four rasters whose names carry a plain index, not a date.
 

@@ -25,7 +25,7 @@ class _LakeStub:
         self.MeteoData = np.ones((time_steps, columns))
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def spied_wrapper(monkeypatch) -> dict:
     """Replace every `Wrapper` entry point with a spy that records its call.
 
@@ -48,7 +48,7 @@ def spied_wrapper(monkeypatch) -> dict:
     return calls
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def coello_loaded(
     coello_start_date: str,
     coello_end_date: str,

@@ -39,7 +39,7 @@ def _network(
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def square_network() -> FlowNetwork:
     """A 2x2 network with one cell outside the domain.
 
@@ -294,7 +294,7 @@ class TestD8Codes:
 class TestAccValCaching:
     """Tests for the caching of `FlowNetwork.acc_val` and its invalidation."""
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def network(self) -> FlowNetwork:
         """Build a small network with four distinct accumulation levels.
 

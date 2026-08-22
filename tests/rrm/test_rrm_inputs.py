@@ -313,7 +313,7 @@ class TestPrepareInputs:
 class TestVectorTypes:
     """Tests that Hapi speaks pyramids' vector type and no longer needs geopandas."""
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def basin(self):
         """Return a single-polygon catchment as a plain GeoDataFrame.
 
@@ -326,7 +326,7 @@ class TestVectorTypes:
             crs="EPSG:4326",
         )
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def utm_parameter_set(self, tmp_path, coello_basin, monkeypatch) -> str:
         """Write the 18 HBV parameter rasters in UTM 18N over the Coello basin.
 

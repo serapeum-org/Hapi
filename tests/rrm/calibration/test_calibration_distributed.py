@@ -21,7 +21,7 @@ from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 CANNED_RESULT = (0.42, np.arange(12, dtype="float64"))
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def stub_optimizer(monkeypatch) -> dict:
     """Replace `HSapi` with a stub that records its call and returns a canned result.
 
@@ -51,7 +51,7 @@ def stub_optimizer(monkeypatch) -> dict:
     return seen
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def gauged_calibration(
     coello_start_date: str,
     coello_end_date: str,
@@ -448,7 +448,7 @@ class _SpatialVarStub:
         return self.Par3d
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def spatial_var_stub(gauged_calibration: Calibration) -> _SpatialVarStub:
     """Provide a SpatialVarFun stand-in sized to the catchment grid.
 
