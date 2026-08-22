@@ -136,6 +136,15 @@ class Calibration(Catchment):
                 only at the outlet cell. Not used in this override but
                 kept for signature compatibility. Default is False.
         """
+        if self._maxbas_routed:
+            raise ValueError(
+                "this catchment was run with triangular (MAXBAS) routing, which sends "
+                "every cell straight to the outlet: a single cell of Qtot is that cell's "
+                "contribution, not the discharge at it, so reading the gauge cells would "
+                "under-report every hydrograph and the objective function would be "
+                "calibrated against the wrong signal."
+            )
+
         self.Qsim = np.zeros((self.meteo.time_steps, len(self.GaugesTable)))
         # error = 0
         for i in range(len(self.GaugesTable)):
