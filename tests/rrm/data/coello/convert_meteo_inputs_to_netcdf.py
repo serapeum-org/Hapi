@@ -1,13 +1,15 @@
-r"""Pack one driver's folder of dated rasters into a single NetCDF.
+r"""Pack the three meteorological driver folders into one NetCDF each.
 
-Thin wrapper over `MeteoInputs.raster_folder_to_netcdf`, which does the reading, the
-ordering and the write. This file only holds the paths and prints what came out, so it can
-be stepped through cell by cell.
+Thin wrapper over `MeteoInputs.raster_folder_to_netcdf`, which does the reading, the ordering
+and the write. This file only holds the paths and prints what came out, so it can be stepped
+through cell by cell.
 
-Set `VAR` to the folder to convert. The Coello fixtures are named
-`0_Temp_..._2009.01.01.tif` -- a `%Y.%m.%d` date with dots. Rhine's are
-`0_Temp_ECMWF_ERA_Interim_C_daily_1979_1_1.tif`: underscores, and a month and day that are
-not zero-padded, so both the regex and the format have to say so (see RHINE below).
+Produces `prec.nc`, `temp.nc` and `evap.nc`. `combine_netcdf.py` is the next step: it merges
+those three into `meteo.nc`.
+
+The Coello fixtures are named `0_Tair2m_..._2009.01.01.tif` -- a `%Y.%m.%d` date with dots.
+Rhine's are `0_Temp_ECMWF_ERA_Interim_C_daily_1979_1_1.tif`: underscores, and a month and day
+that are not zero-padded, so both the regex and the format have to say so (see RHINE below).
 """
 
 from __future__ import annotations
@@ -15,13 +17,16 @@ from __future__ import annotations
 # %% Setup
 import numpy as np
 
-from hapi.inputs import MeteoInputs
+from hapi.inputs import METEO_VARIABLES, MeteoInputs
 
 root_dir = r"tests/rrm/data/coello"
 
-VAR = "temp"
-raster_dir = f"{root_dir}/{VAR}"
-out_path = f"{root_dir}/{VAR}.nc"
+#: driver -> the folder of rasters holding it. The NetCDF takes the folder's own name.
+FOLDERS = {
+    "precipitation": "prec",
+    "temperature": "temp",
+    "evapotranspiration": "evap",
+}
 
 # How the date sits in the file names. The format is inferred from the names when omitted,
 # which covers `2009.01.01` and `20090101`; pass it for anything else.
@@ -41,41 +46,38 @@ END = None
 # has none -- which is why it is not the library default.
 GDAL_ENV = {"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "GDAL_PAM_ENABLED": "NO"}
 
-# %% Convert
+READER = dict(
+    regex_string=DATE_REGEX,
+    file_name_data_fmt=DATE_FMT,
+    start=START,
+    end=END,
+    gdal_env=GDAL_ENV,
+)
+
+raster_dirs = {name: f"{root_dir}/{folder}" for name, folder in FOLDERS.items()}
+
+# %% Convert each driver
 # Refuses to write if the rasters yield no calendar, or if they come back out of order.
-written = MeteoInputs.raster_folder_to_netcdf(
-    raster_dir,
-    out_path,
-    regex_string=DATE_REGEX,
-    file_name_data_fmt=DATE_FMT,
-    start=START,
-    end=END,
-    gdal_env=GDAL_ENV,
-)
-print(f"written    : {written}")
+written = {
+    name: MeteoInputs.raster_folder_to_netcdf(
+        raster_dirs[name], f"{root_dir}/{folder}.nc", **READER
+    )
+    for name, folder in FOLDERS.items()
+}
+for name, path in written.items():
+    print(f"packed     : {name:20s} -> {path.name}")
 
-# %% Read it back and check it round-trips to the cube the rasters hold
-# The same file three times: the loader wants one per driver, and only one was packed here.
-packed = MeteoInputs.from_netcdf_files(written, written, written)
+# %% Read the three back and check they round-trip to the cubes the rasters hold
+packed = MeteoInputs.from_netcdf_files(*written.values())
+from_rasters = MeteoInputs.from_rasters(*raster_dirs.values(), **READER)
+
 print(f"shape      : {packed.shape}  (rows, cols, time)")
-print(f"steps      : {packed.time_steps}")
-
-from_rasters = MeteoInputs.from_rasters(
-    raster_dir,
-    raster_dir,
-    raster_dir,
-    regex_string=DATE_REGEX,
-    file_name_data_fmt=DATE_FMT,
-    start=START,
-    end=END,
-    gdal_env=GDAL_ENV,
-)
-identical = np.array_equal(packed.temperature, from_rasters.temperature, equal_nan=True)
 print(f"calendar   : {packed.time[0]:%Y-%m-%d} -> {packed.time[-1]:%Y-%m-%d}")
-print(f"round-trip : identical to the rasters: {identical}")
+for name in METEO_VARIABLES:
+    identical = np.array_equal(
+        getattr(packed, name), getattr(from_rasters, name), equal_nan=True
+    )
+    print(f"  {name:20s} identical to its rasters: {identical}")
 
-# %% Combine three of them into one file, once each driver has been packed
-# MeteoInputs.combine_netcdf_files(
-#     f"{root_dir}/prec.nc", f"{root_dir}/temp.nc", f"{root_dir}/evap.nc",
-#     f"{root_dir}/meteo.nc",
-# )
+# %% Next: merge the three into one file
+# python tests/rrm/data/coello/combine_netcdf.py
