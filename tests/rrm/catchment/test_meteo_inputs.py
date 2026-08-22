@@ -334,6 +334,63 @@ class TestRunEquivalence:
         with pytest.raises(ValueError, match="ll_temp must match"):
             inputs.ll_temp = override[:, :, :3]
 
+    def test_replacing_temperature_drops_the_cached_ll_temp(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that reassigning `temperature` recomputes the long-term average.
+
+        Test scenario:
+            `ll_temp` is derived from `temperature` and cached on first read. Swapping the
+            temperature cube afterwards must invalidate that cache, otherwise the snow
+            routine keeps comparing against the mean of the array that was thrown away and
+            the melt threshold silently belongs to the wrong record.
+        """
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+        stale = inputs.ll_temp
+        shifted = from_netcdf_files.temperature + 10.0
+
+        inputs.temperature = shifted
+
+        assert inputs.ll_temp is not stale, (
+            "the cached ll_temp must not survive a temperature replacement"
+        )
+        np.testing.assert_allclose(
+            inputs.ll_temp[:, :, 0],
+            shifted.mean(axis=2),
+            rtol=1e-6,
+            err_msg="ll_temp must be recomputed from the replacement cube",
+        )
+
+    def test_replacing_temperature_before_any_read_leaves_the_cache_empty(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that the invalidation hook is inert when nothing was cached yet.
+
+        Test scenario:
+            The `__setattr__` hook only has work to do once `ll_temp` has been materialised.
+            Assigning `temperature` on a fresh instance must take the no-op path and still
+            leave the first `ll_temp` read describing the new cube.
+        """
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+        shifted = from_netcdf_files.temperature - 4.0
+
+        inputs.temperature = shifted
+
+        np.testing.assert_allclose(
+            inputs.ll_temp[:, :, 0],
+            shifted.mean(axis=2),
+            rtol=1e-6,
+            err_msg="the first ll_temp read must describe the assigned cube",
+        )
+
     def test_netcdf_run_reproduces_the_raster_run(
         self, from_rasters: MeteoInputs, from_netcdf_files: MeteoInputs, fixtures: dict
     ):
