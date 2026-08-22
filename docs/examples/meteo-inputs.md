@@ -25,6 +25,13 @@ pip install earthlens            # CHIRPS and the other keyless backends
 pip install earthlens[ecmwf]     # adds cdsapi, required for the ERA5 download below
 ```
 
+Inside this repository the same dependency is the `inputs` extra, wired to the `inputs` pixi environment (the `dev`
+environment on top of `earthlens[ecmwf]`), so the downloads below run without a separate install:
+
+```shell
+pixi run -e inputs python examples/hydrological-model/coello/prepare-Input-data/00-coello-data_download.py
+```
+
 earthlens exposes a single facade, `EarthLens`, that routes the request to the backend named by `data_source`. It
 covers the sources Hapi used to handle, among many others:
 

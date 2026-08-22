@@ -265,9 +265,16 @@ cmd = "twine upload --non-interactive --repository pypi dist/*"
 depends-on = ["build-dist"]
 description = "Build and upload package to PyPI"
 
+[tool.pixi.feature.inputs.pypi-dependencies]
+# Installs the project's `inputs` extra (earthlens[ecmwf]) so the download examples in
+# docs/examples/meteo-inputs.md can actually run. Kept out of `dev` because earthlens pulls
+# six sub-distributions plus cdsapi, which the model itself never imports.
+hapi-nile = { path = ".", editable = true, extras = ["inputs"] }
+
 [tool.pixi.environments]
 default = { solve-group = "default" }
 dev = { features = ["dev"], solve-group = "default" }
+inputs = { features = ["inputs", "dev"], solve-group = "inputs" }
 docs = { features = ["docs"], solve-group = "docs" }
 py311 = { features = ["py311", "dev"], solve-group = "py311" }
 py312 = { features = ["py312", "dev"], solve-group = "py312" }
