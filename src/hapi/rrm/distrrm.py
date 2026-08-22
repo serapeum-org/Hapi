@@ -192,7 +192,9 @@ class DistributedRRM:
                     Model.qlz_translated[x, y, :] = Model.qlz[x, y, :]
 
         # remaining cells
-        for j in range(1, len(Model.flow_network.acc_val)):
+        # Read once: this is the routing inner loop, and `acc_val` scans the whole grid.
+        acc_val = Model.flow_network.acc_val
+        for j in range(1, len(acc_val)):
             # TODO parallelize
             # all cells with the same acc_val can run at the same time
             for x in range(Model.flow_network.rows):  # no of rows
@@ -200,8 +202,7 @@ class DistributedRRM:
                     # check from total flow accumulation
                     if (
                         not np.isnan(Model.flow_network.flow_acc_arr[x, y])
-                        and Model.flow_network.flow_acc_arr[x, y]
-                        == Model.flow_network.acc_val[j]
+                        and Model.flow_network.flow_acc_arr[x, y] == acc_val[j]
                     ):
                         if (
                             Model.routing_method != "Muskingum"

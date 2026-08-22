@@ -27,6 +27,7 @@ import os
 import re
 import warnings
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 from typing import Any
 
@@ -413,9 +414,25 @@ class FlowNetwork:
         """
         return int(np.count_nonzero(~np.isnan(self.flow_acc_arr)))
 
-    @property
+    def __setattr__(self, name: str, value) -> None:
+        """Drop the cached `acc_val` when the array it is derived from is replaced.
+
+        Args:
+            name: Attribute being set.
+            value: New value.
+        """
+        if name == "flow_acc_arr":
+            self.__dict__.pop("acc_val", None)
+        object.__setattr__(self, name, value)
+
+    @cached_property
     def acc_val(self) -> list[int]:
         """list[int]: The distinct accumulation values inside the domain, ascending.
+
+        Cached: `SpatialRouting` reads this once per `(accumulation level, row, column)`, so
+        recomputing the `np.unique` on every read costs `(n_acc - 1) x rows x cols` scans of
+        the whole grid -- unnoticeable on the 13x14 test catchment and hours on a real one.
+        Replacing `flow_acc_arr` clears the cache.
 
         The maximum is expected to equal :attr:`no_elem`, or one less depending on whether
         the outlet is counted; :meth:`from_rasters` logs a mismatch at DEBUG rather than

@@ -287,3 +287,66 @@ class TestD8Codes:
         assert set(D8_CODES) == {1, 2, 4, 8, 16, 32, 64, 128}, (
             f"expected the eight ESRI D8 codes, got {sorted(D8_CODES)}"
         )
+
+
+class TestAccValCaching:
+    """Tests for the caching of `FlowNetwork.acc_val` and its invalidation."""
+
+    @pytest.fixture(scope="function")
+    def network(self) -> FlowNetwork:
+        """Build a small network with four distinct accumulation levels.
+
+        Returns:
+            FlowNetwork: Grid whose in-domain cells accumulate 0, 1, 2 and 3.
+        """
+        acc = np.array([[0.0, 1.0], [2.0, 3.0]])
+        return FlowNetwork(acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0)
+
+    def test_repeated_reads_return_the_same_object(self, network: FlowNetwork):
+        """Test that `acc_val` is computed once rather than on every read.
+
+        Test scenario:
+            `SpatialRouting` reads this once per (accumulation level, row, column), so a
+            property that reruns `np.unique` over the whole grid turns the routing loop into
+            `(n_acc - 1) x rows x cols` full-grid scans. On the 13x14 test catchment that is
+            invisible; on a 100x100 catchment it dominates the run. Identity across reads is
+            what distinguishes a cached value from a recomputed one.
+        """
+        first = network.acc_val
+
+        assert network.acc_val is first, (
+            "acc_val must be cached; recomputing it makes the routing loop quadratic"
+        )
+
+    def test_replacing_the_accumulation_array_clears_the_cache(
+        self, network: FlowNetwork
+    ):
+        """Test that the cache does not outlive the array it was derived from.
+
+        Test scenario:
+            Caching is only safe if it invalidates. Masking the two highest cells must be
+            reflected on the next read, not served from the value computed beforehand.
+        """
+        stale = network.acc_val
+        assert stale == [0, 1, 2, 3], f"unexpected starting levels: {stale}"
+
+        network.flow_acc_arr = np.array([[0.0, 1.0], [np.nan, np.nan]])
+
+        assert network.acc_val == [0, 1], (
+            f"the cache must be rebuilt from the new array, got {network.acc_val}"
+        )
+
+    def test_the_cached_value_still_matches_the_uncached_computation(
+        self, network: FlowNetwork
+    ):
+        """Test that caching did not change what `acc_val` reports.
+
+        Test scenario:
+            The values are truncated before de-duplication, and the domain mask excludes
+            NaN. Caching must preserve both, so compare against the computation done inline.
+        """
+        expected = np.unique(_to_int_codes(network.flow_acc_arr)).tolist()
+
+        assert network.acc_val == expected, (
+            f"Expected {expected}, got {network.acc_val}"
+        )
