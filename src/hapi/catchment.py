@@ -129,19 +129,18 @@ class Catchment:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
         self.temporal_resolution = temporal_resolution.lower()
         # assuming the default dt is 1 day
-        if temporal_resolution.lower() == "daily":
+        # Only the two resolutions the check above admits: an `else` here would be
+        # unreachable, and the one that used to sit here set a conversion factor but no
+        # `date_index`, which reads as support for sub-daily steps that does not exist.
+        # Adding one (q mm, area km2: 1/(3.6*f)) means widening the check above too.
+        if self.temporal_resolution == "daily":
             self.dt = 1  # 24
             self.conversion_factor = CONVERSION_FACTOR * 1
             self.date_index = pd.date_range(self.start, self.end, freq="D")
-        elif temporal_resolution.lower() == "hourly":
+        else:
             self.dt = 1  # 24
             self.conversion_factor = CONVERSION_FACTOR * 1 / 24
             self.date_index = pd.date_range(self.start, self.end, freq="h")
-        else:
-            # TODO calculate the temporal resolution factor
-            # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
-            # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-            self.conversion_factor = 24
 
         self.routing_method = routing_method
         self.parameters: np.ndarray | list | None = None
