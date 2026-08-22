@@ -11,6 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 from pandas import DataFrame
 from pyramids.dataset import Dataset, DatasetCollection
@@ -258,7 +259,7 @@ class TestValidation:
         Test scenario:
             Variable names are caller-supplied strings, so the error has to be self-correcting.
         """
-        with pytest.raises(KeyError, match="precipitation"):
+        with pytest.raises(KeyError, match="nope"):
             MeteoInputs.from_netcdf(
                 COMBINED_NC,
                 precipitation="nope",
@@ -371,9 +372,11 @@ class TestRunEquivalence:
         """Test that the invalidation hook is inert when nothing was cached yet.
 
         Test scenario:
-            The `__setattr__` hook only has work to do once `ll_temp` has been materialised.
-            Assigning `temperature` on a fresh instance must take the no-op path and still
-            leave the first `ll_temp` read describing the new cube.
+            The invalidation hook only has work to do once `ll_temp` has been materialised.
+            On a fresh instance it must take the no-op path -- which is only observable by
+            inspecting the cache itself: asserting on `ll_temp` alone passes with the hook
+            deleted, because a never-populated cache and a correctly-cleared one look the
+            same from outside.
         """
         inputs = MeteoInputs(
             precipitation=from_netcdf_files.precipitation,
@@ -381,15 +384,20 @@ class TestRunEquivalence:
             evapotranspiration=from_netcdf_files.evapotranspiration,
         )
         shifted = from_netcdf_files.temperature - 4.0
+        assert inputs._ll_temp is None, "nothing should be cached before the first read"
 
         inputs.temperature = shifted
 
+        assert inputs._ll_temp is None, (
+            "the cache must still be empty; the hook has nothing to clear yet"
+        )
         np.testing.assert_allclose(
             inputs.ll_temp[:, :, 0],
             shifted.mean(axis=2),
             rtol=1e-6,
             err_msg="the first ll_temp read must describe the assigned cube",
         )
+        assert inputs._ll_temp is not None, "reading it must populate the cache"
 
     def test_replacing_a_cube_with_a_different_shape_is_refused(
         self, from_netcdf_files: MeteoInputs
@@ -688,16 +696,26 @@ class TestValidateAgainst:
     """Tests for ``MeteoInputs.validate_against``."""
 
     def test_accepts_the_matching_grid(self, from_netcdf_files: MeteoInputs):
-        """Test that the cubes' own grid passes silently.
+        """Test that the cubes' own grid passes and the call is a pure check.
 
         Args:
             from_netcdf_files: The Coello drivers, a 13x14 grid.
 
         Test scenario:
             The check must be silent when the meteorology covers the catchment, which is the
-            normal case on every run.
+            normal case on every run -- and it must only check: a validator that reshaped or
+            replaced a cube would change the run it was supposed to be guarding.
         """
-        from_netcdf_files.validate_against(13, 14)
+        before = {name: getattr(from_netcdf_files, name) for name in METEO_VARIABLES}
+
+        assert from_netcdf_files.validate_against(13, 14) is None, (
+            "validate_against reports by raising; it must not return a verdict to ignore"
+        )
+
+        for name, cube in before.items():
+            assert getattr(from_netcdf_files, name) is cube, (
+                f"{name} must be left exactly as it was"
+            )
 
     def test_accepts_a_matching_calendar(self, from_netcdf_files: MeteoInputs):
         """Test that a date_index the drivers span passes.
@@ -755,14 +773,20 @@ class TestValidateAgainst:
     def test_calendar_check_is_skipped_when_no_dates_are_given(
         self, from_netcdf_files: MeteoInputs
     ):
-        """Test that omitting date_index leaves the grid check alone.
+        """Test that omitting date_index checks the grid and nothing else.
 
         Args:
-            from_netcdf_files: The Coello drivers.
+            from_netcdf_files: The Coello drivers, which carry a 2009 calendar.
 
         Test scenario:
-            A caller with no calendar of its own must still be able to check the grid.
+            A caller with no calendar of its own must still be able to check the grid. This
+            is only meaningful if a calendar that *would* be rejected passes when omitted --
+            otherwise it is the same test as the one above with a different name.
         """
+        wrong_period = pd.date_range("1999-01-01", periods=10, freq="D")
+        with pytest.raises(ValueError, match="cover"):
+            from_netcdf_files.validate_against(13, 14, wrong_period)
+
         from_netcdf_files.validate_against(13, 14)
 
     @pytest.mark.parametrize(
@@ -794,23 +818,62 @@ class TestValidateAgainst:
 class TestVariableSelectionAndCalendar:
     """Tests for the NetCDF loaders' variable picking and calendar decoding."""
 
-    def test_explicit_variable_name_is_used_for_every_file(self):
-        """Test that ``variable=`` overrides the single-variable default.
+    def test_explicit_variable_name_is_used_for_every_file(
+        self, from_combined_netcdf: MeteoInputs
+    ):
+        """Test that `variable=` picks the named variable out of a multi-variable file.
 
         Test scenario:
-            The per-variable loader normally takes each file's only variable. Naming one
-            explicitly must be honoured -- here the same file is passed three times with its
-            real variable name, so all three cubes come back identical.
+            Passing a single-variable file cannot tell the two branches apart -- the explicit
+            name and the "take the only one" default read the same array. The combined file
+            holds three, so naming one is the only way it can be read at all, and the cube
+            that comes back identifies which name was honoured.
         """
         inputs = MeteoInputs.from_netcdf_files(
-            f"{NC_DIR}/prec.nc",
-            f"{NC_DIR}/prec.nc",
-            f"{NC_DIR}/prec.nc",
-            variable="Band_1",
+            COMBINED_NC, COMBINED_NC, COMBINED_NC, variable="temperature"
         )
 
-        np.testing.assert_array_equal(inputs.precipitation, inputs.temperature)
-        np.testing.assert_array_equal(inputs.precipitation, inputs.evapotranspiration)
+        for name in METEO_VARIABLES:
+            np.testing.assert_array_equal(
+                getattr(inputs, name),
+                from_combined_netcdf.temperature,
+                err_msg=f"{name} should hold the named variable, not the file's first",
+            )
+
+    def test_a_multi_variable_file_without_a_name_is_refused(self):
+        """Test that the default branch reports the ambiguity instead of guessing.
+
+        Test scenario:
+            The counterpart to naming a variable: with three in the file there is no "only
+            one" to take, so the loader must say so and list what it found rather than pick
+            the first.
+        """
+        with pytest.raises(ValueError, match="pass variable=") as exc_info:
+            MeteoInputs.from_netcdf_files(COMBINED_NC, COMBINED_NC, COMBINED_NC)
+
+        assert "temperature" in str(exc_info.value), (
+            f"the error should list the variables it found, got: {exc_info.value}"
+        )
+
+    def test_an_unknown_variable_name_names_what_is_available(self):
+        """Test that asking for a variable the file lacks lists the ones it has.
+
+        Test scenario:
+            A typo in the variable name is the likely cause, so the message has to show the
+            real names rather than only echoing the one that failed.
+        """
+        with pytest.raises(KeyError) as exc_info:
+            MeteoInputs.from_netcdf_files(
+                COMBINED_NC, COMBINED_NC, COMBINED_NC, variable="nope"
+            )
+
+        message = str(exc_info.value)
+        assert "nope" in message, (
+            f"the error should name the missing variable: {message}"
+        )
+        assert "temperature" in message, (
+            f"the error should list the available variables: {message}"
+        )
 
     def test_file_without_a_calendar_loads_with_time_none(self, tmp_path):
         """Test that a positional time axis is left alone rather than read as 1970.
