@@ -59,6 +59,88 @@ def _as_datetime(value: str | int | None, fmt: str) -> dt.datetime | None:
     return None if value is None else dt.datetime.strptime(str(value), fmt)
 
 
+def _infer_date_format(sample: str) -> str | None:
+    """Derive a `strptime` format from a date already matched out of a file name.
+
+    `from_files` needs an explicit format before it will sort by date, but the caller has
+    already said where the date sits via `regex_string`. Rather than leave the read
+    unordered when no format is given, rebuild one from the shape of what the regex matched:
+    the digit runs give the fields, the characters between them are kept verbatim.
+
+    Only the unambiguous layouts are inferred. `1990.02.03` is `%Y.%m.%d` because a
+    four-digit leading run can only be a year; `03.02.1990` is refused because day-first and
+    month-first cannot be told apart from the digits alone.
+
+    Args:
+        sample: The substring `regex_string` matched, e.g. `"2009.01.01"` or `"20090101"`.
+
+    Returns:
+        str | None: The format, or None when the layout is ambiguous or unrecognised.
+
+    Examples:
+        >>> _infer_date_format("2009.01.01")
+        '%Y.%m.%d'
+        >>> _infer_date_format("2009_01_01")
+        '%Y_%m_%d'
+        >>> _infer_date_format("20090101")
+        '%Y%m%d'
+        >>> _infer_date_format("01.01.2009") is None
+        True
+    """
+    parts = re.findall(r"\d+|\D+", sample)
+    widths = tuple(len(p) for p in parts if p.isdigit())
+
+    if widths == (8,):
+        return "%Y%m%d"
+    if widths != (4, 2, 2):
+        # (2, 2, 4) and friends cannot be resolved: nothing in the digits says whether the
+        # leading pair is the day or the month, and guessing wrong reorders the whole cube.
+        return None
+    if any("%" in p for p in parts if not p.isdigit()):
+        return None
+
+    directives = iter(("%Y", "%m", "%d"))
+    return "".join(next(directives) if p.isdigit() else p for p in parts)
+
+
+def _infer_date_format_from_folder(
+    path: str | Path, glob: str, regex_string: str
+) -> str | None:
+    """Sample a folder's file names and infer the date format they carry.
+
+    Args:
+        path: Folder holding the rasters.
+        glob: `fnmatch` pattern selecting them.
+        regex_string: Where the date sits in each name.
+
+    Returns:
+        str | None: The inferred `strptime` format, or None when no name matched the regex
+            or the layout is ambiguous -- in which case the read falls back to unordered and
+            a warning says so.
+    """
+    for file in Datacube.from_files(path, glob=glob).files:
+        match = re.search(regex_string, Path(file).name)
+        if match is None:
+            continue
+        inferred = _infer_date_format(match.group())
+        if inferred is not None:
+            return inferred
+        warnings.warn(
+            f"could not tell the date layout of {match.group()!r} in {Path(file).name!r} "
+            f"apart (day-first and month-first look alike), so {path} is read in file-name "
+            "order rather than by date; pass file_name_data_fmt to say which it is",
+            stacklevel=3,
+        )
+        return None
+
+    warnings.warn(
+        f"regex {regex_string!r} matched no file name in {path}, so it is read in file-name "
+        "order rather than by date; pass regex_string and file_name_data_fmt to order it",
+        stacklevel=3,
+    )
+    return None
+
+
 def read_rasters(
     path: str | Path,
     *,
@@ -78,23 +160,27 @@ def read_rasters(
 
     Three orderings are supported, matching Hapi's public reader arguments:
 
-    * **By date** (`date=True` with a `file_name_data_fmt`) -- delegated wholesale to
+    * **By date** (`date=True`) -- delegated wholesale to
       `from_files(date_format=..., date_regex=...)`, which sorts and builds the time axis.
+      When no `file_name_data_fmt` is given it is inferred from the first name `regex_string`
+      matches, so the default ordering is chronological rather than lexicographic.
     * **By number** (`date=False`) -- for names carrying a plain index, e.g.
       `01_Par_RFCF.tif` or `1000_Temp_..._1981_9_27.tif`. `from_files` sorts only by date, and
       its default order is lexicographic, which puts `10_` before `2_` whenever the index is
       not zero-padded. So the files are resolved through `from_files`, sorted on the integer in
       each name, and handed back to `from_files` as an explicit sequence -- which it keeps in
       the given order.
-    * **Unordered** (`date=True`, no format) -- a plain `from_files(path, glob=...)`.
+    * **Unordered** -- only when `date=True` and the layout cannot be inferred (an ambiguous
+      day-first/month-first date, or a regex that matches no name). Both warn.
 
     Args:
         path: Folder holding the rasters.
         glob: :mod:`fnmatch` pattern selecting them. Defaults to `"*.tif"`.
         regex_string: Where the date (or the index, when `date=False`) sits in each name.
         date: Whether the matched value is a date. `False` selects the numeric ordering.
-        file_name_data_fmt: `strptime` format of the date in the names. Without it there is
-            nothing to sort dates on, so the read is unordered.
+        file_name_data_fmt: `strptime` format of the date in the names. Inferred from the
+            names themselves when omitted; pass it for a layout that cannot be told apart
+            from the digits alone, such as a day-first `03.02.1990`.
         start: Inclusive lower bound -- a date string parsed with `fmt`, or an integer index
             when `date=False`.
         end: Inclusive upper bound; see `start`.
@@ -108,6 +194,14 @@ def read_rasters(
             excluded every file.
         ValueError: `regex_string` matched no number in a file name (numeric ordering only).
     """
+    if date and file_name_data_fmt is None:
+        # The caller said where the date is; that is enough to sort on. Reading the folder
+        # unordered here used to hand back a lexicographic cube -- `10_precip_2009.01.11`
+        # in slot 1 -- with no error and no time axis, so neither the length check nor the
+        # calendar check could see it, and the run silently paired each day's rainfall with
+        # the wrong date.
+        file_name_data_fmt = _infer_date_format_from_folder(path, glob, regex_string)
+
     if date and file_name_data_fmt is not None:
         return Datacube.from_files(
             path,
