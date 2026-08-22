@@ -66,7 +66,12 @@ class TestTemporalResolution:
         assert model.date_index.freqstr.lower() == expected_freq.lower(), (
             f"Expected frequency {expected_freq}, got {model.date_index.freqstr}"
         )
+        # `dt` is hard-coded to 1 in both branches, so it carries no resolution information;
+        # what distinguishes them is the conversion factor, asserted below.
         assert model.dt == 1, f"Expected dt of 1, got {model.dt}"
+        assert model.temporal_resolution == resolution.lower(), (
+            f"the resolution must be stored lowercased, got {model.temporal_resolution}"
+        )
 
     def test_unknown_resolution_is_rejected_at_construction(self):
         """Test that a resolution other than daily or hourly is refused up front.

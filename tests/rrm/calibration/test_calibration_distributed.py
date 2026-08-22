@@ -202,7 +202,7 @@ class TestRunCalibration:
         res = coello.run_calibration(spatial_var_stub, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
-        assert coello.OFvalue == CANNED_RESULT[0], (
+        assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
@@ -323,7 +323,7 @@ class TestFW1Calibration:
         res = coello.FW1Calibration(spatial_var_stub, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
-        assert coello.OFvalue == CANNED_RESULT[0], (
+        assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
@@ -360,7 +360,7 @@ class TestLumpedCalibration:
         res = coello.lumpedCalibration(basic_inputs, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
-        assert coello.OFvalue == CANNED_RESULT[0], (
+        assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(

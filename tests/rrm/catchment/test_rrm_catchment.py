@@ -416,7 +416,14 @@ class TestFW1:
         assert len(coello.Qsim) == 10
 
 
-class TestMuskingum:
+class TestSaveAndExtractAfterFW1:
+    """A second FW1 run covering `save_results` and `extract_discharge`.
+
+    Named for what it does: it reads the MAXBAS parameter set and calls `Run.runFW1`, so
+    calling it `TestMuskingum` said the opposite of what it exercises. The Muskingum path
+    is covered by `test_extract_discharge_distributed.py` and `test_meteo_inputs.py`.
+    """
+
     def test_run_dist(
         self,
         coello_start_date: str,

@@ -73,8 +73,9 @@ def test_save_results_distributed_writes_one_raster_per_step(
     """
     out = tmp_path / "dist"
     out.mkdir()
-    # result=4 is the snow-pack state variable; the FW1 (maxbas) run populates
-    # state_variables but leaves Qtot unset, so results 1-3 are not available here.
+    # result=4 is the snow-pack state variable. The discharge options are available after
+    # a FW1 run too since `_set_maxbas_output_fields` landed; this covers the state-variable
+    # branch, which reads a different array.
     coello_run.save_results(
         flow_acc_path=coello_acc_path,
         result=4,
