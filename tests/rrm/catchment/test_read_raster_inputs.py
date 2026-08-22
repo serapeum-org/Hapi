@@ -347,14 +347,14 @@ class TestReadFlowAcc:
         """Test the degenerate all-no-data raster.
 
         Test scenario:
-            Every cell is the sentinel, so no accumulation values survive and the
-            max-value sanity check has nothing to take a maximum of. This documents
-            pre-existing behaviour — the same ``ValueError`` was raised before the
-            vectorisation — rather than endorsing it as a good error message.
+            Every cell is the sentinel, so no accumulation values survive and there is no
+            domain to model. The error names the raster and says what is wrong, rather than
+            surfacing the bare "max() iterable argument is empty" this used to raise from
+            inside the sanity check.
         """
         path = write_raster(np.full((2, 2), NO_DATA, dtype="int32"))
 
-        with pytest.raises(ValueError, match="empty"):
+        with pytest.raises(ValueError, match="no-data.*no domain"):
             catchment.flow_network = FlowNetwork.from_rasters(path)
 
     def test_outlet_is_cell_of_maximum_accumulation(self, catchment, write_raster):
