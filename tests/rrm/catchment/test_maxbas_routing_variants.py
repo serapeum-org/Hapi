@@ -20,6 +20,7 @@ from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
+from hapi.wrapper import Wrapper
 
 
 @pytest.fixture(scope="module")
@@ -90,16 +91,16 @@ def maxbas_parameters_path(lumped_parameters_path: str, tmp_path_factory) -> str
 class TestDistMaxbas2:
     """Tests for `DistributedRRM.DistMaxbas2`."""
 
-    def test_routes_every_cell_inside_the_flow_path_length_mask(
+    def test_conserves_volume_while_redistributing_it_in_time(
         self, coello_before_routing: Catchment
     ):
-        """Test that the flow-path-length variant attenuates the in-catchment cells.
+        """Test that the routing moves discharge between steps without creating or losing it.
 
         Test scenario:
-            The routing rescales each cell's MAXBAS between 1 and the grid maximum by its
-            distance along the flow path, then convolves `quz` in place. Cells inside the
-            mask must change and stay finite; the total volume is redistributed in time
-            rather than created, so the sum over the record must not grow.
+            A triangular unit hydrograph is a normalised convolution kernel, so each cell's
+            total over the record is invariant while its timing spreads. Asserting only an
+            upper bound would pass for routing that destroyed 90% of the volume, so this is
+            an equality.
         """
         model = coello_before_routing
         before = model.quz.copy()
@@ -113,36 +114,100 @@ class TestDistMaxbas2:
         assert np.isfinite(model.quz[inside]).all(), (
             "routed discharge must stay finite inside the catchment"
         )
-        assert np.nansum(model.quz[inside]) <= np.nansum(before[inside]) + 1e-6, (
-            "triangular routing redistributes volume in time, it must not add any"
+        np.testing.assert_allclose(
+            np.nansum(model.quz[inside]),
+            np.nansum(before[inside]),
+            rtol=1e-6,
+            err_msg="triangular routing must conserve volume, not merely bound it",
+        )
+
+    def test_attenuates_the_peak_of_a_cell_far_from_the_outlet(
+        self, coello_before_routing: Catchment
+    ):
+        """Test that the flow-path length actually scales the attenuation.
+
+        Test scenario:
+            This variant exists to give distant cells more attenuation than near ones -- that
+            is the whole difference from `DistMaxbas1`. Comparing the peak reduction of the
+            nearest and furthest in-domain cells is what distinguishes it from a uniform
+            kernel; a routing that ignored the flow path would attenuate both equally.
+        """
+        model = coello_before_routing
+        fpl = model.flow_path_length_arr
+        inside = ~np.isnan(fpl)
+        nearest = np.unravel_index(
+            np.nanargmin(np.where(inside, fpl, np.nan)), fpl.shape
+        )
+        furthest = np.unravel_index(
+            np.nanargmax(np.where(inside, fpl, np.nan)), fpl.shape
+        )
+        before = model.quz.copy()
+
+        DistributedRRM.DistMaxbas2(model)
+
+        near_drop = before[nearest].max() - model.quz[nearest].max()
+        far_drop = before[furthest].max() - model.quz[furthest].max()
+        assert far_drop > near_drop, (
+            f"the cell {far_drop:.4g} from the outlet must be attenuated more than the near "
+            f"one ({near_drop:.4g}); equal attenuation means the flow path was ignored"
         )
 
     def test_leaves_cells_outside_the_mask_untouched(
         self, coello_before_routing: Catchment
     ):
-        """Test that NaN flow-path-length cells are skipped rather than routed.
+        """Test that cells with no flow-path length are skipped rather than routed.
 
         Test scenario:
-            The mask is what keeps the routing off cells outside the catchment. Those cells
-            must come back bit-identical, including their NaNs.
+            `run_lumped_model` leaves out-of-domain cells at zero, and zeros survive any
+            convolution -- so comparing them before and after proves nothing. Seeding them
+            with a recognisable series first is what makes the mask observable: if the guard
+            were dropped, the convolution would reshape it.
         """
         model = coello_before_routing
-        before = model.quz.copy()
         outside = np.isnan(model.flow_path_length_arr)
+        sentinel = np.linspace(1.0, 10.0, model.quz.shape[2])
+        model.quz[outside] = sentinel
+        before = model.quz.copy()
 
         DistributedRRM.DistMaxbas2(model)
 
         np.testing.assert_array_equal(
             model.quz[outside],
             before[outside],
-            err_msg="cells outside the flow-path-length mask must not be routed",
+            err_msg="cells with no flow-path length must not be routed",
         )
+
+
+def _lumped_model(
+    dates: list,
+    meteo_path: str,
+    parameters_path: str,
+    area: float,
+    initial_cond: list,
+) -> Catchment:
+    """Build a lumped catchment ready for `Run.runLumped`.
+
+    Args:
+        dates: `[start, end]` simulation dates.
+        meteo_path: Lumped meteorological CSV.
+        parameters_path: Lumped parameter file.
+        area: Catchment area coefficient.
+        initial_cond: Initial HBV state.
+
+    Returns:
+        Catchment: Model with inputs, lumped model and parameters read.
+    """
+    model = Catchment("rrm", dates[0], dates[1])
+    model.read_lumped_inputs(meteo_path)
+    model.read_lumped_model(HBVLumped, area, initial_cond)
+    model.read_parameters(parameters_path, False, maxbas=True)
+    return model
 
 
 class TestLumpedRouting:
     """Tests for the routing branches of `Wrapper.Lumped` reached through `Run.runLumped`."""
 
-    def test_maxbas_routing_uses_the_last_parameter(
+    def test_maxbas_routing_convolves_qsim_with_the_last_parameter(
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
@@ -150,25 +215,54 @@ class TestLumpedRouting:
         coello_AreaCoeff: float,
         coello_InitialCond: list,
     ):
-        """Test that a lumped run with `maxbas` routes on the trailing parameter alone.
+        """Test that the MAXBAS branch routes on the trailing parameter and nothing else.
 
         Test scenario:
-            The lumped wrapper has two routing calls: the MAXBAS one passes only the last
-            parameter, the Muskingum one passes three. Which is used is decided by the
-            `maxbas` flag `read_parameters` stored, and only the Muskingum branch had
-            coverage.
+            `Wrapper.Lumped` has two routing calls: the MAXBAS one passes a single parameter,
+            the Muskingum one passes three. Which runs is decided by the `maxbas` flag
+            `read_parameters` stored. Asserting only that `Qsim` is finite would pass for an
+            unrouted series, so compare against the same run left unrouted, convolved
+            independently with the parameter the branch is supposed to use.
         """
-        model = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        model.read_lumped_inputs(lumped_meteo_data_path)
-        model.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        model.read_parameters(maxbas_parameters_path, False, maxbas=True)
-
-        Run.runLumped(model, Route=1, routing_fn=Routing.triangular_routing_1)
-
-        assert model.Qsim is not None, "a routed lumped run must produce Qsim"
-        assert np.isfinite(np.asarray(model.Qsim, dtype=float)).all(), (
-            "the routed lumped hydrograph must be finite"
+        # Straight to the wrapper: `Run.runLumped` wraps `Qsim` in a date-indexed frame and
+        # the unrouted series is one step longer than the index, so only the routed form
+        # survives that call.
+        unrouted = _lumped_model(
+            coello_rrm_date,
+            lumped_meteo_data_path,
+            maxbas_parameters_path,
+            coello_AreaCoeff,
+            coello_InitialCond,
         )
+        Wrapper.Lumped(unrouted, Routing=0)
+        routed = _lumped_model(
+            coello_rrm_date,
+            lumped_meteo_data_path,
+            maxbas_parameters_path,
+            coello_AreaCoeff,
+            coello_InitialCond,
+        )
+
+        Run.runLumped(routed, Route=1, routing_fn=Routing.triangular_routing_1)
+
+        maxbas = routed.parameters[-1]
+        expected = Routing.triangular_routing_1(
+            np.array(np.asarray(unrouted.Qsim)[:-1]), maxbas
+        )
+        # `runLumped` wraps the routed series in a date-indexed frame; compare the values.
+        actual = np.asarray(routed.Qsim, dtype=float).ravel()
+        np.testing.assert_allclose(
+            actual,
+            np.asarray(expected, dtype=float).ravel(),
+            rtol=1e-6,
+            err_msg=(
+                "the routed hydrograph must be the unrouted one convolved with the trailing "
+                "parameter; a mismatch means the wrong branch or the wrong parameter"
+            ),
+        )
+        assert not np.allclose(
+            actual, np.asarray(unrouted.Qsim, dtype=float).ravel()[: len(actual)]
+        ), "routing must actually change the hydrograph"
 
     def test_routing_without_a_function_is_rejected(
         self,
