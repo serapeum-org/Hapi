@@ -566,6 +566,20 @@ class MeteoInputs:
                 f"time has {len(self.time)} entries but the cubes hold {self.time_steps} steps"
             )
 
+    def __setattr__(self, name: str, value) -> None:
+        """Set an attribute, dropping the derived long-term average when it goes stale.
+
+        `ll_temp` is cached on first use, so replacing `temperature` afterwards would
+        otherwise leave the cache describing the array that was thrown away.
+
+        Args:
+            name: Attribute being set.
+            value: New value.
+        """
+        if name == "temperature" and getattr(self, "_ll_temp", None) is not None:
+            object.__setattr__(self, "_ll_temp", None)
+        object.__setattr__(self, name, value)
+
     @property
     def shape(self) -> tuple[int, int, int]:
         """tuple[int, int, int]: The shared `(rows, cols, time)` shape."""
