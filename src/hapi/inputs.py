@@ -445,6 +445,11 @@ class FlowNetwork:
             * (abs(transform.pixel_height) / 1000.0),
         )
 
+        if not network.acc_val:
+            raise ValueError(
+                f"every cell of {flow_acc} is no-data, so the catchment has no domain: "
+                "check the raster's no-data value and its mask band"
+            )
         acc_val_mx = max(network.acc_val)
         if acc_val_mx not in (network.no_elem, network.no_elem - 1):
             logger.debug(
