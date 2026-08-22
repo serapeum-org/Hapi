@@ -55,21 +55,21 @@ routing_fn = Routing.muskingum
 ### run the model
 Run.runLumped(Coello, Route, routing_fn)
 # %%
-metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(metrics["RMSE"], 2)))
-print("NSE= " + str(round(metrics["NSE"], 2)))
-print("NSEhf= " + str(round(metrics["NSEhf"], 2)))
-print("KGE= " + str(round(metrics["KGE"], 2)))
-print("WB= " + str(round(metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 # %%
 """
 the Sensitivity class takes 4 main arguments:
