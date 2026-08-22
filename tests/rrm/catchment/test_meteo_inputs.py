@@ -192,6 +192,101 @@ class TestLoaders:
         assert str(from_netcdf_files.time[-1].date()) == "2009-01-10"
 
 
+class TestPerVariableOverrides:
+    """Tests for reading folders that do not share a naming convention."""
+
+    @pytest.fixture(scope="function")
+    def mixed_convention(self, tmp_path) -> dict:
+        """Write three folders: CHIRPS-style rainfall, ERA5-style temperature and ET.
+
+        Returns:
+            dict: Folder paths keyed by driver name.
+        """
+        layouts = {
+            "precipitation": ("chirps_precipitation_2009.01.{day:02d}.tif", 1.0),
+            "temperature": ("2m_temperature_1D_200901{day:02d}.tif", 20.0),
+            "evapotranspiration": ("evaporation_1D_200901{day:02d}.tif", 3.0),
+        }
+        folders = {}
+        for name, (pattern, base) in layouts.items():
+            folder = tmp_path / name
+            folder.mkdir()
+            for day in range(1, 5):
+                Dataset.create_from_array(
+                    np.full((3, 3), base + day, dtype=np.float32),
+                    geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
+                    epsg=4326,
+                    no_data_value=-9999.0,
+                ).to_file(str(folder / pattern.format(day=day)))
+            folders[name] = str(folder)
+        return folders
+
+    def test_a_shared_regex_cannot_serve_both_conventions(self, mixed_convention: dict):
+        """Test that the case `per_variable` exists for is real, not hypothetical.
+
+        Test scenario:
+            The documented download workflow takes rainfall from CHIRPS and the other two
+            from ERA5. `\d{4}.\d{2}.\d{2}` finds no date in `..._20090101.tif` and `\d{8}`
+            finds none in `..._2009.01.01.tif`, so a single shared argument leaves one of
+            the folders unordered -- with a warning, but unordered.
+        """
+        with pytest.warns(UserWarning, match="matched no file name"):
+            MeteoInputs.from_rasters(
+                mixed_convention["precipitation"],
+                mixed_convention["temperature"],
+                mixed_convention["evapotranspiration"],
+                regex_string=r"\d{4}.\d{2}.\d{2}",
+            )
+
+    def test_per_variable_overrides_only_the_folder_it_names(
+        self, mixed_convention: dict
+    ):
+        """Test that each folder can be given the regex its own names need.
+
+        Test scenario:
+            The override is merged over the shared arguments for that folder alone, so the
+            CHIRPS folder keeps the default while the two ERA5 folders get `\d{8}`. Each
+            raster carries its day as its value, so the cubes spell out their order and a
+            per-folder mix-up would show up as a scrambled series.
+        """
+        inputs = MeteoInputs.from_rasters(
+            mixed_convention["precipitation"],
+            mixed_convention["temperature"],
+            mixed_convention["evapotranspiration"],
+            per_variable={
+                "temperature": {"regex_string": r"\d{8}"},
+                "evapotranspiration": {"regex_string": r"\d{8}"},
+            },
+        )
+
+        for name, base in [
+            ("precipitation", 1.0),
+            ("temperature", 20.0),
+            ("evapotranspiration", 3.0),
+        ]:
+            recovered = [
+                float(getattr(inputs, name)[0, 0, i]) for i in range(inputs.time_steps)
+            ]
+            assert recovered == [base + d for d in range(1, 5)], (
+                f"{name} came back out of order: {recovered}"
+            )
+
+    def test_an_unknown_driver_name_is_refused(self, mixed_convention: dict):
+        """Test that a typo in the override key is reported rather than ignored.
+
+        Test scenario:
+            Silently dropping an unrecognised key would leave that folder on the shared
+            argument and reintroduce exactly the scrambling this is meant to prevent.
+        """
+        with pytest.raises(KeyError, match="rainfall"):
+            MeteoInputs.from_rasters(
+                mixed_convention["precipitation"],
+                mixed_convention["temperature"],
+                mixed_convention["evapotranspiration"],
+                per_variable={"rainfall": {"regex_string": r"\d{8}"}},
+            )
+
+
 class TestValidation:
     """Tests for the construction-time checks."""
 

@@ -414,7 +414,7 @@ class FlowNetwork:
         """
         return int(np.count_nonzero(~np.isnan(self.flow_acc_arr)))
 
-    def __setattr__(self, name: str, value) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Drop the cached `acc_val` when the array it is derived from is replaced.
 
         Args:
@@ -883,6 +883,7 @@ class MeteoInputs:
         precipitation: str | Path,
         temperature: str | Path,
         evapotranspiration: str | Path,
+        per_variable: dict[str, dict[str, Any]] | None = None,
         **kwargs: Any,
     ) -> MeteoInputs:
         r"""Read the three drivers from folders of date-stamped rasters.
@@ -891,10 +892,13 @@ class MeteoInputs:
             precipitation: Folder of rainfall rasters.
             temperature: Folder of temperature rasters.
             evapotranspiration: Folder of evapotranspiration rasters.
-            **kwargs: Forwarded verbatim to :func:`read_rasters` for all three folders -- e.g.
+            per_variable: Per-folder overrides, keyed by driver name, merged over `kwargs`
+                for that folder only. Needed when the three folders come from different
+                sources, which the documented download workflow produces: CHIRPS names its
+                rainfall `..._2009.01.01.tif` while ERA5 names its temperature
+                `..._20090101.tif`, and no single `regex_string` finds the date in both.
+            **kwargs: Forwarded to :func:`read_rasters` for all three folders -- e.g.
                 `regex_string`, `date`, `file_name_data_fmt`, `start`, `end`, `fmt`, `glob`.
-                They are shared deliberately: the three folders describe one model run, so a
-                per-folder date format would be a mistake rather than a feature.
 
         Returns:
             MeteoInputs: The three cubes plus a calendar -- the rainfall folder's when it carries
@@ -902,13 +906,41 @@ class MeteoInputs:
 
         Raises:
             FileNotFoundError: A folder does not exist or holds no matching raster.
+            KeyError: `per_variable` names something that is not one of the three drivers.
             ValueError: The three folders do not yield the same shape.
+
+        Examples:
+            Three folders from one source share every argument:
+
+            >>> MeteoInputs.from_rasters(  # doctest: +SKIP
+            ...     prec_dir, temp_dir, evap_dir, start="2009-01-01", end="2009-12-31"
+            ... )
+
+            CHIRPS rainfall alongside ERA5 temperature and evapotranspiration:
+
+            >>> MeteoInputs.from_rasters(  # doctest: +SKIP
+            ...     chirps_dir,
+            ...     era5_temp_dir,
+            ...     era5_evap_dir,
+            ...     per_variable={
+            ...         "temperature": {"regex_string": r"\d{8}"},
+            ...         "evapotranspiration": {"regex_string": r"\d{8}"},
+            ...     },
+            ... )
         """
+        overrides = per_variable or {}
+        unknown = set(overrides) - set(METEO_VARIABLES)
+        if unknown:
+            raise KeyError(
+                f"per_variable names {sorted(unknown)}, which are not drivers; "
+                f"expected any of {list(METEO_VARIABLES)}"
+            )
+
         cubes, calendar = {}, None
         for name, path in zip(
             METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
         ):
-            collection = read_rasters(path, **kwargs)
+            collection = read_rasters(path, **{**kwargs, **overrides.get(name, {})})
             cubes[name] = np.moveaxis(np.asarray(collection.values), 0, -1)
             if calendar is None and collection.time is not None:
                 calendar = pd.DatetimeIndex(list(collection.time))

@@ -122,12 +122,30 @@ are positive — so the values must be flipped before the model reads them. `Dat
 | CHIRPS | `global-daily_precipitation_2009.01.01.tif` | `r"\d{4}.\d{2}.\d{2}"` (the default) | `"%Y.%m.%d"` |
 | ERA5 (aggregated) | `2m_temperature_1D_20090101.tif` | `r"\d{8}"` | `"%Y%m%d"` |
 
-The default `regex_string` does **not** match the ERA5 names, so pass both arguments for those rasters:
+The download example above takes rainfall from CHIRPS and the other two from ERA5, so the three folders do not
+share a naming convention — `r"\d{4}.\d{2}.\d{2}"` finds no date in `..._20090101.tif`, and `r"\d{8}"` finds none
+in `..._2009.01.01.tif`. Pass the differing argument per folder with `per_variable`, which is merged over the shared
+arguments for that folder only:
 
 ```python
 model.meteo = MeteoInputs.from_rasters(
-    prec_path, temp_path, evap_path, regex_string=r"\d{8}", file_name_data_fmt="%Y%m%d"
+    prec_path,
+    temp_path,
+    evap_path,
+    per_variable={
+        "temperature": {"regex_string": r"\d{8}"},
+        "evapotranspiration": {"regex_string": r"\d{8}"},
+    },
 )
+```
+
+`file_name_data_fmt` is not needed here: it is inferred from the first name `regex_string` matches, per folder. Pass
+it only for a layout the digits cannot settle, such as a day-first `03.02.1990`.
+
+When all three folders do come from one source, the shared arguments are enough:
+
+```python
+model.meteo = MeteoInputs.from_rasters(prec_path, temp_path, evap_path)
 ```
 
 Once the rasters are downloaded, prepare them for the model with `hapi.inputs.Inputs`, which aligns every raster to
