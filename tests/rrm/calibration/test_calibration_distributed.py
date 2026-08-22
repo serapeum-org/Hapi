@@ -60,6 +60,7 @@ def gauged_calibration(
     coello_evap_path: str,
     coello_acc_path: str,
     coello_fd_path: str,
+    coello_dist_parameters_muskingum: str,
     coello_cat_area: int,
     coello_initial_cond: list,
 ) -> Calibration:
@@ -87,6 +88,10 @@ def gauged_calibration(
         file_name_data_fmt="%Y.%m.%d",
     )
     coello.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
+    # Needed even though the objective overwrites `parameters`: `read_parameters` is also
+    # what sets `snow`, and HBV's parameter parse branches on it being exactly 0 or 1. Left
+    # as None it raises inside the run, which the objective's bare `except` swallows.
+    coello.read_parameters(coello_dist_parameters_muskingum, False)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
     coello.GaugesTable = DataFrame(
         {"id": [1, 2], "cell_row": [2, 5], "cell_col": [3, 6]}
@@ -230,34 +235,68 @@ class TestRunCalibration:
             "the optimiser must not run when the inputs do not line up"
         )
 
-    def test_the_objective_distributes_the_trial_vector_and_runs_the_model(
-        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    def test_the_objective_runs_the_model_on_the_trial_parameters(
+        self,
+        gauged_calibration: Calibration,
+        stub_optimizer: dict,
+        spatial_var_stub,
+        monkeypatch,
     ):
-        """Test that the objective the optimiser drives reaches the model.
+        """Test that each trial's parameters are what the model is actually run on.
 
         Test scenario:
-            The objective body maps the flat trial vector onto the 3D parameter array through
-            `SpatialVarFun` and then runs the whole distributed model. It swallows every
-            exception into `(nan, [], 1)`, so a rewiring mistake inside it does not raise —
-            it just makes every trial fail. Pinning the triple's shape and that the parameter
-            array actually arrived is what makes that visible.
+            The objective maps the flat trial vector onto the 3D array through
+            `SpatialVarFun`, assigns it, and runs the model — all inside a bare `except:`
+            that turns any failure into `(nan, [], 1)`. So writing the array under the wrong
+            attribute name never raises: the run simply proceeds on whatever parameters were
+            already loaded, every trial scores the same, and the optimiser converges on
+            noise. That was this branch's C1.
+
+            Neither `fail == 0` nor the value of `parameters` after the run can see it — the
+            first because a stale-but-valid array still runs, the second because the
+            optimiser's result overwrites it afterwards. What discriminates is the array the
+            model held *at the moment it was run*, so spy on the wrapper and compare it to
+            the trial vector.
         """
         coello = gauged_calibration
-        coello.read_objective_function(metrics.rmse, [])
+        coello.read_objective_function(_pairwise_objective, [])
         coello.LB = np.zeros(12)
         coello.UB = np.ones(12)
+
+        ran_with: list[np.ndarray] = []
+        original = calibration_module.Wrapper.RRMModel
+
+        def spy(model, *args, **kwargs):
+            ran_with.append(np.asarray(model.parameters, dtype=float).copy())
+            return original(model, *args, **kwargs)
+
+        monkeypatch.setattr(calibration_module.Wrapper, "RRMModel", staticmethod(spy))
 
         coello.run_calibration(spatial_var_stub, _optimization_args())
 
         error, constraints, fail = stub_optimizer["objective"]
-        assert fail in (0, 1), f"the objective must report a fail flag, got {fail}"
-        assert isinstance(constraints, list), (
-            f"the Muskingum constraints must be a list, got {type(constraints)}"
+        assert fail == 0, (
+            f"the objective must reach its success path; fail={fail} means the run was "
+            f"swallowed by the bare except and every trial scores nan (error={error})"
         )
-        assert coello.parameters is not None, (
-            "the trial vector must have been distributed onto the parameter array"
+        assert np.isfinite(error), f"a completed trial must score finitely, got {error}"
+        assert len(constraints) == 2, (
+            f"the Muskingum k/x pair yields two constraints, got {len(constraints)}"
         )
-        assert error is not None, "the objective must return an error value"
+        np.testing.assert_allclose(
+            spatial_var_stub.seen_par,
+            np.full(12, 0.5),
+            err_msg="the optimiser's trial vector must reach SpatialVarFun.Function",
+        )
+        assert ran_with, "the objective must run the model"
+        np.testing.assert_allclose(
+            ran_with[0],
+            spatial_var_stub.Par3d,
+            err_msg=(
+                "the model must be run on the trial's distributed parameters; a mismatch "
+                "means the objective wrote them somewhere the run does not read"
+            ),
+        )
 
 
 class TestFW1Calibration:
@@ -356,17 +395,52 @@ class TestLumpedCalibration:
         )
 
 
+def _pairwise_objective(qgauges, gauges_table) -> float:
+    """Score a trial the way `run_calibration` actually calls the objective.
+
+    The objective is invoked as `objective_function(self.QGauges, self.GaugesTable)`, so a
+    metric expecting two aligned series raises `TypeError` and the bare `except` in `opt_fun`
+    turns that into `(nan, [], 1)`. This has the signature the call site uses, so the
+    objective body runs to completion and `fail` reports the code path rather than the stub.
+
+    Args:
+        qgauges: Observed discharge frame.
+        gauges_table: Gauge metadata frame.
+
+    Returns:
+        float: A finite score derived from both frames.
+    """
+    return float(np.abs(qgauges.to_numpy(dtype=float)).mean() + len(gauges_table))
+
+
 class _SpatialVarStub:
-    """Minimal stand-in for the SpatialVarFun callable the optimiser drives."""
+    """Stand-in for the SpatialVarFun callable the optimiser drives."""
 
     no_parameters = 12
     no_elem = 1
 
     def __init__(self, rows: int, cols: int):
+        self.rows = rows
+        self.cols = cols
         self.Par3d = np.ones((rows, cols, 12))
+        self.seen_par: np.ndarray | None = None
 
     def Function(self, par, *args, **kwargs):
-        """Accept the flat parameter vector and leave `Par3d` in place."""
+        """Broadcast the flat trial vector across the grid, as the real one does.
+
+        Echoing `par` rather than returning a constant is what lets a caller tell whether the
+        optimiser's vector actually reached the parameter array.
+
+        Args:
+            par: The flat parameter vector the optimiser proposed.
+
+        Returns:
+            numpy.ndarray: The `(rows, cols, 12)` array built from `par`.
+        """
+        self.seen_par = np.asarray(par, dtype=float)
+        self.Par3d = np.broadcast_to(
+            self.seen_par, (self.rows, self.cols, len(self.seen_par))
+        ).copy()
         return self.Par3d
 
 
