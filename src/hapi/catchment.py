@@ -972,7 +972,7 @@ class Catchment:
         ax.set_ylabel("Discharge m3/s", fontsize=12)
         plt.tight_layout()
 
-        if self.metrics:
+        if self.metrics is not None and not self.metrics.empty:
             logger.debug("----------------------------------")
             logger.debug("Gauge - " + str(gauge_id))
             logger.debug("RMSE= " + str(round(self.metrics.loc["RMSE", gauge_id], 2)))
