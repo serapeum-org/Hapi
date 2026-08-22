@@ -168,9 +168,9 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.meteo = MeteoInputs.from_rasters(
-            coello_evap_path,
             coello_prec_path,
             coello_temp_path,
+            coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
             regex_string=r"\d{4}.\d{2}.\d{2}",
@@ -345,9 +345,9 @@ class TestFW1:
             fmt="%Y-%m-%d",
         )
         coello.meteo = MeteoInputs.from_rasters(
-            coello_evap_path,
             coello_prec_path,
             coello_temp_path,
+            coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
             regex_string=r"\d{4}.\d{2}.\d{2}",
@@ -390,9 +390,9 @@ class TestFW1:
             fmt="%Y-%m-%d",
         )
         coello.meteo = MeteoInputs.from_rasters(
-            coello_evap_path,
             coello_prec_path,
             coello_temp_path,
+            coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
             regex_string=r"\d{4}.\d{2}.\d{2}",
@@ -440,9 +440,9 @@ class TestMuskingum:
             fmt="%Y-%m-%d",
         )
         coello.meteo = MeteoInputs.from_rasters(
-            coello_evap_path,
             coello_prec_path,
             coello_temp_path,
+            coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
             regex_string=r"\d{4}.\d{2}.\d{2}",
@@ -486,9 +486,9 @@ class TestMuskingum:
             fmt="%Y-%m-%d",
         )
         coello.meteo = MeteoInputs.from_rasters(
-            coello_evap_path,
             coello_prec_path,
             coello_temp_path,
+            coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
             regex_string=r"\d{4}.\d{2}.\d{2}",
