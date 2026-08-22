@@ -590,6 +590,18 @@ class TestReadRastersDateInference:
             f"Expected {expected} for {sample}, got {_infer_date_format(sample)}"
         )
 
+    def test_a_separator_carrying_a_format_directive_is_refused(self):
+        """Test that a `%` between the digit runs is not spliced into the format.
+
+        Test scenario:
+            The separators are copied into the format verbatim, so one containing `%` would
+            build a directive the caller never meant -- `2009%m01%m01` would come out as
+            `%Y%m%m%m%d`. Refusing sends it down the unordered path instead.
+        """
+        assert _infer_date_format("2009%m01%m01") is None, (
+            "a separator holding a format directive must be refused"
+        )
+
     @pytest.mark.parametrize("sample", ["01.01.2009", "2009.01", "not-a-date", "12345"])
     def test_ambiguous_layouts_are_refused(self, sample: str):
         """Test that a layout the digits cannot settle returns None rather than a guess.

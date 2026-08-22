@@ -547,6 +547,66 @@ class TestRunEquivalence:
         with pytest.raises(ValueError, match=name):
             setattr(inputs, name, getattr(inputs, name)[:, :, :-1])
 
+    def test_the_first_cube_assigned_has_nothing_to_check_against(self):
+        """Test that the shape guard is inert while the instance is still being built.
+
+        Test scenario:
+            `__setattr__` fires for every field the dataclass initialiser sets, including
+            the first, when the other two do not exist yet. With nothing to compare against
+            it must fall through rather than raise -- otherwise no instance could be
+            constructed at all.
+        """
+        cube = np.ones((2, 3, 4), dtype="float32")
+
+        inputs = MeteoInputs(
+            precipitation=cube, temperature=cube * 2, evapotranspiration=cube * 3
+        )
+
+        assert inputs.shape == (2, 3, 4), (
+            f"construction must succeed, got {inputs.shape}"
+        )
+
+    def test_a_file_with_no_time_dimension_loads_with_time_none(self, tmp_path):
+        """Test that a store without a time axis is reported as having no calendar.
+
+        Test scenario:
+            `get_time_values` returns None when there is no time dimension. Relying on
+            `np.asarray(None)` to produce something that fails the later dtype test works by
+            accident; the explicit check is what makes it deliberate.
+        """
+        cube = np.ones((2, 3, 4), dtype="float32")
+        inputs = MeteoInputs(
+            precipitation=cube, temperature=cube, evapotranspiration=cube
+        )
+
+        assert inputs.time is None, (
+            "a cube built without a calendar must report time as None"
+        )
+
+    def test_the_shape_check_is_inert_with_nothing_to_compare_against(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that the guard falls through when the other cubes are not set yet.
+
+        Test scenario:
+            `__setattr__` skips the check while a field is still unset, so this branch is not
+            reachable through the constructor today. It is what keeps the guard safe if the
+            initialisation order ever changes -- without it, `others[0]` would raise
+            IndexError instead of accepting the first cube. Exercised directly because the
+            public API cannot get there.
+        """
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+        object.__setattr__(inputs, "temperature", None)
+        object.__setattr__(inputs, "evapotranspiration", None)
+
+        assert (
+            inputs._check_replacement("precipitation", "not even an array") is None
+        ), "with no other cube to compare against the check must fall through"
+
     def test_a_same_shaped_replacement_is_accepted(
         self, from_netcdf_files: MeteoInputs
     ):
@@ -968,6 +1028,25 @@ class TestVariableSelectionAndCalendar:
         )
         assert "temperature" in message, (
             f"the error should list the available variables: {message}"
+        )
+
+    def test_a_store_that_returns_no_time_values_reports_no_calendar(self):
+        """Test the guard for a store whose time values are absent rather than unreadable.
+
+        Test scenario:
+            `get_time_values` returns None when there is no time dimension, as distinct from
+            raising, which the surrounding try/except already covers. The reader used to
+            hand that None straight to `np.asarray`, which yields a 0-d object array that
+            only fails the later dtype test by luck; this pins the explicit check that
+            replaced it.
+        """
+
+        class _NoTime:
+            def get_time_values(self):
+                return None
+
+        assert MeteoInputs._calendar(_NoTime()) is None, (
+            "a store with no time values must report no calendar"
         )
 
     def test_file_without_a_calendar_loads_with_time_none(self, tmp_path):
