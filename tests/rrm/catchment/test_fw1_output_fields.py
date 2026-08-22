@@ -15,8 +15,12 @@ from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.routing import Routing
+from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
+
+DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
 
 
 @pytest.fixture(scope="module")
@@ -60,6 +64,48 @@ def coello_fw1(
     return coello
 
 
+@pytest.fixture(scope="module")
+def coello_unrouted(
+    coello_start_date: str,
+    coello_end_date: str,
+    coello_prec_path: str,
+    coello_temp_path: str,
+    coello_evap_path: str,
+    coello_acc_path: str,
+    coello_dist_parameters_maxbas: str,
+    coello_cat_area: int,
+    coello_initial_cond: list,
+) -> Catchment:
+    """The same catchment with the per-cell model run but no routing applied.
+
+    Returns:
+        Catchment: Model whose `quz` / `qlz` are the conceptual model's raw output, so the
+            triangular routing can be recomputed against them independently.
+    """
+    coello = Catchment(
+        "coello-unrouted",
+        coello_start_date,
+        coello_end_date,
+        spatial_resolution="Distributed",
+        temporal_resolution="Daily",
+    )
+    coello.meteo = MeteoInputs.from_rasters(
+        coello_prec_path,
+        coello_temp_path,
+        coello_evap_path,
+        start=coello_start_date,
+        end=coello_end_date,
+        regex_string=DATE_REGEX,
+        date=True,
+        file_name_data_fmt="%Y.%m.%d",
+    )
+    coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
+    coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
+    coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
+    DistributedRRM.run_lumped_model(coello)
+    return coello
+
+
 def test_fw1_sets_the_per_cell_output_fields(coello_fw1: Catchment):
     """Test that runFW1 leaves Qtot and the routed/translated fields populated.
 
@@ -78,46 +124,65 @@ def test_fw1_sets_the_per_cell_output_fields(coello_fw1: Catchment):
         assert field.shape == shape, f"{name} must be a per-cell, per-timestep field"
 
 
-def test_fw1_qtot_is_the_sum_of_the_two_zones(coello_fw1: Catchment):
-    """Test that Qtot equals the routed upper zone plus the lower zone.
+def test_fw1_qtot_matches_an_independent_triangular_convolution(
+    coello_fw1: Catchment, coello_unrouted: Catchment
+):
+    """Test `Qtot` against the routing recomputed outside the wrapper.
 
     Args:
         coello_fw1: Coello catchment with a completed MAXBAS run.
+        coello_unrouted: The same catchment with only the per-cell model run.
 
     Test scenario:
-        MAXBAS routes quz in place and does not translate qlz, so the per-cell
-        total is simply their sum — the triangular-routing analogue of the
-        Muskingum path's `qlz_translated + quz_routed`.
+        Asserting `Qtot == qlz + quz` restates the assignment that produced it, so a wrong
+        MAXBAS convolution passes. Recompute the routing here instead -- each in-domain cell
+        convolved with `triangular_routing_1` against its own MAXBAS parameter -- and compare
+        the whole field. That is the only assertion that can tell a correct kernel from a
+        wrong one.
     """
+    expected_quz = coello_unrouted.quz.copy()
+    maxbas = coello_fw1.parameters[:, :, -1]
+    acc = coello_fw1.flow_network.flow_acc_arr
+    for x in range(coello_fw1.flow_network.rows):
+        for y in range(coello_fw1.flow_network.cols):
+            if not np.isnan(acc[x, y]):
+                expected_quz[x, y, :] = Routing.triangular_routing_1(
+                    expected_quz[x, y, :], maxbas[x, y]
+                )
+
     np.testing.assert_allclose(
         coello_fw1.Qtot,
-        coello_fw1.qlz + coello_fw1.quz,
+        coello_unrouted.qlz + expected_quz,
         rtol=1e-6,
-        err_msg="Qtot must be qlz + quz on the MAXBAS path",
+        err_msg="Qtot must be the lower zone plus the independently routed upper zone",
+    )
+    assert not np.allclose(expected_quz, coello_unrouted.quz), (
+        "the routing must change quz, otherwise this comparison proves nothing"
     )
 
 
-def test_fw1_qtot_summed_over_the_domain_reproduces_qout(coello_fw1: Catchment):
-    """Test the invariant that ties Qtot to the outlet hydrograph.
+def test_fw1_routes_the_upper_zone_but_leaves_the_lower_zone_alone(
+    coello_fw1: Catchment, coello_unrouted: Catchment
+):
+    """Test that MAXBAS attenuates `quz` and passes `qlz` through untouched.
 
     Args:
         coello_fw1: Coello catchment with a completed MAXBAS run.
+        coello_unrouted: The same catchment with only the per-cell model run.
 
     Test scenario:
-        This is what makes the field meaningful rather than merely non-None.
-        MAXBAS sends every cell straight to the outlet, so summing Qtot over the
-        domain must give back the `qout` that `Wrapper.FW1` computed
-        independently as `nansum(qlz) + nansum(quz)`. `qout` drops the last
-        timestep, so compare against the matching slice.
+        `DistMaxbas1` convolves only the upper zone. Pinning both halves separates a routing
+        that ran from one that silently did nothing, and catches a change that started
+        routing the lower zone too.
     """
-    summed = np.array(
-        [np.nansum(coello_fw1.Qtot[:, :, i]) for i in range(coello_fw1.Qtot.shape[2])]
-    )
     np.testing.assert_allclose(
-        summed[:-1],
-        coello_fw1.qout,
-        rtol=1e-6,
-        err_msg="nansum(Qtot) over the domain must reproduce qout",
+        coello_fw1.qlz,
+        coello_unrouted.qlz,
+        rtol=1e-9,
+        err_msg="the lower zone is not routed by the triangular path",
+    )
+    assert not np.allclose(coello_fw1.quz, coello_unrouted.quz), (
+        "the upper zone must be attenuated by the triangular routing"
     )
 
 
