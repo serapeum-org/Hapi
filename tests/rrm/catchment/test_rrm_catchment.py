@@ -126,7 +126,7 @@ class TestLumped:
     #     coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
     #     coello.readLumpedInputs(lumped_meteo_data_path)
     #     coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-    #     coello.readParameters(lumped_parameters_path, coello_Snow)
+    #     coello.read_parameters(lumped_parameters_path, coello_Snow)
     #     # discharge gauges
     #     coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     #     RoutingFn = Routing.muskingum_v

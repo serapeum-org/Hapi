@@ -132,7 +132,7 @@ ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start
 
 OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% ### Run Calibration
-cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=1)
+cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs, print_error=1)
 # %%
-SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+SpatialVarFun.Function(Coello.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.save_parameters(SaveTo)

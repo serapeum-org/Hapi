@@ -91,8 +91,8 @@ Coello.OFArgs = []
 
 
 def objfn(individual):
-    # Coello.readParameters(Parameterpath, Snow)
-    Coello.Parameters = individual
+    # Coello.read_parameters(Parameterpath, Snow)
+    Coello.parameters = individual
     Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     error = PC.NSEHF(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
@@ -144,7 +144,7 @@ best_ind = tools.selBest(pop, 1)[0]
 print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
 # %% Run the Model
 
-Coello.Parameters = best_ind
+Coello.parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]

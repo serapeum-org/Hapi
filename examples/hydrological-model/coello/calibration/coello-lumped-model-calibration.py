@@ -98,7 +98,7 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% Run Calibration
 
 cal_parameters = Coello.lumpedCalibration(
-    Basic_inputs, OptimizationArgs, printError=None
+    Basic_inputs, OptimizationArgs, print_error=None
 )
 
 print("Objective Function = " + str(round(cal_parameters[0], 2)))
@@ -106,26 +106,26 @@ print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% Run the Model
 
-Coello.Parameters = cal_parameters[1]
+Coello.parameters = cal_parameters[1]
 Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
-metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(metrics["RMSE"], 2)))
-print("NSE= " + str(round(metrics["NSE"], 2)))
-print("NSEhf= " + str(round(metrics["NSEhf"], 2)))
-print("KGE= " + str(round(metrics["KGE"], 2)))
-print("WB= " + str(round(metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 
 ### Plotting Hydrograph
 

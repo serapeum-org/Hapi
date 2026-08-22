@@ -32,7 +32,7 @@ Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 Snow = False  # no snow subroutine
 Coello.read_parameters(parameter_path, Snow)
-# Coello.Parameters
+# Coello.parameters
 # %% ### Observed flow
 Coello.read_discharge_gauges(path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %%  ### Routing
@@ -41,7 +41,7 @@ Coello.read_discharge_gauges(path + "Qout_c.csv", fmt="%Y-%m-%d")
 RoutingFn = Routing.muskingum_v
 Route = 1
 # %% ### Run The Model
-# Coello.Parameters = [1.0171762638840873,
+# Coello.parameters = [1.0171762638840873,
 #                      358.6427125027168,
 #                      1.459834925116025,
 #                      0.2031178594731058,

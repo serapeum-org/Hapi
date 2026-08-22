@@ -70,7 +70,7 @@ cal_parameters = Calibration.LumpedCalibration(
     OF_args,
     Qobs,
     OptimizationArgs,
-    printError=None,
+    print_error=None,
 )
 # %% convert parameters to rasters
 ParPath = "par15_7_2018.txt"

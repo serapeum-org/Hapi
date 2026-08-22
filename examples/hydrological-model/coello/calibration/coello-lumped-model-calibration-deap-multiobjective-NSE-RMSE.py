@@ -95,8 +95,8 @@ Coello.OFArgs = []
 
 
 def objfn(individual):
-    # Coello.readParameters(Parameterpath, Snow)
-    Coello.Parameters = individual
+    # Coello.read_parameters(Parameterpath, Snow)
+    Coello.parameters = individual
     Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     NSE = metrics.nse_hf(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
@@ -149,7 +149,7 @@ best_ind = tools.selBest(pop, 1)[0]
 print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
 # %% Run the Model
 
-Coello.Parameters = best_ind
+Coello.parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
@@ -157,21 +157,21 @@ Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
-metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(metrics["RMSE"], 2)))
-print("NSE= " + str(round(metrics["NSE"], 2)))
-print("NSEhf= " + str(round(metrics["NSEhf"], 2)))
-print("KGE= " + str(round(metrics["KGE"], 2)))
-print("WB= " + str(round(metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 
 # %% Plotting Hydrograph
 

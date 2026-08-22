@@ -179,7 +179,7 @@ cal_parameters = RunCalibration(
     OF_args,
     Qobs,
     OptimizationArgs,
-    printError=1,
+    print_error=1,
 )
 # %% convert parameters to rasters
 ParPath = "par15_7_2018.txt"
