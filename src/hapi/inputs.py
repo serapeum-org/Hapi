@@ -686,18 +686,54 @@ class MeteoInputs:
             )
 
     def __setattr__(self, name: str, value: object) -> None:
-        """Set an attribute, dropping the derived long-term average when it goes stale.
+        """Set an attribute, keeping the three cubes in agreement.
 
-        `ll_temp` is cached on first use, so replacing `temperature` afterwards would
-        otherwise leave the cache describing the array that was thrown away.
+        The class promises the cubes share a shape, and `__post_init__` alone cannot hold
+        that promise: the fields are plain mutable attributes, so replacing one afterwards
+        silently breaks it. `shape`, `rows` and `time_steps` all report precipitation's, so
+        a replacement of the wrong size passes `validate_against` and the run then indexes
+        past the end of whichever cube is short -- or, worse, reads the right index of the
+        wrong grid. Re-check on assignment instead.
+
+        Replacing `temperature` also drops the cached `ll_temp`, which is derived from it.
 
         Args:
             name: Attribute being set.
             value: New value.
+
+        Raises:
+            ValueError: `value` is a cube that does not match the other two.
         """
+        if name in METEO_VARIABLES and getattr(self, name, None) is not None:
+            self._check_replacement(name, value)
         if name == "temperature" and getattr(self, "_ll_temp", None) is not None:
             object.__setattr__(self, "_ll_temp", None)
         object.__setattr__(self, name, value)
+
+    def _check_replacement(self, name: str, value: object) -> None:
+        """Reject a cube that would leave the three disagreeing.
+
+        Args:
+            name: Which cube is being replaced.
+            value: The replacement.
+
+        Raises:
+            ValueError: The replacement is not a 3D array of the shape the others share.
+        """
+        others = [
+            getattr(self, other)
+            for other in METEO_VARIABLES
+            if other != name and getattr(self, other, None) is not None
+        ]
+        if not others:
+            return
+        expected = others[0].shape
+        if not isinstance(value, np.ndarray) or value.shape != expected:
+            got = getattr(value, "shape", type(value).__name__)
+            raise ValueError(
+                f"{name} must stay {expected} to match the other cubes, got {got}; "
+                "build a new MeteoInputs to change the grid or the period"
+            )
 
     @property
     def shape(self) -> tuple[int, int, int]:

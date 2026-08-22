@@ -224,9 +224,13 @@ class TestRunCalibration:
         coello = gauged_calibration
         coello.LB = np.zeros(12)
         coello.UB = np.ones(12)
-        coello.meteo.precipitation = coello.meteo.precipitation[:, :-1, :]
-        coello.meteo.temperature = coello.meteo.temperature[:, :-1, :]
-        coello.meteo.evapotranspiration = coello.meteo.evapotranspiration[:, :-1, :]
+        # Built in one go: replacing the cubes one at a time is now refused, because a
+        # half-applied crop is exactly the inconsistency MeteoInputs guarantees against.
+        coello.meteo = MeteoInputs(
+            precipitation=coello.meteo.precipitation[:, :-1, :],
+            temperature=coello.meteo.temperature[:, :-1, :],
+            evapotranspiration=coello.meteo.evapotranspiration[:, :-1, :],
+        )
 
         with pytest.raises(ValueError, match="must share the catchment's grid"):
             coello.run_calibration(spatial_var_stub, _optimization_args())

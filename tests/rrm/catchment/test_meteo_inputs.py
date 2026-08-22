@@ -391,6 +391,82 @@ class TestRunEquivalence:
             err_msg="the first ll_temp read must describe the assigned cube",
         )
 
+    def test_replacing_a_cube_with_a_different_shape_is_refused(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that the three cubes cannot be pulled out of agreement after construction.
+
+        Test scenario:
+            The class's central promise is that the cubes share a shape, and `__post_init__`
+            alone cannot hold it: the fields are plain attributes. `shape`, `rows` and
+            `time_steps` all report precipitation's, so a short temperature cube passes
+            `validate_against` and the run then reads the wrong grid without raising.
+        """
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+
+        with pytest.raises(ValueError, match="must stay") as exc_info:
+            inputs.temperature = from_netcdf_files.temperature[:, :-1, :]
+
+        assert "MeteoInputs" in str(exc_info.value), (
+            f"the error should say how to change the grid, got: {exc_info.value}"
+        )
+        assert inputs.temperature.shape == inputs.precipitation.shape, (
+            "the rejected assignment must leave the cube untouched"
+        )
+
+    @pytest.mark.parametrize(
+        "name", ["precipitation", "temperature", "evapotranspiration"]
+    )
+    def test_every_cube_is_guarded_not_just_temperature(
+        self, from_netcdf_files: MeteoInputs, name: str
+    ):
+        """Test that all three fields re-check, not only the one with a cache behind it.
+
+        Args:
+            from_netcdf_files: Loaded drivers to copy.
+            name: The cube being replaced.
+
+        Test scenario:
+            The hook already existed to invalidate `ll_temp`, which only `temperature` needs.
+            The shape guarantee is about all three, so the check must not be attached to that
+            one field by accident.
+        """
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+
+        with pytest.raises(ValueError, match=name):
+            setattr(inputs, name, getattr(inputs, name)[:, :, :-1])
+
+    def test_a_same_shaped_replacement_is_accepted(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that the guard does not block a legitimate swap.
+
+        Test scenario:
+            Replacing a cube with one of the same shape is how a caller applies a correction
+            or a unit conversion, so it must still work -- and for temperature it must still
+            drop the derived long-term average.
+        """
+        inputs = MeteoInputs(
+            precipitation=from_netcdf_files.precipitation,
+            temperature=from_netcdf_files.temperature,
+            evapotranspiration=from_netcdf_files.evapotranspiration,
+        )
+        stale = inputs.ll_temp
+        shifted = from_netcdf_files.temperature + 2.0
+
+        inputs.temperature = shifted
+
+        np.testing.assert_allclose(inputs.temperature, shifted)
+        assert inputs.ll_temp is not stale, "the derived average must be recomputed"
+
     def test_netcdf_run_reproduces_the_raster_run(
         self, from_rasters: MeteoInputs, from_netcdf_files: MeteoInputs, fixtures: dict
     ):

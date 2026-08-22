@@ -154,11 +154,13 @@ class TestRunFloodModel:
             check — that they cover the catchment. Cropping a column must be caught.
         """
         _load_flat_river_geometry(coello_loaded)
-        coello_loaded.meteo.precipitation = coello_loaded.meteo.precipitation[:, :-1, :]
-        coello_loaded.meteo.temperature = coello_loaded.meteo.temperature[:, :-1, :]
-        coello_loaded.meteo.evapotranspiration = coello_loaded.meteo.evapotranspiration[
-            :, :-1, :
-        ]
+        # Built in one go: replacing the cubes one at a time is now refused, because a
+        # half-applied crop is exactly the inconsistency MeteoInputs guarantees against.
+        coello_loaded.meteo = MeteoInputs(
+            precipitation=coello_loaded.meteo.precipitation[:, :-1, :],
+            temperature=coello_loaded.meteo.temperature[:, :-1, :],
+            evapotranspiration=coello_loaded.meteo.evapotranspiration[:, :-1, :],
+        )
 
         with pytest.raises(ValueError, match="must share the catchment's grid"):
             Run.RunFloodModel(coello_loaded)
