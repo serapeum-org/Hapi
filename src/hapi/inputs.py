@@ -214,32 +214,63 @@ def read_rasters(
         )
 
     if not date:
-        keyed = []
-        for file in Datacube.from_files(path, glob=glob).files:
-            match = re.search(regex_string, Path(file).name)
-            if match is None:
-                raise ValueError(
-                    f"regex {regex_string!r} matched no number in {Path(file).name!r}"
-                )
-            keyed.append((int(match.group()), file))
-        keyed.sort()
-
-        if start is not None or end is not None:
-            low = int(start) if start is not None else None
-            high = int(end) if end is not None else None
-            keyed = [
-                (number, file)
-                for number, file in keyed
-                if (low is None or number >= low) and (high is None or number <= high)
-            ]
-            if not keyed:
-                raise FileNotFoundError(
-                    f"no file in {path} carries an index within [{start}, {end}]"
-                )
-
-        return Datacube.from_files([file for _, file in keyed])
+        return _read_by_index(path, glob, regex_string, start, end)
 
     return Datacube.from_files(path, glob=glob)
+
+
+def _read_by_index(
+    path: str | Path,
+    glob: str,
+    regex_string: str,
+    start: str | int | None,
+    end: str | int | None,
+) -> Datacube:
+    """Read a folder whose names carry a plain index, ordered numerically.
+
+    `from_files` sorts only by date and otherwise keeps lexicographic order, which puts
+    `10_` before `2_` whenever the index is not zero-padded -- scrambling parameter rasters
+    into the wrong HBV slots. So resolve the files, sort on the integer in each name, and
+    hand them back as an explicit sequence, which `from_files` preserves.
+
+    Args:
+        path: Folder holding the rasters.
+        glob: `fnmatch` pattern selecting them.
+        regex_string: Where the index sits in each name.
+        start: Inclusive lower bound on the index, or None.
+        end: Inclusive upper bound on the index, or None.
+
+    Returns:
+        Datacube: The collection in ascending index order.
+
+    Raises:
+        ValueError: `regex_string` matched no number in one of the names.
+        FileNotFoundError: `start` / `end` excluded every file.
+    """
+    keyed = []
+    for file in Datacube.from_files(path, glob=glob).files:
+        match = re.search(regex_string, Path(file).name)
+        if match is None:
+            raise ValueError(
+                f"regex {regex_string!r} matched no number in {Path(file).name!r}"
+            )
+        keyed.append((int(match.group()), file))
+    keyed.sort()
+
+    if start is not None or end is not None:
+        low = int(start) if start is not None else None
+        high = int(end) if end is not None else None
+        keyed = [
+            (number, file)
+            for number, file in keyed
+            if (low is None or number >= low) and (high is None or number <= high)
+        ]
+        if not keyed:
+            raise FileNotFoundError(
+                f"no file in {path} carries an index within [{start}, {end}]"
+            )
+
+    return Datacube.from_files([file for _, file in keyed])
 
 
 def _warn_if_no_sentinel(dataset, label: str) -> None:
@@ -467,7 +498,7 @@ class FlowNetwork:
     @property
     def outlet(self) -> tuple:
         """tuple: Index of the most-accumulated cell, as `np.where` returns it."""
-        return np.where(self.flow_acc_arr == np.nanmax(self.flow_acc_arr))
+        return np.nonzero(self.flow_acc_arr == np.nanmax(self.flow_acc_arr))
 
     @property
     def px_tot_area(self) -> float:

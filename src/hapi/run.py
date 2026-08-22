@@ -23,6 +23,7 @@ from hapi.wrapper import Wrapper
 
 ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
 COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
+GRID_MISMATCH_ERROR = "all input data should have the same number of rows"
 
 
 class Run(Catchment):
@@ -73,7 +74,7 @@ class Run(Catchment):
         [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
         assert (
             fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
-        ), "all input data should have the same number of rows"
+        ), GRID_MISMATCH_ERROR
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
@@ -109,7 +110,7 @@ class Run(Catchment):
         [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
         assert (
             fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
-        ), "all input data should have the same number of rows"
+        ), GRID_MISMATCH_ERROR
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
@@ -129,7 +130,7 @@ class Run(Catchment):
             and np.shape(self.river_width)[0] == self.flow_network.rows
             and np.shape(self.river_roughness)[0] == self.flow_network.rows
             and np.shape(self.flood_plain_roughness)[0] == self.flow_network.rows
-        ), "all input data should have the same number of rows"
+        ), GRID_MISMATCH_ERROR
         assert (
             np.shape(self.bankfull_depth)[1] == self.flow_network.cols
             and np.shape(self.river_width)[1] == self.flow_network.cols
