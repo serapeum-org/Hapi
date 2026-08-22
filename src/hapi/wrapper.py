@@ -341,13 +341,13 @@ class Wrapper:
         qlz1 = np.array(
             [
                 np.nansum(Model.qlz[:, :, i])
-                for i in range(Model.parameters.shape[2] + 1)
+                for i in range(Model.meteo.simulation_steps)
             ]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
             [
                 np.nansum(Model.quz[:, :, i])
-                for i in range(Model.parameters.shape[2] + 1)
+                for i in range(Model.meteo.simulation_steps)
             ]
         )  # average of all cells (routed mm/timestep)
 
