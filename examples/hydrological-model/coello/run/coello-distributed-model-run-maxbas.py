@@ -33,7 +33,7 @@ Coello.meteo = MeteoInputs.from_rasters(
     PrecPath, TempPath, Evap_Path, file_name_data_fmt="%Y.%m.%d"
 )
 
-Coello.read_flow_acc(FlowAccPath)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath)
 Coello.read_parameters(ParPath, Snow, maxbas=True)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %% Gauges

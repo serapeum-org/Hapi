@@ -236,7 +236,7 @@ class Parameters:
             self.no_elem = len(self.values)
         else:
             # Count the cells the pyramids mask left intact (see
-            # Catchment.read_flow_acc for why not Dataset.count_domain_cells).
+            # FlowNetwork.no_elem for why not Dataset.count_domain_cells).
             self.no_elem = int(np.count_nonzero(~np.isnan(self.raster_array)))
 
         self.no_parameters = no_parameters

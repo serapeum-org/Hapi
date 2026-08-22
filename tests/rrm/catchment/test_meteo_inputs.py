@@ -17,7 +17,7 @@ from pyramids.dataset import Dataset, DatasetCollection
 from pyramids.netcdf import NetCDF
 
 from hapi.catchment import Catchment
-from hapi.inputs import METEO_VARIABLES, MeteoInputs, read_rasters
+from hapi.inputs import METEO_VARIABLES, FlowNetwork, MeteoInputs, read_rasters
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
@@ -83,8 +83,7 @@ def _run(model_name: str, inputs: MeteoInputs, fixtures: dict) -> Catchment:
         temporal_resolution="Daily",
     )
     coello.meteo = inputs
-    coello.read_flow_acc(fixtures["acc"])
-    coello.read_flow_dir(fixtures["fd"])
+    coello.flow_network = FlowNetwork.from_rasters(fixtures["acc"], fixtures["fd"])
     coello.read_parameters(fixtures["parameters"], False)
     coello.read_lumped_model(HBVLumped, fixtures["area"], fixtures["initial"])
     coello.read_gauge_table(fixtures["gauges_table"], fixtures["acc"])

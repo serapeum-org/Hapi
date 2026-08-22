@@ -72,19 +72,35 @@ class DistributedRRM:
                   factor (``tfac * 3.6``).
         """
         Model.state_variables = np.zeros(
-            [Model.rows, Model.cols, Model.meteo.simulation_steps, 5], dtype=np.float32
+            [
+                Model.flow_network.rows,
+                Model.flow_network.cols,
+                Model.meteo.simulation_steps,
+                5,
+            ],
+            dtype=np.float32,
         )
         Model.quz = np.zeros(
-            [Model.rows, Model.cols, Model.meteo.simulation_steps], dtype=np.float32
+            [
+                Model.flow_network.rows,
+                Model.flow_network.cols,
+                Model.meteo.simulation_steps,
+            ],
+            dtype=np.float32,
         )
         Model.qlz = np.zeros(
-            [Model.rows, Model.cols, Model.meteo.simulation_steps], dtype=np.float32
+            [
+                Model.flow_network.rows,
+                Model.flow_network.cols,
+                Model.meteo.simulation_steps,
+            ],
+            dtype=np.float32,
         )
 
-        for x in range(Model.rows):
-            for y in range(Model.cols):
+        for x in range(Model.flow_network.rows):
+            for y in range(Model.flow_network.cols):
                 # only for cells in the domain
-                if not np.isnan(Model.flow_acc_arr[x, y]):
+                if not np.isnan(Model.flow_network.flow_acc_arr[x, y]):
                     (
                         Model.quz[x, y, :],
                         Model.qlz[x, y, :],
@@ -100,14 +116,14 @@ class DistributedRRM:
                         snow=Model.snow,
                     )
 
-        area_coef = Model.area / Model.px_tot_area
+        area_coef = Model.area / Model.flow_network.px_tot_area
         # convert quz from mm/time step to m3/sec
         Model.quz = (
-            Model.quz * Model.px_area * area_coef / Model.conversion_factor
+            Model.quz * Model.flow_network.px_area * area_coef / Model.conversion_factor
         )  # Timef*3.6
         # convert Qlz to m3/sec
         Model.qlz = (
-            Model.qlz * Model.px_area * area_coef / Model.conversion_factor
+            Model.qlz * Model.flow_network.px_area * area_coef / Model.conversion_factor
         )  # Timef*3.6
 
     @staticmethod
@@ -166,25 +182,26 @@ class DistributedRRM:
         Model.qlz_translated = np.zeros_like(Model.quz)
         # Model.Qtot = np.zeros_like(Model.quz)
         # for all cells with 0 flow acc put the quz
-        for x in range(Model.rows):  # no of rows
-            for y in range(Model.cols):  # no of columns
+        for x in range(Model.flow_network.rows):  # no of rows
+            for y in range(Model.flow_network.cols):  # no of columns
                 if (
-                    not np.isnan(Model.flow_acc_arr[x, y])
-                    and Model.flow_acc_arr[x, y] == 0
+                    not np.isnan(Model.flow_network.flow_acc_arr[x, y])
+                    and Model.flow_network.flow_acc_arr[x, y] == 0
                 ):
                     Model.quz_routed[x, y, :] = Model.quz[x, y, :]
                     Model.qlz_translated[x, y, :] = Model.qlz[x, y, :]
 
         # remaining cells
-        for j in range(1, len(Model.acc_val)):
+        for j in range(1, len(Model.flow_network.acc_val)):
             # TODO parallelize
             # all cells with the same acc_val can run at the same time
-            for x in range(Model.rows):  # no of rows
-                for y in range(Model.cols):  # no of columns
+            for x in range(Model.flow_network.rows):  # no of rows
+                for y in range(Model.flow_network.cols):  # no of columns
                     # check from total flow accumulation
                     if (
-                        not np.isnan(Model.flow_acc_arr[x, y])
-                        and Model.flow_acc_arr[x, y] == Model.acc_val[j]
+                        not np.isnan(Model.flow_network.flow_acc_arr[x, y])
+                        and Model.flow_network.flow_acc_arr[x, y]
+                        == Model.flow_network.acc_val[j]
                     ):
                         if (
                             Model.routing_method != "Muskingum"
@@ -198,11 +215,15 @@ class DistributedRRM:
                             qlzi = np.zeros(Model.meteo.simulation_steps)
                             # iterate to route uz and translate lz
                             for i in range(
-                                len(Model.FDT[str(x) + "," + str(y)])
+                                len(Model.flow_network.FDT[str(x) + "," + str(y)])
                             ):  # Model.acc_val[j]
                                 # bring the indexes of the us cell
-                                x_ind = Model.FDT[str(x) + "," + str(y)][i][0]
-                                y_ind = Model.FDT[str(x) + "," + str(y)][i][1]
+                                x_ind = Model.flow_network.FDT[str(x) + "," + str(y)][
+                                    i
+                                ][0]
+                                y_ind = Model.flow_network.FDT[str(x) + "," + str(y)][
+                                    i
+                                ][1]
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
                                 q_uzi = q_uzi + routing.muskingum_v(
@@ -246,9 +267,9 @@ class DistributedRRM:
         """
         Maxbas = Model.parameters[:, :, -1]
 
-        for x in range(Model.rows):
-            for y in range(Model.cols):
-                if not np.isnan(Model.flow_acc_arr[x, y]):
+        for x in range(Model.flow_network.rows):
+            for y in range(Model.flow_network.cols):
+                if not np.isnan(Model.flow_network.flow_acc_arr[x, y]):
                     Model.quz[x, y, :] = routing.triangular_routing_1(
                         Model.quz[x, y, :], Maxbas[x, y]
                     )
@@ -283,7 +304,7 @@ class DistributedRRM:
         MAXBAS = np.nanmax(Model.parameters[:, :, -1])
         # replace novalue cells by nan
         Model.flow_path_length_arr[
-            Model.flow_path_length_arr == Model.no_data_value
+            Model.flow_path_length_arr == Model.flow_network.no_data_value
         ] = np.nan
 
         MaxFPL = np.nanmax(Model.flow_path_length_arr)
@@ -295,8 +316,8 @@ class DistributedRRM:
 
         NormalizedFPL = resize_fun(Model.flow_path_length_arr)
 
-        for x in range(Model.rows):
-            for y in range(Model.cols):
+        for x in range(Model.flow_network.rows):
+            for y in range(Model.flow_network.cols):
                 if not np.isnan(Model.flow_path_length_arr[x, y]):
                     Model.quz[x, y, :] = routing.triangular_routing_2(
                         Model.quz[x, y, :], NormalizedFPL[x, y]

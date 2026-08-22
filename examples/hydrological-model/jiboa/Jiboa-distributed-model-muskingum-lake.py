@@ -17,7 +17,7 @@ from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
 from hapi.catchment import Catchment, Lake
-from hapi.inputs import MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_lake import HBVLake
 from hapi.run import Run
@@ -70,8 +70,9 @@ Jiboa.meteo = MeteoInputs.from_rasters(
     file_name_data_fmt=date_format,
 )
 
-Jiboa.read_flow_acc(str(flow_acc_path))
-Jiboa.read_flow_dir(str(flow_direction_path))
+Jiboa.flow_network = FlowNetwork.from_rasters(
+    str(flow_acc_path), str(flow_direction_path)
+)
 Jiboa.read_parameters(str(par_path), Snow)
 
 Jiboa.read_lumped_model(HBV, catchment_area, initial_conditions)

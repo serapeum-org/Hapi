@@ -6,7 +6,7 @@ from cleopatra.styling.scaling import ColorScaling
 
 import hapi.rrm.hbv_bergestrom92 as HBV
 from hapi.catchment import Catchment
-from hapi.inputs import MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.run import Run
 
 # %% Paths
@@ -31,8 +31,9 @@ name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
 Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.read_flow_acc(FlowAccPath)
-Coello.read_flow_dir(FlowDPath)
+Coello.flow_network = FlowNetwork.from_rasters(
+    FlowAccPath, FlowDPath
+)
 Coello.read_parameters(ParPathRun, Snow)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %% Gauges

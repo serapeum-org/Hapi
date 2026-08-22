@@ -36,7 +36,7 @@ class Catchment:
 
 ```python
 from hapi.catchment import Catchment
-from hapi.inputs import MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs
 
 start = "2009-01-01"
 end = "2011-12-31"
@@ -63,8 +63,7 @@ ParPathRun = Path + "/Parameter set-Avg/"
 
 ```python
 Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
-Coello.read_flow_acc(FlowAccPath)
-Coello.read_flow_dir(FlowDPath)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 ```
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not
 

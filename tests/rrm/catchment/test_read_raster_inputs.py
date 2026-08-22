@@ -1,6 +1,6 @@
 """Unit tests for the Catchment raster readers that delegate no-data masking to pyramids.
 
-Covers ``Catchment.read_flow_acc``, ``Catchment.read_flow_dir`` and
+Covers ``FlowNetwork.from_rasters`` and
 ``Catchment.read_flow_path_length`` — the three readers changed on
 ``refactor/delegate-gis-to-pyramids``, where a hand-rolled
 ``math.isclose(..., rel_tol=0.001)`` loop was replaced by
@@ -22,7 +22,7 @@ import pytest
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
-from hapi.inputs import MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs
 
 CELL_SIZE = 4000.0
 """Cell size in metres used by every synthetic raster here (matches the Coello grid)."""
@@ -77,6 +77,46 @@ def write_raster(tmp_path):
 
 
 @pytest.fixture(scope="function")
+def acc_for_shape(write_raster):
+    """Return a factory that writes a valid flow-accumulation raster of a given shape.
+
+    Args:
+        write_raster: Factory fixture that writes a GeoTIFF.
+
+    Returns:
+        Callable[[tuple[int, int]], str]: Takes ``(rows, cols)`` and returns the path of an
+            accumulation raster numbering its cells 0..n-1, which is what
+            ``FlowNetwork.from_rasters`` expects alongside a direction raster.
+    """
+
+    def _acc(shape: tuple[int, int]) -> str:
+        rows, cols = shape
+        array = np.arange(rows * cols, dtype="int32").reshape(rows, cols)
+        return write_raster(array, name="acc_companion.tif")
+
+    return _acc
+
+
+@pytest.fixture(scope="function")
+def acc_for(acc_for_shape):
+    """Return a factory giving an accumulation raster matching another raster's grid.
+
+    Args:
+        acc_for_shape: Factory taking an explicit shape.
+
+    Returns:
+        Callable[[str], str]: Takes the path of a direction raster and returns the path of
+            an accumulation raster on the same grid. ``FlowNetwork`` requires the two to
+            agree, so a direction-focused test still needs a companion.
+    """
+
+    def _acc(direction_path: str) -> str:
+        return acc_for_shape(Dataset.read_file(direction_path).shape[-2:])
+
+    return _acc
+
+
+@pytest.fixture(scope="function")
 def catchment() -> Catchment:
     """Return a minimal distributed Catchment with a two-day window.
 
@@ -89,7 +129,7 @@ def catchment() -> Catchment:
 
 
 class TestReadFlowAcc:
-    """Tests for ``Catchment.read_flow_acc``."""
+    """Tests for the flow-accumulation half of ``FlowNetwork.from_rasters``."""
 
     def test_masks_no_data_cells_to_nan(self, catchment, write_raster):
         """Test that cells equal to the no-data sentinel become NaN.
@@ -100,16 +140,16 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert np.isnan(catchment.flow_acc_arr[1, 1]), (
-            f"the no-data cell should be NaN, got {catchment.flow_acc_arr[1, 1]}"
+        assert np.isnan(catchment.flow_network.flow_acc_arr[1, 1]), (
+            f"the no-data cell should be NaN, got {catchment.flow_network.flow_acc_arr[1, 1]}"
         )
-        assert not np.isnan(catchment.flow_acc_arr[:1, :]).any(), (
-            f"real accumulation values must not be masked, got {catchment.flow_acc_arr}"
+        assert not np.isnan(catchment.flow_network.flow_acc_arr[:1, :]).any(), (
+            f"real accumulation values must not be masked, got {catchment.flow_network.flow_acc_arr}"
         )
-        assert catchment.flow_acc_arr[0, 1] == 1.0, (
-            f"expected the value 1 to survive unchanged, got {catchment.flow_acc_arr[0, 1]}"
+        assert catchment.flow_network.flow_acc_arr[0, 1] == 1.0, (
+            f"expected the value 1 to survive unchanged, got {catchment.flow_network.flow_acc_arr[0, 1]}"
         )
 
     def test_preserves_value_near_sentinel(self, catchment, write_raster):
@@ -123,16 +163,16 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1], [2, NEAR_SENTINEL]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert not np.isnan(catchment.flow_acc_arr).any(), (
-            f"no cell holds the sentinel, so nothing should be masked, got {catchment.flow_acc_arr}"
+        assert not np.isnan(catchment.flow_network.flow_acc_arr).any(), (
+            f"no cell holds the sentinel, so nothing should be masked, got {catchment.flow_network.flow_acc_arr}"
         )
-        assert catchment.flow_acc_arr[1, 1] == float(NEAR_SENTINEL), (
-            f"expected {NEAR_SENTINEL} to survive masking, got {catchment.flow_acc_arr[1, 1]}"
+        assert catchment.flow_network.flow_acc_arr[1, 1] == float(NEAR_SENTINEL), (
+            f"expected {NEAR_SENTINEL} to survive masking, got {catchment.flow_network.flow_acc_arr[1, 1]}"
         )
-        assert catchment.no_elem == 4, (
-            f"all 4 cells are real data, got no_elem={catchment.no_elem}"
+        assert catchment.flow_network.no_elem == 4, (
+            f"all 4 cells are real data, got no_elem={catchment.flow_network.no_elem}"
         )
 
     def test_missing_sentinel_warns(self, catchment, write_raster):
@@ -152,10 +192,10 @@ class TestReadFlowAcc:
         )
 
         with pytest.warns(UserWarning, match="declares no no-data value"):
-            catchment.read_flow_acc(path)
+            catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.no_elem == 4, (
-            f"with no sentinel every cell is domain, got {catchment.no_elem}"
+        assert catchment.flow_network.no_elem == 4, (
+            f"with no sentinel every cell is domain, got {catchment.flow_network.no_elem}"
         )
 
     def test_counts_domain_cells_excluding_no_data(self, catchment, write_raster):
@@ -166,10 +206,10 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1, 2], [3, NO_DATA, NO_DATA]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.no_elem == 4, (
-            f"expected 4 domain cells out of 6, got {catchment.no_elem}"
+        assert catchment.flow_network.no_elem == 4, (
+            f"expected 4 domain cells out of 6, got {catchment.flow_network.no_elem}"
         )
 
     def test_domain_count_does_not_use_fuzzy_tolerance(self, catchment, write_raster):
@@ -184,17 +224,17 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1], [2, NEAR_SENTINEL]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.no_elem == 4, (
+        assert catchment.flow_network.no_elem == 4, (
             "no_elem must be counted from the pyramids-masked array; a value 0.1% away "
-            f"from the sentinel is real data, got no_elem={catchment.no_elem}"
+            f"from the sentinel is real data, got no_elem={catchment.flow_network.no_elem}"
         )
         # Deliberately not asserting count_domain_cells() == 3 here. That would pin an
         # upstream defect: a correct fix in pyramids would turn this red on a branch that
         # changed nothing. What matters is Hapi's own contract, asserted above.
         helper_count = Dataset.read_file(path).count_domain_cells()
-        if helper_count == catchment.no_elem:
+        if helper_count == catchment.flow_network.no_elem:
             pytest.skip(
                 "pyramids' count_domain_cells now agrees with the masked array; the "
                 "helper is safe to adopt and this guard can be removed"
@@ -222,11 +262,11 @@ class TestReadFlowAcc:
         ds.raster.FlushCache()
         ds.close()
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.no_elem == 3, (
+        assert catchment.flow_network.no_elem == 3, (
             "the cell zeroed in the mask band must be excluded from the domain, so 3 of "
-            f"4 cells remain; got {catchment.no_elem}"
+            f"4 cells remain; got {catchment.flow_network.no_elem}"
         )
 
     def test_returns_float_array_for_integer_raster(self, catchment, write_raster):
@@ -238,10 +278,10 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.flow_acc_arr.dtype.kind == "f", (
-            f"expected a floating dtype so NaN can be stored, got {catchment.flow_acc_arr.dtype}"
+        assert catchment.flow_network.flow_acc_arr.dtype.kind == "f", (
+            f"expected a floating dtype so NaN can be stored, got {catchment.flow_network.flow_acc_arr.dtype}"
         )
 
     def test_acc_val_is_sorted_unique_python_ints(self, catchment, write_raster):
@@ -254,13 +294,13 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[2, 1], [1, 0]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.acc_val == [0, 1, 2], (
-            f"expected the sorted distinct values [0, 1, 2], got {catchment.acc_val}"
+        assert catchment.flow_network.acc_val == [0, 1, 2], (
+            f"expected the sorted distinct values [0, 1, 2], got {catchment.flow_network.acc_val}"
         )
-        assert all(type(value) is int for value in catchment.acc_val), (
-            f"expected built-in ints, got {[type(v).__name__ for v in catchment.acc_val]}"
+        assert all(type(value) is int for value in catchment.flow_network.acc_val), (
+            f"expected built-in ints, got {[type(v).__name__ for v in catchment.flow_network.acc_val]}"
         )
 
     def test_acc_val_truncates_before_deduplicating(self, catchment, write_raster):
@@ -279,11 +319,11 @@ class TestReadFlowAcc:
             name="acc_float.tif",
         )
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.acc_val == [0, 1], (
+        assert catchment.flow_network.acc_val == [0, 1], (
             "float cells must be truncated before de-duplication, so 1.2 and 1.8 "
-            f"collapse to a single 1; got {catchment.acc_val}"
+            f"collapse to a single 1; got {catchment.flow_network.acc_val}"
         )
 
     def test_infinite_values_are_rejected(self, catchment, write_raster):
@@ -301,7 +341,7 @@ class TestReadFlowAcc:
         )
 
         with pytest.raises(ValueError, match="infinite values"):
-            catchment.read_flow_acc(path)
+            catchment.flow_network = FlowNetwork.from_rasters(path)
 
     def test_all_no_data_raster_raises(self, catchment, write_raster):
         """Test the degenerate all-no-data raster.
@@ -315,7 +355,7 @@ class TestReadFlowAcc:
         path = write_raster(np.full((2, 2), NO_DATA, dtype="int32"))
 
         with pytest.raises(ValueError, match="empty"):
-            catchment.read_flow_acc(path)
+            catchment.flow_network = FlowNetwork.from_rasters(path)
 
     def test_outlet_is_cell_of_maximum_accumulation(self, catchment, write_raster):
         """Test that the outlet is located at the maximum accumulation cell.
@@ -326,10 +366,13 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.outlet[0][0] == 1 and catchment.outlet[1][0] == 0, (
-            f"expected the outlet at row 1, column 0, got {catchment.outlet}"
+        assert (
+            catchment.flow_network.outlet[0][0] == 1
+            and catchment.flow_network.outlet[1][0] == 0
+        ), (
+            f"expected the outlet at row 1, column 0, got {catchment.flow_network.outlet}"
         )
 
     def test_derives_cell_size_and_pixel_area(self, catchment, write_raster):
@@ -340,16 +383,16 @@ class TestReadFlowAcc:
         """
         path = write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.cell_size == pytest.approx(CELL_SIZE), (
-            f"expected a {CELL_SIZE} m cell, got {catchment.cell_size}"
+        assert catchment.flow_network.cell_size == pytest.approx(CELL_SIZE), (
+            f"expected a {CELL_SIZE} m cell, got {catchment.flow_network.cell_size}"
         )
-        assert catchment.px_area == pytest.approx(16.0), (
-            f"expected a 16 km2 pixel for a {CELL_SIZE} m cell, got {catchment.px_area}"
+        assert catchment.flow_network.px_area == pytest.approx(16.0), (
+            f"expected a 16 km2 pixel for a {CELL_SIZE} m cell, got {catchment.flow_network.px_area}"
         )
-        assert catchment.px_tot_area == pytest.approx(48.0), (
-            f"expected 3 cells x 16 km2 = 48 km2, got {catchment.px_tot_area}"
+        assert catchment.flow_network.px_tot_area == pytest.approx(48.0), (
+            f"expected 3 cells x 16 km2 = 48 km2, got {catchment.flow_network.px_tot_area}"
         )
 
     def test_non_square_cells_use_both_axes(self, catchment, write_raster):
@@ -372,16 +415,16 @@ class TestReadFlowAcc:
             pixel_height=2000.0,
         )
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.cell_size == pytest.approx(4000.0), (
-            f"cell_size should report the pixel width, got {catchment.cell_size}"
+        assert catchment.flow_network.cell_size == pytest.approx(4000.0), (
+            f"cell_size should report the pixel width, got {catchment.flow_network.cell_size}"
         )
-        assert catchment.px_area == pytest.approx(8.0), (
-            f"expected 4 km x 2 km = 8 km2 for a non-square cell, got {catchment.px_area}"
+        assert catchment.flow_network.px_area == pytest.approx(8.0), (
+            f"expected 4 km x 2 km = 8 km2 for a non-square cell, got {catchment.flow_network.px_area}"
         )
-        assert catchment.px_tot_area == pytest.approx(24.0), (
-            f"expected 3 cells x 8 km2 = 24 km2, got {catchment.px_tot_area}"
+        assert catchment.flow_network.px_tot_area == pytest.approx(24.0), (
+            f"expected 3 cells x 8 km2 = 24 km2, got {catchment.flow_network.px_tot_area}"
         )
 
     def test_cell_size_is_a_magnitude(self, catchment, write_raster):
@@ -406,13 +449,13 @@ class TestReadFlowAcc:
             path=flipped_path,
         ).close()
 
-        catchment.read_flow_acc(flipped_path)
+        catchment.flow_network = FlowNetwork.from_rasters(flipped_path)
 
-        assert catchment.cell_size > 0, (
-            f"cell_size must be a magnitude, got {catchment.cell_size}"
+        assert catchment.flow_network.cell_size > 0, (
+            f"cell_size must be a magnitude, got {catchment.flow_network.cell_size}"
         )
-        assert catchment.cell_size == pytest.approx(CELL_SIZE), (
-            f"expected {CELL_SIZE}, got {catchment.cell_size}"
+        assert catchment.flow_network.cell_size == pytest.approx(CELL_SIZE), (
+            f"expected {CELL_SIZE}, got {catchment.flow_network.cell_size}"
         )
 
     def test_missing_file_raises(self, catchment, tmp_path):
@@ -424,7 +467,7 @@ class TestReadFlowAcc:
             guard used to produce.
         """
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            catchment.read_flow_acc(str(tmp_path / "absent.tif"))
+            FlowNetwork.from_rasters(str(tmp_path / "absent.tif"))
 
     def test_unreadable_file_raises(self, catchment, tmp_path):
         """Test that a file GDAL cannot open is rejected.
@@ -439,7 +482,7 @@ class TestReadFlowAcc:
         other.write_text("not a geotiff", encoding="utf-8")
 
         with pytest.raises(RuntimeError):
-            catchment.read_flow_acc(str(other))
+            FlowNetwork.from_rasters(str(other))
 
     def test_path_object_is_accepted(self, catchment, write_raster):
         """Test that a ``pathlib.Path`` is a valid argument.
@@ -451,10 +494,10 @@ class TestReadFlowAcc:
         """
         path = Path(write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32")))
 
-        catchment.read_flow_acc(path)
+        catchment.flow_network = FlowNetwork.from_rasters(path)
 
-        assert catchment.no_elem == 3, (
-            f"a Path argument should read exactly as a str does, got {catchment.no_elem}"
+        assert catchment.flow_network.no_elem == 3, (
+            f"a Path argument should read exactly as a str does, got {catchment.flow_network.no_elem}"
         )
 
     def test_non_tif_raster_is_accepted(self, catchment, write_raster, tmp_path):
@@ -470,10 +513,10 @@ class TestReadFlowAcc:
         asc_path = str(tmp_path / "acc.asc")
         source.to_file(asc_path)
 
-        catchment.read_flow_acc(asc_path)
+        catchment.flow_network = FlowNetwork.from_rasters(asc_path)
 
-        assert catchment.no_elem == 3, (
-            f"a valid .asc raster should read like a .tif, got {catchment.no_elem}"
+        assert catchment.flow_network.no_elem == 3, (
+            f"a valid .asc raster should read like a .tif, got {catchment.flow_network.no_elem}"
         )
 
     def test_reads_coello_fixture(
@@ -493,17 +536,20 @@ class TestReadFlowAcc:
             count (89 cells, matching the ``Par2d`` width asserted in
             ``tests/rrm/test_dist_parameters.py``).
         """
-        catchment.read_flow_acc(coello_acc_path)
+        catchment.flow_network = FlowNetwork.from_rasters(coello_acc_path)
 
-        assert (catchment.rows, catchment.cols) == (coello_rows, coello_cols), (
-            f"expected a {coello_rows}x{coello_cols} grid, got {catchment.rows}x{catchment.cols}"
+        assert (catchment.flow_network.rows, catchment.flow_network.cols) == (
+            coello_rows,
+            coello_cols,
+        ), (
+            f"expected a {coello_rows}x{coello_cols} grid, got {catchment.flow_network.rows}x{catchment.flow_network.cols}"
         )
-        assert catchment.acc_val == coello_acc_values, (
+        assert catchment.flow_network.acc_val == coello_acc_values, (
             "the distinct accumulation values recovered after masking changed; "
-            f"expected {coello_acc_values}, got {catchment.acc_val}"
+            f"expected {coello_acc_values}, got {catchment.flow_network.acc_val}"
         )
-        assert catchment.no_elem == 89, (
-            f"expected the 89 Coello domain cells to survive masking, got {catchment.no_elem}"
+        assert catchment.flow_network.no_elem == 89, (
+            f"expected the 89 Coello domain cells to survive masking, got {catchment.flow_network.no_elem}"
         )
 
 
@@ -547,9 +593,9 @@ class TestDirectoryReaders:
 
 
 class TestReadFlowDir:
-    """Tests for ``Catchment.read_flow_dir``."""
+    """Tests for the flow-direction half of ``FlowNetwork.from_rasters``."""
 
-    def test_masks_no_data_cells_to_nan(self, catchment, write_raster):
+    def test_masks_no_data_cells_to_nan(self, catchment, write_raster, acc_for):
         """Test that sentinel cells become NaN and valid D8 codes survive.
 
         Test scenario:
@@ -559,17 +605,17 @@ class TestReadFlowDir:
             np.array([[2, 4], [1, NO_DATA]], dtype="int32"), name="fd.tif"
         )
 
-        catchment.read_flow_dir(path)
+        catchment.flow_network = FlowNetwork.from_rasters(acc_for(path), path)
 
-        assert np.isnan(catchment.flow_dir_arr[1, 1]), (
-            f"the no-data cell should be NaN, got {catchment.flow_dir_arr[1, 1]}"
+        assert np.isnan(catchment.flow_network.flow_dir_arr[1, 1]), (
+            f"the no-data cell should be NaN, got {catchment.flow_network.flow_dir_arr[1, 1]}"
         )
-        assert catchment.flow_dir_arr[0, 0] == 2.0, (
-            f"the D8 code 2 should survive unchanged, got {catchment.flow_dir_arr[0, 0]}"
+        assert catchment.flow_network.flow_dir_arr[0, 0] == 2.0, (
+            f"the D8 code 2 should survive unchanged, got {catchment.flow_network.flow_dir_arr[0, 0]}"
         )
 
     def test_near_sentinel_value_now_surfaces_as_invalid_code(
-        self, catchment, write_raster
+        self, catchment, write_raster, acc_for
     ):
         """Test that a near-sentinel value is no longer silently swallowed.
 
@@ -584,11 +630,11 @@ class TestReadFlowDir:
         )
 
         with pytest.raises(
-            AssertionError, match="flow direction raster should contain values"
+            ValueError, match="flow direction raster should contain values"
         ):
-            catchment.read_flow_dir(path)
+            catchment.flow_network = FlowNetwork.from_rasters(acc_for(path), path)
 
-    def test_invalid_direction_code_raises(self, catchment, write_raster):
+    def test_invalid_direction_code_raises(self, catchment, write_raster, acc_for):
         """Test that a non-D8 code is rejected.
 
         Test scenario:
@@ -599,11 +645,13 @@ class TestReadFlowDir:
         )
 
         with pytest.raises(
-            AssertionError, match="flow direction raster should contain values"
+            ValueError, match="flow direction raster should contain values"
         ):
-            catchment.read_flow_dir(path)
+            catchment.flow_network = FlowNetwork.from_rasters(acc_for(path), path)
 
-    def test_repeated_direction_codes_are_accepted(self, catchment, write_raster):
+    def test_repeated_direction_codes_are_accepted(
+        self, catchment, write_raster, acc_for
+    ):
         """Test that duplicated D8 codes validate once de-duplicated.
 
         Test scenario:
@@ -614,13 +662,13 @@ class TestReadFlowDir:
             np.array([[1, 1], [1, 1]], dtype="int32"), name="fd_dup.tif"
         )
 
-        catchment.read_flow_dir(path)
+        catchment.flow_network = FlowNetwork.from_rasters(acc_for(path), path)
 
-        assert np.unique(catchment.flow_dir_arr).tolist() == [1.0], (
-            f"expected a single distinct code, got {np.unique(catchment.flow_dir_arr).tolist()}"
+        assert np.unique(catchment.flow_network.flow_dir_arr).tolist() == [1.0], (
+            f"expected a single distinct code, got {np.unique(catchment.flow_network.flow_dir_arr).tolist()}"
         )
 
-    def test_builds_flow_direction_table(self, catchment, write_raster):
+    def test_builds_flow_direction_table(self, catchment, write_raster, acc_for):
         """Test that the upstream lookup table is built for every domain cell.
 
         Test scenario:
@@ -631,13 +679,13 @@ class TestReadFlowDir:
             np.array([[2, 4], [1, NO_DATA]], dtype="int32"), name="fd_table.tif"
         )
 
-        catchment.read_flow_dir(path)
+        catchment.flow_network = FlowNetwork.from_rasters(acc_for(path), path)
 
-        assert set(catchment.FDT) == {"0,0", "0,1", "1,0"}, (
-            f"expected one table entry per domain cell, got {sorted(catchment.FDT)}"
+        assert set(catchment.flow_network.FDT) == {"0,0", "0,1", "1,0"}, (
+            f"expected one table entry per domain cell, got {sorted(catchment.flow_network.FDT)}"
         )
 
-    def test_unreadable_file_raises(self, catchment, tmp_path):
+    def test_unreadable_file_raises(self, catchment, tmp_path, acc_for_shape):
         """Test that a file GDAL cannot open is rejected.
 
         Test scenario:
@@ -648,18 +696,22 @@ class TestReadFlowDir:
         other.write_text("not a geotiff", encoding="utf-8")
 
         with pytest.raises(RuntimeError):
-            catchment.read_flow_dir(str(other))
+            FlowNetwork.from_rasters(acc_for_shape((2, 2)), str(other))
 
-    def test_missing_file_raises(self, catchment, tmp_path):
+    def test_missing_file_raises(self, catchment, tmp_path, acc_for_shape):
         """Test that a missing flow-direction raster is rejected by pyramids.
 
         Test scenario:
             ``FileNotFoundError`` from ``DEM.read_file``, matching the other readers.
         """
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            catchment.read_flow_dir(str(tmp_path / "absent.tif"))
+            FlowNetwork.from_rasters(
+                acc_for_shape((2, 2)), str(tmp_path / "absent.tif")
+            )
 
-    def test_fdt_and_flow_dir_arr_use_different_masks(self, catchment, write_raster):
+    def test_fdt_and_flow_dir_arr_use_different_masks(
+        self, catchment, write_raster, acc_for
+    ):
         """Test the documented divergence between ``FDT`` and ``flow_dir_arr``.
 
         Test scenario:
@@ -677,18 +729,20 @@ class TestReadFlowDir:
             name="fd_split.tif",
         )
 
-        catchment.read_flow_dir(path)
+        catchment.flow_network = FlowNetwork.from_rasters(acc_for(path), path)
 
-        assert np.isnan(catchment.flow_dir_arr[1, 1]), (
+        assert np.isnan(catchment.flow_network.flow_dir_arr[1, 1]), (
             "the no-data cell should be masked in the array, got "
-            f"{catchment.flow_dir_arr[1, 1]}"
+            f"{catchment.flow_network.flow_dir_arr[1, 1]}"
         )
-        assert "1,1" in catchment.FDT, (
+        assert "1,1" in catchment.flow_network.FDT, (
             "FDT is built from an independent unmasked read, so the masked cell is still "
-            f"keyed; if this now fails the two masks were reconciled, got {sorted(catchment.FDT)}"
+            f"keyed; if this now fails the two masks were reconciled, got {sorted(catchment.flow_network.FDT)}"
         )
 
-    def test_reads_coello_fixture(self, catchment, coello_fd_path, coello_fdt):
+    def test_reads_coello_fixture(
+        self, catchment, coello_acc_path, coello_fd_path, coello_fdt
+    ):
         """Test that the real Coello flow-direction raster is unchanged by the refactor.
 
         Args:
@@ -699,9 +753,11 @@ class TestReadFlowDir:
             Guards the production fixture: the derived flow-direction table must match the
             table recorded before the masking change.
         """
-        catchment.read_flow_dir(coello_fd_path)
+        catchment.flow_network = FlowNetwork.from_rasters(
+            coello_acc_path, coello_fd_path
+        )
 
-        assert catchment.FDT == coello_fdt, (
+        assert catchment.flow_network.FDT == coello_fdt, (
             "the flow-direction table changed after delegating masking to pyramids"
         )
 
@@ -745,15 +801,16 @@ class TestReadFlowPathLength:
         assert not np.isnan(catchment.flow_path_length_arr).any(), (
             f"no cell holds the sentinel, so nothing should be masked, got {catchment.flow_path_length_arr}"
         )
-        assert catchment.no_elem == 4, (
-            f"all 4 cells are real data, got no_elem={catchment.no_elem}"
-        )
+        domain = int(np.count_nonzero(~np.isnan(catchment.flow_path_length_arr)))
+        assert domain == 4, f"all 4 cells are real data, got {domain}"
 
     def test_counts_domain_cells_excluding_no_data(self, catchment, write_raster):
-        """Test that ``no_elem`` counts only cells inside the domain.
+        """Test that the masked array leaves only the cells inside the domain.
 
         Test scenario:
-            A 2x3 raster with two sentinel cells leaves four real cells.
+            A 2x3 raster with two sentinel cells leaves four real cells. The count comes from
+            this reader's own array: the grid and its ``no_elem`` belong to ``FlowNetwork``,
+            so a path-length raster no longer redefines them.
         """
         path = write_raster(
             np.array([[10, 20, 30], [40, NO_DATA, NO_DATA]], dtype="int32"),
@@ -762,9 +819,8 @@ class TestReadFlowPathLength:
 
         catchment.read_flow_path_length(path)
 
-        assert catchment.no_elem == 4, (
-            f"expected 4 domain cells out of 6, got {catchment.no_elem}"
-        )
+        domain = int(np.count_nonzero(~np.isnan(catchment.flow_path_length_arr)))
+        assert domain == 4, f"expected 4 domain cells out of 6, got {domain}"
 
     def test_unreadable_file_raises(self, catchment, tmp_path):
         """Test that a file GDAL cannot open is rejected.

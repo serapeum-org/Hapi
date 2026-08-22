@@ -7,7 +7,7 @@ from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import DatetimeIndex
 
 from hapi.catchment import Catchment
-from hapi.inputs import MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -199,14 +199,13 @@ class TestDistributed:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_flow_acc(coello_acc_path)
-        coello.read_flow_dir(coello_fd_path)
-        assert coello.outlet[0][0] == 10
-        assert coello.outlet[1][0] == 13
-        assert coello.acc_val == coello_acc_values
-        assert isinstance(coello.flow_dir_arr, np.ndarray)
-        assert coello.flow_dir_arr.shape == (13, 14)
-        assert coello.FDT == coello_fdt
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
+        assert coello.flow_network.outlet[0][0] == 10
+        assert coello.flow_network.outlet[1][0] == 13
+        assert coello.flow_network.acc_val == coello_acc_values
+        assert isinstance(coello.flow_network.flow_dir_arr, np.ndarray)
+        assert coello.flow_network.flow_dir_arr.shape == (13, 14)
+        assert coello.flow_network.FDT == coello_fdt
 
     def test_read_lumped_model(
         self,
@@ -323,7 +322,6 @@ class TestDistributed:
 
 
 class TestFW1:
-
     def test_run_dist(
         self,
         coello_start_date: str,
@@ -356,7 +354,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
@@ -401,7 +399,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
         coello.read_gauge_table(coello_gauges_table, coello_acc_path)
@@ -451,7 +449,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
@@ -497,7 +495,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
         coello.read_gauge_table(coello_gauges_table, coello_acc_path)

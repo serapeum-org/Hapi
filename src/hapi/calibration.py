@@ -211,12 +211,14 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
+        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), ROWS_MISMATCH_ERROR
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
 
         # basic inputs
         # check if all inputs are included
@@ -361,7 +363,7 @@ class Calibration(Catchment):
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
 
         # basic inputs
         # check if all inputs are included

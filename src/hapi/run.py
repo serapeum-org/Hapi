@@ -69,17 +69,21 @@ class Run(Catchment):
                 row counts, column counts, or temporal lengths.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows"
-        )
+        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), "all input data should have the same number of rows"
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
-        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
-        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            PARAMS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            PARAMS_MISMATCH_ERROR
+        )
 
         # run the model
         Wrapper.RRMModel(self)
@@ -99,29 +103,33 @@ class Run(Catchment):
                 dimensions.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows"
-        )
+        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), "all input data should have the same number of rows"
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
-        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
-        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            PARAMS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            PARAMS_MISMATCH_ERROR
+        )
 
         assert (
-            np.shape(self.bankfull_depth)[0] == self.rows
-            and np.shape(self.river_width)[0] == self.rows
-            and np.shape(self.roughness)[0] == self.rows
-            and np.shape(self.flood_plain_roughness)[0] == self.rows
+            np.shape(self.bankfull_depth)[0] == self.flow_network.rows
+            and np.shape(self.river_width)[0] == self.flow_network.rows
+            and np.shape(self.roughness)[0] == self.flow_network.rows
+            and np.shape(self.flood_plain_roughness)[0] == self.flow_network.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.bankfull_depth)[1] == self.cols
-            and np.shape(self.river_width)[1] == self.cols
-            and np.shape(self.roughness)[1] == self.cols
-            and np.shape(self.flood_plain_roughness)[1] == self.cols
+            np.shape(self.bankfull_depth)[1] == self.flow_network.cols
+            and np.shape(self.river_width)[1] == self.flow_network.cols
+            and np.shape(self.roughness)[1] == self.flow_network.cols
+            and np.shape(self.flood_plain_roughness)[1] == self.flow_network.cols
         ), "all input data should have the same number of columns"
 
         # run the model
@@ -151,17 +159,21 @@ class Run(Catchment):
                 does not match the distributed raster data length.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows and columns"
-        )
+        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), "all input data should have the same number of rows and columns"
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
-        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
-        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            PARAMS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            PARAMS_MISMATCH_ERROR
+        )
 
         assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
             "Lake meteorological data has to have the same length as the distributed raster data"
@@ -201,9 +213,13 @@ class Run(Catchment):
         """
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
-        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
-        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            PARAMS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            PARAMS_MISMATCH_ERROR
+        )
 
         # run the model
         Wrapper.FW1(self)
@@ -250,9 +266,13 @@ class Run(Catchment):
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.rows, self.cols)
-        assert np.shape(self.parameters)[0] == self.rows, PARAMS_MISMATCH_ERROR
-        assert np.shape(self.parameters)[1] == self.cols, PARAMS_MISMATCH_ERROR
+        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            PARAMS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            PARAMS_MISMATCH_ERROR
+        )
 
         assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
             "Lake meteorological data has to have the same length as the distributed raster data"
