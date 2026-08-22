@@ -41,9 +41,7 @@ Coello = Calibration(name, Sdate, Edate, spatial_resolution="Distributed")
 ### Meteorological & GIS Data
 Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.flow_network = FlowNetwork.from_rasters(
-    FlowAccPath, FlowDPath
-)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 

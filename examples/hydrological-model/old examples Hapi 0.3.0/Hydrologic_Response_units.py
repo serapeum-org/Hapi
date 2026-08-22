@@ -7,8 +7,9 @@ algorithm into a defined HRUs by a classified raster
 
 # %library
 import numpy as np
-from hapi.rrm.parameters import Parameters as DP
 from osgeo import gdal
+
+from hapi.rrm.parameters import Parameters as DP
 
 # data path
 path = "/data/"

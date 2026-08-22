@@ -31,9 +31,7 @@ name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
 Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.flow_network = FlowNetwork.from_rasters(
-    FlowAccPath, FlowDPath
-)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 Coello.read_parameters(ParPathRun, Snow)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %% Gauges

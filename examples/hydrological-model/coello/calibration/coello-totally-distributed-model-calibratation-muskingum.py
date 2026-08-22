@@ -33,13 +33,9 @@ name = "Coello"
 Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
 # %% Meteorological & GIS Data
 
-Coello.meteo = MeteoInputs.from_rasters(
-    PrecPath, TempPath, Evap_Path
-)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.flow_network = FlowNetwork.from_rasters(
-    FlowAccPath, FlowDPath
-)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %%
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)

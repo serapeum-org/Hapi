@@ -20,6 +20,11 @@ sys.path.append(
 path = "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/"  # GIS/4000/
 from datetime import datetime
 
+# %library
+import numpy as np
+import pandas as pd
+from osgeo import gdal
+
 # import Wrapper
 # import hapi.GISpy as GIS
 import hapi.gis.giscatchment as GC
@@ -27,13 +32,8 @@ import hapi.rrm.hbv as HBV
 import hapi.rrm.parameters as DP
 import hapi.sm.performancecriteria as PC
 
-# %library
-import numpy as np
-import pandas as pd
-
 # functions
 from hapi.calibration import RunCalibration
-from osgeo import gdal
 
 # from pyOpt import Optimization, ALHSO,Optimizer
 

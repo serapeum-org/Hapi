@@ -34,12 +34,8 @@ start_date = "2009-01-01"
 end_date = "2011-12-31"
 name = "Coello"
 Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
-Coello.meteo = MeteoInputs.from_rasters(
-    PrecPath, TempPath, Evap_Path
-)
-Coello.flow_network = FlowNetwork.from_rasters(
-    FlowAccPath, FlowDPath
-)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %%
 UB = np.loadtxt(path + "/Basic_inputs/UB_HRU.txt", usecols=0)
