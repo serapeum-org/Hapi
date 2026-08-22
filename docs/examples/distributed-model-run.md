@@ -6,6 +6,7 @@ import numpy as np
 import datetime as dt
 from osgeo import gdal
 from hapi.calibration import Calibration
+from hapi.inputs import FlowNetwork, MeteoInputs
 import hapi.rrm.hbv_bergestrom92 as HBV
 
 import statista.descriptors as metrics

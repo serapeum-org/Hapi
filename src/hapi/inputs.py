@@ -1,16 +1,23 @@
-"""Rainfall-runoff Inputs.
+"""Rainfall-runoff inputs.
 
-The inputs module provides the `Inputs` class for preparing meteorological
-and parameter raster data for distributed hydrological modeling. It handles
-alignment of rasters to a source DEM, extraction of HBV model parameters
-from global datasets, and creation of lumped inputs from distributed data.
+Everything the distributed model is driven by, and the loaders that build it:
 
-Rasters are read in chronological order by ``DatasetCollection.from_files``, which parses the
+* `MeteoInputs` -- the three meteorological drivers (precipitation, temperature,
+  evapotranspiration) as aligned `(rows, cols, time)` cubes, from folders of dated rasters,
+  one NetCDF per variable, or a single NetCDF holding all three.
+* `FlowNetwork` -- the routing network (flow accumulation, flow direction, the direction
+  table) and the grid it defines, from the accumulation and direction rasters.
+* `Inputs` -- preparation utilities: aligning rasters to a source DEM, extracting HBV
+  parameters from the global datasets, and building lumped inputs from distributed ones.
+* `read_rasters` -- the shared adapter over `DatasetCollection.from_files` that decides the
+  order a folder's rasters are handed over in.
+
+Rasters are read in chronological order by `DatasetCollection.from_files`, which parses the
 date out of each file name, so the files themselves never need renaming on disk.
 
-The module relies on the ``pyramids`` library for raster I/O and
-manipulation, and uses the ``HAPI_DATA_DIR`` environment variable to
-locate pre-downloaded global parameter sets (Beck et al., 2016).
+The module relies on the `pyramids` library for raster I/O and manipulation, and uses the
+`HAPI_DATA_DIR` environment variable to locate pre-downloaded global parameter sets
+(Beck et al., 2016).
 """
 
 from __future__ import annotations
@@ -912,7 +919,7 @@ class Inputs:
                 rasters will be saved.
 
         Each output keeps its source file name, so the ordering of the collection is
-        irrelevant here and the rasters are read with ``with_order=False``.
+        irrelevant here and the rasters are read unordered.
         ``outputs_dir`` is created if it does not exist; either argument may be a
         ``str`` or a :class:`pathlib.Path`.
 

@@ -139,13 +139,13 @@ for i in range(len(Coello.GaugesTable)):
 	gaugeid = Coello.GaugesTable.loc[i,'id']
 	print("----------------------------------")
 	print("Gauge - " +str(gaugeid))
-	print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
-	print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
-	print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
-	print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-	print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
-	print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
-	print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
+	print("RMSE= " + str(round(Coello.metrics.loc['RMSE',gaugeid],2)))
+	print("NSE= " + str(round(Coello.metrics.loc['NSE',gaugeid],2)))
+	print("NSEhf= " + str(round(Coello.metrics.loc['NSEhf',gaugeid],2)))
+	print("KGE= " + str(round(Coello.metrics.loc['KGE',gaugeid],2)))
+	print("WB= " + str(round(Coello.metrics.loc['WB',gaugeid],2)))
+	print("Pearson CC= " + str(round(Coello.metrics.loc['Pearson-CC',gaugeid],2)))
+	print("R2 = " + str(round(Coello.metrics.loc['R2',gaugeid],2)))
 ```
 - The `extract_discharge` will print the performance metics
 
