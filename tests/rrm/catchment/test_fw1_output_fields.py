@@ -30,6 +30,7 @@ def coello_fw1(
     coello_dist_parameters_maxbas: str,
     coello_cat_area: int,
     coello_initial_cond: list,
+    coello_gauges_table: str,
 ) -> Catchment:
     """Distributed Coello catchment with a completed triangular (MAXBAS) run."""
     coello = Catchment(
@@ -52,6 +53,9 @@ def coello_fw1(
     coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
+    # read here rather than inside a test: the fixture is module-scoped, so a test that
+    # mutated it would leak into whichever test ran next.
+    coello.read_gauge_table(coello_gauges_table, coello_acc_path)
     Run.runFW1(coello)
     return coello
 
@@ -118,7 +122,7 @@ def test_fw1_qtot_summed_over_the_domain_reproduces_qout(coello_fw1: Catchment):
 
 
 def test_extract_discharge_rejects_the_outlet_cell_shortcut_after_fw1(
-    coello_fw1: Catchment, coello_acc_path: str, coello_gauges_table: str
+    coello_fw1: Catchment,
 ):
     """Test that the Muskingum-only outlet-cell shortcut raises on a MAXBAS run.
 
@@ -134,7 +138,6 @@ def test_extract_discharge_rejects_the_outlet_cell_shortcut_after_fw1(
         Qtot was populated this crashed with a bare TypeError; now that it holds
         real numbers the wrong answer would be silent, so it must raise instead.
     """
-    coello_fw1.read_gauge_table(coello_gauges_table, coello_acc_path)
     with pytest.raises(ValueError, match="MAXBAS"):
         coello_fw1.extract_discharge(calculate_metrics=False)
 
