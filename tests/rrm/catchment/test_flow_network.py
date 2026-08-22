@@ -135,9 +135,11 @@ class TestDerivedValues:
         """
         acc = np.array([[1.2, 1.8], [3.0, np.nan]])
 
-        assert _network(acc).acc_val == [1, 3], (
-            f"expected [1, 3], got {_network(acc).acc_val}"
-        )
+        # Built once: constructing it again inside the failure message would re-run the code
+        # under test to report on it.
+        values = _network(acc).acc_val
+
+        assert values == [1, 3], f"expected [1, 3], got {values}"
 
     def test_outlet_is_the_most_accumulated_cell(self, square_network: FlowNetwork):
         """Test that the outlet is where accumulation peaks.

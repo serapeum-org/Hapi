@@ -769,8 +769,11 @@ class Catchment:
             factor (list, optional): List of multiplication factors
                 for simulated discharge at each gauge. Must have the
                 same length as the number of gauges. Default is None.
-            only_outlet (bool, optional): True to extract discharge
-                only at the outlet cell. Default is False.
+            only_outlet (bool, optional): Currently has **no effect**. The dispatch below
+                reads `elif frame_work_1 or only_outlet`, which is reached only when
+                `frame_work_1` is already True, so this flag never selects anything on its
+                own. Left in place rather than removed because it is part of the public
+                signature; pass `frame_work_1=True` for the basin-wide sum. Default is False.
 
         Raises:
             ValueError: If the gauge table has not been read yet.

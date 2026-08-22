@@ -132,9 +132,9 @@ class Calibration(Catchment):
             factor (list, optional): List of multiplication factors for
                 the simulated discharge, one per gauge. If None, no
                 scaling is applied. Default is None.
-            only_outlet (bool, optional): True to extract discharge
-                only at the outlet cell. Not used in this override but
-                kept for signature compatibility. Default is False.
+            only_outlet (bool, optional): Not used in this override, and inert on the base
+                class too -- see `Catchment.extract_discharge`. Kept for signature
+                compatibility. Default is False.
         """
         if self._maxbas_routed:
             raise ValueError(
