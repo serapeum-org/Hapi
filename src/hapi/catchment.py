@@ -188,12 +188,12 @@ class Catchment:
     def read_flow_path_length(self, path: str):
         """Read the flow path length raster.
 
-        Reads the flow path length raster and extracts rows, columns,
-        no_data_value, and the number of domain cells.
+        Reads the flow path length raster into `flow_path_length_arr`. The grid it sits
+        on belongs to :class:`~hapi.inputs.FlowNetwork`, so this reader no longer derives
+        rows, columns, the no-data value or the domain count from a second raster.
 
         No-data handling is delegated to pyramids via ``read_array(masked=True)``, so
-        cells outside the catchment become ``NaN`` and ``no_elem`` counts only the
-        cells that remain. The array is promoted to floating point so masked cells can
+        cells outside the catchment become ``NaN``. The array is promoted to floating point so masked cells can
         hold ``NaN``.
 
         Args:
@@ -221,7 +221,7 @@ class Catchment:
                 >>> model = Catchment("example", "2000-01-01", "2000-01-02",
                 ...                   spatial_resolution="Distributed")
                 >>> model.read_flow_path_length(path)
-                >>> model.no_elem
+                >>> int(np.count_nonzero(~np.isnan(model.flow_path_length_arr)))
                 3
                 >>> float(model.flow_path_length_arr[0, 1])
                 20.0
@@ -241,7 +241,7 @@ class Catchment:
                 >>> model = Catchment("example", "2000-01-01", "2000-01-02",
                 ...                   spatial_resolution="Distributed")
                 >>> model.read_flow_path_length(path)
-                >>> model.no_elem
+                >>> int(np.count_nonzero(~np.isnan(model.flow_path_length_arr)))
                 4
 
                 ```
