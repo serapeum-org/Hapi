@@ -287,6 +287,204 @@ class TestPerVariableOverrides:
             )
 
 
+class TestWritingNetcdf:
+    """Tests for packing rasters into NetCDF and merging the per-driver files."""
+
+    def test_a_packed_folder_round_trips_to_the_same_cube(
+        self,
+        from_rasters: MeteoInputs,
+        raster_kwargs: dict,
+        coello_temp_path: str,
+        tmp_path,
+    ):
+        """Test that packing a raster folder loses nothing.
+
+        Test scenario:
+            The point of packing is that a later run reads one file instead of re-opening
+            every raster, so the cube that comes back has to be the one that went in --
+            values, no-data cells and calendar alike.
+        """
+        out = MeteoInputs.raster_folder_to_netcdf(
+            coello_temp_path, tmp_path / "temp.nc", **raster_kwargs
+        )
+
+        packed = MeteoInputs.from_netcdf_files(out, out, out)
+
+        np.testing.assert_array_equal(
+            packed.temperature,
+            from_rasters.temperature,
+            err_msg="the packed cube must match the one read straight from the rasters",
+        )
+        assert packed.time is not None, "the calendar must travel into the file"
+        assert str(packed.time[0].date()) == "2009-01-01"
+        assert str(packed.time[-1].date()) == "2009-01-10"
+
+    def test_packing_reproduces_the_committed_fixture(
+        self, coello_temp_path: str, raster_kwargs: dict, tmp_path
+    ):
+        """Test that the method produces what the shipped fixture already contains.
+
+        Test scenario:
+            `temp.nc` is committed and was produced by the standalone script this replaces.
+            Regenerating it through the method must give the same array, otherwise the
+            fixtures and the API have drifted apart.
+        """
+        out = MeteoInputs.raster_folder_to_netcdf(
+            coello_temp_path, tmp_path / "temp.nc", **raster_kwargs
+        )
+
+        regenerated = MeteoInputs.from_netcdf_files(out, out, out)
+        shipped = MeteoInputs.from_netcdf_files(
+            f"{NC_DIR}/temp.nc", f"{NC_DIR}/temp.nc", f"{NC_DIR}/temp.nc"
+        )
+
+        np.testing.assert_array_equal(
+            regenerated.temperature,
+            shipped.temperature,
+            err_msg="regenerating temp.nc must reproduce the committed fixture",
+        )
+
+    def test_a_window_packs_only_the_requested_steps(
+        self, coello_temp_path: str, tmp_path
+    ):
+        """Test that `start` / `end` reach the reader rather than being ignored.
+
+        Test scenario:
+            The whole folder is often far larger than the period of interest, so the window
+            is the difference between a usable file and an unusable one. Three days in must
+            be three steps out.
+        """
+        out = MeteoInputs.raster_folder_to_netcdf(
+            coello_temp_path,
+            tmp_path / "window.nc",
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            file_name_data_fmt="%Y.%m.%d",
+            start="2009-01-02",
+            end="2009-01-04",
+        )
+
+        packed = MeteoInputs.from_netcdf_files(out, out, out)
+
+        assert packed.time_steps == 3, (
+            f"the window covers three days, got {packed.time_steps} steps"
+        )
+        assert str(packed.time[0].date()) == "2009-01-02"
+        assert str(packed.time[-1].date()) == "2009-01-04"
+
+    def test_a_folder_with_no_parseable_dates_is_refused(self, tmp_path):
+        """Test that packing refuses rather than writing a file with no time axis.
+
+        Test scenario:
+            A NetCDF whose steps carry no dates cannot be validated against a model's date
+            range later, and the positional pairing that results is exactly the silent
+            failure the calendar check exists to prevent. Better to refuse at the write.
+        """
+        for i in range(2):
+            Dataset.create_from_array(
+                np.full((3, 3), float(i), dtype="float32"),
+                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
+                epsg=32618,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"undated_{i}.tif"))
+
+        with pytest.warns(UserWarning, match="matched no file name"):
+            with pytest.raises(ValueError, match="no calendar"):
+                MeteoInputs.raster_folder_to_netcdf(tmp_path, tmp_path / "out.nc")
+
+    def test_combining_names_the_variables_after_the_drivers(
+        self, from_netcdf_files: MeteoInputs, tmp_path
+    ):
+        """Test that the merged file can be read back by driver name.
+
+        Test scenario:
+            `to_netcdf` names a single-variable file's band `Band_1`, so three of them merged
+            naively would be indistinguishable. Naming them after the drivers is what makes
+            `from_netcdf` a by-name read rather than a guess at band order.
+        """
+        out = MeteoInputs.combine_netcdf_files(
+            f"{NC_DIR}/prec.nc",
+            f"{NC_DIR}/temp.nc",
+            f"{NC_DIR}/evap.nc",
+            tmp_path / "meteo.nc",
+        )
+
+        nc = NetCDF.read_file(str(out))
+        assert sorted(nc.variable_names) == sorted(METEO_VARIABLES), (
+            f"expected the drivers as variable names, got {nc.variable_names}"
+        )
+        combined = MeteoInputs.from_netcdf(
+            out,
+            precipitation="precipitation",
+            temperature="temperature",
+            evapotranspiration="evapotranspiration",
+        )
+        for name in METEO_VARIABLES:
+            np.testing.assert_array_equal(
+                getattr(combined, name),
+                getattr(from_netcdf_files, name),
+                err_msg=f"{name} changed when the three files were merged",
+            )
+
+    def test_combining_keeps_each_cube_with_its_own_name(self, tmp_path):
+        """Test that the three sources are not mixed up on the way in.
+
+        Test scenario:
+            The merge renames each variable as it arrives, so an off-by-one in that pairing
+            would put temperature under `precipitation` with nothing to catch it -- the
+            shapes are identical. Feeding three files with distinguishable values pins the
+            mapping.
+        """
+        for value, name in ((1.0, "a"), (2.0, "b"), (3.0, "c")):
+            folder = tmp_path / name
+            folder.mkdir()
+            for day in range(1, 3):
+                Dataset.create_from_array(
+                    np.full((3, 3), value, dtype="float32"),
+                    geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
+                    epsg=32618,
+                    no_data_value=-9999.0,
+                ).to_file(str(folder / f"v_2009.01.{day:02d}.tif"))
+            MeteoInputs.raster_folder_to_netcdf(folder, tmp_path / f"{name}.nc")
+
+        out = MeteoInputs.combine_netcdf_files(
+            tmp_path / "a.nc", tmp_path / "b.nc", tmp_path / "c.nc", tmp_path / "all.nc"
+        )
+
+        combined = MeteoInputs.from_netcdf(
+            out,
+            precipitation="precipitation",
+            temperature="temperature",
+            evapotranspiration="evapotranspiration",
+        )
+        assert combined.precipitation.flat[0] == pytest.approx(1.0), (
+            "rainfall came from the wrong file"
+        )
+        assert combined.temperature.flat[0] == pytest.approx(2.0), (
+            "temperature came from the wrong file"
+        )
+        assert combined.evapotranspiration.flat[0] == pytest.approx(3.0), (
+            "ET came from the wrong file"
+        )
+
+    def test_combining_refuses_a_multi_variable_source(self, tmp_path):
+        """Test that a source holding several variables is rejected, not guessed at.
+
+        Test scenario:
+            Passing the already-combined file by mistake is the likely slip. Taking its first
+            variable would silently produce a file whose three cubes are all rainfall.
+        """
+        with pytest.raises(
+            ValueError, match="must come from a file with exactly"
+        ) as exc:
+            MeteoInputs.combine_netcdf_files(
+                COMBINED_NC, f"{NC_DIR}/temp.nc", f"{NC_DIR}/evap.nc", tmp_path / "x.nc"
+            )
+
+        assert "precipitation" in str(exc.value), (
+            f"the error should name which driver's source was wrong: {exc.value}"
+        )
+
+
 class TestValidation:
     """Tests for the construction-time checks."""
 

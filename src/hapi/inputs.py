@@ -105,7 +105,10 @@ def _infer_date_format(sample: str) -> str | None:
 
 
 def _infer_date_format_from_folder(
-    path: str | Path, glob: str, regex_string: str
+    path: str | Path,
+    glob: str,
+    regex_string: str,
+    gdal_env: dict[str, str] | None = None,
 ) -> str | None:
     """Sample a folder's file names and infer the date format they carry.
 
@@ -113,13 +116,14 @@ def _infer_date_format_from_folder(
         path: Folder holding the rasters.
         glob: `fnmatch` pattern selecting them.
         regex_string: Where the date sits in each name.
+        gdal_env: GDAL configuration options applied while resolving the folder.
 
     Returns:
         str | None: The inferred `strptime` format, or None when no name matched the regex
             or the layout is ambiguous -- in which case the read falls back to unordered and
             a warning says so.
     """
-    for file in Datacube.from_files(path, glob=glob).files:
+    for file in Datacube.from_files(path, glob=glob, gdal_env=gdal_env).files:
         match = re.search(regex_string, Path(file).name)
         if match is None:
             continue
@@ -152,6 +156,7 @@ def read_rasters(
     start: str | int | None = None,
     end: str | int | None = None,
     fmt: str = "%Y-%m-%d",
+    gdal_env: dict[str, str] | None = None,
 ) -> Datacube:
     r"""Read a folder of rasters into a `DatasetCollection` in the right order.
 
@@ -186,6 +191,12 @@ def read_rasters(
             when `date=False`.
         end: Inclusive upper bound; see `start`.
         fmt: `strptime` format of `start` / `end` when they are date strings.
+        gdal_env: GDAL configuration options applied for the read, e.g.
+            `{"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR"}`. GDAL lists the directory on
+            every open to look for sidecars, which on network storage is a remote listing
+            per raster -- 369 ms against 18 ms in one measurement over 14,823 files. Left
+            unset by default because disabling it also stops GDAL finding `.aux.xml`,
+            world files and `.ovr`, which some of this repository's fixtures rely on.
 
     Returns:
         DatasetCollection: The collection, ordered as described above.
@@ -201,7 +212,9 @@ def read_rasters(
         # in slot 1 -- with no error and no time axis, so neither the length check nor the
         # calendar check could see it, and the run silently paired each day's rainfall with
         # the wrong date.
-        file_name_data_fmt = _infer_date_format_from_folder(path, glob, regex_string)
+        file_name_data_fmt = _infer_date_format_from_folder(
+            path, glob, regex_string, gdal_env
+        )
 
     if date and file_name_data_fmt is not None:
         return Datacube.from_files(
@@ -211,12 +224,13 @@ def read_rasters(
             date_regex=regex_string,
             start=_as_datetime(start, fmt),
             end=_as_datetime(end, fmt),
+            gdal_env=gdal_env,
         )
 
     if not date:
-        return _read_by_index(path, glob, regex_string, start, end)
+        return _read_by_index(path, glob, regex_string, start, end, gdal_env)
 
-    return Datacube.from_files(path, glob=glob)
+    return Datacube.from_files(path, glob=glob, gdal_env=gdal_env)
 
 
 def _read_by_index(
@@ -225,6 +239,7 @@ def _read_by_index(
     regex_string: str,
     start: str | int | None,
     end: str | int | None,
+    gdal_env: dict[str, str] | None = None,
 ) -> Datacube:
     """Read a folder whose names carry a plain index, ordered numerically.
 
@@ -239,6 +254,7 @@ def _read_by_index(
         regex_string: Where the index sits in each name.
         start: Inclusive lower bound on the index, or None.
         end: Inclusive upper bound on the index, or None.
+        gdal_env: GDAL configuration options applied for the read.
 
     Returns:
         Datacube: The collection in ascending index order.
@@ -248,7 +264,7 @@ def _read_by_index(
         FileNotFoundError: `start` / `end` excluded every file.
     """
     keyed = []
-    for file in Datacube.from_files(path, glob=glob).files:
+    for file in Datacube.from_files(path, glob=glob, gdal_env=gdal_env).files:
         match = re.search(regex_string, Path(file).name)
         if match is None:
             raise ValueError(
@@ -270,7 +286,7 @@ def _read_by_index(
                 f"no file in {path} carries an index within [{start}, {end}]"
             )
 
-    return Datacube.from_files([file for _, file in keyed])
+    return Datacube.from_files([file for _, file in keyed], gdal_env=gdal_env)
 
 
 def _warn_if_no_sentinel(dataset, label: str) -> None:
@@ -1066,6 +1082,138 @@ class MeteoInputs:
             )
         }
         return cls(**cubes, time=cls._calendar(nc))
+
+    @staticmethod
+    def raster_folder_to_netcdf(
+        path: str | Path,
+        out_path: str | Path,
+        **kwargs: Any,
+    ) -> Path:
+        r"""Pack one driver's folder of dated rasters into a single NetCDF.
+
+        A folder of per-date GeoTIFFs is what the download backends produce, and it is the
+        slowest thing the model can be driven from: every run re-opens every file. Packing it
+        once into a NetCDF makes later runs read one file, and makes the folder portable --
+        the calendar travels inside the file instead of living in the file names.
+
+        The rasters are ordered by :func:`read_rasters`, so the same date handling applies:
+        the format is inferred from the names unless `file_name_data_fmt` says otherwise.
+
+        Args:
+            path: Folder holding one variable's rasters.
+            out_path: NetCDF file to write. Overwritten if it exists.
+            **kwargs: Forwarded to :func:`read_rasters` -- `glob`, `regex_string`, `date`,
+                `file_name_data_fmt`, `start`, `end`, `fmt`, `gdal_env`. Pass `start` / `end`
+                to convert a window rather than the whole folder, and `gdal_env` to skip
+                GDAL's per-open directory listing on network storage.
+
+        Returns:
+            Path: The file that was written.
+
+        Raises:
+            FileNotFoundError: The folder does not exist or matched no raster.
+            ValueError: The rasters carry no usable calendar, so the NetCDF would have no
+                time axis to write.
+
+        Examples:
+            Pack a folder, then drive a model from the result:
+
+            >>> MeteoInputs.raster_folder_to_netcdf(temp_dir, "temp.nc")  # doctest: +SKIP
+            >>> MeteoInputs.from_netcdf_files(  # doctest: +SKIP
+            ...     "prec.nc", "temp.nc", "evap.nc"
+            ... )
+        """
+        collection = read_rasters(path, **kwargs)
+        if collection.time is None:
+            raise ValueError(
+                f"the rasters in {path} carry no calendar, so the NetCDF would have no time "
+                "axis; pass regex_string and file_name_data_fmt so the dates can be parsed"
+            )
+
+        stamps = list(collection.time)
+        if stamps != sorted(stamps):
+            raise ValueError(
+                f"the rasters in {path} did not come back in chronological order, so the "
+                "NetCDF would pair each step with the wrong date"
+            )
+
+        out = Path(out_path)
+        out.unlink(missing_ok=True)
+        collection.to_netcdf(str(out))
+        logger.debug(
+            f"{collection.time_length} rasters from {path} written to {out} "
+            f"({stamps[0]:%Y-%m-%d} to {stamps[-1]:%Y-%m-%d})"
+        )
+        return out
+
+    @staticmethod
+    def combine_netcdf_files(
+        precipitation: str | Path,
+        temperature: str | Path,
+        evapotranspiration: str | Path,
+        out_path: str | Path,
+    ) -> Path:
+        """Merge one NetCDF per driver into a single file holding all three.
+
+        The counterpart to :meth:`from_netcdf`: three single-variable files go in, one file
+        comes out whose variables are named `precipitation`, `temperature` and
+        `evapotranspiration`, so a reader can ask for them by name rather than guessing at
+        whatever `to_netcdf` called the band.
+
+        The first file seeds the container and the other two are copied in with
+        `NetCDF.add_variable`; nothing touches disk until the write, so the sources are left
+        as they are.
+
+        Args:
+            precipitation: NetCDF holding the rainfall cube.
+            temperature: NetCDF holding the temperature cube.
+            evapotranspiration: NetCDF holding the evapotranspiration cube.
+            out_path: File to write. Overwritten if it exists.
+
+        Returns:
+            Path: The file that was written.
+
+        Raises:
+            ValueError: One of the sources holds more than one variable, so which cube it
+                contributes would be a guess.
+
+        Examples:
+            >>> MeteoInputs.combine_netcdf_files(  # doctest: +SKIP
+            ...     "prec.nc", "temp.nc", "evap.nc", "meteo.nc"
+            ... )
+            >>> MeteoInputs.from_netcdf(  # doctest: +SKIP
+            ...     "meteo.nc",
+            ...     precipitation="precipitation",
+            ...     temperature="temperature",
+            ...     evapotranspiration="evapotranspiration",
+            ... )
+        """
+        sources = dict(
+            zip(METEO_VARIABLES, (precipitation, temperature, evapotranspiration))
+        )
+        for name, source in sources.items():
+            holder = NetCDF.read_file(str(source))
+            if len(holder.variable_names) != 1:
+                raise ValueError(
+                    f"{source} holds {len(holder.variable_names)} variables "
+                    f"({holder.variable_names}); {name} must come from a file with exactly "
+                    "one, as raster_folder_to_netcdf writes"
+                )
+
+        (seed_name, seed_path), *rest = sources.items()
+        combined = NetCDF.read_file(str(seed_path))
+        combined.rename_variable(combined.variable_names[0], seed_name)
+
+        for name, source in rest:
+            holder = NetCDF.read_file(str(source))
+            combined.add_variable(holder)
+            combined.rename_variable(holder.variable_names[0], name)
+
+        out = Path(out_path)
+        out.unlink(missing_ok=True)
+        combined.to_file(str(out))
+        logger.debug(f"three drivers combined into {out}")
+        return out
 
     @staticmethod
     def _calendar(nc: NetCDF) -> pd.DatetimeIndex | None:

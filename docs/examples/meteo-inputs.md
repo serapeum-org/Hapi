@@ -148,5 +148,53 @@ When all three folders do come from one source, the shared arguments are enough:
 model.meteo = MeteoInputs.from_rasters(prec_path, temp_path, evap_path)
 ```
 
+## Packing the rasters into NetCDF
+
+A folder of per-date GeoTIFFs is the slowest thing the model can be driven from: every run
+re-opens every file. Packing each driver once turns that into a single read, and the calendar
+travels inside the file instead of living in the file names.
+
+```python
+from hapi.inputs import MeteoInputs
+
+MeteoInputs.raster_folder_to_netcdf(prec_path, "prec.nc")
+MeteoInputs.raster_folder_to_netcdf(temp_path, "temp.nc", regex_string=r"\d{8}")
+MeteoInputs.raster_folder_to_netcdf(evap_path, "evap.nc", regex_string=r"\d{8}")
+
+model.meteo = MeteoInputs.from_netcdf_files("prec.nc", "temp.nc", "evap.nc")
+```
+
+It takes the same reader arguments as `from_rasters`, so `start` / `end` convert a window
+rather than the whole folder, and it refuses to write a file whose steps carry no dates —
+a NetCDF with no time axis cannot be checked against the model's date range later.
+
+On network storage, pass `gdal_env` to skip GDAL's per-open directory listing:
+
+```python
+MeteoInputs.raster_folder_to_netcdf(
+    temp_path, "temp.nc", gdal_env={"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR"}
+)
+```
+
+That listing is a remote round-trip per raster — 369 ms against 18 ms over one 14,823-file
+folder. It is not the default because disabling it also stops GDAL finding `.aux.xml`, world
+files and `.ovr` sidecars.
+
+### One file for all three drivers
+
+The three single-variable files can then be merged, which names each variable after its
+driver so a reader asks for it by name rather than guessing at whatever the band was called:
+
+```python
+MeteoInputs.combine_netcdf_files("prec.nc", "temp.nc", "evap.nc", "meteo.nc")
+
+model.meteo = MeteoInputs.from_netcdf(
+    "meteo.nc",
+    precipitation="precipitation",
+    temperature="temperature",
+    evapotranspiration="evapotranspiration",
+)
+```
+
 Once the rasters are downloaded, prepare them for the model with `hapi.inputs.Inputs`, which aligns every raster to
 the catchment DEM — see [GIS inputs](gis-inputs.md) and [Parameters](parameters.md).
