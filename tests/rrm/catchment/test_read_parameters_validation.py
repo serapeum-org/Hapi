@@ -200,15 +200,38 @@ class TestReadParametersDistributed:
 class TestReadParametersLumped:
     """Tests for the lumped branch of `Catchment.read_parameters`."""
 
+    @pytest.mark.parametrize(
+        "snow, maxbas, expected_count",
+        [
+            (True, True, 16),
+            (False, True, 11),
+            (True, False, 17),
+            (False, False, 12),
+        ],
+    )
     def test_rejects_a_parameter_file_of_the_wrong_length(
-        self, coello_start_date: str, coello_end_date: str, tmp_path
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        tmp_path,
+        snow: bool,
+        maxbas: bool,
+        expected_count: int,
     ):
         """Test that the lumped branch counts rows of the CSV, not raster bands.
 
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+            tmp_path: Directory the parameter file is written into.
+            snow: Whether the snow routine is declared.
+            maxbas: Whether triangular routing is declared.
+            expected_count: The count that combination requires.
+
         Test scenario:
             In lumped mode the parameters arrive as a two-column CSV read into a list, so the
-            same guard has to measure length rather than shape. A ten-row file under the
-            no-snow/no-maxbas combination (which wants 12) must raise.
+            same guard has to measure length rather than shape. A ten-row file is the wrong
+            length for every combination, so each must raise naming its own count.
         """
         model = Catchment("coello", coello_start_date, coello_end_date)
         path = tmp_path / "parameters.csv"
@@ -216,8 +239,8 @@ class TestReadParametersLumped:
             path, header=False, index=False
         )
 
-        with pytest.raises(ValueError, match="takes 12 parameters"):
-            model.read_parameters(str(path), False, maxbas=False)
+        with pytest.raises(ValueError, match=f"takes {expected_count} parameters"):
+            model.read_parameters(str(path), snow, maxbas=maxbas)
 
     def test_missing_file_raises_before_reading(
         self, coello_start_date: str, coello_end_date: str, tmp_path

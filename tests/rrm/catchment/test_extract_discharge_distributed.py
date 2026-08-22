@@ -102,3 +102,23 @@ def test_extract_discharge_distributed_without_metrics(
     assert np.isfinite(coello.Qsim.to_numpy(dtype=float)).all(), (
         "Qsim should contain finite discharge values"
     )
+
+
+@pytest.mark.plot
+def test_plot_hydrograph_logs_the_metrics_it_computed(coello_muskingum_run: Catchment):
+    """Test that plotting a gauge hydrograph after metrics exist reports them.
+
+    Test scenario:
+        `plot_hydrograph` reads `self.metrics` to log the seven scores next to the figure, a
+        branch that only runs once `extract_discharge` has filled the frame. It looks the
+        scores up by the gauge's id while addressing the gauge table by position, so the plot
+        must find both without raising.
+    """
+    coello = coello_muskingum_run
+    coello.extract_discharge(calculate_metrics=True)
+
+    fig, ax = coello.plot_hydrograph("2009-01-01", "2009-01-09", 0)
+
+    assert fig is not None, "plot_hydrograph must return a figure"
+    assert ax is not None, "plot_hydrograph must return an axis"
+    assert not coello.metrics.empty, "the metrics frame should be populated"

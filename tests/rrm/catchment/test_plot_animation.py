@@ -171,6 +171,54 @@ def test_save_animation_before_plot_raises():
 
 
 @pytest.mark.plot
+@pytest.mark.parametrize(
+    "option, attribute, title",
+    [
+        (9, "precipitation", "Precipitation"),
+        (10, "evapotranspiration", "ET"),
+        (11, "temperature", "Temperature"),
+    ],
+)
+def test_meteo_options_animate_the_cube_they_name(
+    coello_animated: Catchment, monkeypatch, option: int, attribute: str, title: str
+):
+    """Test that each meteorological option animates its own cube from MeteoInputs.
+
+    Args:
+        coello_animated: Distributed Coello catchment with a completed run.
+        monkeypatch: Used to spy on the `ArrayGlyph.animate` call.
+        option: The plotting option under test.
+        attribute: The `MeteoInputs` field that option should read.
+        title: The default title that option should carry.
+
+    Test scenario:
+        The three drivers moved off the catchment onto `MeteoInputs`, so the option dispatch
+        now reads them through `self.meteo`. Each option must reach its own cube and carry
+        its own default title — the two are set together in one branch, and a driver that is
+        missing from the model must be reported rather than animated as an empty grid.
+    """
+    from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph
+
+    seen = {}
+    original = ArrayGlyph.animate
+
+    def spy(self, time, *args, **kwargs):
+        seen["kwargs"] = kwargs
+        return original(self, time, *args, **kwargs)
+
+    monkeypatch.setattr(ArrayGlyph, "animate", spy)
+
+    coello_animated.plot_distributed_results("2009-01-01", "2009-01-09", option=option)
+
+    assert seen["kwargs"].get("title") == title, (
+        f"option {option} should be titled {title!r}, got {seen['kwargs'].get('title')!r}"
+    )
+    assert getattr(coello_animated.meteo, attribute) is not None, (
+        f"option {option} reads meteo.{attribute}, which must be populated"
+    )
+
+
+@pytest.mark.plot
 @pytest.mark.parametrize("option", [0, 12])
 def test_plot_invalid_option_raises(option: int):
     """An option outside 1-11 raises ValueError before touching any array.

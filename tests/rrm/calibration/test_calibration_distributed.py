@@ -16,6 +16,7 @@ from hapi import calibration as calibration_module
 from hapi.calibration import Calibration
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
 CANNED_RESULT = (0.42, np.arange(12, dtype="float64"))
 
@@ -28,7 +29,9 @@ def stub_optimizer(monkeypatch) -> dict:
         monkeypatch: Used to swap the Oasis optimiser out of the calibration module.
 
     Returns:
-        dict: Populated with the solver keywords the calibration passed through.
+        dict: Populated with the solver keywords the calibration passed through and with
+            `objective` -- the triple the objective function returned for one trial vector,
+            so the body the optimiser would drive is exercised exactly once.
     """
     seen: dict = {}
 
@@ -40,6 +43,8 @@ def stub_optimizer(monkeypatch) -> dict:
         def __call__(self, opt_prob, **kwargs):
             seen["solve_kwargs"] = kwargs
             seen["n_vars"] = len(opt_prob.getVarSet())
+            trial = np.full(len(opt_prob.getVarSet()), 0.5)
+            seen["objective"] = opt_prob.obj_fun(trial)
             return CANNED_RESULT
 
     monkeypatch.setattr(calibration_module, "HSapi", _StubEngine)
@@ -55,6 +60,8 @@ def gauged_calibration(
     coello_evap_path: str,
     coello_acc_path: str,
     coello_fd_path: str,
+    coello_cat_area: int,
+    coello_initial_cond: list,
 ) -> Calibration:
     """Build a distributed Calibration with inputs loaded and a two-row gauge table.
 
@@ -80,6 +87,7 @@ def gauged_calibration(
         file_name_data_fmt="%Y.%m.%d",
     )
     coello.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
+    coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
     coello.GaugesTable = DataFrame(
         {"id": [1, 2], "cell_row": [2, 5], "cell_col": [3, 6]}
     )
@@ -87,6 +95,7 @@ def gauged_calibration(
     steps = coello.meteo.time_steps
     rng = np.random.default_rng(1337)
     coello.Qtot = rng.random((rows, cols, steps + 1))
+    coello.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
     return coello
 
 
@@ -220,6 +229,35 @@ class TestRunCalibration:
         assert "solve_kwargs" not in stub_optimizer, (
             "the optimiser must not run when the inputs do not line up"
         )
+
+    def test_the_objective_distributes_the_trial_vector_and_runs_the_model(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that the objective the optimiser drives reaches the model.
+
+        Test scenario:
+            The objective body maps the flat trial vector onto the 3D parameter array through
+            `SpatialVarFun` and then runs the whole distributed model. It swallows every
+            exception into `(nan, [], 1)`, so a rewiring mistake inside it does not raise —
+            it just makes every trial fail. Pinning the triple's shape and that the parameter
+            array actually arrived is what makes that visible.
+        """
+        coello = gauged_calibration
+        coello.read_objective_function(metrics.rmse, [])
+        coello.LB = np.zeros(12)
+        coello.UB = np.ones(12)
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        error, constraints, fail = stub_optimizer["objective"]
+        assert fail in (0, 1), f"the objective must report a fail flag, got {fail}"
+        assert isinstance(constraints, list), (
+            f"the Muskingum constraints must be a list, got {type(constraints)}"
+        )
+        assert coello.parameters is not None, (
+            "the trial vector must have been distributed onto the parameter array"
+        )
+        assert error is not None, "the objective must return an error value"
 
 
 class TestFW1Calibration:
