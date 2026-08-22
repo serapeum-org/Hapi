@@ -95,6 +95,11 @@ class Wrapper:
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
+        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
+        # cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear
+        # the flag a previous MAXBAS run on this same model may have left set.
+        Model._maxbas_routed = False
+
         # Model.qout = Model.qout[:-1]
 
     @staticmethod
@@ -177,6 +182,11 @@ class Wrapper:
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
+
+        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
+        # cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear
+        # the flag a previous MAXBAS run on this same model may have left set.
+        Model._maxbas_routed = False
 
         # Model.qout = Model.qout[:-1]
 
