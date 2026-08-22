@@ -122,13 +122,13 @@ class Run(Catchment):
         assert (
             np.shape(self.bankfull_depth)[0] == self.flow_network.rows
             and np.shape(self.river_width)[0] == self.flow_network.rows
-            and np.shape(self.roughness)[0] == self.flow_network.rows
+            and np.shape(self.river_roughness)[0] == self.flow_network.rows
             and np.shape(self.flood_plain_roughness)[0] == self.flow_network.rows
         ), "all input data should have the same number of rows"
         assert (
             np.shape(self.bankfull_depth)[1] == self.flow_network.cols
             and np.shape(self.river_width)[1] == self.flow_network.cols
-            and np.shape(self.roughness)[1] == self.flow_network.cols
+            and np.shape(self.river_roughness)[1] == self.flow_network.cols
             and np.shape(self.flood_plain_roughness)[1] == self.flow_network.cols
         ), "all input data should have the same number of columns"
 
