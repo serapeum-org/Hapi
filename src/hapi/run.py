@@ -21,7 +21,8 @@ from hapi.catchment import Lake as LakeType
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
 
-PARAMS_MISMATCH_ERROR = "the parameters must share the catchment grid"
+ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
+COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
 
 
 class Run(Catchment):
@@ -79,10 +80,10 @@ class Run(Catchment):
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            PARAMS_MISMATCH_ERROR
+            ROWS_MISMATCH_ERROR
         )
         assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            PARAMS_MISMATCH_ERROR
+            COLS_MISMATCH_ERROR
         )
 
         # run the model
@@ -113,10 +114,10 @@ class Run(Catchment):
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            PARAMS_MISMATCH_ERROR
+            ROWS_MISMATCH_ERROR
         )
         assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            PARAMS_MISMATCH_ERROR
+            COLS_MISMATCH_ERROR
         )
 
         assert (
@@ -169,10 +170,10 @@ class Run(Catchment):
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            PARAMS_MISMATCH_ERROR
+            ROWS_MISMATCH_ERROR
         )
         assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            PARAMS_MISMATCH_ERROR
+            COLS_MISMATCH_ERROR
         )
 
         assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
@@ -215,10 +216,10 @@ class Run(Catchment):
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            PARAMS_MISMATCH_ERROR
+            ROWS_MISMATCH_ERROR
         )
         assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            PARAMS_MISMATCH_ERROR
+            COLS_MISMATCH_ERROR
         )
 
         # run the model
@@ -268,10 +269,10 @@ class Run(Catchment):
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            PARAMS_MISMATCH_ERROR
+            ROWS_MISMATCH_ERROR
         )
         assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            PARAMS_MISMATCH_ERROR
+            COLS_MISMATCH_ERROR
         )
 
         assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
