@@ -53,13 +53,13 @@ def test_plot_precipitation_with_gauges(coello_animated: Catchment):
     """Animating a meteo input with gauge points returns a FuncAnimation."""
     import matplotlib.animation
 
-    before = coello_animated.precipitation.copy()
+    before = coello_animated.meteo.precipitation.copy()
     anim = coello_animated.plot_distributed_results(
         "2009-01-01", "2009-01-09", option=9, gauges=True, interval=100
     )
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
     # plotting must not mutate the model arrays stored on the instance
-    assert np.array_equal(before, coello_animated.precipitation, equal_nan=True)
+    assert np.array_equal(before, coello_animated.meteo.precipitation, equal_nan=True)
 
 
 @pytest.mark.plot
