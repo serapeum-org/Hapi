@@ -47,6 +47,13 @@ if TYPE_CHECKING:
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000**2)
+#: (snow, maxbas) -> how many parameters the conceptual model reads in that configuration.
+PARAMETER_COUNTS = {
+    (True, True): 16,
+    (False, True): 11,
+    (True, False): 17,
+    (False, False): 12,
+}
 
 
 @contextmanager
@@ -342,58 +349,20 @@ class Catchment:
         self.snow = snow
         self.maxbas = maxbas
 
-        if self.spatial_resolution == "distributed":
-            if snow and maxbas:
-                if self.parameters.shape[2] != 16:
-                    raise ValueError(
-                        "current version of HBV (with snow) takes 16 parameters you have entered "
-                        f"{self.parameters.shape[2]}"
-                    )
-            elif not snow and maxbas:
-                if self.parameters.shape[2] != 11:
-                    raise ValueError(
-                        "current version of HBV (with snow) takes 11 parameters you have entered "
-                        f"{self.parameters.shape[2]}"
-                    )
-            elif snow and not maxbas:
-                if self.parameters.shape[2] != 17:
-                    raise ValueError(
-                        "current version of HBV (with snow) takes 17 parameters you have entered "
-                        f"{self.parameters.shape[2]}"
-                    )
-            elif not snow and not maxbas:
-                if self.parameters.shape[2] != 12:
-                    raise ValueError(
-                        "current version of HBV (with snow) takes 12 parameters you have entered "
-                        f"{self.parameters.shape[2]}"
-                    )
-        else:
-            if snow and maxbas:
-                if len(self.parameters) != 16:
-                    raise ValueError(
-                        f"current version of HBV (with snow) takes 16 parameters you have entered"
-                        f" {len(self.parameters)}"
-                    )
-
-            elif not snow and maxbas:
-                if len(self.parameters) != 11:
-                    raise ValueError(
-                        f"current version of HBV (with snow) takes 11 parameters you have entered"
-                        f" {len(self.parameters)}"
-                    )
-
-            elif snow and not maxbas:
-                if not len(self.parameters) == 17:
-                    raise ValueError(
-                        f"current version of HBV (with snow) takes 17 parameters you have entered{len(self.parameters)}"
-                    )
-
-            elif not snow and not maxbas:
-                if not len(self.parameters) == 12:
-                    raise ValueError(
-                        f"current version of HBV (with snow) takes 12 parameters you have entered"
-                        f" {len(self.parameters)}"
-                    )
+        # (snow, maxbas) -> the parameter count that combination requires. A table rather
+        # than eight near-identical branches: the counts are the only thing that varied, and
+        # two of the branches spelled the comparison `not len(...) == N`.
+        expected = PARAMETER_COUNTS[(bool(snow), bool(maxbas))]
+        actual = (
+            self.parameters.shape[2]
+            if self.spatial_resolution == "distributed"
+            else len(self.parameters)
+        )
+        if actual != expected:
+            raise ValueError(
+                f"current version of HBV (with snow) takes {expected} parameters you have "
+                f"entered {actual}"
+            )
 
         logger.debug("Parameters are read successfully")
 
@@ -439,7 +408,7 @@ class Catchment:
         self.initial_cond = initial_condition
 
         if q_init is not None:
-            assert not isinstance(q_init, float), "q_init should be of type float"
+            assert isinstance(q_init, float), "q_init should be of type float"
         self.q_init = q_init
 
         if self.initial_cond is not None:
@@ -1062,8 +1031,8 @@ class Catchment:
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.where(self.date_index == start)[0][0]
-        end_i = np.where(self.date_index == end)[0][0]
+        start_i = np.nonzero(self.date_index == start)[0][0]
+        end_i = np.nonzero(self.date_index == end)[0][0]
 
         if option == 1:
             arr = self.Qtot[:, :, start_i:end_i]
@@ -1201,8 +1170,8 @@ class Catchment:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.where(self.date_index == start)[0][0]
-        end_i = np.where(self.date_index == end)[0][0] + 1
+        start_i = np.nonzero(self.date_index == start)[0][0]
+        end_i = np.nonzero(self.date_index == end)[0][0] + 1
 
         if self.spatial_resolution == "distributed":
             if flow_acc_path == "":
