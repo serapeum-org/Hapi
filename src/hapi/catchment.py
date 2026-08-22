@@ -54,7 +54,7 @@ DATE_PATTERN = r"\d{4}.\d{2}.\d{2}"
 def _name_the_path(path) -> Iterator[None]:
     """Re-raise a pyramids `FileNotFoundError` with the offending path in the message.
 
-    ``DatasetCollection.from_files`` reports "The path you have provided does
+    `DatasetCollection.from_files` reports "The path you have provided does
     not exist" / "is empty" without saying which path, where the checks this replaced
     named it. With several directories read per model run, the bare message does not
     identify the culprit.
@@ -191,9 +191,9 @@ class Catchment:
         on belongs to :class:`~hapi.inputs.FlowNetwork`, so this reader no longer derives
         rows, columns, the no-data value or the domain count from a second raster.
 
-        No-data handling is delegated to pyramids via ``read_array(masked=True)``, so
-        cells outside the catchment become ``NaN``. The array is promoted to floating point so masked cells can
-        hold ``NaN``.
+        No-data handling is delegated to pyramids via `read_array(masked=True)`, so
+        cells outside the catchment become `NaN`. The array is promoted to floating point so masked cells can
+        hold `NaN`.
 
         Args:
             path (str | Path): Path to the flow path length raster. Any raster format
@@ -201,7 +201,7 @@ class Catchment:
 
         Raises:
             FileNotFoundError: The path does not exist.
-            TypeError: `path` is neither a string nor a ``Path``.
+            TypeError: `path` is neither a string nor a `Path`.
             RuntimeError: GDAL cannot open the file as a raster.
 
         Examples:
@@ -485,19 +485,19 @@ class Catchment:
 
         The result lands on :attr:`GaugesTable`, and its type follows the input format:
 
-        * ``.geojson`` is read with
+        * `.geojson` is read with
           :meth:`pyramids.feature.FeatureCollection.read_file`, giving a
-          :class:`~pyramids.feature.FeatureCollection` — a ``GeoDataFrame`` subclass, so
+          :class:`~pyramids.feature.FeatureCollection` — a `GeoDataFrame` subclass, so
           it keeps its geometry column and CRS.
         * anything else is read with :func:`pandas.read_csv`, giving a plain
           :class:`~pandas.DataFrame` with no geometry.
 
-        When ``flow_acc_file`` is given and the table has no ``cell_row`` column, each
-        gauge is mapped onto the raster grid and ``cell_row`` / ``cell_col`` columns are
+        When `flow_acc_file` is given and the table has no `cell_row` column, each
+        gauge is mapped onto the raster grid and `cell_row` / `cell_col` columns are
         appended.
 
-        ``start`` and ``end`` columns, if present, are parsed with ``fmt`` into
-        ``datetime64`` columns. The two are handled independently, so a table carrying
+        `start` and `end` columns, if present, are parsed with `fmt` into
+        `datetime64` columns. The two are handled independently, so a table carrying
         only one of them is fine.
 
         Args:
@@ -509,7 +509,7 @@ class Catchment:
                 in the gauge table. Default is "%Y-%m-%d".
 
         Raises:
-            ValueError: A ``start`` or ``end`` value does not match ``fmt``.
+            ValueError: A `start` or `end` value does not match `fmt`.
 
         Examples:
             - Read a GeoJSON gauge file and inspect the loaded stations:
@@ -549,7 +549,7 @@ class Catchment:
                 False
 
                 ```
-            - A validity period is parsed into datetime columns using ``fmt``:
+            - A validity period is parsed into datetime columns using `fmt`:
                 ```python
                 >>> import os, tempfile
                 >>> import pandas as pd
@@ -623,7 +623,7 @@ class Catchment:
 
         For distributed mode, each gauge's discharge must be stored in a
         separate CSV file. File names must match the "id" column in the
-        gauge table (read via ``read_gauge_table``). For lumped mode, a
+        gauge table (read via `read_gauge_table`). For lumped mode, a
         single CSV file with the discharge data is expected.
 
         Args:

@@ -118,8 +118,8 @@ class Calibration(Catchment):
         """Extract the simulated discharge hydrograph at gauge locations.
 
         Extracts discharge values from the total routed discharge array
-        (``self.Qtot``) at each gauge location and stores them in
-        ``self.Qsim``. Optionally applies a multiplication factor per
+        (`self.Qtot`) at each gauge location and stores them in
+        `self.Qsim`. Optionally applies a multiplication factor per
         gauge.
 
         Args:
@@ -178,34 +178,34 @@ class Calibration(Catchment):
 
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the conceptual distributed hydrological model.
-        The method distributes parameters spatially using ``spatial_var_fun``,
-        runs the RRM model via ``Wrapper.RRMModel``, and evaluates
+        The method distributes parameters spatially using `spatial_var_fun`,
+        runs the RRM model via `Wrapper.RRMModel`, and evaluates
         performance using the stored objective function.
 
         The following attributes must be set on the instance before calling
         this method:
 
-            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-            - ``flow_dir_arr``: Flow direction array.
-            - ``rows``, ``cols``: Grid dimensions.
-            - ``LB``, ``UB``: Lower and upper parameter bounds.
-            - ``objective_function``: Objective function for evaluation.
-            - ``QGauges``, ``GaugesTable``: Observed discharge data and
+            - `Prec`, `ET`, `Temp`: Meteorological input arrays.
+            - `flow_dir_arr`: Flow direction array.
+            - `rows`, `cols`: Grid dimensions.
+            - `LB`, `UB`: Lower and upper parameter bounds.
+            - `objective_function`: Objective function for evaluation.
+            - `QGauges`, `GaugesTable`: Observed discharge data and
               gauge metadata.
 
         Args:
             spatial_var_fun: Spatial variable function object with a
-                ``Function`` method that distributes parameters and a
-                ``Par3d`` attribute holding the 3D parameter array, plus
-                ``no_parameters`` and ``no_elem`` attributes.
+                `Function` method that distributes parameters and a
+                `Par3d` attribute holding the 3D parameter array, plus
+                `no_parameters` and `no_elem` attributes.
             optimization_args: A list of three elements:
-                - ``optimization_args[0]`` (dict): Harmony Search API
+                - `optimization_args[0]` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
-                - ``optimization_args[1]``: Parallel type for the
+                - `optimization_args[1]`: Parallel type for the
                   optimizer.
-                - ``optimization_args[2]`` (dict): Solver arguments with
-                  keys ``"store_sol"``, ``"display_opts"``,
-                  ``"store_hst"``, and ``"hot_start"``.
+                - `optimization_args[2]` (dict): Solver arguments with
+                  keys `"store_sol"`, `"display_opts"`,
+                  `"store_hst"`, and `"hot_start"`.
             print_error: If not 0, prints the error value and parameters
                 at each iteration. Default is None.
 
@@ -331,30 +331,30 @@ class Calibration(Catchment):
 
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the conceptual distributed hydrological model using
-        the FW1 routing approach via ``Wrapper.FW1``.
+        the FW1 routing approach via `Wrapper.FW1`.
 
         The following attributes must be set on the instance before calling
         this method:
 
-            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-            - ``rows``, ``cols``: Grid dimensions.
-            - ``LB``, ``UB``: Lower and upper parameter bounds.
-            - ``objective_function``: Objective function for evaluation.
-            - ``QGauges``, ``GaugesTable``: Observed discharge data and
+            - `Prec`, `ET`, `Temp`: Meteorological input arrays.
+            - `rows`, `cols`: Grid dimensions.
+            - `LB`, `UB`: Lower and upper parameter bounds.
+            - `objective_function`: Objective function for evaluation.
+            - `QGauges`, `GaugesTable`: Observed discharge data and
               gauge metadata.
 
         Args:
             spatial_var_fun: Spatial variable function object with a
-                ``Function`` method that distributes parameters and a
-                ``Par3d`` attribute holding the 3D parameter array.
+                `Function` method that distributes parameters and a
+                `Par3d` attribute holding the 3D parameter array.
             optimization_args: A list of three elements:
-                - ``optimization_args[0]`` (dict): Harmony Search API
+                - `optimization_args[0]` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
-                - ``optimization_args[1]``: Parallel type for the
+                - `optimization_args[1]`: Parallel type for the
                   optimizer.
-                - ``optimization_args[2]`` (dict): Solver arguments with
-                  keys ``"store_sol"``, ``"display_opts"``,
-                  ``"store_hst"``, and ``"hot_start"``.
+                - `optimization_args[2]` (dict): Solver arguments with
+                  keys `"store_sol"`, `"display_opts"`,
+                  `"store_hst"`, and `"hot_start"`.
             print_error: If not 0, prints the error value and parameters
                 at each iteration. Default is None.
 
@@ -463,34 +463,34 @@ class Calibration(Catchment):
 
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the lumped conceptual hydrological model. The
-        method runs the model via ``Wrapper.Lumped`` and evaluates
+        method runs the model via `Wrapper.Lumped` and evaluates
         performance using the stored objective function. Muskingum
         routing constraints are enforced as inequality constraints.
 
         The following attributes must be set on the instance before calling
         this method:
 
-            - ``LB``, ``UB``: Lower and upper parameter bounds.
-            - ``objective_function``: Objective function for evaluation.
-            - ``OFArgs``: Arguments for the objective function.
-            - ``QGauges``: Observed discharge DataFrame.
-            - ``dt``: Time step duration.
+            - `LB`, `UB`: Lower and upper parameter bounds.
+            - `objective_function`: Objective function for evaluation.
+            - `OFArgs`: Arguments for the objective function.
+            - `QGauges`: Observed discharge DataFrame.
+            - `dt`: Time step duration.
 
         Args:
             basic_inputs (dict): Dictionary containing:
-                - ``"Route"`` (int): Routing flag (1 to enable routing).
-                - ``"RoutingFn"`` (callable): Routing function to use.
-                - ``"InitialValues"`` (list, optional): Initial parameter
+                - `"Route"` (int): Routing flag (1 to enable routing).
+                - `"RoutingFn"` (callable): Routing function to use.
+                - `"InitialValues"` (list, optional): Initial parameter
                   values for the optimizer. Defaults to an empty list if
                   not provided.
             optimization_args: A list of three elements:
-                - ``optimization_args[0]`` (dict): Harmony Search API
+                - `optimization_args[0]` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
-                - ``optimization_args[1]``: Parallel type for the
+                - `optimization_args[1]`: Parallel type for the
                   optimizer.
-                - ``optimization_args[2]`` (dict): Solver arguments with
-                  keys ``"store_sol"``, ``"display_opts"``,
-                  ``"store_hst"``, and ``"hot_start"``.
+                - `optimization_args[2]` (dict): Solver arguments with
+                  keys `"store_sol"`, `"display_opts"`,
+                  `"store_hst"`, and `"hot_start"`.
             print_error: If not 0, prints the error value and constraint
                 values at each iteration. Default is None.
 
@@ -500,8 +500,8 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            AssertionError: If ``basic_inputs`` is missing required keys
-                ``"Route"`` or ``"RoutingFn"``, or if optimization
+            AssertionError: If `basic_inputs` is missing required keys
+                `"Route"` or `"RoutingFn"`, or if optimization
                 arguments are not dictionaries.
         """
         # basic inputs

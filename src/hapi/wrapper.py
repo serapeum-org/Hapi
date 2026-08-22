@@ -54,8 +54,8 @@ class Wrapper:
            river network.
 
         The method stores results directly on the Model object,
-        including ``quz``, ``qlz``, ``qout``, ``quz_routed``, and
-        ``qlz_translated`` arrays.
+        including `quz`, `qlz`, `qout`, `quz_routed`, and
+        `qlz_translated` arrays.
 
         Args:
             Model: Catchment model object containing:
@@ -198,27 +198,27 @@ class Wrapper:
     def _set_maxbas_output_fields(Model: Catchment):
         """Fill the distributed output fields after a triangular (MAXBAS) run.
 
-        ``save_results`` and ``plot_distributed_results`` read ``Qtot``,
-        ``quz_routed`` and ``qlz_translated`` for their discharge options. Only
+        `save_results` and `plot_distributed_results` read `Qtot`,
+        `quz_routed` and `qlz_translated` for their discharge options. Only
         :meth:`DistRRM.SpatialRouting` (the Muskingum path) used to set them, so
-        after a MAXBAS run they stayed ``None`` and every discharge option raised
-        ``TypeError: 'NoneType' object is not subscriptable``.
+        after a MAXBAS run they stayed `None` and every discharge option raised
+        `TypeError: 'NoneType' object is not subscriptable`.
 
         MAXBAS routes each cell's upper zone straight to the outlet with that
-        cell's own ``maxbas``, in place, and applies no cell-to-cell translation
+        cell's own `maxbas`, in place, and applies no cell-to-cell translation
         to the lower zone. So the routed/translated fields *are* the per-cell
         arrays, and their sum is the per-cell contribution to the outlet
-        hydrograph — ``np.nansum(Qtot[:, :, i])`` reproduces ``qout[i]``. That
+        hydrograph — `np.nansum(Qtot[:, :, i])` reproduces `qout[i]`. That
         differs from the Muskingum path, where the fields accumulate downstream
-        and ``Qtot`` at the outlet cell *is* the outlet discharge.
+        and `Qtot` at the outlet cell *is* the outlet discharge.
 
-        ``quz_routed`` / ``qlz_translated`` alias ``quz`` / ``qlz`` rather than
+        `quz_routed` / `qlz_translated` alias `quz` / `qlz` rather than
         copying them: they hold the same data, and a copy would double the memory
-        of a ``(rows, cols, time_steps)`` array for no gain. They are outputs, so
+        of a `(rows, cols, time_steps)` array for no gain. They are outputs, so
         nothing downstream writes through the alias.
 
         Args:
-            Model: Catchment whose ``quz`` / ``qlz`` have been routed by
+            Model: Catchment whose `quz` / `qlz` have been routed by
                 :meth:`DistRRM.DistMaxbas1`.
         """
         Model.quz_routed = Model.quz
@@ -239,9 +239,9 @@ class Wrapper:
         The output discharge is computed as the sum of routed upper
         zone and unrouted lower zone discharge across all cells.
 
-        Also fills the per-cell output fields (``Qtot``, ``quz_routed``,
-        ``qlz_translated``) via :meth:`_set_maxbas_output_fields`, so the
-        discharge options of ``save_results`` / ``plot_distributed_results``
+        Also fills the per-cell output fields (`Qtot`, `quz_routed`,
+        `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the
+        discharge options of `save_results` / `plot_distributed_results`
         work on this path; see that method for the MAXBAS semantics.
 
         Args:
@@ -369,8 +369,8 @@ class Wrapper:
 
         The discharge is converted from mm/timestep to m3/s using
         the catchment area and conversion factor. Results are stored
-        on the Model object as ``quz``, ``qlz``, ``Qsim``, and
-        ``state_variables``.
+        on the Model object as `quz`, `qlz`, `Qsim`, and
+        `state_variables`.
 
         Args:
             Model: Lumped model object containing:
@@ -382,7 +382,7 @@ class Wrapper:
                 - Parameters (numpy.ndarray): Conceptual model
                   parameters.
                 - LumpedModel: Conceptual model instance with a
-                  ``simulate`` method.
+                  `simulate` method.
                 - InitialCond (list): Initial state variable values
                   [sp, sm, uz, lz, wc].
                 - q_init (float): Initial discharge value.
@@ -401,7 +401,7 @@ class Wrapper:
                 discharge hydrograph. Must be callable.
 
         Raises:
-            AssertionError: If ``RoutingFn`` is not callable when
+            AssertionError: If `RoutingFn` is not callable when
                 routing is enabled.
         """
         ### input data validation

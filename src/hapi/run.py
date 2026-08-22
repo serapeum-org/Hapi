@@ -54,15 +54,15 @@ class Run(Catchment):
 
         The following instance attributes are set after execution:
 
-        - ``state_variables``: 4D array (rows, cols, time, states) where
+        - `state_variables`: 4D array (rows, cols, time, states) where
           states are [sp, wc, sm, uz, lv].
-        - ``qlz``: 3D array of the lower zone discharge.
-        - ``quz``: 3D array of the upper zone discharge.
-        - ``qout``: 1D timeseries of discharge at the catchment outlet
+        - `qlz`: 3D array of the lower zone discharge.
+        - `quz`: 3D array of the upper zone discharge.
+        - `qout`: 1D timeseries of discharge at the catchment outlet
           in m3/sec.
-        - ``quz_routed``: 3D array of the upper zone discharge
+        - `quz_routed`: 3D array of the upper zone discharge
           accumulated and routed at each time step.
-        - ``qlz_translated``: 3D array of the lower zone discharge
+        - `qlz_translated`: 3D array of the lower zone discharge
           translated at each time step.
 
         Raises:
@@ -154,8 +154,8 @@ class Run(Catchment):
 
         Args:
             lake: Lake object containing lake configuration and
-                meteorological data. Must have a ``MeteoData`` attribute
-                with shape ``(time_steps, >= 3)`` where columns are
+                meteorological data. Must have a `MeteoData` attribute
+                with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
 
         Raises:
@@ -202,16 +202,16 @@ class Run(Catchment):
 
         The following instance attributes are set after execution:
 
-        - ``st``: 4D array of state variables.
-        - ``q_out``: 1D array of calculated discharge at the catchment
+        - `st`: 4D array of state variables.
+        - `q_out`: 1D array of calculated discharge at the catchment
           outlet, summed over every cell.
-        - ``q_uz``: 3D array of distributed discharge for each cell.
-        - ``Qtot``, ``quz_routed``, ``qlz_translated``: 3D per-cell fields
-          read by ``save_results`` and ``plot_distributed_results``. MAXBAS
-          routes each cell straight to the outlet, so a cell of ``Qtot`` is
-          that cell's *contribution* to the outlet — ``np.nansum`` over the
-          domain reproduces ``q_out``. Use
-          ``extract_discharge(frame_work_1=True)``; the default outlet-cell
+        - `q_uz`: 3D array of distributed discharge for each cell.
+        - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields
+          read by `save_results` and `plot_distributed_results`. MAXBAS
+          routes each cell straight to the outlet, so a cell of `Qtot` is
+          that cell's *contribution* to the outlet — `np.nansum` over the
+          domain reproduces `q_out`. Use
+          `extract_discharge(frame_work_1=True)`; the default outlet-cell
           shortcut is invalid for this path and raises.
 
         Raises:
@@ -244,26 +244,26 @@ class Run(Catchment):
 
         Args:
             lake: Lake object containing lake configuration and
-                meteorological data. Must have a ``MeteoData`` attribute
-                with shape ``(time_steps, >= 3)`` where columns are
+                meteorological data. Must have a `MeteoData` attribute
+                with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
 
         Note:
             The following catchment attributes should be set before
             calling this method:
 
-            - ``prec_path``: Path to the folder containing precipitation
+            - `prec_path`: Path to the folder containing precipitation
               rasters.
-            - ``evap_path``: Path to the folder containing
+            - `evap_path`: Path to the folder containing
               evapotranspiration rasters.
-            - ``temp_path``: Path to the folder containing temperature
+            - `temp_path`: Path to the folder containing temperature
               rasters.
-            - ``flow_acc_path``: Path to the flow accumulation raster.
-            - ``flow_direction_path``: Path to the flow direction raster.
-            - ``ParPath``: Path to the folder containing parameter
+            - `flow_acc_path`: Path to the flow accumulation raster.
+            - `flow_direction_path`: Path to the flow direction raster.
+            - `ParPath`: Path to the folder containing parameter
               rasters.
-            - ``p2``: List of unoptimized parameters where ``p2[0]``
-              is tfac and ``p2[1]`` is catchment area in km2.
+            - `p2`: List of unoptimized parameters where `p2[0]`
+              is tfac and `p2[1]` is catchment area in km2.
 
         Raises:
             AssertionError: If input data arrays have inconsistent
@@ -304,7 +304,7 @@ class Run(Catchment):
 
         Executes a lumped conceptual hydrological model, optionally
         routing the generated discharge hydrograph. The simulated
-        discharge is stored in ``self.Qsim`` as a pandas DataFrame
+        discharge is stored in `self.Qsim` as a pandas DataFrame
         indexed by the simulation date range.
 
         Args:
@@ -318,20 +318,20 @@ class Run(Catchment):
             The following attributes should be defined before calling
             this method:
 
-            - ``LumpedModel``: Conceptual model containing a
-              ``simulate`` method.
-            - ``data``: Numpy array of meteorological data with
+            - `LumpedModel`: Conceptual model containing a
+              `simulate` method.
+            - `data`: Numpy array of meteorological data with
               columns for precipitation, evapotranspiration,
               temperature, and long-term average temperature.
-            - ``Parameters``: Numpy array of conceptual model
+            - `Parameters`: Numpy array of conceptual model
               parameters.
-            - ``CatArea``: Catchment area in km2.
-            - ``conversion_factor``: Time conversion factor
+            - `CatArea`: Catchment area in km2.
+            - `conversion_factor`: Time conversion factor
               (e.g., 24 for daily).
-            - ``InitialCond``: List of initial state variable
+            - `InitialCond`: List of initial state variable
               values [sp, sm, uz, lz, wc].
-            - ``Snow``: Whether to use the snow subroutine (0 or 1).
-            - ``q_init``: Initial discharge value.
+            - `Snow`: Whether to use the snow subroutine (0 or 1).
+            - `q_init`: Initial discharge value.
         """
         if routing_fn is None and Route != 0:
             raise ValueError("routing_fn must be a callable when Route != 0")

@@ -151,13 +151,13 @@ def _warn_if_no_sentinel(dataset, label: str) -> None:
     """Warn when a raster declares no no-data value, so the whole grid is the domain.
 
     Before masking was delegated to pyramids, a raster with no marker raised
-    ``TypeError`` from `math.isclose(value, None)` — accidental, but loud. pyramids
+    `TypeError` from `math.isclose(value, None)` — accidental, but loud. pyramids
     masks nothing instead, which is the correct reading of such a raster but silently
     makes every cell part of the catchment. Warn rather than raise: a raster legitimately
     having no marker is valid input.
 
     Args:
-        dataset: The opened pyramids ``Dataset``.
+        dataset: The opened pyramids `Dataset`.
         label: Human-readable name of the input, used in the message.
     """
     if dataset.no_data_value[0] is None:
@@ -177,20 +177,20 @@ def _to_int_codes(array: np.ndarray) -> np.typing.NDArray:
     distinct *integer* values of a masked raster.
 
     Truncation happens before the caller de-duplicates: collapsing to integers first is
-    what makes 1.2 and 1.8 a single value, matching the per-cell ``set(int(...))`` this
-    replaced. De-duplicating first would leave both and yield a repeated ``1``.
+    what makes 1.2 and 1.8 a single value, matching the per-cell `set(int(...))` this
+    replaced. De-duplicating first would leave both and yield a repeated `1`.
 
     Args:
-        array: A 2-D array whose masked cells are ``NaN``.
+        array: A 2-D array whose masked cells are `NaN`.
 
     Returns:
-        np.ndarray: 1-D ``int64`` array of the finite cells, unsorted and not
+        np.ndarray: 1-D `int64` array of the finite cells, unsorted and not
             de-duplicated.
 
     Raises:
-        ValueError: A cell is infinite, or is too large for ``int64``. ``astype`` would
-            otherwise saturate silently to ``INT64_MIN``/``INT64_MAX`` with only a
-            ``RuntimeWarning``.
+        ValueError: A cell is infinite, or is too large for `int64`. `astype` would
+            otherwise saturate silently to `INT64_MIN`/`INT64_MAX` with only a
+            `RuntimeWarning`.
     """
     finite = array[~np.isnan(array)]
     if not np.isfinite(finite).all():
@@ -225,8 +225,8 @@ class FlowNetwork:
     is derived here instead, so the grid can never disagree with the accumulation array
     it came from.
 
-    Cells outside the domain are ``NaN`` in both arrays: masking is delegated to pyramids
-    via ``read_array(masked=True)``, which compares integer bands to the sentinel exactly
+    Cells outside the domain are `NaN` in both arrays: masking is delegated to pyramids
+    via `read_array(masked=True)`, which compares integer bands to the sentinel exactly
     and honours a band's GDAL mask.
 
     Attributes:
@@ -344,7 +344,7 @@ class FlowNetwork:
 
     @property
     def outlet(self) -> tuple:
-        """tuple: Index of the most-accumulated cell, as ``np.where`` returns it."""
+        """tuple: Index of the most-accumulated cell, as `np.where` returns it."""
         return np.where(self.flow_acc_arr == np.nanmax(self.flow_acc_arr))
 
     @property
@@ -474,7 +474,7 @@ METEO_VARIABLES = ("precipitation", "temperature", "evapotranspiration")
 
 
 def _cube_from_netcdf(nc: NetCDF, variable: str) -> np.ndarray:
-    """Read one NetCDF variable as a ``(rows, cols, time)`` cube.
+    """Read one NetCDF variable as a `(rows, cols, time)` cube.
 
     Args:
         nc: An open :class:`~pyramids.netcdf.NetCDF`.
@@ -500,7 +500,7 @@ def _cube_from_netcdf(nc: NetCDF, variable: str) -> np.ndarray:
 class MeteoInputs:
     r"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.
 
-    Each field is a ``(rows, cols, time)`` array — cell first, time last — which is the layout
+    Each field is a `(rows, cols, time)` array — cell first, time last — which is the layout
     :class:`~hapi.catchment.Catchment` and the conceptual models index. The three cubes must
     agree on all three axes; that is checked on construction, because a silent mismatch surfaces
     much later as a confusing index error inside the run loop.
@@ -910,7 +910,7 @@ class Inputs:
     raster data so they align with a reference DEM. It supports extracting
     HBV model parameter boundaries and computing lumped inputs from distributed
     rasters. Chronological ordering is handled by pyramids at read time
-    (``from_files(date_format=...)``), not by renaming files on disk.
+    (`from_files(date_format=...)`), not by renaming files on disk.
 
     Attributes:
         source_dem: Path to the reference DEM raster used for spatial
@@ -928,17 +928,17 @@ class Inputs:
             src: Path to the spatial information source raster used to
                 obtain the coordinate system, number of rows and columns,
                 and resolution. The path should include the file name and
-                extension (e.g., ``"data/dem.tif"``).
+                extension (e.g., `"data/dem.tif"`).
         """
         self.source_dem = src
 
     def prepare_inputs(self, inputs_dir: str | Path, outputs_dir: str | Path):
         """Align and crop input rasters to match the source DEM.
 
-        Reads all rasters from ``inputs_dir``, aligns them to the source
+        Reads all rasters from `inputs_dir`, aligns them to the source
         DEM's spatial properties (CRS, resolution, extent, nodata value),
         crops them to the DEM footprint, and writes the results to
-        ``outputs_dir``.
+        `outputs_dir`.
 
         Args:
             inputs_dir: Path to the folder containing the rasters to be
@@ -948,14 +948,14 @@ class Inputs:
 
         Each output keeps its source file name, so the ordering of the collection is
         irrelevant here and the rasters are read unordered.
-        ``outputs_dir`` is created if it does not exist; either argument may be a
-        ``str`` or a :class:`pathlib.Path`.
+        `outputs_dir` is created if it does not exist; either argument may be a
+        `str` or a :class:`pathlib.Path`.
 
         Returns:
-            None: The aligned rasters are written to ``outputs_dir``.
+            None: The aligned rasters are written to `outputs_dir`.
 
         Raises:
-            FileNotFoundError: If ``inputs_dir`` does not exist.
+            FileNotFoundError: If `inputs_dir` does not exist.
 
         Examples:
             - Align two rasters onto a DEM grid and read back what was written:
@@ -1020,29 +1020,28 @@ class Inputs:
         """Extract upper and lower parameter boundaries for a catchment.
 
         Reads the global maximum and minimum HBV parameter rasters from
-        the directory specified by the ``HAPI_DATA_DIR`` environment
+        the directory specified by the `HAPI_DATA_DIR` environment
         variable, clips them to the given basin polygon, and returns the
         max/min statistics for each parameter.
 
         The 18 HBV parameters are:
-        ``tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, etf, lp, k0, k1,
-        k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
+        `tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, etf, lp, k0, k1, k2, uzl, perc, maxbas, K_muskingum, x_muskingum`.
 
         Args:
             basin: The catchment polygon, as a
-                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is
+                :class:`~pyramids.feature.FeatureCollection`. Any `GeoDataFrame` is
                 accepted too and is wrapped on the way in. Must contain exactly one row;
                 merge all polygons first if the shapefile has multiple features.
 
         Returns:
             pandas.DataFrame: A DataFrame indexed by parameter name with
-                columns ``"ub"`` (upper bound) and ``"lb"`` (lower bound).
+                columns `"ub"` (upper bound) and `"lb"` (lower bound).
 
         Raises:
-            ValueError: If the ``HAPI_DATA_DIR`` environment variable is
+            ValueError: If the `HAPI_DATA_DIR` environment variable is
                 not set.
             FileNotFoundError: If the parameter data directory or the
-                ``max``/``min`` subdirectories do not exist.
+                `max`/`min` subdirectories do not exist.
         """
         data_dir = Inputs._check_data_dir()
         max_dir = data_dir / "max"
@@ -1090,11 +1089,11 @@ class Inputs:
         """Extract HBV parameter values or rasters for a catchment.
 
         Retrieves one of 12 global HBV parameter sets (Beck et al., 2016)
-        from the directory specified by the ``HAPI_DATA_DIR`` environment
-        variable. When ``as_raster`` is False, computes zonal statistics
+        from the directory specified by the `HAPI_DATA_DIR` environment
+        variable. When `as_raster` is False, computes zonal statistics
         (min, max, mean, std) over the catchment polygon. When
-        ``as_raster`` is True, aligns and crops the parameter rasters to
-        the source DEM and saves them to ``save_to``.
+        `as_raster` is True, aligns and crops the parameter rasters to
+        the source DEM and saves them to `save_to`.
 
         Reference:
             Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo,
@@ -1104,31 +1103,30 @@ class Inputs:
             doi:10.1002/2015WR018247.
 
         The 18 HBV parameters are:
-        ``tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, etf, lp, k0, k1,
-        k2, uzl, perc, maxbas, K_muskingum, x_muskingum``.
+        `tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, etf, lp, k0, k1, k2, uzl, perc, maxbas, K_muskingum, x_muskingum`.
 
         Args:
             gdf: The catchment polygon, as a
-                :class:`~pyramids.feature.FeatureCollection`. Any ``GeoDataFrame`` is
+                :class:`~pyramids.feature.FeatureCollection`. Any `GeoDataFrame` is
                 accepted too and is wrapped on the way in. Must contain one row; merge
                 all polygons first if the shapefile has multiple features. Ignored (and
-                may be ``None``) when ``as_raster`` is True.
-            scenario: Name of the parameter set. One of ``"1"`` through
-                ``"10"``, ``"avg"``, ``"max"``, or ``"min"``.
+                may be `None`) when `as_raster` is True.
+            scenario: Name of the parameter set. One of `"1"` through
+                `"10"`, `"avg"`, `"max"`, or `"min"`.
             as_raster: If True, save aligned parameter rasters to
-                ``save_to`` instead of returning statistics. Default is
+                `save_to` instead of returning statistics. Default is
                 False.
             save_to: Path to the directory where aligned parameter rasters
-                will be saved. Only used when ``as_raster`` is True.
+                will be saved. Only used when `as_raster` is True.
 
         Returns:
-            pandas.DataFrame: When ``as_raster`` is False, a DataFrame
-                indexed by parameter name with columns ``"min"``,
-                ``"max"``, ``"mean"``, and ``"std"``. Returns None when
-                ``as_raster`` is True.
+            pandas.DataFrame: When `as_raster` is False, a DataFrame
+                indexed by parameter name with columns `"min"`,
+                `"max"`, `"mean"`, and `"std"`. Returns None when
+                `as_raster` is True.
 
         Raises:
-            ValueError: If the ``HAPI_DATA_DIR`` environment variable is
+            ValueError: If the `HAPI_DATA_DIR` environment variable is
                 not set.
             FileNotFoundError: If the parameter data directory does not
                 exist.
@@ -1175,24 +1173,24 @@ class Inputs:
             path: Path to the folder containing the raster files.
             regex_string: A regex pattern to locate the date (or ordering
                 number) within each file name. Default is
-                ``r"\\d{4}.\\d{2}.\\d{2}"``.
+                `r"\\d{4}.\\d{2}.\\d{2}"`.
             date: If True, the number extracted from file names is
                 interpreted as a date. Default is True.
             file_name_data_fmt: The date format string matching dates in
-                the file names (e.g., ``"%Y.%m.%d"``). Default is None.
+                the file names (e.g., `"%Y.%m.%d"`). Default is None.
             start: Start date to filter the rasters. If not provided, all
                 rasters in the directory are read.
             end: End date to filter the rasters. If not provided, all
                 rasters in the directory are read.
-            fmt: Format of the ``start`` and ``end`` date strings.
-                Default is ``"%Y-%m-%d"``.
-            extension: File extension to filter by. Default is ``".tif"``.
+            fmt: Format of the `start` and `end` date strings.
+                Default is `"%Y-%m-%d"`.
+            extension: File extension to filter by. Default is `".tif"`.
 
         Returns:
             list: The spatial mean of each raster, in chronological order. The elements
-                are NumPy scalars (``numpy.float32`` for a float32 source) rather than
-                built-in ``float``, since they come straight from the per-raster
-                statistics; wrap them in ``float()`` if a built-in is required.
+                are NumPy scalars (`numpy.float32` for a float32 source) rather than
+                built-in `float`, since they come straight from the per-raster
+                statistics; wrap them in `float()` if a built-in is required.
 
         Examples:
             - Reduce two dated rasters to one catchment average each, in date order:
@@ -1263,17 +1261,17 @@ class Inputs:
     def _check_data_dir() -> Path:
         """Validate and return the HAPI parameter data directory.
 
-        Reads the ``HAPI_DATA_DIR`` environment variable and verifies
+        Reads the `HAPI_DATA_DIR` environment variable and verifies
         that the directory exists on disk.
 
         Returns:
             Path: The resolved path to the HAPI data directory.
 
         Raises:
-            ValueError: If the ``HAPI_DATA_DIR`` environment variable
+            ValueError: If the `HAPI_DATA_DIR` environment variable
                 is not set.
             FileNotFoundError: If the directory specified by
-                ``HAPI_DATA_DIR`` does not exist.
+                `HAPI_DATA_DIR` does not exist.
         """
         data_dir_env: str | None = os.getenv("HAPI_DATA_DIR")
         if data_dir_env is None:
