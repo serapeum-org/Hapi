@@ -203,7 +203,7 @@ def _to_int_codes(array: np.ndarray) -> np.typing.NDArray:
 D8_CODES = frozenset({1, 2, 4, 8, 16, 32, 64, 128})
 
 
-@dataclass
+@dataclass(eq=False)
 class FlowNetwork:
     """The catchment's routing network and the grid it defines.
 
@@ -483,7 +483,7 @@ def _cube_from_netcdf(nc: NetCDF, variable: str) -> np.ndarray:
     return np.moveaxis(values, 0, -1)
 
 
-@dataclass
+@dataclass(eq=False)
 class MeteoInputs:
     r"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.
 
