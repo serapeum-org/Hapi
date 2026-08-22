@@ -1706,8 +1706,7 @@ need to create the Catchment object first to run the model.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/run.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 28</span>
-<span class="normal"> 29</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
 <span class="normal"> 30</span>
 <span class="normal"> 31</span>
 <span class="normal"> 32</span>
@@ -2026,7 +2025,8 @@ need to create the Catchment object first to run the model.</p>
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
-<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the catchment model.</span>
 
 <span class="sd">    The Run sub-class validates the spatial data and hands it to the</span>
@@ -2074,7 +2074,7 @@ need to create the Catchment object first to run the model.</p>
         <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">"all input data should have the same number of rows"</span>
+        <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
 
         <span class="c1"># input dimensions</span>
         <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
@@ -2110,7 +2110,7 @@ need to create the Catchment object first to run the model.</p>
         <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">"all input data should have the same number of rows"</span>
+        <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
 
         <span class="c1"># input dimensions</span>
         <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
@@ -2130,7 +2130,7 @@ need to create the Catchment object first to run the model.</p>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flood_plain_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">"all input data should have the same number of rows"</span>
+        <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
@@ -2458,8 +2458,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
-<span class="normal">239</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
@@ -2516,7 +2515,8 @@ does not match the distributed raster data length.</p>
 <span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
-<span class="normal">296</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
+<span class="normal">296</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the FW1 distributed model with a lake component.</span>
 
 <span class="sd">    Validates that all input arrays have consistent dimensions and</span>
@@ -2630,8 +2630,7 @@ dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
-<span class="normal"> 97</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
@@ -2676,7 +2675,8 @@ dimensions.</p>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
-<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">142</span>
+<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the flood model.</span>
 
 <span class="sd">    Runs the conceptual distributed hydrological model with</span>
@@ -2692,7 +2692,7 @@ dimensions.</p>
     <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">"all input data should have the same number of rows"</span>
+    <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
 
     <span class="c1"># input dimensions</span>
     <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
@@ -2712,7 +2712,7 @@ dimensions.</p>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flood_plain_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">"all input data should have the same number of rows"</span>
+    <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
         <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
@@ -2791,8 +2791,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
-<span class="normal">48</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
@@ -2838,7 +2837,8 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">91</span>
 <span class="normal">92</span>
 <span class="normal">93</span>
-<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunHapi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">94</span>
+<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunHapi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the distributed hydrological model.</span>
 
 <span class="sd">    Validates that all input arrays (precipitation, evapotranspiration,</span>
@@ -2867,7 +2867,7 @@ row counts, column counts, or temporal lengths.</p>
     <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">"all input data should have the same number of rows"</span>
+    <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
 
     <span class="c1"># input dimensions</span>
     <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
@@ -2913,9 +2913,9 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the Run class."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -2985,8 +2985,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
-<span class="normal">198</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
 <span class="normal">201</span>
@@ -3024,7 +3023,8 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
-<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">236</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the FW1 distributed hydrological model.</span>
 
 <span class="sd">    Validates that all input arrays have consistent dimensions,</span>
@@ -3154,8 +3154,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
-<span class="normal">148</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
@@ -3202,7 +3201,8 @@ does not match the distributed raster data length.</p>
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
-<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
+<span class="normal">195</span>
+<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the distributed model with a lake component.</span>
 
 <span class="sd">    Validates that all input arrays have consistent dimensions and</span>
@@ -3354,8 +3354,7 @@ this method:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">298</span>
-<span class="normal">299</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
@@ -3404,7 +3403,8 @@ this method:</p>
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
-<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">routing_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
