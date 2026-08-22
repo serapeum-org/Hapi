@@ -1512,46 +1512,45 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowNetwork</span><span class="p">,</span> <span class="n">MeteoInputs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="kn">import</span> <span class="n">HBVBergestrom92</span> <span class="k">as</span> <span class="n">HBV</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">statista.descriptors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metrics</span>
 
-<span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/distributed/coello&quot;</span>
-<span class="n">PrecPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/prec&quot;</span>
-<span class="n">Evap_Path</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/evap&quot;</span>
-<span class="n">TempPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/temp&quot;</span>
-<span class="n">FlowAccPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/GIS/acc4000.tif&quot;</span>
-<span class="n">FlowDPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/GIS/fd4000.tif&quot;</span>
-<span class="n">CalibPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/calibration&quot;</span>
-<span class="n">SaveTo</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/results&quot;</span>
+
+<span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">"/data/distributed/coello"</span>
+<span class="n">PrecPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/prec"</span>
+<span class="n">Evap_Path</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/evap"</span>
+<span class="n">TempPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/temp"</span>
+<span class="n">FlowAccPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/GIS/acc4000.tif"</span>
+<span class="n">FlowDPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/GIS/fd4000.tif"</span>
+<span class="n">CalibPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/calibration"</span>
+<span class="n">SaveTo</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/results"</span>
 
 <span class="n">AreaCoeff</span> <span class="o">=</span> <span class="mi">1530</span>
-<span class="c1">#[sp,sm,uz,lz,wc]</span>
-<span class="n">InitialCond</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># [sp,sm,uz,lz,wc]</span>
+<span class="n">InitialCond</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="n">Snow</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="c1"># Create the model object and read the input data</span>
 
-<span class="n">Sdate</span> <span class="o">=</span> <span class="s1">&#39;2009-01-01&#39;</span>
-<span class="n">Edate</span> <span class="o">=</span> <span class="s1">&#39;2011-12-31&#39;</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Sdate</span><span class="p">,</span> <span class="n">Edate</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">&quot;Distributed&quot;</span><span class="p">)</span>
+<span class="n">Sdate</span> <span class="o">=</span> <span class="s1">'2009-01-01'</span>
+<span class="n">Edate</span> <span class="o">=</span> <span class="s1">'2011-12-31'</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">"Coello"</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Sdate</span><span class="p">,</span> <span class="n">Edate</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Distributed"</span><span class="p">)</span>
 
 <span class="c1"># Meteorological &amp; GIS Data</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_rainfall</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_temperature</span><span class="p">(</span><span class="n">TempPath</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_et</span><span class="p">(</span><span class="n">Evap_Path</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">,</span> <span class="n">TempPath</span><span class="p">,</span> <span class="n">Evap_Path</span><span class="p">)</span>
 
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_flow_acc</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_flow_dir</span><span class="p">(</span><span class="n">FlowDPath</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">flow_network</span> <span class="o">=</span> <span class="n">FlowNetwork</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">,</span> <span class="n">FlowDPath</span><span class="p">)</span>
 
 <span class="c1"># Lumped Model</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_model</span><span class="p">(</span><span class="n">HBV</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
 
 <span class="c1"># Gauges Data</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="n">Path</span><span class="o">+</span><span class="s2">&quot;/stations/gauges.csv&quot;</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">GaugesPath</span> <span class="o">=</span> <span class="n">Path</span><span class="o">+</span><span class="s2">&quot;/stations/&quot;</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="n">GaugesPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/"</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="spatial-variability-object"><a class="toclink" href="#spatial-variability-object">Spatial Variability Object</a><a class="headerlink" href="#spatial-variability-object" title="Permanent link">#</a></h2>
 <ul>
@@ -1575,7 +1574,7 @@
 <span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">ParametersNO</span>
 </code></pre></div>
 <h2 id="define-the-objective-function"><a class="toclink" href="#define-the-objective-function">Define the objective function</a><a class="headerlink" href="#define-the-objective-function" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">coordinates</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">,</span><span class="s1">&#39;weight&#39;</span><span class="p">]][:]</span>
+<div class="highlight"><pre><span></span><code><span class="n">coordinates</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s1">'id'</span><span class="p">,</span><span class="s1">'x'</span><span class="p">,</span><span class="s1">'y'</span><span class="p">,</span><span class="s1">'weight'</span><span class="p">]][:]</span>
 
 <span class="c1"># define the objective function and its arguments</span>
 <span class="n">OF_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">coordinates</span><span class="p">]</span>
@@ -1585,7 +1584,7 @@
     <span class="n">all_errors</span><span class="o">=</span><span class="p">[]</span>
     <span class="c1"># error for all internal stations</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)):</span>
-        <span class="n">all_errors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span><span class="p">(</span><span class="n">Qobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">Qobs</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">Coello</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:,</span><span class="n">i</span><span class="p">])))</span> <span class="c1">#*coordinates.loc[coordinates.index[i],&#39;weight&#39;]</span>
+        <span class="n">all_errors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span><span class="p">(</span><span class="n">Qobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">Qobs</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">Coello</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:,</span><span class="n">i</span><span class="p">])))</span> <span class="c1">#*coordinates.loc[coordinates.index[i],'weight']</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
         <span class="n">error</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">error</span>
@@ -1599,12 +1598,12 @@
 <p>to see all options import Optimizer class and check the documentation of the
 method setOption</p>
 <div class="highlight"><pre><span></span><code>ApiObjArgs = dict(hms=50, hmcr=0.95, par=0.65, dbw=2000, fileout=1,
-                  filename=SaveTo + &quot;/Coello_&quot;+str(dt.datetime.now())[0:10]+&quot;.txt&quot;)
+                  filename=SaveTo + "/Coello_"+str(dt.datetime.now())[0:10]+".txt")
 
 for i in range(len(ApiObjArgs)):
     print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
 
-pll_type = &#39;POA&#39;
+pll_type = 'POA'
 pll_type = None
 
 ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True,hot_start=False)
@@ -1612,10 +1611,10 @@ ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True,hot_start=
 OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 </code></pre></div>
 <h2 id="run-calibration-algorithm"><a class="toclink" href="#run-calibration-algorithm">Run Calibration algorithm</a><a class="headerlink" href="#run-calibration-algorithm" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">run_calibration</span><span class="p">(</span><span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span><span class="n">printError</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">run_calibration</span><span class="p">(</span><span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span><span class="n">print_error</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="save-results"><a class="toclink" href="#save-results">Save results</a><a class="headerlink" href="#save-results" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Parameters</span><span class="p">,</span> <span class="n">kub</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Kub</span><span class="p">,</span> <span class="n">klb</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Klb</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">kub</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Kub</span><span class="p">,</span> <span class="n">klb</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Klb</span><span class="p">)</span>
 <span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">save_parameters</span><span class="p">(</span><span class="n">SaveTo</span><span class="p">)</span>
 </code></pre></div>
 

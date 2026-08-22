@@ -2219,15 +2219,8 @@ calibration.</p>
 <span class="normal">609</span>
 <span class="normal">610</span>
 <span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calibration class for distributed hydrological model parameter optimization.</span>
+<span class="normal">612</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Calibration class for distributed hydrological model parameter optimization.</span>
 
 <span class="sd">    The Calibration class connects the parameter spatial distribution function</span>
 <span class="sd">    with both components of the spatial representation of the hydrological</span>
@@ -2238,33 +2231,33 @@ calibration.</p>
 <span class="sd">    The Calibration class is a subclass of the Catchment superclass, so you</span>
 <span class="sd">    need to create the Catchment object first to be able to run the</span>
 <span class="sd">    calibration.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
         <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="n">spatial_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Lumped&quot;</span><span class="p">,</span>
-        <span class="n">temporal_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Daily&quot;</span><span class="p">,</span>
-        <span class="n">routing_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Muskingum&quot;</span><span class="p">,</span>
+        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
+        <span class="n">spatial_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"Lumped"</span><span class="p">,</span>
+        <span class="n">temporal_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"Daily"</span><span class="p">,</span>
+        <span class="n">routing_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"Muskingum"</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Calibration object.</span>
+<span class="w">        </span><span class="sd">"""Initialize the Calibration object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (Any): Name of the Catchment.</span>
 <span class="sd">            start (str): Starting date as a string.</span>
 <span class="sd">            end (str): End date as a string.</span>
 <span class="sd">            fmt (str, optional): Format of the given date.</span>
-<span class="sd">                Default is &quot;%Y-%m-%d&quot;.</span>
+<span class="sd">                Default is "%Y-%m-%d".</span>
 <span class="sd">            spatial_resolution (str, optional): Spatial resolution mode,</span>
-<span class="sd">                either &quot;Lumped&quot; or &quot;Distributed&quot;. Default is &quot;Lumped&quot;.</span>
+<span class="sd">                either "Lumped" or "Distributed". Default is "Lumped".</span>
 <span class="sd">            temporal_resolution (str, optional): Temporal resolution mode,</span>
-<span class="sd">                either &quot;Hourly&quot; or &quot;Daily&quot;. Default is &quot;Daily&quot;.</span>
+<span class="sd">                either "Hourly" or "Daily". Default is "Daily".</span>
 <span class="sd">            routing_method (str, optional): Routing method name.</span>
-<span class="sd">                Default is &quot;Muskingum&quot;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                Default is "Muskingum".</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="n">start</span><span class="p">,</span>
@@ -2281,7 +2274,7 @@ calibration.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read and store the objective function and its arguments.</span>
+<span class="w">        </span><span class="sd">"""Read and store the objective function and its arguments.</span>
 
 <span class="sd">        Takes the objective function and any additional arguments that</span>
 <span class="sd">        need to be passed to the objective function during calibration.</span>
@@ -2294,10 +2287,10 @@ calibration.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If objective_function is not callable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># check objective_function</span>
         <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">&quot;The Objective function should be a function&quot;</span>
+            <span class="s2">"The Objective function should be a function"</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span> <span class="o">=</span> <span class="n">objective_function</span>
 
@@ -2306,7 +2299,7 @@ calibration.</p>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">OFArgs</span> <span class="o">=</span> <span class="n">args</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Objective function is read successfully&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Objective function is read successfully"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2315,11 +2308,11 @@ calibration.</p>
         <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">only_outlet</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract the simulated discharge hydrograph at gauge locations.</span>
+<span class="w">        </span><span class="sd">"""Extract the simulated discharge hydrograph at gauge locations.</span>
 
 <span class="sd">        Extracts discharge values from the total routed discharge array</span>
-<span class="sd">        (``self.Qtot``) at each gauge location and stores them in</span>
-<span class="sd">        ``self.Qsim``. Optionally applies a multiplication factor per</span>
+<span class="sd">        (`self.Qtot`) at each gauge location and stores them in</span>
+<span class="sd">        `self.Qsim`. Optionally applies a multiplication factor per</span>
 <span class="sd">        gauge.</span>
 
 <span class="sd">        Args:</span>
@@ -2332,22 +2325,31 @@ calibration.</p>
 <span class="sd">            factor (list, optional): List of multiplication factors for</span>
 <span class="sd">                the simulated discharge, one per gauge. If None, no</span>
 <span class="sd">                scaling is applied. Default is None.</span>
-<span class="sd">            only_outlet (bool, optional): True to extract discharge</span>
-<span class="sd">                only at the outlet cell. Not used in this override but</span>
-<span class="sd">                kept for signature compatibility. Default is False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)))</span>
+<span class="sd">            only_outlet (bool, optional): Not used in this override, and inert on the base</span>
+<span class="sd">                class too -- see `Catchment.extract_discharge`. Kept for signature</span>
+<span class="sd">                compatibility. Default is False.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxbas_routed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"this catchment was run with triangular (MAXBAS) routing, which sends "</span>
+                <span class="s2">"every cell straight to the outlet: a single cell of Qtot is that cell's "</span>
+                <span class="s2">"contribution, not the discharge at it, so reading the gauge cells would "</span>
+                <span class="s2">"under-report every hydrograph and the objective function would be "</span>
+                <span class="s2">"calibrated against the wrong signal."</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)))</span>
         <span class="c1"># error = 0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
-            <span class="n">Xind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;cell_row&quot;</span><span class="p">])</span>
-            <span class="n">Yind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;cell_col&quot;</span><span class="p">])</span>
-            <span class="c1"># gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],&quot;id&quot;]</span>
+            <span class="n">Xind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">"cell_row"</span><span class="p">])</span>
+            <span class="n">Yind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">"cell_col"</span><span class="p">])</span>
+            <span class="c1"># gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]</span>
 
             <span class="c1"># Quz = self.quz_routed[Xind,Yind,:-1]</span>
             <span class="c1"># Qlz = self.qlz_translated[Xind,Yind,:-1]</span>
             <span class="c1"># self.Qsim[:,i] = Quz + Qlz</span>
 
-            <span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">Xind</span><span class="p">,</span> <span class="n">Yind</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">Xind</span><span class="p">,</span> <span class="n">Yind</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qsim</span> <span class="o">*</span> <span class="n">factor</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -2365,38 +2367,38 @@ calibration.</p>
         <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
         <span class="n">print_error</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the calibration algorithm for the distributed hydrological model.</span>
+<span class="w">        </span><span class="sd">"""Run the calibration algorithm for the distributed hydrological model.</span>
 
 <span class="sd">        Executes the Harmony Search optimization algorithm to calibrate</span>
 <span class="sd">        parameters for the conceptual distributed hydrological model.</span>
-<span class="sd">        The method distributes parameters spatially using ``spatial_var_fun``,</span>
-<span class="sd">        runs the RRM model via ``Wrapper.RRMModel``, and evaluates</span>
+<span class="sd">        The method distributes parameters spatially using `spatial_var_fun`,</span>
+<span class="sd">        runs the RRM model via `Wrapper.RRMModel`, and evaluates</span>
 <span class="sd">        performance using the stored objective function.</span>
 
 <span class="sd">        The following attributes must be set on the instance before calling</span>
 <span class="sd">        this method:</span>
 
-<span class="sd">            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.</span>
-<span class="sd">            - ``flow_dir_arr``: Flow direction array.</span>
-<span class="sd">            - ``rows``, ``cols``: Grid dimensions.</span>
-<span class="sd">            - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
-<span class="sd">            - ``objective_function``: Objective function for evaluation.</span>
-<span class="sd">            - ``QGauges``, ``GaugesTable``: Observed discharge data and</span>
+<span class="sd">            - `Prec`, `ET`, `Temp`: Meteorological input arrays.</span>
+<span class="sd">            - `flow_dir_arr`: Flow direction array.</span>
+<span class="sd">            - `rows`, `cols`: Grid dimensions.</span>
+<span class="sd">            - `LB`, `UB`: Lower and upper parameter bounds.</span>
+<span class="sd">            - `objective_function`: Objective function for evaluation.</span>
+<span class="sd">            - `QGauges`, `GaugesTable`: Observed discharge data and</span>
 <span class="sd">              gauge metadata.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            spatial_var_fun: Spatial variable function object with a</span>
-<span class="sd">                ``Function`` method that distributes parameters and a</span>
-<span class="sd">                ``Par3d`` attribute holding the 3D parameter array, plus</span>
-<span class="sd">                ``no_parameters`` and ``no_elem`` attributes.</span>
+<span class="sd">                `Function` method that distributes parameters and a</span>
+<span class="sd">                `Par3d` attribute holding the 3D parameter array, plus</span>
+<span class="sd">                `no_parameters` and `no_elem` attributes.</span>
 <span class="sd">            optimization_args: A list of three elements:</span>
-<span class="sd">                - ``optimization_args[0]`` (dict): Harmony Search API</span>
+<span class="sd">                - `optimization_args[0]` (dict): Harmony Search API</span>
 <span class="sd">                  objective arguments (e.g., HMS, HMCR, PAR).</span>
-<span class="sd">                - ``optimization_args[1]``: Parallel type for the</span>
+<span class="sd">                - `optimization_args[1]`: Parallel type for the</span>
 <span class="sd">                  optimizer.</span>
-<span class="sd">                - ``optimization_args[2]`` (dict): Solver arguments with</span>
-<span class="sd">                  keys ``&quot;store_sol&quot;``, ``&quot;display_opts&quot;``,</span>
-<span class="sd">                  ``&quot;store_hst&quot;``, and ``&quot;hot_start&quot;``.</span>
+<span class="sd">                - `optimization_args[2]` (dict): Solver arguments with</span>
+<span class="sd">                  keys `"store_sol"`, `"display_opts"`,</span>
+<span class="sd">                  `"store_hst"`, and `"hot_start"`.</span>
 <span class="sd">            print_error: If not 0, prints the error value and parameters</span>
 <span class="sd">                at each iteration. Default is None.</span>
 
@@ -2408,31 +2410,24 @@ calibration.</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If input dimensions are inconsistent or if</span>
 <span class="sd">                optimization arguments are not dictionaries.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">ROWS_MISMATCH_ERROR</span>
-
-        <span class="c1"># input dimensions</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
         <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
 
         <span class="c1"># basic inputs</span>
         <span class="c1"># check if all inputs are included</span>
-        <span class="c1"># assert all([&quot;p2&quot;,&quot;init_st&quot;,&quot;UB&quot;,&quot;LB&quot;,&quot;snow &quot;][i] in basic_inputs.keys()</span>
-        <span class="c1">#     for i in range(4)), &quot;basic_inputs should contain [&#39;p2&#39;,&#39;init_st&#39;,&#39;UB&#39;,&#39;LB&#39;]&quot;</span>
+        <span class="c1"># assert all(["p2","init_st","UB","LB","snow "][i] in basic_inputs.keys()</span>
+        <span class="c1">#     for i in range(4)), "basic_inputs should contain ['p2','init_st','UB','LB']"</span>
 
         <span class="c1">### optimization</span>
 
@@ -2441,10 +2436,10 @@ calibration.</p>
         <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="c1"># check optimization arguement</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;history_fname should be of type string &quot;</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
         <span class="c1">### calculate the objective function</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">opt_fun</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
@@ -2453,7 +2448,7 @@ calibration.</p>
                 <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span>
                     <span class="n">par</span>
                 <span class="p">)</span>  <span class="c1"># , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
                 <span class="c1"># run the model</span>
                 <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                 <span class="c1"># calculate performance of the model</span>
@@ -2487,24 +2482,24 @@ calibration.</p>
             <span class="k">return</span> <span class="n">error</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">fail</span>
 
         <span class="c1">### define the optimization components</span>
-        <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">&quot;HBV Calibration&quot;</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
+        <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
-            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">)</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">"f"</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">no_elem</span><span class="p">):</span>
-            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-1&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
-            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-2&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
+            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"-1"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
+            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"-2"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="n">opt_prob</span><span class="p">)</span>
 
         <span class="n">opt_engine</span> <span class="o">=</span> <span class="n">HSapi</span><span class="p">(</span><span class="n">pll_type</span><span class="o">=</span><span class="n">pll_type</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">api_obj_args</span><span class="p">)</span>
 
-        <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_sol&quot;</span><span class="p">]</span>
-        <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;display_opts&quot;</span><span class="p">]</span>
-        <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_hst&quot;</span><span class="p">]</span>
-        <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;hot_start&quot;</span><span class="p">]</span>
+        <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_sol"</span><span class="p">]</span>
+        <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"display_opts"</span><span class="p">]</span>
+        <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_hst"</span><span class="p">]</span>
+        <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"hot_start"</span><span class="p">]</span>
 
         <span class="n">res</span> <span class="o">=</span> <span class="n">opt_engine</span><span class="p">(</span>
             <span class="n">opt_prob</span><span class="p">,</span>
@@ -2514,7 +2509,7 @@ calibration.</p>
             <span class="n">hot_start</span><span class="o">=</span><span class="n">hot_start</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">OFvalue</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">res</span>
@@ -2525,34 +2520,34 @@ calibration.</p>
         <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
         <span class="n">print_error</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run calibration using the FW1 (Focussed Width-1) routing scheme.</span>
+<span class="w">        </span><span class="sd">"""Run calibration using the FW1 (Focussed Width-1) routing scheme.</span>
 
 <span class="sd">        Executes the Harmony Search optimization algorithm to calibrate</span>
 <span class="sd">        parameters for the conceptual distributed hydrological model using</span>
-<span class="sd">        the FW1 routing approach via ``Wrapper.FW1``.</span>
+<span class="sd">        the FW1 routing approach via `Wrapper.FW1`.</span>
 
 <span class="sd">        The following attributes must be set on the instance before calling</span>
 <span class="sd">        this method:</span>
 
-<span class="sd">            - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.</span>
-<span class="sd">            - ``rows``, ``cols``: Grid dimensions.</span>
-<span class="sd">            - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
-<span class="sd">            - ``objective_function``: Objective function for evaluation.</span>
-<span class="sd">            - ``QGauges``, ``GaugesTable``: Observed discharge data and</span>
+<span class="sd">            - `Prec`, `ET`, `Temp`: Meteorological input arrays.</span>
+<span class="sd">            - `rows`, `cols`: Grid dimensions.</span>
+<span class="sd">            - `LB`, `UB`: Lower and upper parameter bounds.</span>
+<span class="sd">            - `objective_function`: Objective function for evaluation.</span>
+<span class="sd">            - `QGauges`, `GaugesTable`: Observed discharge data and</span>
 <span class="sd">              gauge metadata.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            spatial_var_fun: Spatial variable function object with a</span>
-<span class="sd">                ``Function`` method that distributes parameters and a</span>
-<span class="sd">                ``Par3d`` attribute holding the 3D parameter array.</span>
+<span class="sd">                `Function` method that distributes parameters and a</span>
+<span class="sd">                `Par3d` attribute holding the 3D parameter array.</span>
 <span class="sd">            optimization_args: A list of three elements:</span>
-<span class="sd">                - ``optimization_args[0]`` (dict): Harmony Search API</span>
+<span class="sd">                - `optimization_args[0]` (dict): Harmony Search API</span>
 <span class="sd">                  objective arguments (e.g., HMS, HMCR, PAR).</span>
-<span class="sd">                - ``optimization_args[1]``: Parallel type for the</span>
+<span class="sd">                - `optimization_args[1]`: Parallel type for the</span>
 <span class="sd">                  optimizer.</span>
-<span class="sd">                - ``optimization_args[2]`` (dict): Solver arguments with</span>
-<span class="sd">                  keys ``&quot;store_sol&quot;``, ``&quot;display_opts&quot;``,</span>
-<span class="sd">                  ``&quot;store_hst&quot;``, and ``&quot;hot_start&quot;``.</span>
+<span class="sd">                - `optimization_args[2]` (dict): Solver arguments with</span>
+<span class="sd">                  keys `"store_sol"`, `"display_opts"`,</span>
+<span class="sd">                  `"store_hst"`, and `"hot_start"`.</span>
 <span class="sd">            print_error: If not 0, prints the error value and parameters</span>
 <span class="sd">                at each iteration. Default is None.</span>
 
@@ -2564,31 +2559,22 @@ calibration.</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If input dimensions are inconsistent or if</span>
 <span class="sd">                optimization arguments are not dictionaries.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
         <span class="c1"># [fd_rows,fd_cols] = self.flow_dir_arr.shape</span>
         <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR</span>
 
-        <span class="c1"># input dimensions</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
 
         <span class="c1"># basic inputs</span>
         <span class="c1"># check if all inputs are included</span>
-        <span class="c1"># assert all([&quot;p2&quot;,&quot;init_st&quot;,&quot;UB&quot;,&quot;LB&quot;,&quot;snow &quot;][i] in basic_inputs.keys()</span>
-        <span class="c1">#     for i in range(4)), &quot;basic_inputs should contain [&#39;p2&#39;,&#39;init_st&#39;,&#39;UB&#39;,&#39;LB&#39;]&quot;</span>
+        <span class="c1"># assert all(["p2","init_st","UB","LB","snow "][i] in basic_inputs.keys()</span>
+        <span class="c1">#     for i in range(4)), "basic_inputs should contain ['p2','init_st','UB','LB']"</span>
 
         <span class="c1">### optimization</span>
 
@@ -2597,10 +2583,10 @@ calibration.</p>
         <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="c1"># check optimization arguement</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;history_fname should be of type string &quot;</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
         <span class="c1"># calculate the objective function</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">opt_fun</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
@@ -2609,7 +2595,7 @@ calibration.</p>
                 <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span>
                     <span class="n">par</span>
                 <span class="p">)</span>  <span class="c1"># , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
                 <span class="c1"># run the model</span>
                 <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                 <span class="c1"># calculate performance of the model</span>
@@ -2634,18 +2620,18 @@ calibration.</p>
             <span class="k">return</span> <span class="n">error</span><span class="p">,</span> <span class="p">[],</span> <span class="n">fail</span>
 
         <span class="c1"># define the optimization components</span>
-        <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">&quot;HBV Calibration&quot;</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
+        <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
-            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="n">opt_prob</span><span class="p">)</span>
 
         <span class="n">opt_engine</span> <span class="o">=</span> <span class="n">HSapi</span><span class="p">(</span><span class="n">pll_type</span><span class="o">=</span><span class="n">pll_type</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">api_obj_args</span><span class="p">)</span>
 
-        <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_sol&quot;</span><span class="p">]</span>
-        <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;display_opts&quot;</span><span class="p">]</span>
-        <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_hst&quot;</span><span class="p">]</span>
-        <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;hot_start&quot;</span><span class="p">]</span>
+        <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_sol"</span><span class="p">]</span>
+        <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"display_opts"</span><span class="p">]</span>
+        <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_hst"</span><span class="p">]</span>
+        <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"hot_start"</span><span class="p">]</span>
 
         <span class="n">res</span> <span class="o">=</span> <span class="n">opt_engine</span><span class="p">(</span>
             <span class="n">opt_prob</span><span class="p">,</span>
@@ -2655,7 +2641,7 @@ calibration.</p>
             <span class="n">hot_start</span><span class="o">=</span><span class="n">hot_start</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">OFvalue</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">res</span>
@@ -2666,38 +2652,38 @@ calibration.</p>
         <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
         <span class="n">print_error</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the calibration algorithm for the lumped hydrological model.</span>
+<span class="w">        </span><span class="sd">"""Run the calibration algorithm for the lumped hydrological model.</span>
 
 <span class="sd">        Executes the Harmony Search optimization algorithm to calibrate</span>
 <span class="sd">        parameters for the lumped conceptual hydrological model. The</span>
-<span class="sd">        method runs the model via ``Wrapper.Lumped`` and evaluates</span>
+<span class="sd">        method runs the model via `Wrapper.Lumped` and evaluates</span>
 <span class="sd">        performance using the stored objective function. Muskingum</span>
 <span class="sd">        routing constraints are enforced as inequality constraints.</span>
 
 <span class="sd">        The following attributes must be set on the instance before calling</span>
 <span class="sd">        this method:</span>
 
-<span class="sd">            - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
-<span class="sd">            - ``objective_function``: Objective function for evaluation.</span>
-<span class="sd">            - ``OFArgs``: Arguments for the objective function.</span>
-<span class="sd">            - ``QGauges``: Observed discharge DataFrame.</span>
-<span class="sd">            - ``dt``: Time step duration.</span>
+<span class="sd">            - `LB`, `UB`: Lower and upper parameter bounds.</span>
+<span class="sd">            - `objective_function`: Objective function for evaluation.</span>
+<span class="sd">            - `OFArgs`: Arguments for the objective function.</span>
+<span class="sd">            - `QGauges`: Observed discharge DataFrame.</span>
+<span class="sd">            - `dt`: Time step duration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            basic_inputs (dict): Dictionary containing:</span>
-<span class="sd">                - ``&quot;Route&quot;`` (int): Routing flag (1 to enable routing).</span>
-<span class="sd">                - ``&quot;RoutingFn&quot;`` (callable): Routing function to use.</span>
-<span class="sd">                - ``&quot;InitialValues&quot;`` (list, optional): Initial parameter</span>
+<span class="sd">                - `"Route"` (int): Routing flag (1 to enable routing).</span>
+<span class="sd">                - `"RoutingFn"` (callable): Routing function to use.</span>
+<span class="sd">                - `"InitialValues"` (list, optional): Initial parameter</span>
 <span class="sd">                  values for the optimizer. Defaults to an empty list if</span>
 <span class="sd">                  not provided.</span>
 <span class="sd">            optimization_args: A list of three elements:</span>
-<span class="sd">                - ``optimization_args[0]`` (dict): Harmony Search API</span>
+<span class="sd">                - `optimization_args[0]` (dict): Harmony Search API</span>
 <span class="sd">                  objective arguments (e.g., HMS, HMCR, PAR).</span>
-<span class="sd">                - ``optimization_args[1]``: Parallel type for the</span>
+<span class="sd">                - `optimization_args[1]`: Parallel type for the</span>
 <span class="sd">                  optimizer.</span>
-<span class="sd">                - ``optimization_args[2]`` (dict): Solver arguments with</span>
-<span class="sd">                  keys ``&quot;store_sol&quot;``, ``&quot;display_opts&quot;``,</span>
-<span class="sd">                  ``&quot;store_hst&quot;``, and ``&quot;hot_start&quot;``.</span>
+<span class="sd">                - `optimization_args[2]` (dict): Solver arguments with</span>
+<span class="sd">                  keys `"store_sol"`, `"display_opts"`,</span>
+<span class="sd">                  `"store_hst"`, and `"hot_start"`.</span>
 <span class="sd">            print_error: If not 0, prints the error value and constraint</span>
 <span class="sd">                values at each iteration. Default is None.</span>
 
@@ -2707,20 +2693,20 @@ calibration.</p>
 <span class="sd">                - res[1]: The optimal parameter set.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If ``basic_inputs`` is missing required keys</span>
-<span class="sd">                ``&quot;Route&quot;`` or ``&quot;RoutingFn&quot;``, or if optimization</span>
+<span class="sd">            AssertionError: If `basic_inputs` is missing required keys</span>
+<span class="sd">                `"Route"` or `"RoutingFn"`, or if optimization</span>
 <span class="sd">                arguments are not dictionaries.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># basic inputs</span>
         <span class="c1"># check if all inputs are included</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="s2">&quot;Route&quot;</span><span class="p">,</span> <span class="s2">&quot;RoutingFn&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">basic_inputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="p">(</span>
-            <span class="s2">&quot;basic_inputs should contain [&#39;p2&#39;,&#39;init_st&#39;,&#39;UB&#39;,&#39;LB&#39;] &quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="s2">"Route"</span><span class="p">,</span> <span class="s2">"RoutingFn"</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">basic_inputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="p">(</span>
+            <span class="s2">"basic_inputs should contain ['p2','init_st','UB','LB'] "</span>
         <span class="p">)</span>
 
-        <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">&quot;Route&quot;</span><span class="p">]</span>
-        <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">&quot;RoutingFn&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s2">&quot;InitialValues&quot;</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">:</span>
-            <span class="n">initial_values</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">&quot;InitialValues&quot;</span><span class="p">]</span>
+        <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"Route"</span><span class="p">]</span>
+        <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"RoutingFn"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">"InitialValues"</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">:</span>
+            <span class="n">initial_values</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"InitialValues"</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">initial_values</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -2731,18 +2717,18 @@ calibration.</p>
         <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="c1"># check optimization arguement</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">"store_history should be 0 or 1"</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">&quot;history_fname should be of type string &quot;</span>
+            <span class="s2">"history_fname should be of type string "</span>
         <span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
         <span class="c1">### calculate the objective function</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">opt_fun</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># parameters</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">par</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">par</span>
                 <span class="c1"># run the model</span>
                 <span class="n">Wrapper</span><span class="o">.</span><span class="n">Lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">route</span><span class="p">,</span> <span class="n">routing_fn</span><span class="p">)</span>
                 <span class="c1"># calculate performance of the model</span>
@@ -2760,7 +2746,7 @@ calibration.</p>
 
                 <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Error = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2"> Inequality Const = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Error = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2"> Inequality Const = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
                     <span class="c1"># print(par)</span>
                 <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2771,39 +2757,39 @@ calibration.</p>
             <span class="k">return</span> <span class="n">error</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">fail</span>
 
         <span class="c1">### define the optimization components</span>
-        <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">&quot;HBV Calibration&quot;</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
+        <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">initial_values</span> <span class="o">!=</span> <span class="p">[]:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
                 <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span>
                     <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                     <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                     <span class="n">value</span><span class="o">=</span><span class="n">initial_values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
-                <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">)</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">"f"</span><span class="p">)</span>
 
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g1&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g2&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g1"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g2"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
         <span class="c1"># print(opt_prob)</span>
         <span class="n">opt_engine</span> <span class="o">=</span> <span class="n">HSapi</span><span class="p">(</span><span class="n">pll_type</span><span class="o">=</span><span class="n">pll_type</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">api_obj_args</span><span class="p">)</span>
 
         <span class="c1"># parse the api_solve_args inputs</span>
-        <span class="c1"># availablekeys = [&#39;store_sol&#39;,&quot;display_opts&quot;,&quot;store_hst&quot;,&quot;hot_start&quot;]</span>
-        <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_sol&quot;</span><span class="p">]</span>
-        <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;display_opts&quot;</span><span class="p">]</span>
-        <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_hst&quot;</span><span class="p">]</span>
-        <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;hot_start&quot;</span><span class="p">]</span>
+        <span class="c1"># availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]</span>
+        <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_sol"</span><span class="p">]</span>
+        <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"display_opts"</span><span class="p">]</span>
+        <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_hst"</span><span class="p">]</span>
+        <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"hot_start"</span><span class="p">]</span>
 
         <span class="c1"># for i in range(len(availablekeys)):</span>
         <span class="c1"># if availablekeys[i] in api_solve_args.keys():</span>
-        <span class="c1"># exec(availablekeys[i] + &quot;=&quot; + str(api_solve_args[availablekeys[i]]))</span>
-        <span class="c1"># print(availablekeys[i] + &quot; = &quot; + str(api_solve_args[availablekeys[i]]))</span>
+        <span class="c1"># exec(availablekeys[i] + "=" + str(api_solve_args[availablekeys[i]]))</span>
+        <span class="c1"># print(availablekeys[i] + " = " + str(api_solve_args[availablekeys[i]]))</span>
 
         <span class="n">res</span> <span class="o">=</span> <span class="n">opt_engine</span><span class="p">(</span>
             <span class="n">opt_prob</span><span class="p">,</span>
@@ -2814,7 +2800,7 @@ calibration.</p>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">OFvalue</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">res</span>
 </code></pre></div></td></tr></table></div>
@@ -2847,11 +2833,11 @@ parameters for the conceptual distributed hydrological model using
 the FW1 routing approach via <code>Wrapper.FW1</code>.</p>
 <p>The following attributes must be set on the instance before calling
 this method:</p>
-<div class="highlight"><pre><span></span><code>- ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-- ``rows``, ``cols``: Grid dimensions.
-- ``LB``, ``UB``: Lower and upper parameter bounds.
-- ``objective_function``: Objective function for evaluation.
-- ``QGauges``, ``GaugesTable``: Observed discharge data and
+<div class="highlight"><pre><span></span><code>- `Prec`, `ET`, `Temp`: Meteorological input arrays.
+- `rows`, `cols`: Grid dimensions.
+- `LB`, `UB`: Lower and upper parameter bounds.
+- `objective_function`: Objective function for evaluation.
+- `QGauges`, `GaugesTable`: Observed discharge data and
   gauge metadata.
 </code></pre></div>
 
@@ -2980,9 +2966,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
 <span class="normal">325</span>
 <span class="normal">326</span>
 <span class="normal">327</span>
@@ -3112,47 +3096,40 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span>
+<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">print_error</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run calibration using the FW1 (Focussed Width-1) routing scheme.</span>
+<span class="w">    </span><span class="sd">"""Run calibration using the FW1 (Focussed Width-1) routing scheme.</span>
 
 <span class="sd">    Executes the Harmony Search optimization algorithm to calibrate</span>
 <span class="sd">    parameters for the conceptual distributed hydrological model using</span>
-<span class="sd">    the FW1 routing approach via ``Wrapper.FW1``.</span>
+<span class="sd">    the FW1 routing approach via `Wrapper.FW1`.</span>
 
 <span class="sd">    The following attributes must be set on the instance before calling</span>
 <span class="sd">    this method:</span>
 
-<span class="sd">        - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.</span>
-<span class="sd">        - ``rows``, ``cols``: Grid dimensions.</span>
-<span class="sd">        - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
-<span class="sd">        - ``objective_function``: Objective function for evaluation.</span>
-<span class="sd">        - ``QGauges``, ``GaugesTable``: Observed discharge data and</span>
+<span class="sd">        - `Prec`, `ET`, `Temp`: Meteorological input arrays.</span>
+<span class="sd">        - `rows`, `cols`: Grid dimensions.</span>
+<span class="sd">        - `LB`, `UB`: Lower and upper parameter bounds.</span>
+<span class="sd">        - `objective_function`: Objective function for evaluation.</span>
+<span class="sd">        - `QGauges`, `GaugesTable`: Observed discharge data and</span>
 <span class="sd">          gauge metadata.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        spatial_var_fun: Spatial variable function object with a</span>
-<span class="sd">            ``Function`` method that distributes parameters and a</span>
-<span class="sd">            ``Par3d`` attribute holding the 3D parameter array.</span>
+<span class="sd">            `Function` method that distributes parameters and a</span>
+<span class="sd">            `Par3d` attribute holding the 3D parameter array.</span>
 <span class="sd">        optimization_args: A list of three elements:</span>
-<span class="sd">            - ``optimization_args[0]`` (dict): Harmony Search API</span>
+<span class="sd">            - `optimization_args[0]` (dict): Harmony Search API</span>
 <span class="sd">              objective arguments (e.g., HMS, HMCR, PAR).</span>
-<span class="sd">            - ``optimization_args[1]``: Parallel type for the</span>
+<span class="sd">            - `optimization_args[1]`: Parallel type for the</span>
 <span class="sd">              optimizer.</span>
-<span class="sd">            - ``optimization_args[2]`` (dict): Solver arguments with</span>
-<span class="sd">              keys ``&quot;store_sol&quot;``, ``&quot;display_opts&quot;``,</span>
-<span class="sd">              ``&quot;store_hst&quot;``, and ``&quot;hot_start&quot;``.</span>
+<span class="sd">            - `optimization_args[2]` (dict): Solver arguments with</span>
+<span class="sd">              keys `"store_sol"`, `"display_opts"`,</span>
+<span class="sd">              `"store_hst"`, and `"hot_start"`.</span>
 <span class="sd">        print_error: If not 0, prints the error value and parameters</span>
 <span class="sd">            at each iteration. Default is None.</span>
 
@@ -3164,31 +3141,22 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If input dimensions are inconsistent or if</span>
 <span class="sd">            optimization arguments are not dictionaries.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
     <span class="c1"># [fd_rows,fd_cols] = self.flow_dir_arr.shape</span>
     <span class="c1"># assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR</span>
 
-    <span class="c1"># input dimensions</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
 
     <span class="c1"># basic inputs</span>
     <span class="c1"># check if all inputs are included</span>
-    <span class="c1"># assert all([&quot;p2&quot;,&quot;init_st&quot;,&quot;UB&quot;,&quot;LB&quot;,&quot;snow &quot;][i] in basic_inputs.keys()</span>
-    <span class="c1">#     for i in range(4)), &quot;basic_inputs should contain [&#39;p2&#39;,&#39;init_st&#39;,&#39;UB&#39;,&#39;LB&#39;]&quot;</span>
+    <span class="c1"># assert all(["p2","init_st","UB","LB","snow "][i] in basic_inputs.keys()</span>
+    <span class="c1">#     for i in range(4)), "basic_inputs should contain ['p2','init_st','UB','LB']"</span>
 
     <span class="c1">### optimization</span>
 
@@ -3197,10 +3165,10 @@ optimization arguments are not dictionaries.</p>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="c1"># check optimization arguement</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;history_fname should be of type string &quot;</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
     <span class="c1"># calculate the objective function</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opt_fun</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
@@ -3209,7 +3177,7 @@ optimization arguments are not dictionaries.</p>
             <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span>
                 <span class="n">par</span>
             <span class="p">)</span>  <span class="c1"># , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
             <span class="c1"># run the model</span>
             <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="c1"># calculate performance of the model</span>
@@ -3234,18 +3202,18 @@ optimization arguments are not dictionaries.</p>
         <span class="k">return</span> <span class="n">error</span><span class="p">,</span> <span class="p">[],</span> <span class="n">fail</span>
 
     <span class="c1"># define the optimization components</span>
-    <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">&quot;HBV Calibration&quot;</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
+    <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">opt_prob</span><span class="p">)</span>
 
     <span class="n">opt_engine</span> <span class="o">=</span> <span class="n">HSapi</span><span class="p">(</span><span class="n">pll_type</span><span class="o">=</span><span class="n">pll_type</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">api_obj_args</span><span class="p">)</span>
 
-    <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_sol&quot;</span><span class="p">]</span>
-    <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;display_opts&quot;</span><span class="p">]</span>
-    <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_hst&quot;</span><span class="p">]</span>
-    <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;hot_start&quot;</span><span class="p">]</span>
+    <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_sol"</span><span class="p">]</span>
+    <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"display_opts"</span><span class="p">]</span>
+    <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_hst"</span><span class="p">]</span>
+    <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"hot_start"</span><span class="p">]</span>
 
     <span class="n">res</span> <span class="o">=</span> <span class="n">opt_engine</span><span class="p">(</span>
         <span class="n">opt_prob</span><span class="p">,</span>
@@ -3255,7 +3223,7 @@ optimization arguments are not dictionaries.</p>
         <span class="n">hot_start</span><span class="o">=</span><span class="n">hot_start</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">OFvalue</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">res</span>
@@ -3274,7 +3242,7 @@ optimization arguments are not dictionaries.</p>
 
 
 <h4 id="hapi.calibration.Calibration.__init__" class="doc doc-heading"><a href="#hapi.calibration.Calibration.__init__" class="toclink">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">&#39;Lumped&#39;</span><span class="p">,</span> <span class="n">temporal_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">&#39;Daily&#39;</span><span class="p">,</span> <span class="n">routing_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">&#39;Muskingum&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'%Y-%m-</span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">'Lumped'</span><span class="p">,</span> <span class="n">temporal_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">'Daily'</span><span class="p">,</span> <span class="n">routing_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">'Muskingum'</span><span class="p">)</span></code>
 
 </a><a href="#hapi.calibration.Calibration.__init__" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -3458,26 +3426,26 @@ Default is "Muskingum".</p>
     <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="n">spatial_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Lumped&quot;</span><span class="p">,</span>
-    <span class="n">temporal_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Daily&quot;</span><span class="p">,</span>
-    <span class="n">routing_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Muskingum&quot;</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">spatial_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"Lumped"</span><span class="p">,</span>
+    <span class="n">temporal_resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"Daily"</span><span class="p">,</span>
+    <span class="n">routing_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"Muskingum"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Calibration object.</span>
+<span class="w">    </span><span class="sd">"""Initialize the Calibration object.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name (Any): Name of the Catchment.</span>
 <span class="sd">        start (str): Starting date as a string.</span>
 <span class="sd">        end (str): End date as a string.</span>
 <span class="sd">        fmt (str, optional): Format of the given date.</span>
-<span class="sd">            Default is &quot;%Y-%m-%d&quot;.</span>
+<span class="sd">            Default is "%Y-%m-%d".</span>
 <span class="sd">        spatial_resolution (str, optional): Spatial resolution mode,</span>
-<span class="sd">            either &quot;Lumped&quot; or &quot;Distributed&quot;. Default is &quot;Lumped&quot;.</span>
+<span class="sd">            either "Lumped" or "Distributed". Default is "Lumped".</span>
 <span class="sd">        temporal_resolution (str, optional): Temporal resolution mode,</span>
-<span class="sd">            either &quot;Hourly&quot; or &quot;Daily&quot;. Default is &quot;Daily&quot;.</span>
+<span class="sd">            either "Hourly" or "Daily". Default is "Daily".</span>
 <span class="sd">        routing_method (str, optional): Routing method name.</span>
-<span class="sd">            Default is &quot;Muskingum&quot;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">            Default is "Muskingum".</span>
+<span class="sd">    """</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
         <span class="n">name</span><span class="p">,</span>
         <span class="n">start</span><span class="p">,</span>
@@ -3593,9 +3561,9 @@ scaling is applied. Default is None.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>True to extract discharge
-only at the outlet cell. Not used in this override but
-kept for signature compatibility. Default is False.</p>
+                <p>Not used in this override, and inert on the base
+class too -- see <code>Catchment.extract_discharge</code>. Kept for signature
+compatibility. Default is False.</p>
               </div>
             </td>
             <td>
@@ -3652,18 +3620,27 @@ kept for signature compatibility. Default is False.</p>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
-<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">frame_work_1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">only_outlet</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the simulated discharge hydrograph at gauge locations.</span>
+<span class="w">    </span><span class="sd">"""Extract the simulated discharge hydrograph at gauge locations.</span>
 
 <span class="sd">    Extracts discharge values from the total routed discharge array</span>
-<span class="sd">    (``self.Qtot``) at each gauge location and stores them in</span>
-<span class="sd">    ``self.Qsim``. Optionally applies a multiplication factor per</span>
+<span class="sd">    (`self.Qtot`) at each gauge location and stores them in</span>
+<span class="sd">    `self.Qsim`. Optionally applies a multiplication factor per</span>
 <span class="sd">    gauge.</span>
 
 <span class="sd">    Args:</span>
@@ -3676,22 +3653,31 @@ kept for signature compatibility. Default is False.</p>
 <span class="sd">        factor (list, optional): List of multiplication factors for</span>
 <span class="sd">            the simulated discharge, one per gauge. If None, no</span>
 <span class="sd">            scaling is applied. Default is None.</span>
-<span class="sd">        only_outlet (bool, optional): True to extract discharge</span>
-<span class="sd">            only at the outlet cell. Not used in this override but</span>
-<span class="sd">            kept for signature compatibility. Default is False.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)))</span>
+<span class="sd">        only_outlet (bool, optional): Not used in this override, and inert on the base</span>
+<span class="sd">            class too -- see `Catchment.extract_discharge`. Kept for signature</span>
+<span class="sd">            compatibility. Default is False.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxbas_routed</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"this catchment was run with triangular (MAXBAS) routing, which sends "</span>
+            <span class="s2">"every cell straight to the outlet: a single cell of Qtot is that cell's "</span>
+            <span class="s2">"contribution, not the discharge at it, so reading the gauge cells would "</span>
+            <span class="s2">"under-report every hydrograph and the objective function would be "</span>
+            <span class="s2">"calibrated against the wrong signal."</span>
+        <span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)))</span>
     <span class="c1"># error = 0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
-        <span class="n">Xind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;cell_row&quot;</span><span class="p">])</span>
-        <span class="n">Yind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;cell_col&quot;</span><span class="p">])</span>
-        <span class="c1"># gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],&quot;id&quot;]</span>
+        <span class="n">Xind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">"cell_row"</span><span class="p">])</span>
+        <span class="n">Yind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">"cell_col"</span><span class="p">])</span>
+        <span class="c1"># gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]</span>
 
         <span class="c1"># Quz = self.quz_routed[Xind,Yind,:-1]</span>
         <span class="c1"># Qlz = self.qlz_translated[Xind,Yind,:-1]</span>
         <span class="c1"># self.Qsim[:,i] = Quz + Qlz</span>
 
-        <span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">Xind</span><span class="p">,</span> <span class="n">Yind</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">Qsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qtot</span><span class="p">[</span><span class="n">Xind</span><span class="p">,</span> <span class="n">Yind</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qsim</span> <span class="o">*</span> <span class="n">factor</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -3727,11 +3713,11 @@ performance using the stored objective function. Muskingum
 routing constraints are enforced as inequality constraints.</p>
 <p>The following attributes must be set on the instance before calling
 this method:</p>
-<div class="highlight"><pre><span></span><code>- ``LB``, ``UB``: Lower and upper parameter bounds.
-- ``objective_function``: Objective function for evaluation.
-- ``OFArgs``: Arguments for the objective function.
-- ``QGauges``: Observed discharge DataFrame.
-- ``dt``: Time step duration.
+<div class="highlight"><pre><span></span><code>- `LB`, `UB`: Lower and upper parameter bounds.
+- `objective_function`: Objective function for evaluation.
+- `OFArgs`: Arguments for the objective function.
+- `QGauges`: Observed discharge DataFrame.
+- `dt`: Time step duration.
 </code></pre></div>
 
 
@@ -3863,7 +3849,14 @@ arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">463</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
 <span class="normal">464</span>
 <span class="normal">465</span>
 <span class="normal">466</span>
@@ -4012,51 +4005,44 @@ arguments are not dictionaries.</p>
 <span class="normal">609</span>
 <span class="normal">610</span>
 <span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
+<span class="normal">612</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">print_error</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the calibration algorithm for the lumped hydrological model.</span>
+<span class="w">    </span><span class="sd">"""Run the calibration algorithm for the lumped hydrological model.</span>
 
 <span class="sd">    Executes the Harmony Search optimization algorithm to calibrate</span>
 <span class="sd">    parameters for the lumped conceptual hydrological model. The</span>
-<span class="sd">    method runs the model via ``Wrapper.Lumped`` and evaluates</span>
+<span class="sd">    method runs the model via `Wrapper.Lumped` and evaluates</span>
 <span class="sd">    performance using the stored objective function. Muskingum</span>
 <span class="sd">    routing constraints are enforced as inequality constraints.</span>
 
 <span class="sd">    The following attributes must be set on the instance before calling</span>
 <span class="sd">    this method:</span>
 
-<span class="sd">        - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
-<span class="sd">        - ``objective_function``: Objective function for evaluation.</span>
-<span class="sd">        - ``OFArgs``: Arguments for the objective function.</span>
-<span class="sd">        - ``QGauges``: Observed discharge DataFrame.</span>
-<span class="sd">        - ``dt``: Time step duration.</span>
+<span class="sd">        - `LB`, `UB`: Lower and upper parameter bounds.</span>
+<span class="sd">        - `objective_function`: Objective function for evaluation.</span>
+<span class="sd">        - `OFArgs`: Arguments for the objective function.</span>
+<span class="sd">        - `QGauges`: Observed discharge DataFrame.</span>
+<span class="sd">        - `dt`: Time step duration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        basic_inputs (dict): Dictionary containing:</span>
-<span class="sd">            - ``&quot;Route&quot;`` (int): Routing flag (1 to enable routing).</span>
-<span class="sd">            - ``&quot;RoutingFn&quot;`` (callable): Routing function to use.</span>
-<span class="sd">            - ``&quot;InitialValues&quot;`` (list, optional): Initial parameter</span>
+<span class="sd">            - `"Route"` (int): Routing flag (1 to enable routing).</span>
+<span class="sd">            - `"RoutingFn"` (callable): Routing function to use.</span>
+<span class="sd">            - `"InitialValues"` (list, optional): Initial parameter</span>
 <span class="sd">              values for the optimizer. Defaults to an empty list if</span>
 <span class="sd">              not provided.</span>
 <span class="sd">        optimization_args: A list of three elements:</span>
-<span class="sd">            - ``optimization_args[0]`` (dict): Harmony Search API</span>
+<span class="sd">            - `optimization_args[0]` (dict): Harmony Search API</span>
 <span class="sd">              objective arguments (e.g., HMS, HMCR, PAR).</span>
-<span class="sd">            - ``optimization_args[1]``: Parallel type for the</span>
+<span class="sd">            - `optimization_args[1]`: Parallel type for the</span>
 <span class="sd">              optimizer.</span>
-<span class="sd">            - ``optimization_args[2]`` (dict): Solver arguments with</span>
-<span class="sd">              keys ``&quot;store_sol&quot;``, ``&quot;display_opts&quot;``,</span>
-<span class="sd">              ``&quot;store_hst&quot;``, and ``&quot;hot_start&quot;``.</span>
+<span class="sd">            - `optimization_args[2]` (dict): Solver arguments with</span>
+<span class="sd">              keys `"store_sol"`, `"display_opts"`,</span>
+<span class="sd">              `"store_hst"`, and `"hot_start"`.</span>
 <span class="sd">        print_error: If not 0, prints the error value and constraint</span>
 <span class="sd">            values at each iteration. Default is None.</span>
 
@@ -4066,20 +4052,20 @@ arguments are not dictionaries.</p>
 <span class="sd">            - res[1]: The optimal parameter set.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If ``basic_inputs`` is missing required keys</span>
-<span class="sd">            ``&quot;Route&quot;`` or ``&quot;RoutingFn&quot;``, or if optimization</span>
+<span class="sd">        AssertionError: If `basic_inputs` is missing required keys</span>
+<span class="sd">            `"Route"` or `"RoutingFn"`, or if optimization</span>
 <span class="sd">            arguments are not dictionaries.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># basic inputs</span>
     <span class="c1"># check if all inputs are included</span>
-    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="s2">&quot;Route&quot;</span><span class="p">,</span> <span class="s2">&quot;RoutingFn&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">basic_inputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="p">(</span>
-        <span class="s2">&quot;basic_inputs should contain [&#39;p2&#39;,&#39;init_st&#39;,&#39;UB&#39;,&#39;LB&#39;] &quot;</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="s2">"Route"</span><span class="p">,</span> <span class="s2">"RoutingFn"</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">basic_inputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="p">(</span>
+        <span class="s2">"basic_inputs should contain ['p2','init_st','UB','LB'] "</span>
     <span class="p">)</span>
 
-    <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">&quot;Route&quot;</span><span class="p">]</span>
-    <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">&quot;RoutingFn&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="s2">&quot;InitialValues&quot;</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">:</span>
-        <span class="n">initial_values</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">&quot;InitialValues&quot;</span><span class="p">]</span>
+    <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"Route"</span><span class="p">]</span>
+    <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"RoutingFn"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">"InitialValues"</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">:</span>
+        <span class="n">initial_values</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"InitialValues"</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">initial_values</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -4090,18 +4076,18 @@ arguments are not dictionaries.</p>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="c1"># check optimization arguement</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">"store_history should be 0 or 1"</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="p">(</span>
-        <span class="s2">&quot;history_fname should be of type string &quot;</span>
+        <span class="s2">"history_fname should be of type string "</span>
     <span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
     <span class="c1">### calculate the objective function</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opt_fun</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># parameters</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">par</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">par</span>
             <span class="c1"># run the model</span>
             <span class="n">Wrapper</span><span class="o">.</span><span class="n">Lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">route</span><span class="p">,</span> <span class="n">routing_fn</span><span class="p">)</span>
             <span class="c1"># calculate performance of the model</span>
@@ -4119,7 +4105,7 @@ arguments are not dictionaries.</p>
 
             <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Error = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2"> Inequality Const = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Error = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2"> Inequality Const = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
                 <span class="c1"># print(par)</span>
             <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
@@ -4130,39 +4116,39 @@ arguments are not dictionaries.</p>
         <span class="k">return</span> <span class="n">error</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">fail</span>
 
     <span class="c1">### define the optimization components</span>
-    <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">&quot;HBV Calibration&quot;</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
+    <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">initial_values</span> <span class="o">!=</span> <span class="p">[]:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
             <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span>
                 <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="n">value</span><span class="o">=</span><span class="n">initial_values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
             <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
-            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">)</span>
+    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">"f"</span><span class="p">)</span>
 
-    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g1&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
-    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g2&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
+    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g1"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
+    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g2"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
     <span class="c1"># print(opt_prob)</span>
     <span class="n">opt_engine</span> <span class="o">=</span> <span class="n">HSapi</span><span class="p">(</span><span class="n">pll_type</span><span class="o">=</span><span class="n">pll_type</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">api_obj_args</span><span class="p">)</span>
 
     <span class="c1"># parse the api_solve_args inputs</span>
-    <span class="c1"># availablekeys = [&#39;store_sol&#39;,&quot;display_opts&quot;,&quot;store_hst&quot;,&quot;hot_start&quot;]</span>
-    <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_sol&quot;</span><span class="p">]</span>
-    <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;display_opts&quot;</span><span class="p">]</span>
-    <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_hst&quot;</span><span class="p">]</span>
-    <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;hot_start&quot;</span><span class="p">]</span>
+    <span class="c1"># availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]</span>
+    <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_sol"</span><span class="p">]</span>
+    <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"display_opts"</span><span class="p">]</span>
+    <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_hst"</span><span class="p">]</span>
+    <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"hot_start"</span><span class="p">]</span>
 
     <span class="c1"># for i in range(len(availablekeys)):</span>
     <span class="c1"># if availablekeys[i] in api_solve_args.keys():</span>
-    <span class="c1"># exec(availablekeys[i] + &quot;=&quot; + str(api_solve_args[availablekeys[i]]))</span>
-    <span class="c1"># print(availablekeys[i] + &quot; = &quot; + str(api_solve_args[availablekeys[i]]))</span>
+    <span class="c1"># exec(availablekeys[i] + "=" + str(api_solve_args[availablekeys[i]]))</span>
+    <span class="c1"># print(availablekeys[i] + " = " + str(api_solve_args[availablekeys[i]]))</span>
 
     <span class="n">res</span> <span class="o">=</span> <span class="n">opt_engine</span><span class="p">(</span>
         <span class="n">opt_prob</span><span class="p">,</span>
@@ -4173,7 +4159,7 @@ arguments are not dictionaries.</p>
     <span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">OFvalue</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">res</span>
 </code></pre></div></td></tr></table></div>
@@ -4308,7 +4294,7 @@ objective function. If None, defaults to an empty list.</p>
 <span class="normal">109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and store the objective function and its arguments.</span>
+<span class="w">    </span><span class="sd">"""Read and store the objective function and its arguments.</span>
 
 <span class="sd">    Takes the objective function and any additional arguments that</span>
 <span class="sd">    need to be passed to the objective function during calibration.</span>
@@ -4321,10 +4307,10 @@ objective function. If None, defaults to an empty list.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If objective_function is not callable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># check objective_function</span>
     <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">),</span> <span class="p">(</span>
-        <span class="s2">&quot;The Objective function should be a function&quot;</span>
+        <span class="s2">"The Objective function should be a function"</span>
     <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span> <span class="o">=</span> <span class="n">objective_function</span>
 
@@ -4333,7 +4319,7 @@ objective function. If None, defaults to an empty list.</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">OFArgs</span> <span class="o">=</span> <span class="n">args</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Objective function is read successfully&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Objective function is read successfully"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4364,12 +4350,12 @@ runs the RRM model via <code>Wrapper.RRMModel</code>, and evaluates
 performance using the stored objective function.</p>
 <p>The following attributes must be set on the instance before calling
 this method:</p>
-<div class="highlight"><pre><span></span><code>- ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.
-- ``flow_dir_arr``: Flow direction array.
-- ``rows``, ``cols``: Grid dimensions.
-- ``LB``, ``UB``: Lower and upper parameter bounds.
-- ``objective_function``: Objective function for evaluation.
-- ``QGauges``, ``GaugesTable``: Observed discharge data and
+<div class="highlight"><pre><span></span><code>- `Prec`, `ET`, `Temp`: Meteorological input arrays.
+- `flow_dir_arr`: Flow direction array.
+- `rows`, `cols`: Grid dimensions.
+- `LB`, `UB`: Lower and upper parameter bounds.
+- `objective_function`: Objective function for evaluation.
+- `QGauges`, `GaugesTable`: Observed discharge data and
   gauge metadata.
 </code></pre></div>
 
@@ -4499,16 +4485,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
@@ -4657,44 +4634,46 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span>
-<span class="normal">320</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">print_error</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the calibration algorithm for the distributed hydrological model.</span>
+<span class="w">    </span><span class="sd">"""Run the calibration algorithm for the distributed hydrological model.</span>
 
 <span class="sd">    Executes the Harmony Search optimization algorithm to calibrate</span>
 <span class="sd">    parameters for the conceptual distributed hydrological model.</span>
-<span class="sd">    The method distributes parameters spatially using ``spatial_var_fun``,</span>
-<span class="sd">    runs the RRM model via ``Wrapper.RRMModel``, and evaluates</span>
+<span class="sd">    The method distributes parameters spatially using `spatial_var_fun`,</span>
+<span class="sd">    runs the RRM model via `Wrapper.RRMModel`, and evaluates</span>
 <span class="sd">    performance using the stored objective function.</span>
 
 <span class="sd">    The following attributes must be set on the instance before calling</span>
 <span class="sd">    this method:</span>
 
-<span class="sd">        - ``Prec``, ``ET``, ``Temp``: Meteorological input arrays.</span>
-<span class="sd">        - ``flow_dir_arr``: Flow direction array.</span>
-<span class="sd">        - ``rows``, ``cols``: Grid dimensions.</span>
-<span class="sd">        - ``LB``, ``UB``: Lower and upper parameter bounds.</span>
-<span class="sd">        - ``objective_function``: Objective function for evaluation.</span>
-<span class="sd">        - ``QGauges``, ``GaugesTable``: Observed discharge data and</span>
+<span class="sd">        - `Prec`, `ET`, `Temp`: Meteorological input arrays.</span>
+<span class="sd">        - `flow_dir_arr`: Flow direction array.</span>
+<span class="sd">        - `rows`, `cols`: Grid dimensions.</span>
+<span class="sd">        - `LB`, `UB`: Lower and upper parameter bounds.</span>
+<span class="sd">        - `objective_function`: Objective function for evaluation.</span>
+<span class="sd">        - `QGauges`, `GaugesTable`: Observed discharge data and</span>
 <span class="sd">          gauge metadata.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        spatial_var_fun: Spatial variable function object with a</span>
-<span class="sd">            ``Function`` method that distributes parameters and a</span>
-<span class="sd">            ``Par3d`` attribute holding the 3D parameter array, plus</span>
-<span class="sd">            ``no_parameters`` and ``no_elem`` attributes.</span>
+<span class="sd">            `Function` method that distributes parameters and a</span>
+<span class="sd">            `Par3d` attribute holding the 3D parameter array, plus</span>
+<span class="sd">            `no_parameters` and `no_elem` attributes.</span>
 <span class="sd">        optimization_args: A list of three elements:</span>
-<span class="sd">            - ``optimization_args[0]`` (dict): Harmony Search API</span>
+<span class="sd">            - `optimization_args[0]` (dict): Harmony Search API</span>
 <span class="sd">              objective arguments (e.g., HMS, HMCR, PAR).</span>
-<span class="sd">            - ``optimization_args[1]``: Parallel type for the</span>
+<span class="sd">            - `optimization_args[1]`: Parallel type for the</span>
 <span class="sd">              optimizer.</span>
-<span class="sd">            - ``optimization_args[2]`` (dict): Solver arguments with</span>
-<span class="sd">              keys ``&quot;store_sol&quot;``, ``&quot;display_opts&quot;``,</span>
-<span class="sd">              ``&quot;store_hst&quot;``, and ``&quot;hot_start&quot;``.</span>
+<span class="sd">            - `optimization_args[2]` (dict): Solver arguments with</span>
+<span class="sd">              keys `"store_sol"`, `"display_opts"`,</span>
+<span class="sd">              `"store_hst"`, and `"hot_start"`.</span>
 <span class="sd">        print_error: If not 0, prints the error value and parameters</span>
 <span class="sd">            at each iteration. Default is None.</span>
 
@@ -4706,31 +4685,24 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If input dimensions are inconsistent or if</span>
 <span class="sd">            optimization arguments are not dictionaries.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">ROWS_MISMATCH_ERROR</span>
-
-    <span class="c1"># input dimensions</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
     <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="n">COLUMNS_MISMATCH_ERROR</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
 
     <span class="c1"># basic inputs</span>
     <span class="c1"># check if all inputs are included</span>
-    <span class="c1"># assert all([&quot;p2&quot;,&quot;init_st&quot;,&quot;UB&quot;,&quot;LB&quot;,&quot;snow &quot;][i] in basic_inputs.keys()</span>
-    <span class="c1">#     for i in range(4)), &quot;basic_inputs should contain [&#39;p2&#39;,&#39;init_st&#39;,&#39;UB&#39;,&#39;LB&#39;]&quot;</span>
+    <span class="c1"># assert all(["p2","init_st","UB","LB","snow "][i] in basic_inputs.keys()</span>
+    <span class="c1">#     for i in range(4)), "basic_inputs should contain ['p2','init_st','UB','LB']"</span>
 
     <span class="c1">### optimization</span>
 
@@ -4739,10 +4711,10 @@ optimization arguments are not dictionaries.</p>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="c1"># check optimization arguement</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;store_history should be 0 or 1&quot;</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;history_fname should be of type string &quot;</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration starts&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
     <span class="c1">### calculate the objective function</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opt_fun</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
@@ -4751,7 +4723,7 @@ optimization arguments are not dictionaries.</p>
             <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span>
                 <span class="n">par</span>
             <span class="p">)</span>  <span class="c1"># , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span>
             <span class="c1"># run the model</span>
             <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="c1"># calculate performance of the model</span>
@@ -4785,24 +4757,24 @@ optimization arguments are not dictionaries.</p>
         <span class="k">return</span> <span class="n">error</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">fail</span>
 
     <span class="c1">### define the optimization components</span>
-    <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">&quot;HBV Calibration&quot;</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
+    <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"c"</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UB</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">)</span>
+    <span class="n">opt_prob</span><span class="o">.</span><span class="n">addObj</span><span class="p">(</span><span class="s2">"f"</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">no_elem</span><span class="p">):</span>
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-1&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
-        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">&quot;g&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-2&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"-1"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
+        <span class="n">opt_prob</span><span class="o">.</span><span class="n">addCon</span><span class="p">(</span><span class="s2">"g"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"-2"</span><span class="p">,</span> <span class="s2">"i"</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">opt_prob</span><span class="p">)</span>
 
     <span class="n">opt_engine</span> <span class="o">=</span> <span class="n">HSapi</span><span class="p">(</span><span class="n">pll_type</span><span class="o">=</span><span class="n">pll_type</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">api_obj_args</span><span class="p">)</span>
 
-    <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_sol&quot;</span><span class="p">]</span>
-    <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;display_opts&quot;</span><span class="p">]</span>
-    <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;store_hst&quot;</span><span class="p">]</span>
-    <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">&quot;hot_start&quot;</span><span class="p">]</span>
+    <span class="n">store_sol</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_sol"</span><span class="p">]</span>
+    <span class="n">display_opts</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"display_opts"</span><span class="p">]</span>
+    <span class="n">store_hst</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"store_hst"</span><span class="p">]</span>
+    <span class="n">hot_start</span> <span class="o">=</span> <span class="n">api_solve_args</span><span class="p">[</span><span class="s2">"hot_start"</span><span class="p">]</span>
 
     <span class="n">res</span> <span class="o">=</span> <span class="n">opt_engine</span><span class="p">(</span>
         <span class="n">opt_prob</span><span class="p">,</span>
@@ -4812,7 +4784,7 @@ optimization arguments are not dictionaries.</p>
         <span class="n">hot_start</span><span class="o">=</span><span class="n">hot_start</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">OFvalue</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">res</span>

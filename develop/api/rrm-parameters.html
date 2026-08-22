@@ -2527,12 +2527,12 @@ and hydrologic response units (HRUs).</p>
 <span class="normal">850</span>
 <span class="normal">851</span>
 <span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Parameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter distribution class for hydrological model calibration.</span>
+<span class="w">    </span><span class="sd">"""Parameter distribution class for hydrological model calibration.</span>
 
 <span class="sd">    The Parameters class distributes values from a parameter vector during</span>
 <span class="sd">    the calibration process into a 3D array, handling lumped parameters</span>
 <span class="sd">    and hydrologic response units (HRUs).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2548,15 +2548,15 @@ and hydrologic response units (HRUs).</p>
         <span class="n">k_lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
         <span class="n">muskingum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Parameters class.</span>
+<span class="w">        </span><span class="sd">"""Initialize the Parameters class.</span>
 
 <span class="sd">        To initiate the Parameters class, you have to provide the Flow Acc</span>
 <span class="sd">        raster.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            raster: A pyramids ``Dataset`` to get the spatial information</span>
+<span class="sd">            raster: A pyramids `Dataset` to get the spatial information</span>
 <span class="sd">                of the catchment (DEM, flow accumulation or flow direction</span>
-<span class="sd">                raster), read it using ``Dataset.read_file``.</span>
+<span class="sd">                raster), read it using `Dataset.read_file`.</span>
 <span class="sd">            no_parameters: Number of parameters in the HBV model.</span>
 <span class="sd">            no_lumped_par: Number of lumped parameters. You have to enter</span>
 <span class="sd">                the value of the lumped parameter at the end of the list.</span>
@@ -2577,10 +2577,10 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">            hru: True if the parameters will consider using HRUs.</span>
 <span class="sd">                Defaults to False.</span>
 <span class="sd">            function: Which parameter-distribution strategy to bind to</span>
-<span class="sd">                :attr:`Function`. One of ``1`` (:meth:`par3d_lumped`), ``2``</span>
-<span class="sd">                (:meth:`par3d`), ``3`` (:meth:`par2d_lumped_k1_lake`) or ``4``</span>
+<span class="sd">                :attr:`Function`. One of `1` (:meth:`par3d_lumped`), `2`</span>
+<span class="sd">                (:meth:`par3d`), `3` (:meth:`par2d_lumped_k1_lake`) or `4`</span>
 <span class="sd">                (:meth:`hydrologic_response_units`). Defaults to 1. Any other value</span>
-<span class="sd">                raises :class:`ValueError`. Note that ``hru=True`` overrides the choice</span>
+<span class="sd">                raises :class:`ValueError`. Note that `hru=True` overrides the choice</span>
 <span class="sd">                with :meth:`hydrologic_response_units` regardless, but the selector is</span>
 <span class="sd">                still validated so a typo is not masked.</span>
 <span class="sd">            k_upper_bound: Upper bound of K value (traveling time in</span>
@@ -2593,7 +2593,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If `raster` is not a pyramids Dataset.</span>
 <span class="sd">            ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,</span>
-<span class="sd">                a `float` such as ``2.0``, and an unhashable value are all rejected</span>
+<span class="sd">                a `float` such as `2.0`, and an unhashable value are all rejected</span>
 <span class="sd">                rather than coerced or allowed to raise `TypeError`.</span>
 <span class="sd">            AssertionError: If `no_parameters` is not an integer, if</span>
 <span class="sd">                `no_lumped_par` is not an integer, or if the length of</span>
@@ -2603,10 +2603,10 @@ and hydrologic response units (HRUs).</p>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Cells outside the catchment are identified by pyramids via</span>
-<span class="sd">            ``read_array(masked=True)`` and stored as ``NaN`` in</span>
+<span class="sd">            `read_array(masked=True)` and stored as `NaN` in</span>
 <span class="sd">            :attr:`raster_array`, which is promoted to floating point so it can hold</span>
-<span class="sd">            them. ``no_elem``, ``celli``/``cellj`` and the width of :attr:`Par2d` all</span>
-<span class="sd">            derive from that mask, so the parameter vector length follows the raster&#39;s</span>
+<span class="sd">            them. `no_elem`, `celli`/`cellj` and the width of :attr:`Par2d` all</span>
+<span class="sd">            derive from that mask, so the parameter vector length follows the raster's</span>
 <span class="sd">            real domain.</span>
 
 <span class="sd">        Examples:</span>
@@ -2618,7 +2618,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">                &gt;&gt;&gt; from pyramids.dataset import Dataset</span>
 <span class="sd">                &gt;&gt;&gt; from hapi.rrm.parameters import Parameters</span>
 <span class="sd">                &gt;&gt;&gt; raster = Dataset.create_from_array(</span>
-<span class="sd">                ...     np.array([[1, 2], [3, -9999]], dtype=&quot;int32&quot;),</span>
+<span class="sd">                ...     np.array([[1, 2], [3, -9999]], dtype="int32"),</span>
 <span class="sd">                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,</span>
 <span class="sd">                ...     no_data_value=-9999,</span>
 <span class="sd">                ... )</span>
@@ -2638,7 +2638,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">                &gt;&gt;&gt; from pyramids.dataset import Dataset</span>
 <span class="sd">                &gt;&gt;&gt; from hapi.rrm.parameters import Parameters</span>
 <span class="sd">                &gt;&gt;&gt; raster = Dataset.create_from_array(</span>
-<span class="sd">                ...     np.array([[1, 2], [3, -9990]], dtype=&quot;int32&quot;),</span>
+<span class="sd">                ...     np.array([[1, 2], [3, -9990]], dtype="int32"),</span>
 <span class="sd">                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,</span>
 <span class="sd">                ...     no_data_value=-9999,</span>
 <span class="sd">                ... )</span>
@@ -2649,28 +2649,28 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">                -9990.0</span>
 
 <span class="sd">                ```</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">lumped_par_pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">lumped_par_pos</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file&quot;</span>
+                <span class="s2">"raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file"</span>
             <span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no_parameters</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">&quot; no_parameters should be integer number&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no_parameters</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">" no_parameters should be integer number"</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no_lumped_par</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">&quot;no of lumped parameters should be integer&quot;</span>
+            <span class="s2">"no of lumped parameters should be integer"</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">no_lumped_par</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                 <span class="k">assert</span> <span class="n">no_lumped_par</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">),</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;you have to entered </span><span class="si">{</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> no of lumped parameters but only </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;position &quot;</span>
+                    <span class="sa">f</span><span class="s2">"you have to entered </span><span class="si">{</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> no of lumped parameters but only </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">)</span><span class="si">}</span><span class="s2"> "</span>
+                    <span class="sa">f</span><span class="s2">"position "</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># if not int or list</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;you have one or more lumped parameters, so the position has to be entered as a list&quot;</span>
+                    <span class="s2">"you have one or more lumped parameters, so the position has to be entered as a list"</span>
                 <span class="p">)</span>
 
         <span class="c1"># Reject an unrecognised selector here rather than leaving `Function` unbound:</span>
@@ -2689,15 +2689,15 @@ and hydrologic response units (HRUs).</p>
         <span class="c1"># a spelling of 2.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, &quot;</span>
-                <span class="s2">&quot;3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units.&quot;</span>
+                <span class="sa">f</span><span class="s2">"function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, "</span>
+                <span class="s2">"3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units."</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">function</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. &quot;</span>
-                <span class="s2">&quot;1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, &quot;</span>
-                <span class="s2">&quot;4 = hydrologic_response_units.&quot;</span>
+                <span class="sa">f</span><span class="s2">"function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. "</span>
+                <span class="s2">"1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, "</span>
+                <span class="s2">"4 = hydrologic_response_units."</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Lake</span> <span class="o">=</span> <span class="n">lake</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">=</span> <span class="n">snow</span>
@@ -2710,7 +2710,7 @@ and hydrologic response units (HRUs).</p>
         <span class="c1"># read the raster</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raster</span> <span class="o">=</span> <span class="n">raster</span>
         <span class="c1"># No-data masking is delegated to pyramids: vectorised, dtype-aware, and it</span>
-        <span class="c1"># also honours the band&#39;s GDAL mask band. Filling with NaN keeps the</span>
+        <span class="c1"># also honours the band's GDAL mask band. Filling with NaN keeps the</span>
         <span class="c1"># float-array-with-NaN contract the rest of this class relies on.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raster_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
             <span class="n">raster</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -2722,9 +2722,9 @@ and hydrologic response units (HRUs).</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="s2">&quot;the raster declares no no-data value, so every cell is treated as &quot;</span>
-                <span class="s2">&quot;inside the catchment and the parameter vector is sized for the whole &quot;</span>
-                <span class="s2">&quot;grid. If it has a sentinel, set it on the band.&quot;</span><span class="p">,</span>
+                <span class="s2">"the raster declares no no-data value, so every cell is treated as "</span>
+                <span class="s2">"inside the catchment and the parameter vector is sized for the whole "</span>
+                <span class="s2">"grid. If it has a sentinel, set it on the band."</span><span class="p">,</span>
                 <span class="ne">UserWarning</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
@@ -2744,7 +2744,7 @@ and hydrologic response units (HRUs).</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Count the cells the pyramids mask left intact (see</span>
-            <span class="c1"># Catchment.read_flow_acc for why not Dataset.count_domain_cells).</span>
+            <span class="c1"># FlowNetwork.no_elem for why not Dataset.count_domain_cells).</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raster_array</span><span class="p">)))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span> <span class="o">=</span> <span class="n">no_parameters</span>
@@ -2784,7 +2784,7 @@ and hydrologic response units (HRUs).</p>
         <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distribute parameters horizontally across grid cells.</span>
+<span class="w">        </span><span class="sd">"""Distribute parameters horizontally across grid cells.</span>
 
 <span class="sd">        Takes a list of parameters (saved as one column or generated as a</span>
 <span class="sd">        1D list from an optimization algorithm) and distributes them</span>
@@ -2793,37 +2793,37 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        Args:</span>
 <span class="sd">            par_g: 1D list or numpy array of parameters. For totally</span>
 <span class="sd">                distributed parameters, the length should be</span>
-<span class="sd">                ``no_elem * no_parameters``. For lumped parameters, the</span>
+<span class="sd">                `no_elem * no_parameters`. For lumped parameters, the</span>
 <span class="sd">                lumped parameter values should be appended at the end.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If the length of `par_g` does not match the</span>
 <span class="sd">                expected number of parameters based on the number of</span>
 <span class="sd">                elements and lumped parameters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input data validation</span>
         <span class="c1"># data type</span>
-        <span class="c1"># assert type(par_g)==np.ndarray or type(par_g)==list, &quot;par_g should be of type 1d array or list&quot;</span>
-        <span class="c1"># assert isinstance(kub,numbers.Number) , &quot; kub should be a number&quot;</span>
-        <span class="c1"># assert isinstance(klb,numbers.Number) , &quot; klb should be a number&quot;</span>
+        <span class="c1"># assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"</span>
+        <span class="c1"># assert isinstance(kub,numbers.Number) , " kub should be a number"</span>
+        <span class="c1"># assert isinstance(klb,numbers.Number) , " klb should be a number"</span>
 
         <span class="c1"># input values</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">par_no</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span>
 
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="n">par_no</span><span class="p">,</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">) + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> = &quot;</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; probably you have to add the value of the lumped parameter at the end of the list&quot;</span>
+                <span class="sa">f</span><span class="s2">"As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">"*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">) + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> = "</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="s2">" probably you have to add the value of the lumped parameter at the end of the list"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># if there are no lumped parameters</span>
             <span class="n">par_no</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="n">par_no</span><span class="p">,</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2"> * &quot;</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2"> * "</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="c1"># parameters in array</span>
@@ -2873,7 +2873,7 @@ and hydrologic response units (HRUs).</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Distribute lumped parameters horizontally across grid cells.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Distribute lumped parameters horizontally across grid cells.</span>
 
 <span class="sd">        Takes a list of parameters (saved as one column or generated as a</span>
 <span class="sd">        1D list from an optimization algorithm) and distributes them</span>
@@ -2882,17 +2882,17 @@ and hydrologic response units (HRUs).</p>
 
 <span class="sd">        Args:</span>
 <span class="sd">            par_g: 1D list or numpy array of lumped parameters.</span>
-<span class="sd">                The length should equal ``no_parameters``.</span>
+<span class="sd">                The length should equal `no_parameters`.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If `par_g` is not a numpy ndarray or a list.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input data validation</span>
         <span class="c1"># data type</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;par_g should be of type 1d array or list&quot;</span><span class="p">)</span>
-        <span class="c1"># assert isinstance(kub,numbers.Number) , &quot; kub should be a number&quot;</span>
-        <span class="c1"># assert isinstance(klb,numbers.Number) , &quot; klb should be a number&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"par_g should be of type 1d array or list"</span><span class="p">)</span>
+        <span class="c1"># assert isinstance(kub,numbers.Number) , " kub should be a number"</span>
+        <span class="c1"># assert isinstance(klb,numbers.Number) , " klb should be a number"</span>
 
         <span class="c1"># take the parameters from the generated parameters or the 1D list and</span>
         <span class="c1"># assign them to each cell</span>
@@ -2915,7 +2915,7 @@ and hydrologic response units (HRUs).</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span>
         <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate K parameter for Muskingum routing.</span>
+<span class="w">        </span><span class="sd">"""Calculate K parameter for Muskingum routing.</span>
 
 <span class="sd">        Takes the value of x parameter and generates 100 random values of</span>
 <span class="sd">        the K parameter between the upper and lower constraints, then</span>
@@ -2933,7 +2933,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            The K parameter value corresponding to the given position</span>
 <span class="sd">                within the constrained range.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># k has to be smaller than this constraint</span>
         <span class="n">constraint1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
         <span class="c1"># k has to be greater than this constraint</span>
@@ -2952,7 +2952,7 @@ and hydrologic response units (HRUs).</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">):</span>  <span class="c1"># ,kub,klb</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distribute parameters with a lumped K1 and lake parameters.</span>
+<span class="w">        </span><span class="sd">"""Distribute parameters with a lumped K1 and lake parameters.</span>
 
 <span class="sd">        Takes a list of parameters and distributes them horizontally on</span>
 <span class="sd">        the number of cells given by a raster. All parameters are</span>
@@ -2961,14 +2961,14 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        parameters are extracted from the end of the parameter list.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            par_g: 1D list or numpy array of parameters. Each cell&#39;s</span>
+<span class="sd">            par_g: 1D list or numpy array of parameters. Each cell's</span>
 <span class="sd">                distributed parameters are listed sequentially, followed</span>
 <span class="sd">                by the lumped K1 value, followed by lake parameters at</span>
 <span class="sd">                the end. For example, with 14 cells and 11 distributed</span>
-<span class="sd">                parameters: ``14 * 11 = 154 + 1 (K1) = 155``.</span>
+<span class="sd">                parameters: `14 * 11 = 154 + 1 (K1) = 155`.</span>
 <span class="sd">            no_parameters_lake: Number of lake parameters to extract</span>
 <span class="sd">                from the end of `par_g`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># parameters in array</span>
         <span class="c1"># remove a place for the lumped parameter (k1) lower zone coefficient</span>
         <span class="n">no_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span> <span class="o">-</span> <span class="mi">1</span>
@@ -3011,7 +3011,7 @@ and hydrologic response units (HRUs).</p>
         <span class="c1"># return self.Par3d, lake_par</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distribute parameters using Hydrologic Response Units (HRUs).</span>
+<span class="w">        </span><span class="sd">"""Distribute parameters using Hydrologic Response Units (HRUs).</span>
 
 <span class="sd">        Takes a list of parameters (saved as one column or generated as a</span>
 <span class="sd">        1D list from an optimization algorithm) and distributes them</span>
@@ -3023,7 +3023,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        Args:</span>
 <span class="sd">            par_g: 1D list or numpy array of parameters. For HRU without</span>
 <span class="sd">                lumped parameters, the length should be</span>
-<span class="sd">                ``no_elem * no_parameters``. For HRU with lumped</span>
+<span class="sd">                `no_elem * no_parameters`. For HRU with lumped</span>
 <span class="sd">                parameters, the lumped parameter values should be</span>
 <span class="sd">                appended at the end.</span>
 
@@ -3033,32 +3033,32 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">                number of parameters.</span>
 <span class="sd">            AssertionError: If there are lumped parameters and the length</span>
 <span class="sd">                of `par_g` does not match the expected total.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input data validation</span>
         <span class="c1"># data type</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;par_g should be of type 1d array or list&quot;</span><span class="p">)</span>
-        <span class="c1"># assert isinstance(kub,numbers.Number) , &quot; kub should be a number&quot;</span>
-        <span class="c1"># assert isinstance(klb,numbers.Number) , &quot; klb should be a number&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"par_g should be of type 1d array or list"</span><span class="p">)</span>
+        <span class="c1"># assert isinstance(kub,numbers.Number) , " kub should be a number"</span>
+        <span class="c1"># assert isinstance(klb,numbers.Number) , " klb should be a number"</span>
 
         <span class="c1"># input values</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">par_no</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="n">par_no</span><span class="p">,</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">)+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">=&quot;</span>
+                <span class="sa">f</span><span class="s2">"As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">)+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">="</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="p">)</span>
                     <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span>
                 <span class="p">)</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2"> probably you have to add the value of the lumped parameter at the end of the list&quot;</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">" not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2"> probably you have to add the value of the lumped parameter at the end of the list"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># if there is no lumped parameters</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*"</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
 
         <span class="c1"># take the parameters from the generated parameters or the 1D list and</span>
@@ -3107,7 +3107,7 @@ and hydrologic response units (HRUs).</p>
         <span class="n">flow_path_length</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
         <span class="n">river</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
+<span class="w">        </span><span class="sd">"""Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
 
 <span class="sd">        Calculates inputs for the HAND method for land use</span>
 <span class="sd">        classification by tracing flow direction from each cell to the</span>
@@ -3132,7 +3132,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If the catchment boundaries contain anomalies</span>
 <span class="sd">                (e.g., after cropping with a polygon).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Use DEM raster information to run all loops</span>
         <span class="n">dem_a</span> <span class="o">=</span> <span class="n">dem</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">no_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">dem</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -3175,7 +3175,7 @@ and hydrologic response units (HRUs).</p>
         <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Locate the nearest downstream river cell for every domain cell.</span>
+<span class="w">        </span><span class="sd">"""Locate the nearest downstream river cell for every domain cell.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dem_a (np.ndarray): DEM values, used to identify domain cells.</span>
@@ -3192,7 +3192,7 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If a flow path runs off the grid, which happens when the</span>
 <span class="sd">                catchment boundary has anomalies.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nearest_network</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
@@ -3211,8 +3211,8 @@ and hydrologic response units (HRUs).</p>
                     <span class="n">nearest_network</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;please check the boundaries of your catchment. After cropping the catchment using a polygon, it &quot;</span>
-                <span class="s2">&quot;creates anomalies at the boundary&quot;</span>
+                <span class="s2">"please check the boundaries of your catchment. After cropping the catchment using a polygon, it "</span>
+                <span class="s2">"creates anomalies at the boundary"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="k">return</span> <span class="n">nearest_network</span>
@@ -3226,7 +3226,7 @@ and hydrologic response units (HRUs).</p>
         <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subtract each cell&#39;s nearest-drainage value from the cell&#39;s own value.</span>
+<span class="w">        </span><span class="sd">"""Subtract each cell's nearest-drainage value from the cell's own value.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            values (np.ndarray): Raster to difference (elevation or flow path length).</span>
@@ -3239,7 +3239,7 @@ and hydrologic response units (HRUs).</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: The difference for every domain cell, NaN elsewhere.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
@@ -3252,7 +3252,7 @@ and hydrologic response units (HRUs).</p>
         <span class="k">return</span> <span class="n">difference</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the total number of parameters for the optimization.</span>
+<span class="w">        </span><span class="sd">"""Calculate the total number of parameters for the optimization.</span>
 
 <span class="sd">        Calculates the number of parameters that the optimization</span>
 <span class="sd">        algorithm will search for. Use this only in case of totally</span>
@@ -3260,13 +3260,13 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">        the number of parameters is the same as the number of parameters</span>
 <span class="sd">        of the conceptual model.</span>
 
-<span class="sd">        The result is stored in the ``ParametersNO`` attribute.</span>
+<span class="sd">        The result is stored in the `ParametersNO` attribute.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            The Parameters object should have the following attributes</span>
-<span class="sd">            before calling this method: ``raster``, ``no_parameters``,</span>
-<span class="sd">            ``no_lumped_par``, and ``HRUs``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            before calling this method: `raster`, `no_parameters`,</span>
+<span class="sd">            `no_lumped_par`, and `HRUs`.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">HRUs</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># self.ParametersNO = (self.no_elem *( self.no_parameters - self.no_lumped_par)) + self.no_lumped_par</span>
@@ -3287,7 +3287,7 @@ and hydrologic response units (HRUs).</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ParametersNO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
+<span class="w">        </span><span class="sd">"""Save distributed parameters as raster files.</span>
 
 <span class="sd">        Takes the generated 3D parameter array and saves each parameter</span>
 <span class="sd">        layer as a separate GeoTIFF raster file.</span>
@@ -3297,63 +3297,63 @@ and hydrologic response units (HRUs).</p>
 <span class="sd">                be saved.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: `path` is not a ``str``. Output names are built by concatenation</span>
-<span class="sd">                (``path + name``), which a ``Path`` does not support.</span>
+<span class="sd">            TypeError: `path` is not a `str`. Output names are built by concatenation</span>
+<span class="sd">                (`path + name`), which a `Path` does not support.</span>
 <span class="sd">            FileNotFoundError: The output directory does not exist. Checked up front so</span>
 <span class="sd">                the failure does not surface midway through writing.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            The Parameters object should have the following attributes</span>
-<span class="sd">            set before calling this method: ``DistParFn``, ``raster``,</span>
-<span class="sd">            ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            set before calling this method: `DistParFn`, `raster`,</span>
+<span class="sd">            `Par`, `no_parameters`, `snow`, `kub`, and `klb`.</span>
+<span class="sd">        """</span>
         <span class="c1"># Not delegated to pyramids: the output names are built by string concatenation</span>
         <span class="c1"># below (`path + name`), so this genuinely needs a str, and the directory must</span>
         <span class="c1"># exist before the first raster is written. Raised rather than asserted so the</span>
         <span class="c1"># checks survive `python -O`.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;path should be of type string, given: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"path should be of type string, given: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist"</span><span class="p">)</span>
 
         <span class="c1"># save</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># now snow subroutine</span>
             <span class="n">pnme</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;01_rfcf&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;02_FC&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;03_BETA&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;04_ETF&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;05_LP&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;06_K0&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;07_K1&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;08_K2&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;09_UZL&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;10_PERC&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;11_Kmuskingum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;12_Xmuskingum&quot;</span><span class="p">,</span>
+                <span class="s2">"01_rfcf"</span><span class="p">,</span>
+                <span class="s2">"02_FC"</span><span class="p">,</span>
+                <span class="s2">"03_BETA"</span><span class="p">,</span>
+                <span class="s2">"04_ETF"</span><span class="p">,</span>
+                <span class="s2">"05_LP"</span><span class="p">,</span>
+                <span class="s2">"06_K0"</span><span class="p">,</span>
+                <span class="s2">"07_K1"</span><span class="p">,</span>
+                <span class="s2">"08_K2"</span><span class="p">,</span>
+                <span class="s2">"09_UZL"</span><span class="p">,</span>
+                <span class="s2">"10_PERC"</span><span class="p">,</span>
+                <span class="s2">"11_Kmuskingum"</span><span class="p">,</span>
+                <span class="s2">"12_Xmuskingum"</span><span class="p">,</span>
             <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># there is snow subtoutine</span>
             <span class="n">pnme</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;01_ltt&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;02_rfcf&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;03_sfcf&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;04_cfmax&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;05_cwh&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;06_cfr&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;07_fc&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;08_beta&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;09_etf&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;10_lp&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;11_k0&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;12_k1&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;13_k2&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;14_uzl&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;18_perc&quot;</span><span class="p">,</span>
+                <span class="s2">"01_ltt"</span><span class="p">,</span>
+                <span class="s2">"02_rfcf"</span><span class="p">,</span>
+                <span class="s2">"03_sfcf"</span><span class="p">,</span>
+                <span class="s2">"04_cfmax"</span><span class="p">,</span>
+                <span class="s2">"05_cwh"</span><span class="p">,</span>
+                <span class="s2">"06_cfr"</span><span class="p">,</span>
+                <span class="s2">"07_fc"</span><span class="p">,</span>
+                <span class="s2">"08_beta"</span><span class="p">,</span>
+                <span class="s2">"09_etf"</span><span class="p">,</span>
+                <span class="s2">"10_lp"</span><span class="p">,</span>
+                <span class="s2">"11_k0"</span><span class="p">,</span>
+                <span class="s2">"12_k1"</span><span class="p">,</span>
+                <span class="s2">"13_k2"</span><span class="p">,</span>
+                <span class="s2">"14_uzl"</span><span class="p">,</span>
+                <span class="s2">"18_perc"</span><span class="p">,</span>
             <span class="p">]</span>
 
         <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pnme</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">path</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.tif&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pnme</span>
+                <span class="n">path</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".tif"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pnme</span>
             <span class="p">]</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Par3d</span><span class="p">)[</span><span class="mi">2</span><span class="p">]):</span>
@@ -3679,7 +3679,7 @@ real domain.</p>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameters</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">raster</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">create_from_array</span><span class="p">(</span>
-<span class="o">...</span>     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">9999</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">),</span>
+<span class="o">...</span>     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">9999</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"int32"</span><span class="p">),</span>
 <span class="o">...</span>     <span class="n">top_left_corner</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">8000.0</span><span class="p">),</span> <span class="n">cell_size</span><span class="o">=</span><span class="mf">4000.0</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="mi">32618</span><span class="p">,</span>
 <span class="o">...</span>     <span class="n">no_data_value</span><span class="o">=-</span><span class="mi">9999</span><span class="p">,</span>
 <span class="o">...</span> <span class="p">)</span>
@@ -3697,7 +3697,7 @@ real domain.</p>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameters</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">raster</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">create_from_array</span><span class="p">(</span>
-<span class="o">...</span>     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">9990</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">),</span>
+<span class="o">...</span>     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">9990</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"int32"</span><span class="p">),</span>
 <span class="o">...</span>     <span class="n">top_left_corner</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">8000.0</span><span class="p">),</span> <span class="n">cell_size</span><span class="o">=</span><span class="mf">4000.0</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="mi">32618</span><span class="p">,</span>
 <span class="o">...</span>     <span class="n">no_data_value</span><span class="o">=-</span><span class="mi">9999</span><span class="p">,</span>
 <span class="o">...</span> <span class="p">)</span>
@@ -3973,15 +3973,15 @@ real domain.</p>
     <span class="n">k_lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
     <span class="n">muskingum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Parameters class.</span>
+<span class="w">    </span><span class="sd">"""Initialize the Parameters class.</span>
 
 <span class="sd">    To initiate the Parameters class, you have to provide the Flow Acc</span>
 <span class="sd">    raster.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        raster: A pyramids ``Dataset`` to get the spatial information</span>
+<span class="sd">        raster: A pyramids `Dataset` to get the spatial information</span>
 <span class="sd">            of the catchment (DEM, flow accumulation or flow direction</span>
-<span class="sd">            raster), read it using ``Dataset.read_file``.</span>
+<span class="sd">            raster), read it using `Dataset.read_file`.</span>
 <span class="sd">        no_parameters: Number of parameters in the HBV model.</span>
 <span class="sd">        no_lumped_par: Number of lumped parameters. You have to enter</span>
 <span class="sd">            the value of the lumped parameter at the end of the list.</span>
@@ -4002,10 +4002,10 @@ real domain.</p>
 <span class="sd">        hru: True if the parameters will consider using HRUs.</span>
 <span class="sd">            Defaults to False.</span>
 <span class="sd">        function: Which parameter-distribution strategy to bind to</span>
-<span class="sd">            :attr:`Function`. One of ``1`` (:meth:`par3d_lumped`), ``2``</span>
-<span class="sd">            (:meth:`par3d`), ``3`` (:meth:`par2d_lumped_k1_lake`) or ``4``</span>
+<span class="sd">            :attr:`Function`. One of `1` (:meth:`par3d_lumped`), `2`</span>
+<span class="sd">            (:meth:`par3d`), `3` (:meth:`par2d_lumped_k1_lake`) or `4`</span>
 <span class="sd">            (:meth:`hydrologic_response_units`). Defaults to 1. Any other value</span>
-<span class="sd">            raises :class:`ValueError`. Note that ``hru=True`` overrides the choice</span>
+<span class="sd">            raises :class:`ValueError`. Note that `hru=True` overrides the choice</span>
 <span class="sd">            with :meth:`hydrologic_response_units` regardless, but the selector is</span>
 <span class="sd">            still validated so a typo is not masked.</span>
 <span class="sd">        k_upper_bound: Upper bound of K value (traveling time in</span>
@@ -4018,7 +4018,7 @@ real domain.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        TypeError: If `raster` is not a pyramids Dataset.</span>
 <span class="sd">        ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,</span>
-<span class="sd">            a `float` such as ``2.0``, and an unhashable value are all rejected</span>
+<span class="sd">            a `float` such as `2.0`, and an unhashable value are all rejected</span>
 <span class="sd">            rather than coerced or allowed to raise `TypeError`.</span>
 <span class="sd">        AssertionError: If `no_parameters` is not an integer, if</span>
 <span class="sd">            `no_lumped_par` is not an integer, or if the length of</span>
@@ -4028,10 +4028,10 @@ real domain.</p>
 
 <span class="sd">    Note:</span>
 <span class="sd">        Cells outside the catchment are identified by pyramids via</span>
-<span class="sd">        ``read_array(masked=True)`` and stored as ``NaN`` in</span>
+<span class="sd">        `read_array(masked=True)` and stored as `NaN` in</span>
 <span class="sd">        :attr:`raster_array`, which is promoted to floating point so it can hold</span>
-<span class="sd">        them. ``no_elem``, ``celli``/``cellj`` and the width of :attr:`Par2d` all</span>
-<span class="sd">        derive from that mask, so the parameter vector length follows the raster&#39;s</span>
+<span class="sd">        them. `no_elem`, `celli`/`cellj` and the width of :attr:`Par2d` all</span>
+<span class="sd">        derive from that mask, so the parameter vector length follows the raster's</span>
 <span class="sd">        real domain.</span>
 
 <span class="sd">    Examples:</span>
@@ -4043,7 +4043,7 @@ real domain.</p>
 <span class="sd">            &gt;&gt;&gt; from pyramids.dataset import Dataset</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.rrm.parameters import Parameters</span>
 <span class="sd">            &gt;&gt;&gt; raster = Dataset.create_from_array(</span>
-<span class="sd">            ...     np.array([[1, 2], [3, -9999]], dtype=&quot;int32&quot;),</span>
+<span class="sd">            ...     np.array([[1, 2], [3, -9999]], dtype="int32"),</span>
 <span class="sd">            ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,</span>
 <span class="sd">            ...     no_data_value=-9999,</span>
 <span class="sd">            ... )</span>
@@ -4063,7 +4063,7 @@ real domain.</p>
 <span class="sd">            &gt;&gt;&gt; from pyramids.dataset import Dataset</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.rrm.parameters import Parameters</span>
 <span class="sd">            &gt;&gt;&gt; raster = Dataset.create_from_array(</span>
-<span class="sd">            ...     np.array([[1, 2], [3, -9990]], dtype=&quot;int32&quot;),</span>
+<span class="sd">            ...     np.array([[1, 2], [3, -9990]], dtype="int32"),</span>
 <span class="sd">            ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,</span>
 <span class="sd">            ...     no_data_value=-9999,</span>
 <span class="sd">            ... )</span>
@@ -4074,28 +4074,28 @@ real domain.</p>
 <span class="sd">            -9990.0</span>
 
 <span class="sd">            ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">lumped_par_pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">lumped_par_pos</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s2">&quot;raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file&quot;</span>
+            <span class="s2">"raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file"</span>
         <span class="p">)</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no_parameters</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">&quot; no_parameters should be integer number&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no_parameters</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">" no_parameters should be integer number"</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no_lumped_par</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="p">(</span>
-        <span class="s2">&quot;no of lumped parameters should be integer&quot;</span>
+        <span class="s2">"no of lumped parameters should be integer"</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">no_lumped_par</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">assert</span> <span class="n">no_lumped_par</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">),</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;you have to entered </span><span class="si">{</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> no of lumped parameters but only </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;position &quot;</span>
+                <span class="sa">f</span><span class="s2">"you have to entered </span><span class="si">{</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> no of lumped parameters but only </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lumped_par_pos</span><span class="p">)</span><span class="si">}</span><span class="s2"> "</span>
+                <span class="sa">f</span><span class="s2">"position "</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># if not int or list</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;you have one or more lumped parameters, so the position has to be entered as a list&quot;</span>
+                <span class="s2">"you have one or more lumped parameters, so the position has to be entered as a list"</span>
             <span class="p">)</span>
 
     <span class="c1"># Reject an unrecognised selector here rather than leaving `Function` unbound:</span>
@@ -4114,15 +4114,15 @@ real domain.</p>
     <span class="c1"># a spelling of 2.</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, &quot;</span>
-            <span class="s2">&quot;3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units.&quot;</span>
+            <span class="sa">f</span><span class="s2">"function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2"> of type "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. 1 = par3d_lumped, 2 = par3d, "</span>
+            <span class="s2">"3 = par2d_lumped_k1_lake, 4 = hydrologic_response_units."</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">function</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. &quot;</span>
-            <span class="s2">&quot;1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, &quot;</span>
-            <span class="s2">&quot;4 = hydrologic_response_units.&quot;</span>
+            <span class="sa">f</span><span class="s2">"function must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">strategies</span><span class="p">)</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="n">function</span><span class="si">!r}</span><span class="s2">. "</span>
+            <span class="s2">"1 = par3d_lumped, 2 = par3d, 3 = par2d_lumped_k1_lake, "</span>
+            <span class="s2">"4 = hydrologic_response_units."</span>
         <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Lake</span> <span class="o">=</span> <span class="n">lake</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">=</span> <span class="n">snow</span>
@@ -4135,7 +4135,7 @@ real domain.</p>
     <span class="c1"># read the raster</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">raster</span> <span class="o">=</span> <span class="n">raster</span>
     <span class="c1"># No-data masking is delegated to pyramids: vectorised, dtype-aware, and it</span>
-    <span class="c1"># also honours the band&#39;s GDAL mask band. Filling with NaN keeps the</span>
+    <span class="c1"># also honours the band's GDAL mask band. Filling with NaN keeps the</span>
     <span class="c1"># float-array-with-NaN contract the rest of this class relies on.</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">raster_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
         <span class="n">raster</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -4147,9 +4147,9 @@ real domain.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;the raster declares no no-data value, so every cell is treated as &quot;</span>
-            <span class="s2">&quot;inside the catchment and the parameter vector is sized for the whole &quot;</span>
-            <span class="s2">&quot;grid. If it has a sentinel, set it on the band.&quot;</span><span class="p">,</span>
+            <span class="s2">"the raster declares no no-data value, so every cell is treated as "</span>
+            <span class="s2">"inside the catchment and the parameter vector is sized for the whole "</span>
+            <span class="s2">"grid. If it has a sentinel, set it on the band."</span><span class="p">,</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
@@ -4169,7 +4169,7 @@ real domain.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Count the cells the pyramids mask left intact (see</span>
-        <span class="c1"># Catchment.read_flow_acc for why not Dataset.count_domain_cells).</span>
+        <span class="c1"># FlowNetwork.no_elem for why not Dataset.count_domain_cells).</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raster_array</span><span class="p">)))</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span> <span class="o">=</span> <span class="n">no_parameters</span>
@@ -4387,7 +4387,7 @@ within the constrained range.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_k</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate K parameter for Muskingum routing.</span>
+<span class="w">    </span><span class="sd">"""Calculate K parameter for Muskingum routing.</span>
 
 <span class="sd">    Takes the value of x parameter and generates 100 random values of</span>
 <span class="sd">    the K parameter between the upper and lower constraints, then</span>
@@ -4405,7 +4405,7 @@ within the constrained range.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        The K parameter value corresponding to the given position</span>
 <span class="sd">            within the constrained range.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># k has to be smaller than this constraint</span>
     <span class="n">constraint1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
     <span class="c1"># k has to be greater than this constraint</span>
@@ -4659,7 +4659,7 @@ where cells with value 1 indicate river presence.</p>
     <span class="n">flow_path_length</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
     <span class="n">river</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
+<span class="w">    </span><span class="sd">"""Calculate Height Above Nearest Drainage (HAND) for HRU classification.</span>
 
 <span class="sd">    Calculates inputs for the HAND method for land use</span>
 <span class="sd">    classification by tracing flow direction from each cell to the</span>
@@ -4684,7 +4684,7 @@ where cells with value 1 indicate river presence.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If the catchment boundaries contain anomalies</span>
 <span class="sd">            (e.g., after cropping with a polygon).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Use DEM raster information to run all loops</span>
     <span class="n">dem_a</span> <span class="o">=</span> <span class="n">dem</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">no_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">dem</span><span class="o">.</span><span class="n">no_data_value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -4910,7 +4910,7 @@ of <code>par_g</code> does not match the expected total.</p>
 <span class="normal">591</span>
 <span class="normal">592</span>
 <span class="normal">593</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">hydrologic_response_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># ,kub=1,klb=0.5</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters using Hydrologic Response Units (HRUs).</span>
+<span class="w">    </span><span class="sd">"""Distribute parameters using Hydrologic Response Units (HRUs).</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
 <span class="sd">    1D list from an optimization algorithm) and distributes them</span>
@@ -4922,7 +4922,7 @@ of <code>par_g</code> does not match the expected total.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        par_g: 1D list or numpy array of parameters. For HRU without</span>
 <span class="sd">            lumped parameters, the length should be</span>
-<span class="sd">            ``no_elem * no_parameters``. For HRU with lumped</span>
+<span class="sd">            `no_elem * no_parameters`. For HRU with lumped</span>
 <span class="sd">            parameters, the lumped parameter values should be</span>
 <span class="sd">            appended at the end.</span>
 
@@ -4932,32 +4932,32 @@ of <code>par_g</code> does not match the expected total.</p>
 <span class="sd">            number of parameters.</span>
 <span class="sd">        AssertionError: If there are lumped parameters and the length</span>
 <span class="sd">            of `par_g` does not match the expected total.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input data validation</span>
     <span class="c1"># data type</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;par_g should be of type 1d array or list&quot;</span><span class="p">)</span>
-    <span class="c1"># assert isinstance(kub,numbers.Number) , &quot; kub should be a number&quot;</span>
-    <span class="c1"># assert isinstance(klb,numbers.Number) , &quot; klb should be a number&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"par_g should be of type 1d array or list"</span><span class="p">)</span>
+    <span class="c1"># assert isinstance(kub,numbers.Number) , " kub should be a number"</span>
+    <span class="c1"># assert isinstance(klb,numbers.Number) , " klb should be a number"</span>
 
     <span class="c1"># input values</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">par_no</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="n">par_no</span><span class="p">,</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">)+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">=&quot;</span>
+            <span class="sa">f</span><span class="s2">"As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">)+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">="</span>
             <span class="o">+</span> <span class="nb">str</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="p">)</span>
                 <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span>
             <span class="p">)</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2"> probably you have to add the value of the lumped parameter at the end of the list&quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">" not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2"> probably you have to add the value of the lumped parameter at the end of the list"</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># if there is no lumped parameters</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">*"</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
     <span class="c1"># take the parameters from the generated parameters or the 1D list and</span>
@@ -5141,7 +5141,7 @@ from the end of <code>par_g</code>.</p>
 <span class="normal">500</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par2d_lumped_k1_lake</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">no_parameters_lake</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">):</span>  <span class="c1"># ,kub,klb</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters with a lumped K1 and lake parameters.</span>
+<span class="w">    </span><span class="sd">"""Distribute parameters with a lumped K1 and lake parameters.</span>
 
 <span class="sd">    Takes a list of parameters and distributes them horizontally on</span>
 <span class="sd">    the number of cells given by a raster. All parameters are</span>
@@ -5150,14 +5150,14 @@ from the end of <code>par_g</code>.</p>
 <span class="sd">    parameters are extracted from the end of the parameter list.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        par_g: 1D list or numpy array of parameters. Each cell&#39;s</span>
+<span class="sd">        par_g: 1D list or numpy array of parameters. Each cell's</span>
 <span class="sd">            distributed parameters are listed sequentially, followed</span>
 <span class="sd">            by the lumped K1 value, followed by lake parameters at</span>
 <span class="sd">            the end. For example, with 14 cells and 11 distributed</span>
-<span class="sd">            parameters: ``14 * 11 = 154 + 1 (K1) = 155``.</span>
+<span class="sd">            parameters: `14 * 11 = 154 + 1 (K1) = 155`.</span>
 <span class="sd">        no_parameters_lake: Number of lake parameters to extract</span>
 <span class="sd">            from the end of `par_g`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># parameters in array</span>
     <span class="c1"># remove a place for the lumped parameter (k1) lower zone coefficient</span>
     <span class="n">no_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span> <span class="o">-</span> <span class="mi">1</span>
@@ -5359,7 +5359,7 @@ elements and lumped parameters.</p>
 <span class="normal">350</span>
 <span class="normal">351</span>
 <span class="normal">352</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># , kub=1,klb=0.5, Maskingum=True</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribute parameters horizontally across grid cells.</span>
+<span class="w">    </span><span class="sd">"""Distribute parameters horizontally across grid cells.</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
 <span class="sd">    1D list from an optimization algorithm) and distributes them</span>
@@ -5368,37 +5368,37 @@ elements and lumped parameters.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        par_g: 1D list or numpy array of parameters. For totally</span>
 <span class="sd">            distributed parameters, the length should be</span>
-<span class="sd">            ``no_elem * no_parameters``. For lumped parameters, the</span>
+<span class="sd">            `no_elem * no_parameters`. For lumped parameters, the</span>
 <span class="sd">            lumped parameter values should be appended at the end.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If the length of `par_g` does not match the</span>
 <span class="sd">            expected number of parameters based on the number of</span>
 <span class="sd">            elements and lumped parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input data validation</span>
     <span class="c1"># data type</span>
-    <span class="c1"># assert type(par_g)==np.ndarray or type(par_g)==list, &quot;par_g should be of type 1d array or list&quot;</span>
-    <span class="c1"># assert isinstance(kub,numbers.Number) , &quot; kub should be a number&quot;</span>
-    <span class="c1"># assert isinstance(klb,numbers.Number) , &quot; klb should be a number&quot;</span>
+    <span class="c1"># assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"</span>
+    <span class="c1"># assert isinstance(kub,numbers.Number) , " kub should be a number"</span>
+    <span class="c1"># assert isinstance(klb,numbers.Number) , " klb should be a number"</span>
 
     <span class="c1"># input values</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">par_no</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span>
 
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="n">par_no</span><span class="p">,</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">) + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> = &quot;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="o">+</span> <span class="s2">&quot; probably you have to add the value of the lumped parameter at the end of the list&quot;</span>
+            <span class="sa">f</span><span class="s2">"As there is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> lumped parameters, length of input parameters should be "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2">"</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">"*(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2">) + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> = "</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="o">+</span> <span class="s2">" probably you have to add the value of the lumped parameter at the end of the list"</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># if there are no lumped parameters</span>
         <span class="n">par_no</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">par_g</span><span class="p">)</span> <span class="o">==</span> <span class="n">par_no</span><span class="p">,</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2"> * &quot;</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"As there is no lumped parameters length of input parameters should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="si">}</span><span class="s2"> * "</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">no_elem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">no_parameters</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="c1"># parameters in array</span>
@@ -5554,7 +5554,7 @@ The length should equal <code>no_parameters</code>.</p>
 <span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">par3d_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">par_g</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">):</span>  <span class="c1"># , kub=1, klb=0.5, Maskingum = True</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Distribute lumped parameters horizontally across grid cells.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Distribute lumped parameters horizontally across grid cells.</span>
 
 <span class="sd">    Takes a list of parameters (saved as one column or generated as a</span>
 <span class="sd">    1D list from an optimization algorithm) and distributes them</span>
@@ -5563,17 +5563,17 @@ The length should equal <code>no_parameters</code>.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        par_g: 1D list or numpy array of lumped parameters.</span>
-<span class="sd">            The length should equal ``no_parameters``.</span>
+<span class="sd">            The length should equal `no_parameters`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If `par_g` is not a numpy ndarray or a list.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input data validation</span>
     <span class="c1"># data type</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">par_g</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;par_g should be of type 1d array or list&quot;</span><span class="p">)</span>
-    <span class="c1"># assert isinstance(kub,numbers.Number) , &quot; kub should be a number&quot;</span>
-    <span class="c1"># assert isinstance(klb,numbers.Number) , &quot; klb should be a number&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"par_g should be of type 1d array or list"</span><span class="p">)</span>
+    <span class="c1"># assert isinstance(kub,numbers.Number) , " kub should be a number"</span>
+    <span class="c1"># assert isinstance(klb,numbers.Number) , " klb should be a number"</span>
 
     <span class="c1"># take the parameters from the generated parameters or the 1D list and</span>
     <span class="c1"># assign them to each cell</span>
@@ -5658,7 +5658,7 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 <span class="normal">777</span>
 <span class="normal">778</span>
 <span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parameters_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the total number of parameters for the optimization.</span>
+<span class="w">    </span><span class="sd">"""Calculate the total number of parameters for the optimization.</span>
 
 <span class="sd">    Calculates the number of parameters that the optimization</span>
 <span class="sd">    algorithm will search for. Use this only in case of totally</span>
@@ -5666,13 +5666,13 @@ before calling this method: <code>raster</code>, <code>no_parameters</code>,
 <span class="sd">    the number of parameters is the same as the number of parameters</span>
 <span class="sd">    of the conceptual model.</span>
 
-<span class="sd">    The result is stored in the ``ParametersNO`` attribute.</span>
+<span class="sd">    The result is stored in the `ParametersNO` attribute.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The Parameters object should have the following attributes</span>
-<span class="sd">        before calling this method: ``raster``, ``no_parameters``,</span>
-<span class="sd">        ``no_lumped_par``, and ``HRUs``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        before calling this method: `raster`, `no_parameters`,</span>
+<span class="sd">        `no_lumped_par`, and `HRUs`.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">HRUs</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_lumped_par</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># self.ParametersNO = (self.no_elem *( self.no_parameters - self.no_lumped_par)) + self.no_lumped_par</span>
@@ -5866,7 +5866,7 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="normal">850</span>
 <span class="normal">851</span>
 <span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save distributed parameters as raster files.</span>
+<span class="w">    </span><span class="sd">"""Save distributed parameters as raster files.</span>
 
 <span class="sd">    Takes the generated 3D parameter array and saves each parameter</span>
 <span class="sd">    layer as a separate GeoTIFF raster file.</span>
@@ -5876,63 +5876,63 @@ set before calling this method: <code>DistParFn</code>, <code>raster</code>,
 <span class="sd">            be saved.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        TypeError: `path` is not a ``str``. Output names are built by concatenation</span>
-<span class="sd">            (``path + name``), which a ``Path`` does not support.</span>
+<span class="sd">        TypeError: `path` is not a `str`. Output names are built by concatenation</span>
+<span class="sd">            (`path + name`), which a `Path` does not support.</span>
 <span class="sd">        FileNotFoundError: The output directory does not exist. Checked up front so</span>
 <span class="sd">            the failure does not surface midway through writing.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The Parameters object should have the following attributes</span>
-<span class="sd">        set before calling this method: ``DistParFn``, ``raster``,</span>
-<span class="sd">        ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        set before calling this method: `DistParFn`, `raster`,</span>
+<span class="sd">        `Par`, `no_parameters`, `snow`, `kub`, and `klb`.</span>
+<span class="sd">    """</span>
     <span class="c1"># Not delegated to pyramids: the output names are built by string concatenation</span>
     <span class="c1"># below (`path + name`), so this genuinely needs a str, and the directory must</span>
     <span class="c1"># exist before the first raster is written. Raised rather than asserted so the</span>
     <span class="c1"># checks survive `python -O`.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;path should be of type string, given: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"path should be of type string, given: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> you have provided does not exist"</span><span class="p">)</span>
 
     <span class="c1"># save</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Snow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># now snow subroutine</span>
         <span class="n">pnme</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;01_rfcf&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;02_FC&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;03_BETA&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;04_ETF&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;05_LP&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;06_K0&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;07_K1&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;08_K2&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;09_UZL&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;10_PERC&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;11_Kmuskingum&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;12_Xmuskingum&quot;</span><span class="p">,</span>
+            <span class="s2">"01_rfcf"</span><span class="p">,</span>
+            <span class="s2">"02_FC"</span><span class="p">,</span>
+            <span class="s2">"03_BETA"</span><span class="p">,</span>
+            <span class="s2">"04_ETF"</span><span class="p">,</span>
+            <span class="s2">"05_LP"</span><span class="p">,</span>
+            <span class="s2">"06_K0"</span><span class="p">,</span>
+            <span class="s2">"07_K1"</span><span class="p">,</span>
+            <span class="s2">"08_K2"</span><span class="p">,</span>
+            <span class="s2">"09_UZL"</span><span class="p">,</span>
+            <span class="s2">"10_PERC"</span><span class="p">,</span>
+            <span class="s2">"11_Kmuskingum"</span><span class="p">,</span>
+            <span class="s2">"12_Xmuskingum"</span><span class="p">,</span>
         <span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># there is snow subtoutine</span>
         <span class="n">pnme</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;01_ltt&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;02_rfcf&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;03_sfcf&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;04_cfmax&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;05_cwh&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;06_cfr&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;07_fc&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;08_beta&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;09_etf&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;10_lp&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;11_k0&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;12_k1&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;13_k2&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;14_uzl&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;18_perc&quot;</span><span class="p">,</span>
+            <span class="s2">"01_ltt"</span><span class="p">,</span>
+            <span class="s2">"02_rfcf"</span><span class="p">,</span>
+            <span class="s2">"03_sfcf"</span><span class="p">,</span>
+            <span class="s2">"04_cfmax"</span><span class="p">,</span>
+            <span class="s2">"05_cwh"</span><span class="p">,</span>
+            <span class="s2">"06_cfr"</span><span class="p">,</span>
+            <span class="s2">"07_fc"</span><span class="p">,</span>
+            <span class="s2">"08_beta"</span><span class="p">,</span>
+            <span class="s2">"09_etf"</span><span class="p">,</span>
+            <span class="s2">"10_lp"</span><span class="p">,</span>
+            <span class="s2">"11_k0"</span><span class="p">,</span>
+            <span class="s2">"12_k1"</span><span class="p">,</span>
+            <span class="s2">"13_k2"</span><span class="p">,</span>
+            <span class="s2">"14_uzl"</span><span class="p">,</span>
+            <span class="s2">"18_perc"</span><span class="p">,</span>
         <span class="p">]</span>
 
     <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">pnme</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">path</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.tif&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pnme</span>
+            <span class="n">path</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".tif"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pnme</span>
         <span class="p">]</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Par3d</span><span class="p">)[</span><span class="mi">2</span><span class="p">]):</span>

@@ -2037,7 +2037,7 @@ approaches:</p>
 <span class="normal">390</span>
 <span class="normal">391</span>
 <span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Routing methods for translating and attenuating discharge hydrographs.</span>
+<span class="w">    </span><span class="sd">"""Routing methods for translating and attenuating discharge hydrographs.</span>
 
 <span class="sd">    This class provides static methods for two families of routing</span>
 <span class="sd">    approaches:</span>
@@ -2050,19 +2050,19 @@ approaches:</p>
 <span class="sd">      Two variants are provided: `triangular_routing_1` supports</span>
 <span class="sd">      fractional MAXBAS values; `triangular_routing_2` uses integer</span>
 <span class="sd">      MAXBAS values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Routing instance.</span>
+<span class="w">        </span><span class="sd">"""Initialize the Routing instance.</span>
 
 <span class="sd">        The Routing class uses only static methods, so no parameters</span>
 <span class="sd">        are required for instantiation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">muskingum</span><span class="p">(</span><span class="n">inflow</span><span class="p">,</span> <span class="n">Qinitial</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route an inflow hydrograph using the Muskingum method.</span>
+<span class="w">        </span><span class="sd">"""Route an inflow hydrograph using the Muskingum method.</span>
 
 <span class="sd">        Applies the Muskingum linear storage routing equation to</span>
 <span class="sd">        translate and attenuate an inflow time series. The three</span>
@@ -2094,13 +2094,13 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; q_routed = Routing.muskingum(</span>
 <span class="sd">            ...     inflow, Qinitial=0, k=2, x=0.2, dt=1</span>
 <span class="sd">            ... )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
         <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
         <span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">dt</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
 
         <span class="c1">#    if c1+c2+c3!=1:</span>
-        <span class="c1">#        raise(&quot;sim of c1,c2 &amp; c3 is not 1&quot;)</span>
+        <span class="c1">#        raise("sim of c1,c2 &amp; c3 is not 1")</span>
 
         <span class="n">outflow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inflow</span><span class="p">)</span>
         <span class="n">outflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qinitial</span>
@@ -2120,7 +2120,7 @@ approaches:</p>
         <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">dt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route an inflow hydrograph using a vectorized Muskingum method.</span>
+<span class="w">        </span><span class="sd">"""Route an inflow hydrograph using a vectorized Muskingum method.</span>
 
 <span class="sd">        This is a performance-optimized variant of `muskingum` that</span>
 <span class="sd">        pre-computes the c1 and c2 terms in a vectorized manner before</span>
@@ -2151,13 +2151,13 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; q_routed = Routing.muskingum_v(</span>
 <span class="sd">            ...     inflow, Qinitial=0, k=2, x=0.2, dt=1</span>
 <span class="sd">            ... )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
         <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
         <span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">dt</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
 
         <span class="c1">#    if c1+c2+c3!=1:</span>
-        <span class="c1">#        raise(&quot;sim of c1,c2 &amp; c3 is not 1&quot;)</span>
+        <span class="c1">#        raise("sim of c1,c2 &amp; c3 is not 1")</span>
 
         <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inflow</span><span class="p">)</span>
         <span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qinitial</span>
@@ -2172,7 +2172,7 @@ approaches:</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate triangular transfer-function weights.</span>
+<span class="w">        </span><span class="sd">"""Generate triangular transfer-function weights.</span>
 
 <span class="sd">        Builds a normalized weight array shaped as a triangle with a</span>
 <span class="sd">        rising limb for the first half and a falling limb for the</span>
@@ -2193,7 +2193,7 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; weights = Routing.tf(5)</span>
 <span class="sd">            &gt;&gt;&gt; print(weights.sum())</span>
 <span class="sd">            1.0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># if maxbas=3 so x=[1,2,3]</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -2211,7 +2211,7 @@ approaches:</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_2</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route discharge using a triangular transfer function (integer MAXBAS).</span>
+<span class="w">        </span><span class="sd">"""Route discharge using a triangular transfer function (integer MAXBAS).</span>
 
 <span class="sd">        Convolves the input discharge time series with a triangular</span>
 <span class="sd">        weighting kernel whose width is determined by ``maxbas``. Only</span>
@@ -2237,9 +2237,9 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; from hapi.routing import Routing</span>
 <span class="sd">            &gt;&gt;&gt; q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])</span>
 <span class="sd">            &gt;&gt;&gt; q_routed = Routing.triangular_routing_2(q, maxbas=3)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input data validation</span>
-        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
 
         <span class="c1"># Get integer part of maxbas</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -2248,7 +2248,7 @@ approaches:</p>
         <span class="n">w</span> <span class="o">=</span> <span class="n">Routing</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
         <span class="c1"># rout the discharge signal</span>
-        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
         <span class="n">q_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
             <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>
@@ -2258,7 +2258,7 @@ approaches:</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_weights</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate triangular routing weights for a given MAXBAS value.</span>
+<span class="w">        </span><span class="sd">"""Calculate triangular routing weights for a given MAXBAS value.</span>
 
 <span class="sd">        Computes normalized weights based on the area under an</span>
 <span class="sd">        equilateral-triangle transfer function. Unlike `tf`, this</span>
@@ -2280,7 +2280,7 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; weights = Routing.calculate_weights(5)</span>
 <span class="sd">            &gt;&gt;&gt; print(weights)</span>
 <span class="sd">            [0.08 0.24 0.36 0.24 0.08]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">yant</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Just to verify how far from the unit is the result</span>
 
@@ -2288,7 +2288,7 @@ approaches:</p>
         <span class="n">int_part</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
         <span class="n">real_part</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">-</span> <span class="n">int_part</span>
         <span class="n">peak_point</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">%</span> <span class="mi">2</span>
-        <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = &quot;up&quot;  ; 2 = down</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = "up"  ; 2 = down</span>
 
         <span class="k">if</span> <span class="n">real_part</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># even number 2,4,6,8,10</span>
             <span class="n">maxbas_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">int_part</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># if even add 1</span>
@@ -2317,7 +2317,7 @@ approaches:</p>
 
                     <span class="n">flag</span> <span class="o">=</span> <span class="mi">2</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># &#39;sum of the two height in the descending part of the triangle</span>
+                    <span class="c1"># 'sum of the two height in the descending part of the triangle</span>
                     <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
                         <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span>
                     <span class="p">)</span>
@@ -2347,7 +2347,7 @@ approaches:</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_1</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">MAXBAS</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route discharge using triangular weights (fractional MAXBAS).</span>
+<span class="w">        </span><span class="sd">"""Route discharge using triangular weights (fractional MAXBAS).</span>
 
 <span class="sd">        Distributes the input hydrograph over time using MAXBAS</span>
 <span class="sd">        triangular weights computed by `calculate_weights`. Unlike</span>
@@ -2374,7 +2374,7 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; from hapi.routing import Routing</span>
 <span class="sd">            &gt;&gt;&gt; Q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])</span>
 <span class="sd">            &gt;&gt;&gt; q_out = Routing.triangular_routing_1(Q, MAXBAS=5)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># CALCULATE MAXBAS WEIGHTS</span>
         <span class="n">maxbasW</span> <span class="o">=</span> <span class="n">Routing</span><span class="o">.</span><span class="n">calculate_weights</span><span class="p">(</span><span class="n">MAXBAS</span><span class="p">)</span>
 
@@ -2451,11 +2451,11 @@ are required for instantiation.</p>
 <span class="normal">36</span>
 <span class="normal">37</span>
 <span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Routing instance.</span>
+<span class="w">    </span><span class="sd">"""Initialize the Routing instance.</span>
 
 <span class="sd">    The Routing class uses only static methods, so no parameters</span>
 <span class="sd">    are required for instantiation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2647,7 +2647,7 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 <span class="normal">322</span>
 <span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_weights</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate triangular routing weights for a given MAXBAS value.</span>
+<span class="w">    </span><span class="sd">"""Calculate triangular routing weights for a given MAXBAS value.</span>
 
 <span class="sd">    Computes normalized weights based on the area under an</span>
 <span class="sd">    equilateral-triangle transfer function. Unlike `tf`, this</span>
@@ -2669,7 +2669,7 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 <span class="sd">        &gt;&gt;&gt; weights = Routing.calculate_weights(5)</span>
 <span class="sd">        &gt;&gt;&gt; print(weights)</span>
 <span class="sd">        [0.08 0.24 0.36 0.24 0.08]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">yant</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Just to verify how far from the unit is the result</span>
 
@@ -2677,7 +2677,7 @@ length is <code>floor(MAXBAS)</code> for integer values, or
     <span class="n">int_part</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
     <span class="n">real_part</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">-</span> <span class="n">int_part</span>
     <span class="n">peak_point</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">%</span> <span class="mi">2</span>
-    <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = &quot;up&quot;  ; 2 = down</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = "up"  ; 2 = down</span>
 
     <span class="k">if</span> <span class="n">real_part</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># even number 2,4,6,8,10</span>
         <span class="n">maxbas_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">int_part</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># if even add 1</span>
@@ -2706,7 +2706,7 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 
                 <span class="n">flag</span> <span class="o">=</span> <span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># &#39;sum of the two height in the descending part of the triangle</span>
+                <span class="c1"># 'sum of the two height in the descending part of the triangle</span>
                 <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
                     <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span>
                 <span class="p">)</span>
@@ -2956,7 +2956,7 @@ length as <code>inflow</code>, rounded to four decimal places.</p>
 <span class="normal">89</span>
 <span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">muskingum</span><span class="p">(</span><span class="n">inflow</span><span class="p">,</span> <span class="n">Qinitial</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route an inflow hydrograph using the Muskingum method.</span>
+<span class="w">    </span><span class="sd">"""Route an inflow hydrograph using the Muskingum method.</span>
 
 <span class="sd">    Applies the Muskingum linear storage routing equation to</span>
 <span class="sd">    translate and attenuate an inflow time series. The three</span>
@@ -2988,13 +2988,13 @@ length as <code>inflow</code>, rounded to four decimal places.</p>
 <span class="sd">        &gt;&gt;&gt; q_routed = Routing.muskingum(</span>
 <span class="sd">        ...     inflow, Qinitial=0, k=2, x=0.2, dt=1</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
     <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
     <span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">dt</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
 
     <span class="c1">#    if c1+c2+c3!=1:</span>
-    <span class="c1">#        raise(&quot;sim of c1,c2 &amp; c3 is not 1&quot;)</span>
+    <span class="c1">#        raise("sim of c1,c2 &amp; c3 is not 1")</span>
 
     <span class="n">outflow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inflow</span><span class="p">)</span>
     <span class="n">outflow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qinitial</span>
@@ -3239,7 +3239,7 @@ length as <code>inflow</code>.</p>
     <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">dt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route an inflow hydrograph using a vectorized Muskingum method.</span>
+<span class="w">    </span><span class="sd">"""Route an inflow hydrograph using a vectorized Muskingum method.</span>
 
 <span class="sd">    This is a performance-optimized variant of `muskingum` that</span>
 <span class="sd">    pre-computes the c1 and c2 terms in a vectorized manner before</span>
@@ -3270,13 +3270,13 @@ length as <code>inflow</code>.</p>
 <span class="sd">        &gt;&gt;&gt; q_routed = Routing.muskingum_v(</span>
 <span class="sd">        ...     inflow, Qinitial=0, k=2, x=0.2, dt=1</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
     <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">dt</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
     <span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">dt</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
 
     <span class="c1">#    if c1+c2+c3!=1:</span>
-    <span class="c1">#        raise(&quot;sim of c1,c2 &amp; c3 is not 1&quot;)</span>
+    <span class="c1">#        raise("sim of c1,c2 &amp; c3 is not 1")</span>
 
     <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inflow</span><span class="p">)</span>
     <span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qinitial</span>
@@ -3427,7 +3427,7 @@ the discharge. Must be &gt;= 1.</p>
 <span class="normal">186</span>
 <span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate triangular transfer-function weights.</span>
+<span class="w">    </span><span class="sd">"""Generate triangular transfer-function weights.</span>
 
 <span class="sd">    Builds a normalized weight array shaped as a triangle with a</span>
 <span class="sd">    rising limb for the first half and a falling limb for the</span>
@@ -3448,7 +3448,7 @@ the discharge. Must be &gt;= 1.</p>
 <span class="sd">        &gt;&gt;&gt; weights = Routing.tf(5)</span>
 <span class="sd">        &gt;&gt;&gt; print(weights.sum())</span>
 <span class="sd">        1.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># if maxbas=3 so x=[1,2,3]</span>
         <span class="k">if</span> <span class="p">(</span>
@@ -3652,7 +3652,7 @@ length as <code>Q</code>.</p>
 <span class="normal">391</span>
 <span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_1</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">MAXBAS</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route discharge using triangular weights (fractional MAXBAS).</span>
+<span class="w">    </span><span class="sd">"""Route discharge using triangular weights (fractional MAXBAS).</span>
 
 <span class="sd">    Distributes the input hydrograph over time using MAXBAS</span>
 <span class="sd">    triangular weights computed by `calculate_weights`. Unlike</span>
@@ -3679,7 +3679,7 @@ length as <code>Q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; from hapi.routing import Routing</span>
 <span class="sd">        &gt;&gt;&gt; Q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])</span>
 <span class="sd">        &gt;&gt;&gt; q_out = Routing.triangular_routing_1(Q, MAXBAS=5)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># CALCULATE MAXBAS WEIGHTS</span>
     <span class="n">maxbasW</span> <span class="o">=</span> <span class="n">Routing</span><span class="o">.</span><span class="n">calculate_weights</span><span class="p">(</span><span class="n">MAXBAS</span><span class="p">)</span>
 
@@ -3905,7 +3905,7 @@ length as <code>q</code>.</p>
 <span class="normal">233</span>
 <span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_2</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route discharge using a triangular transfer function (integer MAXBAS).</span>
+<span class="w">    </span><span class="sd">"""Route discharge using a triangular transfer function (integer MAXBAS).</span>
 
 <span class="sd">    Convolves the input discharge time series with a triangular</span>
 <span class="sd">    weighting kernel whose width is determined by ``maxbas``. Only</span>
@@ -3931,9 +3931,9 @@ length as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; from hapi.routing import Routing</span>
 <span class="sd">        &gt;&gt;&gt; q = np.array([0.0, 1.0, 3.0, 7.0, 10.0, 9.0, 6.0])</span>
 <span class="sd">        &gt;&gt;&gt; q_routed = Routing.triangular_routing_2(q, maxbas=3)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input data validation</span>
-    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
 
     <span class="c1"># Get integer part of maxbas</span>
     <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -3942,7 +3942,7 @@ length as <code>q</code>.</p>
     <span class="n">w</span> <span class="o">=</span> <span class="n">Routing</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
     <span class="c1"># rout the discharge signal</span>
-    <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
     <span class="n">q_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
         <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>

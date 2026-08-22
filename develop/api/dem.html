@@ -1689,7 +1689,7 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 <span class="normal">187</span>
 <span class="normal">188</span>
 <span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DEM</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Digital Elevation Model dataset with flow-direction helpers.</span>
+<span class="w">    </span><span class="sd">"""Digital Elevation Model dataset with flow-direction helpers.</span>
 
 <span class="sd">    ``DEM`` wraps a GDAL-backed raster dataset (via</span>
 <span class="sd">    ``pyramids.dataset.Dataset``) and adds methods that convert</span>
@@ -1703,10 +1703,10 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 
 <span class="sd">    Use ``DEM.read_file(path)`` to open a raster from disk, exactly</span>
 <span class="sd">    like ``pyramids.dataset.Dataset``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;esri&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert flow-direction codes into downstream-cell indices.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"esri"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Convert flow-direction codes into downstream-cell indices.</span>
 
 <span class="sd">        Reads the flow-direction band from the underlying raster and</span>
 <span class="sd">        maps each D8 direction code to the row/column index of the</span>
@@ -1716,13 +1716,13 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 <span class="sd">            encoding: The D8 flow-direction encoding used by the</span>
 <span class="sd">                raster.  Supported values:</span>
 
-<span class="sd">                - ``&quot;esri&quot;`` (default) -- ArcGIS / ESRI powers-of-2</span>
+<span class="sd">                - ``"esri"`` (default) -- ArcGIS / ESRI powers-of-2</span>
 <span class="sd">                  codes (1, 2, 4, 8, 16, 32, 64, 128).</span>
-<span class="sd">                - ``&quot;saga&quot;`` -- SAGA GIS codes (0--7, starting East</span>
+<span class="sd">                - ``"saga"`` -- SAGA GIS codes (0--7, starting East</span>
 <span class="sd">                  counter-clockwise).  Produced by QGIS Processing</span>
 <span class="sd">                  SAGA tools such as *Fill Sinks* and *Channel</span>
 <span class="sd">                  Network*.</span>
-<span class="sd">                - ``&quot;grass&quot;`` -- GRASS GIS codes (1--8, starting</span>
+<span class="sd">                - ``"grass"`` -- GRASS GIS codes (1--8, starting</span>
 <span class="sd">                  North clockwise).  Produced by QGIS Processing</span>
 <span class="sd">                  GRASS tools such as *r.watershed*.</span>
 
@@ -1737,11 +1737,11 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 <span class="sd">            ValueError: If *encoding* is not one of the supported</span>
 <span class="sd">                names, or if the raster contains direction values</span>
 <span class="sd">                outside the expected set for the chosen encoding.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">encoding</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">D8_ENCODINGS</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unsupported encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">D8_ENCODINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Unsupported encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">D8_ENCODINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="n">offsets</span> <span class="o">=</span> <span class="n">D8_ENCODINGS</span><span class="p">[</span><span class="n">encoding</span><span class="p">]</span>
 
@@ -1754,13 +1754,13 @@ like <code>pyramids.dataset.Dataset</code>.</p>
         <span class="n">valid_codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">valid_codes</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fd_val</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Flow direction raster should contain only &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">valid_codes</span><span class="p">)</span><span class="si">}</span><span class="s2"> for encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Flow direction raster should contain only "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">valid_codes</span><span class="p">)</span><span class="si">}</span><span class="s2"> for encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="n">fd_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
-        <span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+        <span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">"ij"</span><span class="p">)</span>
         <span class="n">d_row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="n">d_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
@@ -1775,8 +1775,8 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 
         <span class="k">return</span> <span class="n">fd_cell</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;esri&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build an upstream-cell lookup table from flow directions.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"esri"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Build an upstream-cell lookup table from flow directions.</span>
 
 <span class="sd">        Uses ``flow_direction_index`` to determine downstream</span>
 <span class="sd">        neighbours, then inverts the relationship so that each cell</span>
@@ -1788,10 +1788,10 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, list[tuple[int, int]]]: A dictionary keyed by</span>
-<span class="sd">                ``&quot;row,col&quot;`` strings.  Each value is a list of</span>
+<span class="sd">                ``"row,col"`` strings.  Each value is a list of</span>
 <span class="sd">                ``(row, col)`` tuples identifying the cells whose</span>
 <span class="sd">                flow direction points directly into the key cell.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">flow_direction_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_direction_index</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
 
         <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
@@ -1817,7 +1817,7 @@ like <code>pyramids.dataset.Dataset</code>.</p>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">flow_direction_index</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
                     <span class="c1"># get the indexes of the cell and use it as a key in a dictionary</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
                     <span class="n">flow_acc_table</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">celli_content</span><span class="p">)):</span>
                         <span class="c1"># search if any cell are giving this cell</span>
@@ -1842,7 +1842,7 @@ like <code>pyramids.dataset.Dataset</code>.</p>
 
 
 <h4 id="hapi.dem.DEM.flow_direction_index" class="doc doc-heading"><a href="#hapi.dem.DEM.flow_direction_index" class="toclink">
-            <code class="highlight language-python"><span class="n">flow_direction_index</span><span class="p">(</span><span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;esri&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+            <code class="highlight language-python"><span class="n">flow_direction_index</span><span class="p">(</span><span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'esri'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
 </a><a href="#hapi.dem.DEM.flow_direction_index" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -2020,8 +2020,8 @@ outside the expected set for the chosen encoding.</p>
 <span class="normal">135</span>
 <span class="normal">136</span>
 <span class="normal">137</span>
-<span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;esri&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert flow-direction codes into downstream-cell indices.</span>
+<span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"esri"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert flow-direction codes into downstream-cell indices.</span>
 
 <span class="sd">    Reads the flow-direction band from the underlying raster and</span>
 <span class="sd">    maps each D8 direction code to the row/column index of the</span>
@@ -2031,13 +2031,13 @@ outside the expected set for the chosen encoding.</p>
 <span class="sd">        encoding: The D8 flow-direction encoding used by the</span>
 <span class="sd">            raster.  Supported values:</span>
 
-<span class="sd">            - ``&quot;esri&quot;`` (default) -- ArcGIS / ESRI powers-of-2</span>
+<span class="sd">            - ``"esri"`` (default) -- ArcGIS / ESRI powers-of-2</span>
 <span class="sd">              codes (1, 2, 4, 8, 16, 32, 64, 128).</span>
-<span class="sd">            - ``&quot;saga&quot;`` -- SAGA GIS codes (0--7, starting East</span>
+<span class="sd">            - ``"saga"`` -- SAGA GIS codes (0--7, starting East</span>
 <span class="sd">              counter-clockwise).  Produced by QGIS Processing</span>
 <span class="sd">              SAGA tools such as *Fill Sinks* and *Channel</span>
 <span class="sd">              Network*.</span>
-<span class="sd">            - ``&quot;grass&quot;`` -- GRASS GIS codes (1--8, starting</span>
+<span class="sd">            - ``"grass"`` -- GRASS GIS codes (1--8, starting</span>
 <span class="sd">              North clockwise).  Produced by QGIS Processing</span>
 <span class="sd">              GRASS tools such as *r.watershed*.</span>
 
@@ -2052,11 +2052,11 @@ outside the expected set for the chosen encoding.</p>
 <span class="sd">        ValueError: If *encoding* is not one of the supported</span>
 <span class="sd">            names, or if the raster contains direction values</span>
 <span class="sd">            outside the expected set for the chosen encoding.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">encoding</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">D8_ENCODINGS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unsupported encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">D8_ENCODINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Unsupported encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">D8_ENCODINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="n">offsets</span> <span class="o">=</span> <span class="n">D8_ENCODINGS</span><span class="p">[</span><span class="n">encoding</span><span class="p">]</span>
 
@@ -2069,13 +2069,13 @@ outside the expected set for the chosen encoding.</p>
     <span class="n">valid_codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">valid_codes</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fd_val</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Flow direction raster should contain only &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">valid_codes</span><span class="p">)</span><span class="si">}</span><span class="s2"> for encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Flow direction raster should contain only "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">valid_codes</span><span class="p">)</span><span class="si">}</span><span class="s2"> for encoding </span><span class="si">{</span><span class="n">encoding</span><span class="si">!r}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="n">fd_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
-    <span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+    <span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">"ij"</span><span class="p">)</span>
     <span class="n">d_row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="n">d_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
@@ -2104,7 +2104,7 @@ outside the expected set for the chosen encoding.</p>
 
 
 <h4 id="hapi.dem.DEM.flow_direction_table" class="doc doc-heading"><a href="#hapi.dem.DEM.flow_direction_table" class="toclink">
-            <code class="highlight language-python"><span class="n">flow_direction_table</span><span class="p">(</span><span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;esri&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span></code>
+            <code class="highlight language-python"><span class="n">flow_direction_table</span><span class="p">(</span><span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'esri'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span></code>
 
 </a><a href="#hapi.dem.DEM.flow_direction_table" class="headerlink" title="Permanent link">#</a></h4>
 
@@ -2226,8 +2226,8 @@ flow direction points directly into the key cell.</p>
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
-<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;esri&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an upstream-cell lookup table from flow directions.</span>
+<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flow_direction_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"esri"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build an upstream-cell lookup table from flow directions.</span>
 
 <span class="sd">    Uses ``flow_direction_index`` to determine downstream</span>
 <span class="sd">    neighbours, then inverts the relationship so that each cell</span>
@@ -2239,10 +2239,10 @@ flow direction points directly into the key cell.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict[str, list[tuple[int, int]]]: A dictionary keyed by</span>
-<span class="sd">            ``&quot;row,col&quot;`` strings.  Each value is a list of</span>
+<span class="sd">            ``"row,col"`` strings.  Each value is a list of</span>
 <span class="sd">            ``(row, col)`` tuples identifying the cells whose</span>
 <span class="sd">            flow direction points directly into the key cell.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">flow_direction_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_direction_index</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
 
     <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
@@ -2268,7 +2268,7 @@ flow direction points directly into the key cell.</p>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">flow_direction_index</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
                 <span class="c1"># get the indexes of the cell and use it as a key in a dictionary</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
                 <span class="n">flow_acc_table</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">celli_content</span><span class="p">)):</span>
                     <span class="c1"># search if any cell are giving this cell</span>

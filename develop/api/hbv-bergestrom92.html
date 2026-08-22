@@ -2280,7 +2280,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVBergestrom92</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;HBV Bergestrom 1992 lumped conceptual hydrological model.</span>
+<span class="w">    </span><span class="sd">"""HBV Bergestrom 1992 lumped conceptual hydrological model.</span>
 
 <span class="sd">    This class implements the HBV-96 model variant based on</span>
 <span class="sd">    Bergstrom (1992), featuring two groundwater reservoirs (upper and</span>
@@ -2295,15 +2295,15 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92</span>
 <span class="sd">        &gt;&gt;&gt; model = HBVBergestrom92()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the HBVBergestrom92 model.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize the HBVBergestrom92 model."""</span>
         <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">precipitation</span><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">rfcf</span><span class="p">,</span> <span class="n">sfcf</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Partition precipitation into rainfall and snowfall.</span>
+<span class="w">        </span><span class="sd">"""Partition precipitation into rainfall and snowfall.</span>
 
 <span class="sd">        If the temperature is lower than or equal to the threshold</span>
 <span class="sd">        ``tt``, all precipitation is considered snowfall. If the</span>
@@ -2343,7 +2343,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            10.0</span>
 <span class="sd">            &gt;&gt;&gt; sf</span>
 <span class="sd">            0.0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># if temp &lt;= lower temp threshold</span>
         <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;=</span> <span class="n">tt</span><span class="p">:</span>
             <span class="c1"># no rainfall all the precipitation will convert into snowfall</span>
@@ -2359,7 +2359,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">snow</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">wc_old</span><span class="p">,</span> <span class="n">sp_old</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">cfmax</span><span class="p">,</span> <span class="n">cfr</span><span class="p">,</span> <span class="n">cwh</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute snow accumulation, melt, and infiltration.</span>
+<span class="w">        </span><span class="sd">"""Compute snow accumulation, melt, and infiltration.</span>
 
 <span class="sd">        The snow pack consists of two states: water content (``wc``)</span>
 <span class="sd">        and snow pack (``sp``). The water content corresponds to the</span>
@@ -2410,7 +2410,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            0.0</span>
 <span class="sd">            &gt;&gt;&gt; inf &gt; 0</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># if temp &gt; melting threshold</span>
         <span class="k">if</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">tt</span><span class="p">:</span>
             <span class="c1"># then either some snow will melt or the entire snow will melt</span>
@@ -2452,7 +2452,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">soil</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">sm_old</span><span class="p">,</span> <span class="n">uz_old</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">,</span> <span class="n">lp</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute soil moisture balance and upper zone recharge.</span>
+<span class="w">        </span><span class="sd">"""Compute soil moisture balance and upper zone recharge.</span>
 
 <span class="sd">        The model checks the amount of water that can infiltrate the</span>
 <span class="sd">        soil from liquid precipitation and snow pack melting. A part</span>
@@ -2496,7 +2496,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; uz_int_1 &gt; uz_old</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># recharge to the upper zone</span>
         <span class="n">r</span> <span class="o">=</span> <span class="p">((</span><span class="n">sm_old</span> <span class="o">/</span> <span class="n">fc</span><span class="p">)</span> <span class="o">**</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">inf</span>
 
@@ -2505,7 +2505,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
         <span class="n">ea</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ep_int</span><span class="p">,</span> <span class="p">(</span><span class="n">sm_old</span> <span class="o">/</span> <span class="p">(</span><span class="n">lp</span> <span class="o">*</span> <span class="n">fc</span><span class="p">))</span> <span class="o">*</span> <span class="n">ep_int</span><span class="p">)</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        capilary flux related calculations</span>
 <span class="sd">        # capilary rise</span>
 <span class="sd">        # cf = c_flux*((fc - sm_old)/fc)</span>
@@ -2519,7 +2519,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            # uz_int_1 = uz_old + r - cf</span>
 
 <span class="sd">        # sm_new = max(sm_old + inf - r + cf - ea, 0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">uz_int_1</span> <span class="o">=</span> <span class="n">uz_old</span> <span class="o">+</span> <span class="n">r</span>
         <span class="n">sm_new</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sm_old</span> <span class="o">+</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">r</span> <span class="o">-</span> <span class="n">ea</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -2528,7 +2528,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="n">lz_old</span><span class="p">,</span> <span class="n">uz_int_1</span><span class="p">,</span> <span class="n">perc</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">uzl</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the runoff response from upper and lower zones.</span>
+<span class="w">        </span><span class="sd">"""Compute the runoff response from upper and lower zones.</span>
 
 <span class="sd">        The response routine transforms the current values of upper</span>
 <span class="sd">        and lower zone storages into discharge. It also controls the</span>
@@ -2577,7 +2577,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; lz_new &gt;= 0</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># upper zone</span>
         <span class="c1"># if perc &gt; Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min</span>
         <span class="n">uz_int_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">uz_int_1</span> <span class="o">-</span> <span class="n">perc</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
@@ -2612,7 +2612,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate transfer function weights for triangular routing.</span>
+<span class="w">        </span><span class="sd">"""Generate transfer function weights for triangular routing.</span>
 
 <span class="sd">        Computes a set of normalized weights based on a triangular</span>
 <span class="sd">        transfer function. The weights grow linearly for the first</span>
@@ -2635,7 +2635,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; len(w)</span>
 <span class="sd">            3</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">:</span>
@@ -2650,7 +2650,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
         <span class="k">return</span> <span class="n">wi</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply triangular transfer function routing to discharge.</span>
+<span class="w">        </span><span class="sd">"""Apply triangular transfer function routing to discharge.</span>
 
 <span class="sd">        Routes the discharge signal through a triangular transfer</span>
 <span class="sd">        function defined by the ``maxbas`` parameter. The transfer</span>
@@ -2676,8 +2676,8 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            &gt;&gt;&gt; q_r = model.routing(q, maxbas=1)</span>
 <span class="sd">            &gt;&gt;&gt; len(q_r) == len(q)</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
         <span class="c1"># Get integer part of maxbas</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
@@ -2685,7 +2685,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
         <span class="c1"># rout the discharge signal</span>
-        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
         <span class="n">q_temp</span> <span class="o">=</span> <span class="n">q</span>
         <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
             <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>
@@ -2696,7 +2696,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the HBV Bergestrom92 model simulation.</span>
+<span class="w">        </span><span class="sd">"""Run the HBV Bergestrom92 model simulation.</span>
 
 <span class="sd">        Executes the HBV model for the number of time steps in the</span>
 <span class="sd">        precipitation input. The model sequentially calls the</span>
@@ -2760,7 +2760,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; st.shape == (n + 1, 5)</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">q_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">q_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -2796,7 +2796,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 
         <span class="c1">## Parse of parameters from input vector to model</span>
         <span class="k">if</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># assert len(p) == 16, &quot;current version of HBV (with snow) takes 18 parameter you have entered &quot;+str(len(p))</span>
+            <span class="c1"># assert len(p) == 16, "current version of HBV (with snow) takes 18 parameter you have entered "+str(len(p))</span>
             <span class="n">tt</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">rfcf</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">sfcf</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -2817,14 +2817,14 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
             <span class="n">perc</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span>
 
         <span class="k">elif</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># assert len(par) &gt;= 11, &quot;current version of HBV (without snow) takes 11 parameter you have entered &quot;+str(len(par))</span>
+            <span class="c1"># assert len(par) &gt;= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(par))</span>
             <span class="n">tt</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># very low but it does not matter as temp is 25 so it is greater than 2</span>
             <span class="n">rfcf</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 1.0 #par[16] # all precipitation becomes rainfall</span>
             <span class="n">sfcf</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># there is no snow</span>
             <span class="c1"># snow function</span>
-            <span class="c1"># cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn&#39;t matter the value of cfmax</span>
-            <span class="c1"># cwh = 0.00001    # as sp is always zero it doesn&#39;t matter all wc will go as inf</span>
-            <span class="c1"># cfr = 0.000001   # as temp &gt; ttm all the time so it doesn&#39;t matter the value of cfr but put it zero</span>
+            <span class="c1"># cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax</span>
+            <span class="c1"># cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf</span>
+            <span class="c1"># cfr = 0.000001   # as temp &gt; ttm all the time so it doesn't matter the value of cfr but put it zero</span>
             <span class="c1"># soil function</span>
             <span class="n">fc</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">beta</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -2905,7 +2905,7 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the HBVBergestrom92 model.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Initialize the HBVBergestrom92 model."""</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3141,7 +3141,7 @@ becomes rainfall:</p>
 <span class="normal">113</span>
 <span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">precipitation</span><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">rfcf</span><span class="p">,</span> <span class="n">sfcf</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Partition precipitation into rainfall and snowfall.</span>
+<span class="w">    </span><span class="sd">"""Partition precipitation into rainfall and snowfall.</span>
 
 <span class="sd">    If the temperature is lower than or equal to the threshold</span>
 <span class="sd">    ``tt``, all precipitation is considered snowfall. If the</span>
@@ -3181,7 +3181,7 @@ becomes rainfall:</p>
 <span class="sd">        10.0</span>
 <span class="sd">        &gt;&gt;&gt; sf</span>
 <span class="sd">        0.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># if temp &lt;= lower temp threshold</span>
     <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;=</span> <span class="n">tt</span><span class="p">:</span>
         <span class="c1"># no rainfall all the precipitation will convert into snowfall</span>
@@ -3495,7 +3495,7 @@ coefficient [-].</p>
 <span class="normal">366</span>
 <span class="normal">367</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="n">lz_old</span><span class="p">,</span> <span class="n">uz_int_1</span><span class="p">,</span> <span class="n">perc</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">uzl</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the runoff response from upper and lower zones.</span>
+<span class="w">    </span><span class="sd">"""Compute the runoff response from upper and lower zones.</span>
 
 <span class="sd">    The response routine transforms the current values of upper</span>
 <span class="sd">    and lower zone storages into discharge. It also controls the</span>
@@ -3544,7 +3544,7 @@ coefficient [-].</p>
 <span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt; lz_new &gt;= 0</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># upper zone</span>
     <span class="c1"># if perc &gt; Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min</span>
     <span class="n">uz_int_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">uz_int_1</span> <span class="o">-</span> <span class="n">perc</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
@@ -3755,7 +3755,7 @@ shape as <code>q</code>.</p>
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply triangular transfer function routing to discharge.</span>
+<span class="w">    </span><span class="sd">"""Apply triangular transfer function routing to discharge.</span>
 
 <span class="sd">    Routes the discharge signal through a triangular transfer</span>
 <span class="sd">    function defined by the ``maxbas`` parameter. The transfer</span>
@@ -3781,8 +3781,8 @@ shape as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; q_r = model.routing(q, maxbas=1)</span>
 <span class="sd">        &gt;&gt;&gt; len(q_r) == len(q)</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
     <span class="c1"># Get integer part of maxbas</span>
     <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
@@ -3790,7 +3790,7 @@ shape as <code>q</code>.</p>
     <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
     <span class="c1"># rout the discharge signal</span>
-    <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
     <span class="n">q_temp</span> <span class="o">=</span> <span class="n">q</span>
     <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
         <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>
@@ -4222,7 +4222,7 @@ Defaults to 0.</p>
 <span class="normal">631</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HBV Bergestrom92 model simulation.</span>
+<span class="w">    </span><span class="sd">"""Run the HBV Bergestrom92 model simulation.</span>
 
 <span class="sd">    Executes the HBV model for the number of time steps in the</span>
 <span class="sd">    precipitation input. The model sequentially calls the</span>
@@ -4286,7 +4286,7 @@ Defaults to 0.</p>
 <span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt; st.shape == (n + 1, 5)</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">q_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">q_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">prec</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -4322,7 +4322,7 @@ Defaults to 0.</p>
 
     <span class="c1">## Parse of parameters from input vector to model</span>
     <span class="k">if</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="c1"># assert len(p) == 16, &quot;current version of HBV (with snow) takes 18 parameter you have entered &quot;+str(len(p))</span>
+        <span class="c1"># assert len(p) == 16, "current version of HBV (with snow) takes 18 parameter you have entered "+str(len(p))</span>
         <span class="n">tt</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">rfcf</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">sfcf</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -4343,14 +4343,14 @@ Defaults to 0.</p>
         <span class="n">perc</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span>
 
     <span class="k">elif</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># assert len(par) &gt;= 11, &quot;current version of HBV (without snow) takes 11 parameter you have entered &quot;+str(len(par))</span>
+        <span class="c1"># assert len(par) &gt;= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(par))</span>
         <span class="n">tt</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># very low but it does not matter as temp is 25 so it is greater than 2</span>
         <span class="n">rfcf</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 1.0 #par[16] # all precipitation becomes rainfall</span>
         <span class="n">sfcf</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># there is no snow</span>
         <span class="c1"># snow function</span>
-        <span class="c1"># cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn&#39;t matter the value of cfmax</span>
-        <span class="c1"># cwh = 0.00001    # as sp is always zero it doesn&#39;t matter all wc will go as inf</span>
-        <span class="c1"># cfr = 0.000001   # as temp &gt; ttm all the time so it doesn&#39;t matter the value of cfr but put it zero</span>
+        <span class="c1"># cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax</span>
+        <span class="c1"># cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf</span>
+        <span class="c1"># cfr = 0.000001   # as temp &gt; ttm all the time so it doesn't matter the value of cfr but put it zero</span>
         <span class="c1"># soil function</span>
         <span class="n">fc</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -4740,7 +4740,7 @@ as a fraction [-].</p>
 <span class="normal">206</span>
 <span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">snow</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">wc_old</span><span class="p">,</span> <span class="n">sp_old</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">cfmax</span><span class="p">,</span> <span class="n">cfr</span><span class="p">,</span> <span class="n">cwh</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute snow accumulation, melt, and infiltration.</span>
+<span class="w">    </span><span class="sd">"""Compute snow accumulation, melt, and infiltration.</span>
 
 <span class="sd">    The snow pack consists of two states: water content (``wc``)</span>
 <span class="sd">    and snow pack (``sp``). The water content corresponds to the</span>
@@ -4791,7 +4791,7 @@ as a fraction [-].</p>
 <span class="sd">        0.0</span>
 <span class="sd">        &gt;&gt;&gt; inf &gt; 0</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># if temp &gt; melting threshold</span>
     <span class="k">if</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">tt</span><span class="p">:</span>
         <span class="c1"># then either some snow will melt or the entire snow will melt</span>
@@ -5163,7 +5163,7 @@ capacity [-].</p>
 <span class="normal">282</span>
 <span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">soil</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">sm_old</span><span class="p">,</span> <span class="n">uz_old</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">,</span> <span class="n">lp</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute soil moisture balance and upper zone recharge.</span>
+<span class="w">    </span><span class="sd">"""Compute soil moisture balance and upper zone recharge.</span>
 
 <span class="sd">    The model checks the amount of water that can infiltrate the</span>
 <span class="sd">    soil from liquid precipitation and snow pack melting. A part</span>
@@ -5207,7 +5207,7 @@ capacity [-].</p>
 <span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt; uz_int_1 &gt; uz_old</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># recharge to the upper zone</span>
     <span class="n">r</span> <span class="o">=</span> <span class="p">((</span><span class="n">sm_old</span> <span class="o">/</span> <span class="n">fc</span><span class="p">)</span> <span class="o">**</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">inf</span>
 
@@ -5216,7 +5216,7 @@ capacity [-].</p>
 
     <span class="n">ea</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ep_int</span><span class="p">,</span> <span class="p">(</span><span class="n">sm_old</span> <span class="o">/</span> <span class="p">(</span><span class="n">lp</span> <span class="o">*</span> <span class="n">fc</span><span class="p">))</span> <span class="o">*</span> <span class="n">ep_int</span><span class="p">)</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    capilary flux related calculations</span>
 <span class="sd">    # capilary rise</span>
 <span class="sd">    # cf = c_flux*((fc - sm_old)/fc)</span>
@@ -5230,7 +5230,7 @@ capacity [-].</p>
 <span class="sd">        # uz_int_1 = uz_old + r - cf</span>
 
 <span class="sd">    # sm_new = max(sm_old + inf - r + cf - ea, 0)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">uz_int_1</span> <span class="o">=</span> <span class="n">uz_old</span> <span class="o">+</span> <span class="n">r</span>
     <span class="n">sm_new</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sm_old</span> <span class="o">+</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">r</span> <span class="o">-</span> <span class="n">ea</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -5377,7 +5377,7 @@ function, summing to 1.0.</p>
 <span class="normal">405</span>
 <span class="normal">406</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate transfer function weights for triangular routing.</span>
+<span class="w">    </span><span class="sd">"""Generate transfer function weights for triangular routing.</span>
 
 <span class="sd">    Computes a set of normalized weights based on a triangular</span>
 <span class="sd">    transfer function. The weights grow linearly for the first</span>
@@ -5400,7 +5400,7 @@ function, summing to 1.0.</p>
 <span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt; len(w)</span>
 <span class="sd">        3</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">:</span>

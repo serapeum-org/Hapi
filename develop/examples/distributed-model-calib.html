@@ -1426,12 +1426,12 @@
 </ul>
 <p><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s1">&#39;Lumped&#39;</span><span class="p">,</span>
-                 <span class="n">TemporalResolution</span> <span class="o">=</span> <span class="s2">&quot;Daily&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s1">'Lumped'</span><span class="p">,</span>
+                 <span class="n">TemporalResolution</span> <span class="o">=</span> <span class="s2">"Daily"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        =============================================================================</span>
-<span class="sd">            Catchment(name, StartDate, EndDate, fmt=&quot;%Y-%m-%d&quot;, SpatialResolution = &#39;Lumped&#39;,</span>
-<span class="sd">                             TemporalResolution = &quot;Daily&quot;)</span>
+<span class="sd">            Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',</span>
+<span class="sd">                             TemporalResolution = "Daily")</span>
 <span class="sd">        =============================================================================</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1442,40 +1442,38 @@
 <span class="sd">        EndDate : [str]</span>
 <span class="sd">            end date.</span>
 <span class="sd">        fmt : [str], optional</span>
-<span class="sd">            format of the given date. The default is &quot;%Y-%m-%d&quot;.</span>
+<span class="sd">            format of the given date. The default is "%Y-%m-%d".</span>
 <span class="sd">        SpatialResolution : TYPE, optional</span>
-<span class="sd">            Lumped or &#39;Distributed&#39; . The default is &#39;Lumped&#39;.</span>
+<span class="sd">            Lumped or 'Distributed' . The default is 'Lumped'.</span>
 <span class="sd">        TemporalResolution : TYPE, optional</span>
-<span class="sd">            &quot;Hourly&quot; or &quot;Daily&quot;. The default is &quot;Daily&quot;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">            "Hourly" or "Daily". The default is "Daily".</span>
+<span class="sd">    """</span>
 </code></pre></div>
 - To instantiate the object you need to provide the <code>name</code>, <code>statedate</code>, <code>enddate</code>, and the <code>SpatialResolution</code></p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowNetwork</span><span class="p">,</span> <span class="n">MeteoInputs</span>
 
-<span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
-<span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
+<span class="n">start</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
+<span class="n">end</span> <span class="o">=</span> <span class="s2">"2011-12-31"</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">"Coello"</span>
 
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">&quot;Distributed&quot;</span><span class="p">)</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">"Distributed"</span><span class="p">)</span>
 </code></pre></div>
 <h1 id="read-meteorological-inputs"><a class="toclink" href="#read-meteorological-inputs">Read Meteorological Inputs</a><a class="headerlink" href="#read-meteorological-inputs" title="Permanent link">#</a></h1>
 <ul>
 <li>First define the directory where the data exist</li>
 </ul>
-<p><div class="highlight"><pre><span></span><code><span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/distributed/coello&quot;</span>
-<span class="n">PrecPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/prec&quot;</span>
-<span class="n">Evap_Path</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/evap&quot;</span>
-<span class="n">TempPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/temp&quot;</span>
-<span class="n">FlowAccPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/GIS/acc4000.tif&quot;</span>
-<span class="n">FlowDPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/GIS/fd4000.tif&quot;</span>
-<span class="n">ParPathRun</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/Parameter set-Avg/&quot;</span>
+<p><div class="highlight"><pre><span></span><code><span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">"/data/distributed/coello"</span>
+<span class="n">PrecPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/prec"</span>
+<span class="n">Evap_Path</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/evap"</span>
+<span class="n">TempPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/temp"</span>
+<span class="n">FlowAccPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/GIS/acc4000.tif"</span>
+<span class="n">FlowDPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/GIS/fd4000.tif"</span>
+<span class="n">ParPathRun</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/Parameter set-Avg/"</span>
 </code></pre></div>
 - Then use the each method in the object to read the coresponding data</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_rainfall</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_temperature</span><span class="p">(</span><span class="n">TempPath</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_et</span><span class="p">(</span><span class="n">Evap_Path</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_flow_acc</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_flow_dir</span><span class="p">(</span><span class="n">FlowDPath</span><span class="p">)</span>
+<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">,</span> <span class="n">TempPath</span><span class="p">,</span> <span class="n">Evap_Path</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">flow_network</span> <span class="o">=</span> <span class="n">FlowNetwork</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">,</span> <span class="n">FlowDPath</span><span class="p">)</span>
 </code></pre></div>
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not</p>
 <div class="highlight"><pre><span></span><code><span class="n">Snow</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1497,9 +1495,9 @@
 <ul>
 <li>to check the performance of the model we need to read the gauge hydrographs</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="s2">&quot;Hapi/Data/00inputs/Discharge/stations/gauges.csv&quot;</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">GaugesPath</span> <span class="o">=</span> <span class="s2">&quot;Hapi/Data/00inputs/Discharge/stations/&quot;</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="s2">"Hapi/Data/00inputs/Discharge/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="n">GaugesPath</span> <span class="o">=</span> <span class="s2">"Hapi/Data/00inputs/Discharge/stations/"</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="3-run-object"><a class="toclink" href="#3-run-object">3-Run Object</a><a class="headerlink" href="#3-run-object" title="Permanent link">#</a></h2>
 <ul>
@@ -1510,7 +1508,7 @@
 <span class="n">Run</span><span class="o">.</span><span class="n">RunHapi</span><span class="p">(</span><span class="n">Coello</span><span class="p">)</span>
 </code></pre></div>
 - the result of the simulation will be stored as attributes in the Catchment object as follow</p>
-<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="sd">"""</span>
 <span class="sd">Outputs:</span>
 <span class="sd">    1-statevariables: [numpy attribute]</span>
 <span class="sd">        4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]</span>
@@ -1526,26 +1524,26 @@
 <span class="sd">        routed at each time step</span>
 <span class="sd">    6-qlz_translated: [numpy attribute]</span>
 <span class="sd">        3D array of the lower zone discharge translated at each time step</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 </code></pre></div>
 <h2 id="4-extract-hydrographs"><a class="toclink" href="#4-extract-hydrographs">4-Extract Hydrographs</a><a class="headerlink" href="#4-extract-hydrographs" title="Permanent link">#</a></h2>
 <ul>
 <li>The final step is to extract the simulated Hydrograph from the cells at the location of the gauges to compare</li>
 <li>The <code>extract_discharge</code> method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the <code>FlowAcc</code> raster</li>
 </ul>
-<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">extract_discharge</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[</span><span class="s1">&#39;area ratio&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<p><div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">extract_discharge</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[</span><span class="s1">'area ratio'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
-    <span class="n">gaugeid</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------------------------------&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gauge - &quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">gaugeid</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMSE= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NSE= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;NSE&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NSEhf= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;NSEhf&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;KGE= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;KGE&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WB= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;WB&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pearson CC= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Pearson-CC&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;R2 = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">Metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="n">gaugeid</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="s1">'id'</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"----------------------------------"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Gauge - "</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">gaugeid</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"RMSE= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'RMSE'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"NSE= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'NSE'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"NSEhf= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'NSEhf'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"KGE= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'KGE'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"WB= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'WB'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Pearson CC= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'Pearson-CC'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"R2 = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'R2'</span><span class="p">,</span><span class="n">gaugeid</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
 </code></pre></div>
 - The <code>extract_discharge</code> will print the performance metics</p>
 <h2 id="5-visualization"><a class="toclink" href="#5-visualization">5-Visualization</a><a class="headerlink" href="#5-visualization" title="Permanent link">#</a></h2>
@@ -1554,8 +1552,8 @@
 <li>Call the <code>plot_hydrograph</code> method and provide the period you want to visualize with the order of the gauge</li>
 </ul>
 <p><div class="highlight"><pre><span></span><code><span class="n">gaugei</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">plotstart</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
-<span class="n">plotend</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
+<span class="n">plotstart</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
+<span class="n">plotend</span> <span class="o">=</span> <span class="s2">"2011-12-31"</span>
 
 <span class="n">Coello</span><span class="o">.</span><span class="n">plot_hydrograph</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">gaugei</span><span class="p">)</span>
 </code></pre></div>
@@ -1565,11 +1563,15 @@
 <li>The best way to visualize a time series of distributed data is an animation. The <code>Catchment</code> object
   has a <code>plot_distributed_results</code> method which animates any of the model results.</li>
 </ul>
-<p>The keyword arguments are forwarded to <code>cleopatra.array_glyph.ArrayGlyph.animate</code>; see its
-documentation for the full list. The commonly used ones are <code>figsize</code>, <code>interval</code>, <code>cmap</code>,
-<code>ticks_spacing</code>, <code>color_scale</code> (<code>"linear"</code>, <code>"power"</code>, <code>"sym-lognorm"</code>, <code>"boundary-norm"</code>,
-<code>"midpoint"</code>), <code>display_cell_value</code>, <code>background_color_threshold</code>, <code>text_loc</code>, <code>point_color</code>,
-<code>pid_color</code> and <code>pid_size</code>.</p>
+<p>The keyword arguments are forwarded to
+<code>cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate</code>; see its documentation for the full list.
+The plain ones are <code>figsize</code>, <code>interval</code>, <code>cmap</code>, <code>vmin</code>/<code>vmax</code>, <code>title</code> and <code>ticks_spacing</code>.
+cleopatra 0.30 moved the styling keywords onto typed group objects, so the colour scale is
+<code>color=ColorScaling.linear()</code> (also <code>.power(gamma=...)</code>, <code>.sym_log(...)</code>, <code>.midpoint(at=...)</code>,
+<code>.boundary(bounds=...)</code>), the cell-value labels are
+<code>cells=CellValues(show=True, size=..., background_threshold=...)</code>, and the frame time-stamp is
+<code>frame_label=FrameLabel(location=[...], color=...)</code>. The gauge markers are built by Hapi itself
+when <code>gauges=True</code>.</p>
 <p><code>option</code> selects the variable to animate:</p>
 <table>
 <thead>
@@ -1619,8 +1621,12 @@ documentation for the full list. The commonly used ones are <code>figsize</code>
 </tr>
 </tbody>
 </table>
-<p><div class="highlight"><pre><span></span><code><span class="n">plotstart</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
-<span class="n">plotend</span> <span class="o">=</span> <span class="s2">&quot;2009-04-20&quot;</span>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.glyphs.gridded.array_glyph</span><span class="w"> </span><span class="kn">import</span> <span class="n">FrameLabel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.styling.params</span><span class="w"> </span><span class="kn">import</span> <span class="n">CellValues</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.styling.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColorScaling</span>
+
+<span class="n">plotstart</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
+<span class="n">plotend</span> <span class="o">=</span> <span class="s2">"2009-04-20"</span>
 
 <span class="n">anim</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">plot_distributed_results</span><span class="p">(</span>
     <span class="n">plotstart</span><span class="p">,</span>
@@ -1630,13 +1636,10 @@ documentation for the full list. The commonly used ones are <code>figsize</code>
     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
     <span class="n">ticks_spacing</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;inferno&quot;</span><span class="p">,</span>
-    <span class="n">color_scale</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
-    <span class="n">display_cell_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">text_loc</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
-    <span class="n">point_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
-    <span class="n">pid_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
-    <span class="n">pid_size</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">"inferno"</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">ColorScaling</span><span class="o">.</span><span class="n">linear</span><span class="p">(),</span>
+    <span class="n">cells</span><span class="o">=</span><span class="n">CellValues</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">frame_label</span><span class="o">=</span><span class="n">FrameLabel</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]),</span>
 <span class="p">)</span>
 </code></pre></div>
 <img alt="Animation" src="../img/anim.gif" /></p>
@@ -1645,22 +1648,22 @@ documentation for the full list. The commonly used ones are <code>figsize</code>
   Pillow; <code>mov</code>, <code>avi</code> and <code>mp4</code> need <a href="https://ffmpeg.org/">FFmpeg</a> installed and available on your
   system.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">&quot;results/anim.gif&quot;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">"results/anim.gif"</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="7-save-the-result-into-rasters"><a class="toclink" href="#7-save-the-result-into-rasters">7-Save the result into rasters</a><a class="headerlink" href="#7-save-the-result-into-rasters" title="Permanent link">#</a></h2>
 <ul>
 <li>To save the results as rasters provide the period and the path</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
-<span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2010-04-20&quot;</span>
-<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;Qtot_&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="n">start</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
+<span class="n">end</span> <span class="o">=</span> <span class="s2">"2010-04-20"</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s2">"Qtot_"</span>
 
 <span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
     <span class="n">FlowAccPath</span><span class="p">,</span>
     <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
     <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;results/&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">"results/"</span><span class="p">,</span>
     <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>

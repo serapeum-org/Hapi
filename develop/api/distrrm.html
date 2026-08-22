@@ -2150,135 +2150,186 @@ river network.</p>
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
-<span class="normal">538</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distributed rainfall-runoff model runner and spatial router.</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Distributed rainfall-runoff model runner and spatial router.</span>
 
 <span class="sd">    Runs a lumped hydrological model separately for each grid cell</span>
 <span class="sd">    and routes the resulting discharge between cells following the</span>
 <span class="sd">    river network.</span>
 
 <span class="sd">    The class is stateless; all methods are static and operate on a</span>
-<span class="sd">    ``Model`` object that carries the required arrays and parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    `Model` object that carries the required arrays and parameters.</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distributed constructor.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Distributed constructor."""</span>
         <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped_model</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run lumped rainfall-runoff model for every grid cell.</span>
+<span class="w">        </span><span class="sd">"""Run lumped rainfall-runoff model for every grid cell.</span>
 
 <span class="sd">        Executes the lumped conceptual model (e.g., HBV) independently</span>
 <span class="sd">        for each non-NaN cell in the catchment grid and converts the</span>
 <span class="sd">        resulting discharge from mm/time-step to m3/s.</span>
 
 <span class="sd">        After execution the following attributes are set on *Model*:</span>
-<span class="sd">        ``state_variables``, ``quz``, and ``qlz``.</span>
+<span class="sd">        `state_variables`, `quz`, and `qlz`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">                attributes:</span>
 
-<span class="sd">                - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">                - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">                - ``TS`` (int): Number of time steps.</span>
-<span class="sd">                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">                - `rows` (int): Number of grid rows.</span>
+<span class="sd">                - `cols` (int): Number of grid columns.</span>
+<span class="sd">                - `TS` (int): Number of time steps.</span>
+<span class="sd">                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">                  array; NaN marks cells outside the domain.</span>
-<span class="sd">                - ``LumpedModel``: Lumped model instance with a</span>
-<span class="sd">                  ``simulate`` method.</span>
-<span class="sd">                - ``Prec`` (numpy.ndarray): 3-D precipitation array</span>
-<span class="sd">                  ``(rows, cols, TS)``.</span>
-<span class="sd">                - ``Temp`` (numpy.ndarray): 3-D temperature array.</span>
-<span class="sd">                - ``ET`` (numpy.ndarray): 3-D evapotranspiration array.</span>
-<span class="sd">                - ``ll_temp`` (numpy.ndarray): 3-D long-term average</span>
+<span class="sd">                - `LumpedModel`: Lumped model instance with a</span>
+<span class="sd">                  `simulate` method.</span>
+<span class="sd">                - `Prec` (numpy.ndarray): 3-D precipitation array</span>
+<span class="sd">                  `(rows, cols, TS)`.</span>
+<span class="sd">                - `Temp` (numpy.ndarray): 3-D temperature array.</span>
+<span class="sd">                - `ET` (numpy.ndarray): 3-D evapotranspiration array.</span>
+<span class="sd">                - `ll_temp` (numpy.ndarray): 3-D long-term average</span>
 <span class="sd">                  temperature array.</span>
-<span class="sd">                - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
-<span class="sd">                  ``(rows, cols, n_params)``.</span>
-<span class="sd">                - ``InitialCond`` (list): Initial state variable values</span>
-<span class="sd">                  ``[sp, sm, uz, lz, wc]``.</span>
-<span class="sd">                - ``q_init`` (float): Initial discharge in m3/s.</span>
-<span class="sd">                - ``Snow`` (int): Snow module flag (0 or 1).</span>
-<span class="sd">                - ``CatArea`` (float): Catchment area in km2.</span>
-<span class="sd">                - ``px_tot_area`` (float): Total pixel area in km2.</span>
-<span class="sd">                - ``px_area`` (float): Single pixel area in km2.</span>
-<span class="sd">                - ``conversion_factor`` (float): Unit conversion</span>
-<span class="sd">                  factor (``tfac * 3.6``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                - `Parameters` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">                  `(rows, cols, n_params)`.</span>
+<span class="sd">                - `InitialCond` (list): Initial state variable values</span>
+<span class="sd">                  `[sp, sm, uz, lz, wc]`.</span>
+<span class="sd">                - `q_init` (float): Initial discharge in m3/s.</span>
+<span class="sd">                - `Snow` (int): Snow module flag (0 or 1).</span>
+<span class="sd">                - `CatArea` (float): Catchment area in km2.</span>
+<span class="sd">                - `px_tot_area` (float): Total pixel area in km2.</span>
+<span class="sd">                - `px_area` (float): Single pixel area in km2.</span>
+<span class="sd">                - `conversion_factor` (float): Unit conversion</span>
+<span class="sd">                  factor (`tfac * 3.6`).</span>
+<span class="sd">        """</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+            <span class="p">[</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">,</span>
+                <span class="mi">5</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
                 <span class="c1"># only for cells in the domain</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
                     <span class="p">(</span>
                         <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
                         <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
                         <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span>
-                    <span class="p">)</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">LumpedModel</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
-                        <span class="n">prec</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                        <span class="n">temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                        <span class="n">et</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                        <span class="n">ll_temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">ll_temp</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                        <span class="n">par</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                        <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">InitialCond</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">lumped_model</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                        <span class="n">prec</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">precipitation</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                        <span class="n">temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">temperature</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                        <span class="n">et</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                        <span class="n">ll_temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">ll_temp</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                        <span class="n">par</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                        <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">initial_cond</span><span class="p">,</span>
                         <span class="n">q_init</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">q_init</span><span class="p">,</span>
-                        <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Snow</span><span class="p">,</span>
+                        <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span>
                     <span class="p">)</span>
 
-        <span class="n">area_coef</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">CatArea</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">px_tot_area</span>
+        <span class="n">area_coef</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">px_tot_area</span>
         <span class="c1"># convert quz from mm/time step to m3/sec</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
         <span class="p">)</span>  <span class="c1"># Timef*3.6</span>
         <span class="c1"># convert Qlz to m3/sec</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
         <span class="p">)</span>  <span class="c1"># Timef*3.6</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">SpatialRouting</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route discharge between cells following the flow direction.</span>
+<span class="w">        </span><span class="sd">"""Route discharge between cells following the flow direction.</span>
 
-<span class="sd">        Accumulates and routes upper-zone discharge (``quz``) using</span>
+<span class="sd">        Accumulates and routes upper-zone discharge (`quz`) using</span>
 <span class="sd">        Muskingum routing from upstream to downstream cells according</span>
-<span class="sd">        to the flow direction raster.  Lower-zone discharge (``qlz``)</span>
+<span class="sd">        to the flow direction raster.  Lower-zone discharge (`qlz`)</span>
 <span class="sd">        is translated (accumulated without attenuation) so that total</span>
 <span class="sd">        discharge can be computed at any internal point.</span>
 
 <span class="sd">        After execution the following attributes are set on *Model*:</span>
-<span class="sd">        ``quz_routed``, ``qlz_translated``, and ``Qtot``.</span>
+<span class="sd">        `quz_routed`, `qlz_translated`, and `Qtot`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">                attributes:</span>
 
-<span class="sd">                - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">                - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">                - ``TS`` (int): Number of time steps.</span>
-<span class="sd">                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">                - `rows` (int): Number of grid rows.</span>
+<span class="sd">                - `cols` (int): Number of grid columns.</span>
+<span class="sd">                - `TS` (int): Number of time steps.</span>
+<span class="sd">                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">                  array; NaN marks cells outside the domain.</span>
-<span class="sd">                - ``quz`` (numpy.ndarray): 3-D upper-zone discharge</span>
-<span class="sd">                  array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">                - ``qlz`` (numpy.ndarray): 3-D lower-zone discharge</span>
-<span class="sd">                  array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">                - ``acc_val`` (list): Sorted unique flow accumulation</span>
+<span class="sd">                - `quz` (numpy.ndarray): 3-D upper-zone discharge</span>
+<span class="sd">                  array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">                - `qlz` (numpy.ndarray): 3-D lower-zone discharge</span>
+<span class="sd">                  array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">                - `acc_val` (list): Sorted unique flow accumulation</span>
 <span class="sd">                  values.</span>
-<span class="sd">                - ``FDT`` (dict): Flow direction table mapping</span>
-<span class="sd">                  ``&quot;row,col&quot;`` keys to lists of upstream cell</span>
+<span class="sd">                - `FDT` (dict): Flow direction table mapping</span>
+<span class="sd">                  `"row,col"` keys to lists of upstream cell</span>
 <span class="sd">                  index pairs.</span>
-<span class="sd">                - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">                - `Parameters` (numpy.ndarray): 3-D parameter array</span>
 <span class="sd">                  where indices 10 and 11 are Muskingum K and X.</span>
-<span class="sd">                - ``dt`` (float): Time-step factor (``tfac``).</span>
-<span class="sd">                - ``routing_method`` (str): Routing method name (e.g.,</span>
-<span class="sd">                  ``&quot;Muskingum&quot;``).</span>
-<span class="sd">                - ``BankfullDepth`` (numpy.ndarray): 2-D bankfull</span>
+<span class="sd">                - `dt` (float): Time-step factor (`tfac`).</span>
+<span class="sd">                - `routing_method` (str): Routing method name (e.g.,</span>
+<span class="sd">                  `"Muskingum"`).</span>
+<span class="sd">                - `bankfull_depth` (numpy.ndarray): 2-D bankfull</span>
 <span class="sd">                  depth array used for non-Muskingum methods.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">#    # routing lake discharge with DS cell k &amp; x and adding to cell Q</span>
         <span class="c1">#    q_lake=Routing.muskingum_v(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])</span>
         <span class="c1">#    q_lake=np.append(q_lake,q_lake[-1])</span>
@@ -2296,47 +2347,56 @@ river network.</p>
         <span class="n">Model</span><span class="o">.</span><span class="n">qlz_translated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">)</span>
         <span class="c1"># Model.Qtot = np.zeros_like(Model.quz)</span>
         <span class="c1"># for all cells with 0 flow acc put the quz</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span> <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+                    <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="p">):</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span>
 
         <span class="c1"># remaining cells</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">acc_val</span><span class="p">)):</span>
+        <span class="c1"># Read once: this is the routing inner loop, and `acc_val` scans the whole grid.</span>
+        <span class="n">acc_val</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">acc_val</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc_val</span><span class="p">)):</span>
             <span class="c1"># TODO parallelize</span>
             <span class="c1"># all cells with the same acc_val can run at the same time</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
-                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
                     <span class="c1"># check from total flow accumulation</span>
                     <span class="k">if</span> <span class="p">(</span>
-                        <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
-                        <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="n">Model</span><span class="o">.</span><span class="n">acc_val</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                        <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+                        <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="n">acc_val</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                     <span class="p">):</span>
                         <span class="k">if</span> <span class="p">(</span>
-                            <span class="n">Model</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">!=</span> <span class="s2">&quot;Muskingum&quot;</span>
-                            <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                            <span class="n">Model</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">!=</span> <span class="s2">"Muskingum"</span>
+                            <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
                         <span class="p">):</span>
                             <span class="k">continue</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="c1"># for UZ</span>
-                            <span class="n">q_uzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)</span>
+                            <span class="n">q_uzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)</span>
                             <span class="c1"># for lz</span>
-                            <span class="n">qlzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)</span>
+                            <span class="n">qlzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)</span>
                             <span class="c1"># iterate to route uz and translate lz</span>
                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
-                                <span class="nb">len</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
+                                <span class="nb">len</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
                             <span class="p">):</span>  <span class="c1"># Model.acc_val[j]</span>
                                 <span class="c1"># bring the indexes of the us cell</span>
-                                <span class="n">x_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                                <span class="n">y_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                                <span class="n">x_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span>
+                                    <span class="n">i</span>
+                                <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="n">y_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span>
+                                    <span class="n">i</span>
+                                <span class="p">][</span><span class="mi">1</span><span class="p">]</span>
                                 <span class="c1"># sum the Q of the US cells (already routed for its cell)</span>
                                 <span class="c1"># route first with there own k &amp; xthen sum</span>
                                 <span class="n">q_uzi</span> <span class="o">=</span> <span class="n">q_uzi</span> <span class="o">+</span> <span class="n">routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">(</span>
                                     <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="p">:],</span>
                                     <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-                                    <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
-                                    <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                                    <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+                                    <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
                                     <span class="n">Model</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                                 <span class="p">)</span>
 
@@ -2349,80 +2409,82 @@ river network.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">DistMaxbas1</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route discharge to the outlet using a triangular function.</span>
+<span class="w">        </span><span class="sd">"""Route discharge to the outlet using a triangular function.</span>
 
 <span class="sd">        Applies triangular (MAXBAS) routing to the upper-zone</span>
 <span class="sd">        discharge of each cell independently.  The MAXBAS parameter</span>
 <span class="sd">        is read from the last column of the spatially distributed</span>
 <span class="sd">        parameter array.</span>
 
-<span class="sd">        The ``Model.quz`` array is modified in place.</span>
+<span class="sd">        The `Model.quz` array is modified in place.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">                attributes:</span>
 
-<span class="sd">                - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">                - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">                - `rows` (int): Number of grid rows.</span>
+<span class="sd">                - `cols` (int): Number of grid columns.</span>
+<span class="sd">                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">                  array; NaN marks cells outside the domain.</span>
-<span class="sd">                - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">                - `Parameters` (numpy.ndarray): 3-D parameter array</span>
 <span class="sd">                  where the last index holds the MAXBAS value.</span>
-<span class="sd">                - ``quz`` (numpy.ndarray): 3-D upper-zone discharge</span>
-<span class="sd">                  array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">Maxbas</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="sd">                - `quz` (numpy.ndarray): 3-D upper-zone discharge</span>
+<span class="sd">                  array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">        """</span>
+        <span class="n">Maxbas</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">routing</span><span class="o">.</span><span class="n">triangular_routing_1</span><span class="p">(</span>
                         <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span> <span class="n">Maxbas</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
                     <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">DistMaxbas2</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route discharge using a triangular function scaled by flow path length.</span>
+<span class="w">        </span><span class="sd">"""Route discharge using a triangular function scaled by flow path length.</span>
 
-<span class="sd">        Similar to ``DistMaxbas1``, but the MAXBAS parameter for each</span>
+<span class="sd">        Similar to `DistMaxbas1`, but the MAXBAS parameter for each</span>
 <span class="sd">        cell is rescaled proportionally to its flow path length so that</span>
 <span class="sd">        cells farther from the outlet receive more attenuation.</span>
 
-<span class="sd">        The ``Model.quz`` array is modified in place.</span>
+<span class="sd">        The `Model.quz` array is modified in place.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">                attributes:</span>
 
-<span class="sd">                - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">                - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">                - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">                - `rows` (int): Number of grid rows.</span>
+<span class="sd">                - `cols` (int): Number of grid columns.</span>
+<span class="sd">                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">                  array; NaN marks cells outside the domain.</span>
-<span class="sd">                - ``fpl_arr`` (numpy.ndarray): 2-D flow path length</span>
+<span class="sd">                - `flow_path_length_arr` (numpy.ndarray): 2-D flow path length</span>
 <span class="sd">                  array.</span>
-<span class="sd">                - ``NoDataValue`` (float): No-data value used in the</span>
+<span class="sd">                - `no_data_value` (float): No-data value used in the</span>
 <span class="sd">                  flow path length raster.</span>
-<span class="sd">                - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">                - `Parameters` (numpy.ndarray): 3-D parameter array</span>
 <span class="sd">                  where the last index holds the maximum MAXBAS value.</span>
-<span class="sd">                - ``quz`` (numpy.ndarray): 3-D upper-zone discharge</span>
-<span class="sd">                  array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">MAXBAS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="c1"># replace novalue cells by nan</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span> <span class="o">==</span> <span class="n">Model</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="sd">                - `quz` (numpy.ndarray): 3-D upper-zone discharge</span>
+<span class="sd">                  array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">        """</span>
+        <span class="n">MAXBAS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># `read_flow_path_length` already masks this raster's own no-data cells to NaN via</span>
+        <span class="c1"># pyramids, so no sentinel comparison is needed here -- and the one that used to sit</span>
+        <span class="c1"># here compared against the *accumulation* raster's sentinel, which is a different</span>
+        <span class="c1"># raster and need not share a no-data value.</span>
 
-        <span class="n">MaxFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">)</span>
-        <span class="n">MinFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">)</span>
+        <span class="n">MaxFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">)</span>
+        <span class="n">MinFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">)</span>
         <span class="c1"># resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)</span>
         <span class="n">resize_fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">g</span><span class="p">:</span> <span class="p">(</span>
             <span class="p">(((</span><span class="n">g</span> <span class="o">-</span> <span class="n">MinFPL</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">MaxFPL</span> <span class="o">-</span> <span class="n">MinFPL</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="n">MAXBAS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="p">)</span>
 
-        <span class="n">NormalizedFPL</span> <span class="o">=</span> <span class="n">resize_fun</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">)</span>
+        <span class="n">NormalizedFPL</span> <span class="o">=</span> <span class="n">resize_fun</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">routing</span><span class="o">.</span><span class="n">triangular_routing_2</span><span class="p">(</span>
                         <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span> <span class="n">NormalizedFPL</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
                     <span class="p">)</span>
@@ -2444,7 +2506,7 @@ river network.</p>
         <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run distributed HBV model with lake routing (legacy).</span>
+<span class="w">        </span><span class="sd">"""Run distributed HBV model with lake routing (legacy).</span>
 
 <span class="sd">        Executes the HBV conceptual model for every grid cell, routes</span>
 <span class="sd">        lake discharge into the downstream cell using Muskingum</span>
@@ -2453,33 +2515,33 @@ river network.</p>
 <span class="sd">        cells and converted to m3/s.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            conceptual_model (BaseConceptualModel): Lumped model object with a ``simulate``</span>
+<span class="sd">            conceptual_model (BaseConceptualModel): Lumped model object with a `simulate`</span>
 <span class="sd">                method.</span>
-<span class="sd">            lakecell (list[int]): Two-element list ``[row, col]``</span>
+<span class="sd">            lakecell (list[int]): Two-element list `[row, col]`</span>
 <span class="sd">                giving the grid indices of the lake cell.</span>
 <span class="sd">            q_lake (numpy.ndarray): 1-D array of lake discharge</span>
 <span class="sd">                time series in m3/s.</span>
-<span class="sd">            DEM (Dataset): pyramids ``Dataset`` of the catchment DEM.</span>
+<span class="sd">            DEM (Dataset): pyramids `Dataset` of the catchment DEM.</span>
 <span class="sd">            flow_acc (dict): Flow direction table mapping</span>
-<span class="sd">                ``&quot;row,col&quot;`` keys to lists of upstream cell index</span>
+<span class="sd">                `"row,col"` keys to lists of upstream cell index</span>
 <span class="sd">                pairs.</span>
 <span class="sd">            flow_acc_plan (numpy.ndarray): 2-D array of flow</span>
 <span class="sd">                accumulation values; NaN marks no-data cells.</span>
 <span class="sd">            sp_prec (numpy.ndarray): 3-D precipitation array</span>
-<span class="sd">                ``(rows, cols, time_steps)``.</span>
+<span class="sd">                `(rows, cols, time_steps)`.</span>
 <span class="sd">            sp_et (numpy.ndarray): 3-D evapotranspiration array.</span>
 <span class="sd">            sp_temp (numpy.ndarray): 3-D temperature array.</span>
 <span class="sd">            sp_pars (numpy.ndarray): 3-D parameter array</span>
-<span class="sd">                ``(rows, cols, n_params)``.  Indices 5, 6, 7 are</span>
+<span class="sd">                `(rows, cols, n_params)`.  Indices 5, 6, 7 are</span>
 <span class="sd">                K1, K, and alpha; indices 10, 11 are Muskingum</span>
 <span class="sd">                K and X.</span>
 <span class="sd">            p2 (list): Unoptimized parameters.</span>
 
-<span class="sd">                - ``p2[0]``: tfac -- 1 for hourly, 0.25 for 15 min,</span>
+<span class="sd">                - `p2[0]`: tfac -- 1 for hourly, 0.25 for 15 min,</span>
 <span class="sd">                  24 for daily.</span>
-<span class="sd">                - ``p2[1]``: Catchment area in km2.</span>
+<span class="sd">                - `p2[1]`: Catchment area in km2.</span>
 <span class="sd">            init_st (list, optional): Initial state variable values</span>
-<span class="sd">                ``[sp, sm, uz, lz, wc]``.  Defaults to None.</span>
+<span class="sd">                `[sp, sm, uz, lz, wc]`.  Defaults to None.</span>
 <span class="sd">            ll_temp (numpy.ndarray, optional): 3-D long-term average</span>
 <span class="sd">                temperature array.  Defaults to None.</span>
 <span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
@@ -2491,15 +2553,15 @@ river network.</p>
 <span class="sd">                - **qout** (*numpy.ndarray*): 1-D discharge time</span>
 <span class="sd">                  series at the catchment outlet in m3/s.</span>
 <span class="sd">                - **st** (*numpy.ndarray*): 4-D state variable array</span>
-<span class="sd">                  ``(rows, cols, time_steps, 5)`` with states</span>
-<span class="sd">                  ``[sp, sm, uz, lz, wc]``.</span>
+<span class="sd">                  `(rows, cols, time_steps, 5)` with states</span>
+<span class="sd">                  `[sp, sm, uz, lz, wc]`.</span>
 <span class="sd">                - **quz_routed** (*numpy.ndarray*): 3-D routed</span>
 <span class="sd">                  upper-zone discharge array in m3/s.</span>
 <span class="sd">                - **qlz** (*numpy.ndarray*): 1-D spatially averaged</span>
 <span class="sd">                  lower-zone discharge in m3/s.</span>
 <span class="sd">                - **quz** (*numpy.ndarray*): 3-D upper-zone</span>
 <span class="sd">                  discharge array in m3/s (before spatial routing).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n_steps</span> <span class="o">=</span> <span class="n">sp_prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># no of time steps =length of time series +1</span>
         <span class="c1"># initialize vector of nans to fill states</span>
         <span class="n">dummy_states</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="n">n_steps</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>  <span class="c1"># [sp,sm,uz,lz,wc]</span>
@@ -2566,7 +2628,7 @@ river network.</p>
                     <span class="p">)</span>
                     <span class="n">q_uzi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q_uz_temp</span><span class="p">)</span>
 
-                    <span class="c1"># print(&quot;total = &quot;+str(fff)+&quot;/&quot;+str(tot_elem)+&quot; cell, row= &quot;+str(x+1)+&quot; column= &quot;+str(y+1) )</span>
+                    <span class="c1"># print("total = "+str(fff)+"/"+str(tot_elem)+" cell, row= "+str(x+1)+" column= "+str(y+1) )</span>
                 <span class="k">else</span><span class="p">:</span>  <span class="c1"># if the cell is novalue-------------------------------------</span>
                     <span class="c1"># Fill the empty cells with a nan vector</span>
                     <span class="n">st_i</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -2634,11 +2696,11 @@ river network.</p>
                         <span class="c1">#                        print(no_cells[j])</span>
                         <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
-                            <span class="nb">len</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
+                            <span class="nb">len</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
                         <span class="p">):</span>  <span class="c1"># no_cells[j]</span>
                             <span class="c1"># bring the indexes of the us cell</span>
-                            <span class="n">x_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                            <span class="n">y_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">x_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">y_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
                             <span class="c1"># sum the Q of the US cells (already routed for its cell)</span>
                             <span class="c1"># route first with there own k &amp; xthen sum</span>
                             <span class="n">q_r</span> <span class="o">=</span> <span class="n">q_r</span> <span class="o">+</span> <span class="n">routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">(</span>
@@ -2653,7 +2715,7 @@ river network.</p>
                         <span class="n">quz_routed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">q_r</span>
         <span class="c1"># check if the max flow _acc is at the outlet</span>
         <span class="c1">#    if tot_elem != np.nanmax(flow_acc_plan):</span>
-        <span class="c1">#        raise (&quot;flow accumulation plan is not correct&quot;)</span>
+        <span class="c1">#        raise ("flow accumulation plan is not correct")</span>
         <span class="c1"># outlet is the cell that has the max flow_acc</span>
         <span class="n">outlet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
             <span class="n">flow_acc_plan</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">flow_acc_plan</span><span class="p">)</span>
@@ -2731,7 +2793,7 @@ attributes:</p>
 <ul>
 <li><code>rows</code> (int): Number of grid rows.</li>
 <li><code>cols</code> (int): Number of grid columns.</li>
-<li><code>FlowAccArr</code> (numpy.ndarray): 2-D flow accumulation
+<li><code>flow_acc_arr</code> (numpy.ndarray): 2-D flow accumulation
   array; NaN marks cells outside the domain.</li>
 <li><code>Parameters</code> (numpy.ndarray): 3-D parameter array
   where the last index holds the MAXBAS value.</li>
@@ -2750,66 +2812,66 @@ attributes:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
-<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">DistMaxbas1</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route discharge to the outlet using a triangular function.</span>
+<span class="w">    </span><span class="sd">"""Route discharge to the outlet using a triangular function.</span>
 
 <span class="sd">    Applies triangular (MAXBAS) routing to the upper-zone</span>
 <span class="sd">    discharge of each cell independently.  The MAXBAS parameter</span>
 <span class="sd">    is read from the last column of the spatially distributed</span>
 <span class="sd">    parameter array.</span>
 
-<span class="sd">    The ``Model.quz`` array is modified in place.</span>
+<span class="sd">    The `Model.quz` array is modified in place.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">            attributes:</span>
 
-<span class="sd">            - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">            - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">            - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">            - `rows` (int): Number of grid rows.</span>
+<span class="sd">            - `cols` (int): Number of grid columns.</span>
+<span class="sd">            - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">              array; NaN marks cells outside the domain.</span>
-<span class="sd">            - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">            - `Parameters` (numpy.ndarray): 3-D parameter array</span>
 <span class="sd">              where the last index holds the MAXBAS value.</span>
-<span class="sd">            - ``quz`` (numpy.ndarray): 3-D upper-zone discharge</span>
-<span class="sd">              array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Maxbas</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="sd">            - `quz` (numpy.ndarray): 3-D upper-zone discharge</span>
+<span class="sd">              array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">    """</span>
+    <span class="n">Maxbas</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
                 <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">routing</span><span class="o">.</span><span class="n">triangular_routing_1</span><span class="p">(</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span> <span class="n">Maxbas</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
                 <span class="p">)</span>
@@ -2871,11 +2933,11 @@ attributes:</p>
 <ul>
 <li><code>rows</code> (int): Number of grid rows.</li>
 <li><code>cols</code> (int): Number of grid columns.</li>
-<li><code>FlowAccArr</code> (numpy.ndarray): 2-D flow accumulation
+<li><code>flow_acc_arr</code> (numpy.ndarray): 2-D flow accumulation
   array; NaN marks cells outside the domain.</li>
-<li><code>fpl_arr</code> (numpy.ndarray): 2-D flow path length
+<li><code>flow_path_length_arr</code> (numpy.ndarray): 2-D flow path length
   array.</li>
-<li><code>NoDataValue</code> (float): No-data value used in the
+<li><code>no_data_value</code> (float): No-data value used in the
   flow path length raster.</li>
 <li><code>Parameters</code> (numpy.ndarray): 3-D parameter array
   where the last index holds the maximum MAXBAS value.</li>
@@ -2894,36 +2956,7 @@ attributes:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
@@ -2939,49 +2972,82 @@ attributes:</p>
 <span class="normal">291</span>
 <span class="normal">292</span>
 <span class="normal">293</span>
-<span class="normal">294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">DistMaxbas2</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route discharge using a triangular function scaled by flow path length.</span>
+<span class="w">    </span><span class="sd">"""Route discharge using a triangular function scaled by flow path length.</span>
 
-<span class="sd">    Similar to ``DistMaxbas1``, but the MAXBAS parameter for each</span>
+<span class="sd">    Similar to `DistMaxbas1`, but the MAXBAS parameter for each</span>
 <span class="sd">    cell is rescaled proportionally to its flow path length so that</span>
 <span class="sd">    cells farther from the outlet receive more attenuation.</span>
 
-<span class="sd">    The ``Model.quz`` array is modified in place.</span>
+<span class="sd">    The `Model.quz` array is modified in place.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">            attributes:</span>
 
-<span class="sd">            - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">            - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">            - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">            - `rows` (int): Number of grid rows.</span>
+<span class="sd">            - `cols` (int): Number of grid columns.</span>
+<span class="sd">            - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">              array; NaN marks cells outside the domain.</span>
-<span class="sd">            - ``fpl_arr`` (numpy.ndarray): 2-D flow path length</span>
+<span class="sd">            - `flow_path_length_arr` (numpy.ndarray): 2-D flow path length</span>
 <span class="sd">              array.</span>
-<span class="sd">            - ``NoDataValue`` (float): No-data value used in the</span>
+<span class="sd">            - `no_data_value` (float): No-data value used in the</span>
 <span class="sd">              flow path length raster.</span>
-<span class="sd">            - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">            - `Parameters` (numpy.ndarray): 3-D parameter array</span>
 <span class="sd">              where the last index holds the maximum MAXBAS value.</span>
-<span class="sd">            - ``quz`` (numpy.ndarray): 3-D upper-zone discharge</span>
-<span class="sd">              array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MAXBAS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="c1"># replace novalue cells by nan</span>
-    <span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span> <span class="o">==</span> <span class="n">Model</span><span class="o">.</span><span class="n">NoDataValue</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="sd">            - `quz` (numpy.ndarray): 3-D upper-zone discharge</span>
+<span class="sd">              array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">    """</span>
+    <span class="n">MAXBAS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># `read_flow_path_length` already masks this raster's own no-data cells to NaN via</span>
+    <span class="c1"># pyramids, so no sentinel comparison is needed here -- and the one that used to sit</span>
+    <span class="c1"># here compared against the *accumulation* raster's sentinel, which is a different</span>
+    <span class="c1"># raster and need not share a no-data value.</span>
 
-    <span class="n">MaxFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">)</span>
-    <span class="n">MinFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">)</span>
+    <span class="n">MaxFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">)</span>
+    <span class="n">MinFPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">)</span>
     <span class="c1"># resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)</span>
     <span class="n">resize_fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">g</span><span class="p">:</span> <span class="p">(</span>
         <span class="p">(((</span><span class="n">g</span> <span class="o">-</span> <span class="n">MinFPL</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">MaxFPL</span> <span class="o">-</span> <span class="n">MinFPL</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="n">MAXBAS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="p">)</span>
 
-    <span class="n">NormalizedFPL</span> <span class="o">=</span> <span class="n">resize_fun</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">)</span>
+    <span class="n">NormalizedFPL</span> <span class="o">=</span> <span class="n">resize_fun</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">fpl_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_path_length_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
                 <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">routing</span><span class="o">.</span><span class="n">triangular_routing_2</span><span class="p">(</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span> <span class="n">NormalizedFPL</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
                 <span class="p">)</span>
@@ -3314,38 +3380,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
@@ -3556,7 +3591,38 @@ Defaults to None.</p>
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
-<span class="normal">538</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">Dist_HBV2</span><span class="p">(</span>
     <span class="n">conceptual_model</span><span class="p">,</span>
     <span class="n">lakecell</span><span class="p">,</span>
@@ -3573,7 +3639,7 @@ Defaults to None.</p>
     <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run distributed HBV model with lake routing (legacy).</span>
+<span class="w">    </span><span class="sd">"""Run distributed HBV model with lake routing (legacy).</span>
 
 <span class="sd">    Executes the HBV conceptual model for every grid cell, routes</span>
 <span class="sd">    lake discharge into the downstream cell using Muskingum</span>
@@ -3582,33 +3648,33 @@ Defaults to None.</p>
 <span class="sd">    cells and converted to m3/s.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        conceptual_model (BaseConceptualModel): Lumped model object with a ``simulate``</span>
+<span class="sd">        conceptual_model (BaseConceptualModel): Lumped model object with a `simulate`</span>
 <span class="sd">            method.</span>
-<span class="sd">        lakecell (list[int]): Two-element list ``[row, col]``</span>
+<span class="sd">        lakecell (list[int]): Two-element list `[row, col]`</span>
 <span class="sd">            giving the grid indices of the lake cell.</span>
 <span class="sd">        q_lake (numpy.ndarray): 1-D array of lake discharge</span>
 <span class="sd">            time series in m3/s.</span>
-<span class="sd">        DEM (Dataset): pyramids ``Dataset`` of the catchment DEM.</span>
+<span class="sd">        DEM (Dataset): pyramids `Dataset` of the catchment DEM.</span>
 <span class="sd">        flow_acc (dict): Flow direction table mapping</span>
-<span class="sd">            ``&quot;row,col&quot;`` keys to lists of upstream cell index</span>
+<span class="sd">            `"row,col"` keys to lists of upstream cell index</span>
 <span class="sd">            pairs.</span>
 <span class="sd">        flow_acc_plan (numpy.ndarray): 2-D array of flow</span>
 <span class="sd">            accumulation values; NaN marks no-data cells.</span>
 <span class="sd">        sp_prec (numpy.ndarray): 3-D precipitation array</span>
-<span class="sd">            ``(rows, cols, time_steps)``.</span>
+<span class="sd">            `(rows, cols, time_steps)`.</span>
 <span class="sd">        sp_et (numpy.ndarray): 3-D evapotranspiration array.</span>
 <span class="sd">        sp_temp (numpy.ndarray): 3-D temperature array.</span>
 <span class="sd">        sp_pars (numpy.ndarray): 3-D parameter array</span>
-<span class="sd">            ``(rows, cols, n_params)``.  Indices 5, 6, 7 are</span>
+<span class="sd">            `(rows, cols, n_params)`.  Indices 5, 6, 7 are</span>
 <span class="sd">            K1, K, and alpha; indices 10, 11 are Muskingum</span>
 <span class="sd">            K and X.</span>
 <span class="sd">        p2 (list): Unoptimized parameters.</span>
 
-<span class="sd">            - ``p2[0]``: tfac -- 1 for hourly, 0.25 for 15 min,</span>
+<span class="sd">            - `p2[0]`: tfac -- 1 for hourly, 0.25 for 15 min,</span>
 <span class="sd">              24 for daily.</span>
-<span class="sd">            - ``p2[1]``: Catchment area in km2.</span>
+<span class="sd">            - `p2[1]`: Catchment area in km2.</span>
 <span class="sd">        init_st (list, optional): Initial state variable values</span>
-<span class="sd">            ``[sp, sm, uz, lz, wc]``.  Defaults to None.</span>
+<span class="sd">            `[sp, sm, uz, lz, wc]`.  Defaults to None.</span>
 <span class="sd">        ll_temp (numpy.ndarray, optional): 3-D long-term average</span>
 <span class="sd">            temperature array.  Defaults to None.</span>
 <span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
@@ -3620,15 +3686,15 @@ Defaults to None.</p>
 <span class="sd">            - **qout** (*numpy.ndarray*): 1-D discharge time</span>
 <span class="sd">              series at the catchment outlet in m3/s.</span>
 <span class="sd">            - **st** (*numpy.ndarray*): 4-D state variable array</span>
-<span class="sd">              ``(rows, cols, time_steps, 5)`` with states</span>
-<span class="sd">              ``[sp, sm, uz, lz, wc]``.</span>
+<span class="sd">              `(rows, cols, time_steps, 5)` with states</span>
+<span class="sd">              `[sp, sm, uz, lz, wc]`.</span>
 <span class="sd">            - **quz_routed** (*numpy.ndarray*): 3-D routed</span>
 <span class="sd">              upper-zone discharge array in m3/s.</span>
 <span class="sd">            - **qlz** (*numpy.ndarray*): 1-D spatially averaged</span>
 <span class="sd">              lower-zone discharge in m3/s.</span>
 <span class="sd">            - **quz** (*numpy.ndarray*): 3-D upper-zone</span>
 <span class="sd">              discharge array in m3/s (before spatial routing).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_steps</span> <span class="o">=</span> <span class="n">sp_prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># no of time steps =length of time series +1</span>
     <span class="c1"># initialize vector of nans to fill states</span>
     <span class="n">dummy_states</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="n">n_steps</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>  <span class="c1"># [sp,sm,uz,lz,wc]</span>
@@ -3695,7 +3761,7 @@ Defaults to None.</p>
                 <span class="p">)</span>
                 <span class="n">q_uzi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q_uz_temp</span><span class="p">)</span>
 
-                <span class="c1"># print(&quot;total = &quot;+str(fff)+&quot;/&quot;+str(tot_elem)+&quot; cell, row= &quot;+str(x+1)+&quot; column= &quot;+str(y+1) )</span>
+                <span class="c1"># print("total = "+str(fff)+"/"+str(tot_elem)+" cell, row= "+str(x+1)+" column= "+str(y+1) )</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># if the cell is novalue-------------------------------------</span>
                 <span class="c1"># Fill the empty cells with a nan vector</span>
                 <span class="n">st_i</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -3763,11 +3829,11 @@ Defaults to None.</p>
                     <span class="c1">#                        print(no_cells[j])</span>
                     <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
-                        <span class="nb">len</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
                     <span class="p">):</span>  <span class="c1"># no_cells[j]</span>
                         <span class="c1"># bring the indexes of the us cell</span>
-                        <span class="n">x_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="n">y_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">x_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">y_ind</span> <span class="o">=</span> <span class="n">flow_acc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
                         <span class="c1"># sum the Q of the US cells (already routed for its cell)</span>
                         <span class="c1"># route first with there own k &amp; xthen sum</span>
                         <span class="n">q_r</span> <span class="o">=</span> <span class="n">q_r</span> <span class="o">+</span> <span class="n">routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">(</span>
@@ -3782,7 +3848,7 @@ Defaults to None.</p>
                     <span class="n">quz_routed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">q_r</span>
     <span class="c1"># check if the max flow _acc is at the outlet</span>
     <span class="c1">#    if tot_elem != np.nanmax(flow_acc_plan):</span>
-    <span class="c1">#        raise (&quot;flow accumulation plan is not correct&quot;)</span>
+    <span class="c1">#        raise ("flow accumulation plan is not correct")</span>
     <span class="c1"># outlet is the cell that has the max flow_acc</span>
     <span class="n">outlet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
         <span class="n">flow_acc_plan</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">flow_acc_plan</span><span class="p">)</span>
@@ -3861,7 +3927,7 @@ attributes:</p>
 <li><code>rows</code> (int): Number of grid rows.</li>
 <li><code>cols</code> (int): Number of grid columns.</li>
 <li><code>TS</code> (int): Number of time steps.</li>
-<li><code>FlowAccArr</code> (numpy.ndarray): 2-D flow accumulation
+<li><code>flow_acc_arr</code> (numpy.ndarray): 2-D flow accumulation
   array; NaN marks cells outside the domain.</li>
 <li><code>quz</code> (numpy.ndarray): 3-D upper-zone discharge
   array <code>(rows, cols, TS)</code> in m3/s.</li>
@@ -3877,7 +3943,7 @@ attributes:</p>
 <li><code>dt</code> (float): Time-step factor (<code>tfac</code>).</li>
 <li><code>routing_method</code> (str): Routing method name (e.g.,
   <code>"Muskingum"</code>).</li>
-<li><code>BankfullDepth</code> (numpy.ndarray): 2-D bankfull
+<li><code>bankfull_depth</code> (numpy.ndarray): 2-D bankfull
   depth array used for non-Muskingum methods.</li>
 </ul>
               </div>
@@ -3892,27 +3958,7 @@ attributes:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
@@ -3997,45 +4043,74 @@ attributes:</p>
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
-<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">SpatialRouting</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route discharge between cells following the flow direction.</span>
+<span class="w">    </span><span class="sd">"""Route discharge between cells following the flow direction.</span>
 
-<span class="sd">    Accumulates and routes upper-zone discharge (``quz``) using</span>
+<span class="sd">    Accumulates and routes upper-zone discharge (`quz`) using</span>
 <span class="sd">    Muskingum routing from upstream to downstream cells according</span>
-<span class="sd">    to the flow direction raster.  Lower-zone discharge (``qlz``)</span>
+<span class="sd">    to the flow direction raster.  Lower-zone discharge (`qlz`)</span>
 <span class="sd">    is translated (accumulated without attenuation) so that total</span>
 <span class="sd">    discharge can be computed at any internal point.</span>
 
 <span class="sd">    After execution the following attributes are set on *Model*:</span>
-<span class="sd">    ``quz_routed``, ``qlz_translated``, and ``Qtot``.</span>
+<span class="sd">    `quz_routed`, `qlz_translated`, and `Qtot`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">            attributes:</span>
 
-<span class="sd">            - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">            - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">            - ``TS`` (int): Number of time steps.</span>
-<span class="sd">            - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">            - `rows` (int): Number of grid rows.</span>
+<span class="sd">            - `cols` (int): Number of grid columns.</span>
+<span class="sd">            - `TS` (int): Number of time steps.</span>
+<span class="sd">            - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">              array; NaN marks cells outside the domain.</span>
-<span class="sd">            - ``quz`` (numpy.ndarray): 3-D upper-zone discharge</span>
-<span class="sd">              array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">            - ``qlz`` (numpy.ndarray): 3-D lower-zone discharge</span>
-<span class="sd">              array ``(rows, cols, TS)`` in m3/s.</span>
-<span class="sd">            - ``acc_val`` (list): Sorted unique flow accumulation</span>
+<span class="sd">            - `quz` (numpy.ndarray): 3-D upper-zone discharge</span>
+<span class="sd">              array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">            - `qlz` (numpy.ndarray): 3-D lower-zone discharge</span>
+<span class="sd">              array `(rows, cols, TS)` in m3/s.</span>
+<span class="sd">            - `acc_val` (list): Sorted unique flow accumulation</span>
 <span class="sd">              values.</span>
-<span class="sd">            - ``FDT`` (dict): Flow direction table mapping</span>
-<span class="sd">              ``&quot;row,col&quot;`` keys to lists of upstream cell</span>
+<span class="sd">            - `FDT` (dict): Flow direction table mapping</span>
+<span class="sd">              `"row,col"` keys to lists of upstream cell</span>
 <span class="sd">              index pairs.</span>
-<span class="sd">            - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">            - `Parameters` (numpy.ndarray): 3-D parameter array</span>
 <span class="sd">              where indices 10 and 11 are Muskingum K and X.</span>
-<span class="sd">            - ``dt`` (float): Time-step factor (``tfac``).</span>
-<span class="sd">            - ``routing_method`` (str): Routing method name (e.g.,</span>
-<span class="sd">              ``&quot;Muskingum&quot;``).</span>
-<span class="sd">            - ``BankfullDepth`` (numpy.ndarray): 2-D bankfull</span>
+<span class="sd">            - `dt` (float): Time-step factor (`tfac`).</span>
+<span class="sd">            - `routing_method` (str): Routing method name (e.g.,</span>
+<span class="sd">              `"Muskingum"`).</span>
+<span class="sd">            - `bankfull_depth` (numpy.ndarray): 2-D bankfull</span>
 <span class="sd">              depth array used for non-Muskingum methods.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1">#    # routing lake discharge with DS cell k &amp; x and adding to cell Q</span>
     <span class="c1">#    q_lake=Routing.muskingum_v(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])</span>
     <span class="c1">#    q_lake=np.append(q_lake,q_lake[-1])</span>
@@ -4053,47 +4128,56 @@ attributes:</p>
     <span class="n">Model</span><span class="o">.</span><span class="n">qlz_translated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">)</span>
     <span class="c1"># Model.Qtot = np.zeros_like(Model.quz)</span>
     <span class="c1"># for all cells with 0 flow acc put the quz</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span> <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+                <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">):</span>
                 <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span>
                 <span class="n">Model</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:]</span>
 
     <span class="c1"># remaining cells</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">acc_val</span><span class="p">)):</span>
+    <span class="c1"># Read once: this is the routing inner loop, and `acc_val` scans the whole grid.</span>
+    <span class="n">acc_val</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">acc_val</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc_val</span><span class="p">)):</span>
         <span class="c1"># TODO parallelize</span>
         <span class="c1"># all cells with the same acc_val can run at the same time</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>  <span class="c1"># no of rows</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>  <span class="c1"># no of columns</span>
                 <span class="c1"># check from total flow accumulation</span>
                 <span class="k">if</span> <span class="p">(</span>
-                    <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
-                    <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="n">Model</span><span class="o">.</span><span class="n">acc_val</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+                    <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="n">acc_val</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="p">):</span>
                     <span class="k">if</span> <span class="p">(</span>
-                        <span class="n">Model</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">!=</span> <span class="s2">&quot;Muskingum&quot;</span>
-                        <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                        <span class="n">Model</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">!=</span> <span class="s2">"Muskingum"</span>
+                        <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
                     <span class="p">):</span>
                         <span class="k">continue</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># for UZ</span>
-                        <span class="n">q_uzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)</span>
+                        <span class="n">q_uzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)</span>
                         <span class="c1"># for lz</span>
-                        <span class="n">qlzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)</span>
+                        <span class="n">qlzi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)</span>
                         <span class="c1"># iterate to route uz and translate lz</span>
                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
-                            <span class="nb">len</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
+                            <span class="nb">len</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
                         <span class="p">):</span>  <span class="c1"># Model.acc_val[j]</span>
                             <span class="c1"># bring the indexes of the us cell</span>
-                            <span class="n">x_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                            <span class="n">y_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">x_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span>
+                                <span class="n">i</span>
+                            <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">y_ind</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">FDT</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)][</span>
+                                <span class="n">i</span>
+                            <span class="p">][</span><span class="mi">1</span><span class="p">]</span>
                             <span class="c1"># sum the Q of the US cells (already routed for its cell)</span>
                             <span class="c1"># route first with there own k &amp; xthen sum</span>
                             <span class="n">q_uzi</span> <span class="o">=</span> <span class="n">q_uzi</span> <span class="o">+</span> <span class="n">routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">(</span>
                                 <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="p">:],</span>
                                 <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-                                <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
-                                <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                                <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+                                <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">x_ind</span><span class="p">,</span> <span class="n">y_ind</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
                                 <span class="n">Model</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                             <span class="p">)</span>
 
@@ -4133,7 +4217,7 @@ attributes:</p>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distributed constructor.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Distributed constructor."""</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4195,7 +4279,7 @@ attributes:</p>
 <li><code>rows</code> (int): Number of grid rows.</li>
 <li><code>cols</code> (int): Number of grid columns.</li>
 <li><code>TS</code> (int): Number of time steps.</li>
-<li><code>FlowAccArr</code> (numpy.ndarray): 2-D flow accumulation
+<li><code>flow_acc_arr</code> (numpy.ndarray): 2-D flow accumulation
   array; NaN marks cells outside the domain.</li>
 <li><code>LumpedModel</code>: Lumped model instance with a
   <code>simulate</code> method.</li>
@@ -4302,79 +4386,119 @@ attributes:</p>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped_model</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run lumped rainfall-runoff model for every grid cell.</span>
+<span class="w">    </span><span class="sd">"""Run lumped rainfall-runoff model for every grid cell.</span>
 
 <span class="sd">    Executes the lumped conceptual model (e.g., HBV) independently</span>
 <span class="sd">    for each non-NaN cell in the catchment grid and converts the</span>
 <span class="sd">    resulting discharge from mm/time-step to m3/s.</span>
 
 <span class="sd">    After execution the following attributes are set on *Model*:</span>
-<span class="sd">    ``state_variables``, ``quz``, and ``qlz``.</span>
+<span class="sd">    `state_variables`, `quz`, and `qlz`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        Model (Catchment): A catchment model object carrying the following</span>
 <span class="sd">            attributes:</span>
 
-<span class="sd">            - ``rows`` (int): Number of grid rows.</span>
-<span class="sd">            - ``cols`` (int): Number of grid columns.</span>
-<span class="sd">            - ``TS`` (int): Number of time steps.</span>
-<span class="sd">            - ``FlowAccArr`` (numpy.ndarray): 2-D flow accumulation</span>
+<span class="sd">            - `rows` (int): Number of grid rows.</span>
+<span class="sd">            - `cols` (int): Number of grid columns.</span>
+<span class="sd">            - `TS` (int): Number of time steps.</span>
+<span class="sd">            - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation</span>
 <span class="sd">              array; NaN marks cells outside the domain.</span>
-<span class="sd">            - ``LumpedModel``: Lumped model instance with a</span>
-<span class="sd">              ``simulate`` method.</span>
-<span class="sd">            - ``Prec`` (numpy.ndarray): 3-D precipitation array</span>
-<span class="sd">              ``(rows, cols, TS)``.</span>
-<span class="sd">            - ``Temp`` (numpy.ndarray): 3-D temperature array.</span>
-<span class="sd">            - ``ET`` (numpy.ndarray): 3-D evapotranspiration array.</span>
-<span class="sd">            - ``ll_temp`` (numpy.ndarray): 3-D long-term average</span>
+<span class="sd">            - `LumpedModel`: Lumped model instance with a</span>
+<span class="sd">              `simulate` method.</span>
+<span class="sd">            - `Prec` (numpy.ndarray): 3-D precipitation array</span>
+<span class="sd">              `(rows, cols, TS)`.</span>
+<span class="sd">            - `Temp` (numpy.ndarray): 3-D temperature array.</span>
+<span class="sd">            - `ET` (numpy.ndarray): 3-D evapotranspiration array.</span>
+<span class="sd">            - `ll_temp` (numpy.ndarray): 3-D long-term average</span>
 <span class="sd">              temperature array.</span>
-<span class="sd">            - ``Parameters`` (numpy.ndarray): 3-D parameter array</span>
-<span class="sd">              ``(rows, cols, n_params)``.</span>
-<span class="sd">            - ``InitialCond`` (list): Initial state variable values</span>
-<span class="sd">              ``[sp, sm, uz, lz, wc]``.</span>
-<span class="sd">            - ``q_init`` (float): Initial discharge in m3/s.</span>
-<span class="sd">            - ``Snow`` (int): Snow module flag (0 or 1).</span>
-<span class="sd">            - ``CatArea`` (float): Catchment area in km2.</span>
-<span class="sd">            - ``px_tot_area`` (float): Total pixel area in km2.</span>
-<span class="sd">            - ``px_area`` (float): Single pixel area in km2.</span>
-<span class="sd">            - ``conversion_factor`` (float): Unit conversion</span>
-<span class="sd">              factor (``tfac * 3.6``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">            - `Parameters` (numpy.ndarray): 3-D parameter array</span>
+<span class="sd">              `(rows, cols, n_params)`.</span>
+<span class="sd">            - `InitialCond` (list): Initial state variable values</span>
+<span class="sd">              `[sp, sm, uz, lz, wc]`.</span>
+<span class="sd">            - `q_init` (float): Initial discharge in m3/s.</span>
+<span class="sd">            - `Snow` (int): Snow module flag (0 or 1).</span>
+<span class="sd">            - `CatArea` (float): Catchment area in km2.</span>
+<span class="sd">            - `px_tot_area` (float): Total pixel area in km2.</span>
+<span class="sd">            - `px_area` (float): Single pixel area in km2.</span>
+<span class="sd">            - `conversion_factor` (float): Unit conversion</span>
+<span class="sd">              factor (`tfac * 3.6`).</span>
+<span class="sd">    """</span>
     <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">[</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">,</span>
+            <span class="mi">5</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
             <span class="c1"># only for cells in the domain</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">FlowAccArr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
                 <span class="p">(</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
                     <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span>
-                <span class="p">)</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">LumpedModel</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
-                    <span class="n">prec</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Prec</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                    <span class="n">temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Temp</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                    <span class="n">et</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">ET</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                    <span class="n">ll_temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">ll_temp</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                    <span class="n">par</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
-                    <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">InitialCond</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">lumped_model</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                    <span class="n">prec</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">precipitation</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">temperature</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">et</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">ll_temp</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">ll_temp</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">par</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">initial_cond</span><span class="p">,</span>
                     <span class="n">q_init</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">q_init</span><span class="p">,</span>
-                    <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Snow</span><span class="p">,</span>
+                    <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span>
                 <span class="p">)</span>
 
-    <span class="n">area_coef</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">CatArea</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">px_tot_area</span>
+    <span class="n">area_coef</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">px_tot_area</span>
     <span class="c1"># convert quz from mm/time step to m3/sec</span>
     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
     <span class="p">)</span>  <span class="c1"># Timef*3.6</span>
     <span class="c1"># convert Qlz to m3/sec</span>
     <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">px_area</span> <span class="o">*</span> <span class="n">area_coef</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
     <span class="p">)</span>  <span class="c1"># Timef*3.6</span>
 </code></pre></div></td></tr></table></div>
             </details>
