@@ -244,7 +244,7 @@ class Calibration(Catchment):
                 spatial_var_fun.Function(
                     par
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
-                self.Parameters = spatial_var_fun.Par3d
+                self.parameters = spatial_var_fun.Par3d
                 # run the model
                 Wrapper.RRMModel(self)
                 # calculate performance of the model
@@ -305,7 +305,7 @@ class Calibration(Catchment):
             hot_start=hot_start,
         )
 
-        self.Parameters = res[1]
+        self.parameters = res[1]
         self.OFvalue = res[0]
 
         return res
@@ -389,7 +389,7 @@ class Calibration(Catchment):
                 spatial_var_fun.Function(
                     par
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum
-                self.Parameters = spatial_var_fun.Par3d
+                self.parameters = spatial_var_fun.Par3d
                 # run the model
                 Wrapper.FW1(self)
                 # calculate performance of the model
@@ -435,7 +435,7 @@ class Calibration(Catchment):
             hot_start=hot_start,
         )
 
-        self.Parameters = res[1]
+        self.parameters = res[1]
         self.OFvalue = res[0]
 
         return res
@@ -522,7 +522,7 @@ class Calibration(Catchment):
         def opt_fun(par):
             try:
                 # parameters
-                self.Parameters = par
+                self.parameters = par
                 # run the model
                 Wrapper.Lumped(self, route, routing_fn)
                 # calculate performance of the model
@@ -594,6 +594,6 @@ class Calibration(Catchment):
         )
 
         self.OFvalue = res[0]
-        self.Parameters = res[1]
+        self.parameters = res[1]
 
         return res
