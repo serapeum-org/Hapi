@@ -6,7 +6,7 @@ import pandas as pd
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
-from hapi.inputs import MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.run import Run
 
