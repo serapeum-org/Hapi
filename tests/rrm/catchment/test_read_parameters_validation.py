@@ -8,6 +8,7 @@ parameter — which is why the guard is worth pinning per combination.
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -255,3 +256,103 @@ class TestReadParametersLumped:
 
         with pytest.raises(FileNotFoundError, match="does not exist"):
             model.read_parameters(str(tmp_path / "absent.csv"), False)
+
+
+class TestReadLumpedInputs:
+    """Tests for the column handling in `Catchment.read_lumped_inputs`."""
+
+    @pytest.fixture(scope="function")
+    def three_column_csv(self, tmp_path) -> str:
+        """Write a lumped input file without the long-term average column.
+
+        Returns:
+            str: Path to a CSV of [date, prec, ET, temp].
+        """
+        path = tmp_path / "meteo-3col.csv"
+        frame = pd.DataFrame(
+            {
+                "date": pd.date_range("2009-01-01", periods=10, freq="D"),
+                "prec": np.linspace(0.0, 9.0, 10),
+                "et": np.linspace(1.0, 2.0, 10),
+                "temp": np.linspace(15.0, 25.0, 10),
+            }
+        )
+        frame.to_csv(path, index=False)
+        return str(path)
+
+    def test_a_three_column_file_gains_the_long_term_average(
+        self, coello_start_date: str, coello_end_date: str, three_column_csv: str
+    ):
+        """Test that the fourth column is derived rather than left missing.
+
+        Test scenario:
+            The method documents 3 or 4 columns, but `Wrapper.Lumped` reads `data[:, 3]`
+            unconditionally. A three-column file was therefore accepted here and then raised
+            `IndexError` in the middle of the run. The derived column is the record's mean
+            temperature, which is what the reader this replaced computed.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        model.read_lumped_inputs(three_column_csv)
+
+        assert model.data.shape[1] == 4, (
+            f"the run reads four columns, got {model.data.shape[1]}"
+        )
+        assert model.data[:, 3] == pytest.approx(model.data[:, 2].mean()), (
+            "the fourth column must hold the record's mean temperature"
+        )
+
+    def test_a_four_column_file_is_left_alone(
+        self, coello_start_date: str, coello_end_date: str, tmp_path
+    ):
+        """Test that a caller-supplied long-term average is not overwritten.
+
+        Test scenario:
+            A caller who supplies the fourth column has chosen a reference the snow routine
+            should use; deriving one on top of it would silently discard that choice.
+        """
+        path = tmp_path / "meteo-4col.csv"
+        pd.DataFrame(
+            {
+                "date": pd.date_range("2009-01-01", periods=10, freq="D"),
+                "prec": np.linspace(0.0, 9.0, 10),
+                "et": np.linspace(1.0, 2.0, 10),
+                "temp": np.linspace(15.0, 25.0, 10),
+                "tm": np.full(10, 7.5),
+            }
+        ).to_csv(path, index=False)
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        model.read_lumped_inputs(str(path))
+
+        assert model.data.shape[1] == 4, (
+            f"expected 4 columns, got {model.data.shape[1]}"
+        )
+        assert model.data[:, 3] == pytest.approx(7.5), (
+            "the supplied long-term average must survive untouched"
+        )
+
+    @pytest.mark.parametrize("columns", [2, 5])
+    def test_any_other_column_count_is_refused(
+        self, coello_start_date: str, coello_end_date: str, tmp_path, columns: int
+    ):
+        """Test that a file with the wrong number of columns raises.
+
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+            tmp_path: Directory the file is written into.
+            columns: How many data columns to write.
+
+        Test scenario:
+            The columns are read by position, so a file with a different count cannot be
+            interpreted and must be refused rather than silently mapped.
+        """
+        path = tmp_path / f"meteo-{columns}col.csv"
+        data = {"date": pd.date_range("2009-01-01", periods=10, freq="D")}
+        data.update({f"c{i}": np.arange(10.0) for i in range(columns)})
+        pd.DataFrame(data).to_csv(path, index=False)
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        with pytest.raises(ValueError, match="should be of length at least 3"):
+            model.read_lumped_inputs(str(path))

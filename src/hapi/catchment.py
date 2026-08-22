@@ -456,9 +456,14 @@ class Catchment:
         grid, and `Wrapper.Lumped` reads the long-term average straight out of the fourth
         column.
 
+        A three-column file is completed with a fourth holding the record's mean temperature.
+        `Wrapper.Lumped` reads that column unconditionally, so without it a file this method
+        accepts raises `IndexError` in the middle of the run instead.
+
         Args:
             path (str): Path to the input CSV file. Data columns must
-                be in the order [date, precipitation, ET, Temp].
+                be in the order [date, precipitation, ET, Temp], optionally
+                followed by the long-term average temperature.
 
         Raises:
             ValueError: If the input data does not have 3 or 4
@@ -467,10 +472,19 @@ class Catchment:
         self.data = pd.read_csv(path, header=0, delimiter=",", index_col=0)
         self.data = self.data.values
 
-        if not (np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4):
+        columns = np.shape(self.data)[1]
+        if columns not in (3, 4):
             raise ValueError(
                 "meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
             )
+
+        if columns == 3:
+            # The long-term average the snow routine compares each step against. Derived from
+            # the temperature column, as the reader this replaced did.
+            long_term_average = np.full(
+                (np.shape(self.data)[0], 1), self.data[:, 2].mean()
+            )
+            self.data = np.hstack([self.data, long_term_average])
 
         logger.debug("Lumped Model inputs are read successfully")
 
