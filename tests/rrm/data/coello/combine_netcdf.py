@@ -1,18 +1,14 @@
-r"""Combine the per-variable NetCDFs into one file holding all three drivers.
+r"""Regenerate the Coello NetCDF fixtures from the raster folders.
 
-Reads `prec.nc`, `temp.nc` and `evap.nc` one at a time and writes `meteo.nc`, whose variables
-are named `precipitation` / `temperature` / `evapotranspiration`.
+Packs each driver's folder of dated GeoTIFFs into its own NetCDF, then merges the three into
+`meteo.nc`, whose variables are named `precipitation` / `temperature` / `evapotranspiration`.
 
-The first file seeds the container; the other two are pulled in with `NetCDF.add_variable`,
-which copies the MDArray across, and each is renamed on arrival. Nothing touches disk until
-`to_file`, so the source files are left as they are.
-
-`meteo.nc` is a committed fixture, so this only runs when invoked directly:
+All four files are committed, so this only runs when invoked directly:
 
     pixi run -e dev python tests/rrm/data/coello/combine_netcdf.py
 
-Run it from the repository root, or pass `--root` to point at the directory holding the four
-files. It exits non-zero if the written file does not match its sources.
+Run it from the repository root, or pass `--root` to point at the Coello data directory. It
+exits non-zero if the regenerated files do not match the rasters they came from.
 """
 
 from __future__ import annotations
@@ -22,94 +18,93 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from pyramids.netcdf import NetCDF
+
+from hapi.inputs import METEO_VARIABLES, MeteoInputs
 
 DEFAULT_ROOT = Path("tests/rrm/data/coello")
 
-#: output variable name -> the single-variable NetCDF holding it
+#: driver name -> the raster folder holding it
 SOURCES = {
-    "precipitation": "prec.nc",
-    "temperature": "temp.nc",
-    "evapotranspiration": "evap.nc",
+    "precipitation": "prec",
+    "temperature": "temp",
+    "evapotranspiration": "evap",
 }
 
-
-def combine(root: Path, out_path: Path) -> None:
-    """Write the three per-variable files into one multi-variable NetCDF.
-
-    Args:
-        root: Directory holding `prec.nc`, `temp.nc` and `evap.nc`.
-        out_path: File to write.
-    """
-    (seed_name, seed_file), *rest = SOURCES.items()
-    combined = NetCDF.read_file(str(root / seed_file))
-    combined.rename_variable(combined.variable_names[0], seed_name)
-
-    for name, file_name in rest:
-        source = NetCDF.read_file(str(root / file_name))
-        combined.add_variable(source)
-        combined.rename_variable(source.variable_names[0], name)
-
-    out_path.unlink(missing_ok=True)
-    combined.to_file(str(out_path))
-    print(f"written    : {out_path}")
+RASTER_KWARGS = dict(regex_string=r"\d{4}.\d{2}.\d{2}", file_name_data_fmt="%Y.%m.%d")
 
 
-def verify(root: Path, out_path: Path) -> bool:
-    """Check the written file carries the source arrays unchanged.
+def regenerate(root: Path) -> Path:
+    """Pack each raster folder into a NetCDF, then merge the three.
 
     Args:
-        root: Directory holding the per-variable sources.
-        out_path: The combined file to check.
+        root: Directory holding the `prec` / `temp` / `evap` folders.
 
     Returns:
-        bool: True when every variable matches its source element for element.
+        Path: The combined file.
     """
-    nc = NetCDF.read_file(str(out_path))
-    print(f"variables  : {sorted(nc.variable_names)}")
-    print(f"dimensions : {nc.dimension_sizes}  epsg={nc.epsg}")
-    print(f"geo        : {nc.global_attributes['GeoTransform']}")
+    for name, folder in SOURCES.items():
+        out = MeteoInputs.raster_folder_to_netcdf(
+            root / folder, root / f"{folder}.nc", **RASTER_KWARGS
+        )
+        print(f"packed     : {folder}/ -> {out.name}  ({name})")
+
+    combined = MeteoInputs.combine_netcdf_files(
+        root / "prec.nc", root / "temp.nc", root / "evap.nc", root / "meteo.nc"
+    )
+    print(f"combined   : {combined.name}")
+    return combined
+
+
+def verify(root: Path, combined: Path) -> bool:
+    """Check the regenerated files still carry what the rasters hold.
+
+    Args:
+        root: Directory holding the raster folders.
+        combined: The merged file to check.
+
+    Returns:
+        bool: True when every driver matches the folder it was packed from.
+    """
+    from_rasters = MeteoInputs.from_rasters(
+        root / "prec", root / "temp", root / "evap", **RASTER_KWARGS
+    )
+    from_file = MeteoInputs.from_netcdf(
+        combined,
+        precipitation="precipitation",
+        temperature="temperature",
+        evapotranspiration="evapotranspiration",
+    )
 
     ok = True
-    for name, file_name in SOURCES.items():
-        written = np.asarray(nc.get_variable(name).read_array())
-        source = NetCDF.read_file(str(root / file_name))
-        expected = np.asarray(
-            source.get_variable(source.variable_names[0]).read_array()
+    for name in METEO_VARIABLES:
+        identical = np.array_equal(
+            getattr(from_file, name), getattr(from_rasters, name), equal_nan=True
         )
-        identical = np.array_equal(written, expected)
         ok &= identical
-        print(f"  {name:20s} identical to {file_name}: {identical}")
+        print(f"  {name:20s} identical to its rasters: {identical}")
     return bool(ok)
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Combine the fixtures and verify the result.
+    """Regenerate the fixtures and verify them.
 
     Args:
         argv: Command-line arguments; defaults to `sys.argv[1:]`.
 
     Returns:
-        int: 0 when the written file matches its sources, 1 otherwise.
+        int: 0 when the regenerated files match their rasters, 1 otherwise.
     """
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--root",
         type=Path,
         default=DEFAULT_ROOT,
-        help=f"directory holding the per-variable NetCDFs (default: {DEFAULT_ROOT})",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=None,
-        help="file to write (default: <root>/meteo.nc)",
+        help=f"directory holding the raster folders (default: {DEFAULT_ROOT})",
     )
     args = parser.parse_args(argv)
-    out_path = args.out or args.root / "meteo.nc"
 
-    combine(args.root, out_path)
-    return 0 if verify(args.root, out_path) else 1
+    combined = regenerate(args.root)
+    return 0 if verify(args.root, combined) else 1
 
 
 if __name__ == "__main__":
