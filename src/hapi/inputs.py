@@ -249,12 +249,12 @@ class FlowNetwork:
 
         - Or straight from arrays, which is what the properties below derive from:
 
-        >>> import numpy as np
-        >>> from hapi.inputs import FlowNetwork
-        >>> acc = np.array([[0.0, 1.0], [2.0, np.nan]])
-        >>> network = FlowNetwork(
-        ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
-        ... )
+          >>> import numpy as np
+          >>> from hapi.inputs import FlowNetwork
+          >>> acc = np.array([[0.0, 1.0], [2.0, np.nan]])
+          >>> network = FlowNetwork(
+          ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+          ... )
           >>> network.shape, network.no_elem
           ((2, 2), 3)
 
@@ -725,7 +725,8 @@ class MeteoInputs:
                 per-folder date format would be a mistake rather than a feature.
 
         Returns:
-            MeteoInputs: The three cubes plus the calendar taken from the rainfall folder.
+            MeteoInputs: The three cubes plus a calendar -- the rainfall folder's when it carries
+                one, otherwise the first source that does, and None when none do.
 
         Raises:
             FileNotFoundError: A folder does not exist or holds no matching raster.
@@ -760,7 +761,8 @@ class MeteoInputs:
                 single-band collection.
 
         Returns:
-            MeteoInputs: The three cubes plus the calendar taken from the rainfall file.
+            MeteoInputs: The three cubes plus a calendar -- the rainfall file's when it carries
+                one, otherwise the first source that does, and None when none do.
 
         Raises:
             KeyError: `variable` is not in one of the files.
