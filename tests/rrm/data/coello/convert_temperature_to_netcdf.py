@@ -14,7 +14,6 @@ from __future__ import annotations
 
 # %% Setup
 import numpy as np
-from pyramids.netcdf import NetCDF
 
 from hapi.inputs import MeteoInputs
 
@@ -55,16 +54,12 @@ written = MeteoInputs.raster_folder_to_netcdf(
 )
 print(f"written    : {written}")
 
-# %% Inspect what was written
-nc = NetCDF.read_file(str(written))
-print(f"variables  : {nc.variable_names}")
-print(f"dimensions : {nc.dimension_sizes}")
-
-values = np.asarray(nc.get_variable(nc.variable_names[0]).read_array())
-print(f"array      : {values.shape}  (time, rows, cols)")
-
-# %% Check it round-trips to the same cube the rasters hold
+# %% Read it back and check it round-trips to the cube the rasters hold
+# The same file three times: the loader wants one per driver, and only one was packed here.
 packed = MeteoInputs.from_netcdf_files(written, written, written)
+print(f"shape      : {packed.shape}  (rows, cols, time)")
+print(f"steps      : {packed.time_steps}")
+
 from_rasters = MeteoInputs.from_rasters(
     raster_dir,
     raster_dir,
