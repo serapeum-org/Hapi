@@ -353,6 +353,17 @@ class FlowNetwork:
           >>> network.shape, network.no_elem
           ((2, 2), 3)
 
+    Warning:
+        `FDT` is **not** derived from the masked `flow_dir_arr`. It comes from
+        :meth:`hapi.dem.DEM.flow_direction_table`, which reads the raster a second time and
+        applies its own `np.isclose(rtol=1e-5)` comparison, ignoring the band's GDAL mask.
+        The two therefore disagree on any cell whose masking depends on the mask band or on
+        the exact-vs-tolerant comparison: such a cell can be `NaN` in `flow_dir_arr` and
+        still appear as a key in `FDT`. The masks already differed before masking was
+        delegated to pyramids (`rel_tol=0.001` against `rtol=1e-5`); delegating widened the
+        gap rather than creating it. Reconciling them means changing :mod:`hapi.dem`, which
+        is slated to move to `digital-rivers`, so it is left as it is and documented here.
+
     """
 
     flow_acc_arr: np.ndarray
@@ -1050,9 +1061,14 @@ class MeteoInputs:
             return pd.DatetimeIndex(list(stamps))
 
         try:
-            values = np.asarray(nc.get_time_values())
+            raw = nc.get_time_values()
         except (AttributeError, KeyError, ValueError):
             return None
+        if raw is None:
+            # No time dimension. Checking explicitly rather than letting `np.asarray(None)`
+            # produce a 0-d object array that happens to fail the dtype test below.
+            return None
+        values = np.asarray(raw)
         # A positional index runs 0..n-1; a nanosecond epoch stamp is astronomically larger, so
         # the magnitude tells the two apart without depending on an attribute GDAL may not expose.
         if values.size and values.dtype.kind in "iu" and values.min() > 10**12:

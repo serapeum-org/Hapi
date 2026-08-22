@@ -47,7 +47,6 @@ if TYPE_CHECKING:
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000**2)
-DATE_PATTERN = r"\d{4}.\d{2}.\d{2}"
 
 
 @contextmanager
@@ -604,8 +603,7 @@ class Catchment:
                 # where the per-cell strptime this replaced rejected it. A gauge with no
                 # validity period is almost always a data-entry slip, and silently
                 # carrying NaT into the period comparisons hides it.
-                blank = parsed.isna() & self.GaugesTable[column].notna()
-                if blank.any() or parsed.isna().any():
+                if parsed.isna().any():
                     bad = self.GaugesTable.index[parsed.isna()].tolist()
                     raise ValueError(
                         f"the {column!r} column has no usable date at row(s) {bad}; "

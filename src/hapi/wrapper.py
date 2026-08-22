@@ -60,29 +60,18 @@ class Wrapper:
         Args:
             Model: Catchment model object containing:
 
-                - DEM (numpy.ndarray): DEM raster array clipped to
-                  the catchment.
-                - flow_acc_arr (numpy.ndarray): Flow accumulation
-                  raster array clipped to the catchment.
-                - flow_dir_arr (numpy.ndarray): Flow direction raster
-                  array clipped to the catchment.
-                - sp_prec (numpy.ndarray): 3D precipitation array
-                  with the same 2D dimensions as the raster input.
-                - sp_et (numpy.ndarray): 3D evapotranspiration array
-                  with the same 2D dimensions as the raster input.
-                - sp_temp (numpy.ndarray): 3D temperature array with
-                  the same 2D dimensions as the raster input.
-                - sp_par (numpy.ndarray): 3D array of spatially
-                  distributed catchment parameters.
-                - p2 (list): Unoptimized parameters where p2[0] is
-                  tfac (1 for hourly, 0.25 for 15 min, 24 for daily)
-                  and p2[1] is catchment area in km2.
-                - kub (float): Upper bound of K value for Muskingum
-                  routing.
-                - klb (float): Lower bound of K value for Muskingum
-                  routing.
-                - init_st (list): Initial state variable values
+                - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,
+                  each `(rows, cols, time)`, plus the calendar they cover.
+                - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation
+                  and direction arrays, the direction table, and the grid they define.
+                - parameters (numpy.ndarray): 3D array of spatially distributed catchment
+                  parameters, `(rows, cols, n_parameters)`.
+                - conversion_factor (float): Depth-to-discharge factor for the temporal
+                  resolution; 24 for daily, 1 for hourly.
+                - area (float): Catchment area in km2.
+                - initial_cond (list): Initial state variable values
                   [sp, sm, uz, lz, wc].
+                - snow (int): 1 to run the snow routine, 0 otherwise.
 
             ll_temp (numpy.ndarray, optional): 3D array of long-term
                 average temperature data. Defaults to None.
@@ -353,9 +342,9 @@ class Wrapper:
 
         # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)
 
-        # Both series carry the initial-state slot, and the non-lake FW1 path drops it from
-        # `qout` before returning -- so the lake series has to be trimmed the same way or the
-        # two cannot be added at all.
+        # Both series run over `simulation_steps`, and the non-lake FW1 path returns
+        # `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The
+        # lake series has to be trimmed the same way or the two cannot be added at all.
         Model.qout = qout[:-1] + Lake.QlakeR[:-1]
 
     @staticmethod
