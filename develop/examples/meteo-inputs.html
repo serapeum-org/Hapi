@@ -1483,6 +1483,41 @@ it only for a layout the digits cannot settle, such as a day-first <code>03.02.1
 <p>When all three folders do come from one source, the shared arguments are enough:</p>
 <div class="highlight"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">prec_path</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">,</span> <span class="n">evap_path</span><span class="p">)</span>
 </code></pre></div>
+<h2 id="packing-the-rasters-into-netcdf"><a class="toclink" href="#packing-the-rasters-into-netcdf">Packing the rasters into NetCDF</a><a class="headerlink" href="#packing-the-rasters-into-netcdf" title="Permanent link">#</a></h2>
+<p>A folder of per-date GeoTIFFs is the slowest thing the model can be driven from: every run
+re-opens every file. Packing each driver once turns that into a single read, and the calendar
+travels inside the file instead of living in the file names.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeteoInputs</span>
+
+<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">prec_path</span><span class="p">,</span> <span class="s2">"prec.nc"</span><span class="p">)</span>
+<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">evap_path</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_netcdf_files</span><span class="p">(</span><span class="s2">"prec.nc"</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">)</span>
+</code></pre></div>
+<p>It takes the same reader arguments as <code>from_rasters</code>, so <code>start</code> / <code>end</code> convert a window
+rather than the whole folder, and it refuses to write a file whose steps carry no dates —
+a NetCDF with no time axis cannot be checked against the model's date range later.</p>
+<p>On network storage, pass <code>gdal_env</code> to skip GDAL's per-open directory listing:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span>
+    <span class="n">temp_path</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="n">gdal_env</span><span class="o">=</span><span class="p">{</span><span class="s2">"GDAL_DISABLE_READDIR_ON_OPEN"</span><span class="p">:</span> <span class="s2">"EMPTY_DIR"</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>That listing is a remote round-trip per raster — 369 ms against 18 ms over one 14,823-file
+folder. It is not the default because disabling it also stops GDAL finding <code>.aux.xml</code>, world
+files and <code>.ovr</code> sidecars.</p>
+<h3 id="one-file-for-all-three-drivers"><a class="toclink" href="#one-file-for-all-three-drivers">One file for all three drivers</a><a class="headerlink" href="#one-file-for-all-three-drivers" title="Permanent link">#</a></h3>
+<p>The three single-variable files can then be merged, which names each variable after its
+driver so a reader asks for it by name rather than guessing at whatever the band was called:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MeteoInputs</span><span class="o">.</span><span class="n">combine_netcdf_files</span><span class="p">(</span><span class="s2">"prec.nc"</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">,</span> <span class="s2">"meteo.nc"</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
+    <span class="s2">"meteo.nc"</span><span class="p">,</span>
+    <span class="n">precipitation</span><span class="o">=</span><span class="s2">"precipitation"</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="s2">"temperature"</span><span class="p">,</span>
+    <span class="n">evapotranspiration</span><span class="o">=</span><span class="s2">"evapotranspiration"</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
 <p>Once the rasters are downloaded, prepare them for the model with <code>hapi.inputs.Inputs</code>, which aligns every raster to
 the catchment DEM — see <a href="gis-inputs.html">GIS inputs</a> and <a href="parameters.html">Parameters</a>.</p>
 
