@@ -78,7 +78,9 @@ class Run(Catchment):
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
             ROWS_MISMATCH_ERROR
         )
@@ -112,7 +114,9 @@ class Run(Catchment):
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
             ROWS_MISMATCH_ERROR
         )
@@ -168,7 +172,9 @@ class Run(Catchment):
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
             ROWS_MISMATCH_ERROR
         )
@@ -214,7 +220,9 @@ class Run(Catchment):
         """
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
             ROWS_MISMATCH_ERROR
         )
@@ -267,7 +275,9 @@ class Run(Catchment):
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
         assert np.shape(self.parameters)[0] == self.flow_network.rows, (
             ROWS_MISMATCH_ERROR
         )

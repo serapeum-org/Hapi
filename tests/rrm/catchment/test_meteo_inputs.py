@@ -566,6 +566,72 @@ class TestValidateAgainst:
         """
         from_netcdf_files.validate_against(13, 14)
 
+    def test_accepts_a_matching_calendar(self, from_netcdf_files: MeteoInputs):
+        """Test that a date_index the drivers span passes.
+
+        Args:
+            from_netcdf_files: The Coello drivers, 2009-01-01 to 2009-01-10.
+
+        Test scenario:
+            The normal case -- the model was built for exactly the period the rasters cover.
+        """
+        import pandas as pd
+
+        from_netcdf_files.validate_against(
+            13, 14, pd.date_range("2009-01-01", "2009-01-10", freq="D")
+        )
+
+    def test_rejects_a_calendar_of_a_different_length(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that a model spanning more dates than the drivers is refused.
+
+        Args:
+            from_netcdf_files: The Coello drivers, 10 daily steps.
+
+        Test scenario:
+            The run is positional, so 10 driver steps against a 32-day model silently pairs
+            each step with the wrong date instead of failing.
+        """
+        import pandas as pd
+
+        with pytest.raises(ValueError, match="10 steps but the model spans 32"):
+            from_netcdf_files.validate_against(
+                13, 14, pd.date_range("2009-01-01", "2009-02-01", freq="D")
+            )
+
+    def test_rejects_a_calendar_covering_a_different_period(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that a same-length window over different dates is refused.
+
+        Args:
+            from_netcdf_files: The Coello drivers, 2009-01-01 to 2009-01-10.
+
+        Test scenario:
+            A length check alone would pass a model shifted by a year, which would score the
+            simulation against the wrong observations.
+        """
+        import pandas as pd
+
+        with pytest.raises(ValueError, match="2010-01-01"):
+            from_netcdf_files.validate_against(
+                13, 14, pd.date_range("2010-01-01", "2010-01-10", freq="D")
+            )
+
+    def test_calendar_check_is_skipped_when_no_dates_are_given(
+        self, from_netcdf_files: MeteoInputs
+    ):
+        """Test that omitting date_index leaves the grid check alone.
+
+        Args:
+            from_netcdf_files: The Coello drivers.
+
+        Test scenario:
+            A caller with no calendar of its own must still be able to check the grid.
+        """
+        from_netcdf_files.validate_against(13, 14)
+
     @pytest.mark.parametrize(
         "rows, cols", [(12, 14), (13, 15), (1, 1)], ids=["rows", "cols", "both"]
     )

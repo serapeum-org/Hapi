@@ -674,18 +674,24 @@ class MeteoInputs:
             )
         self._ll_temp = value
 
-    def validate_against(self, rows: int, cols: int) -> None:
-        """Check the cubes cover the model's grid.
+    def validate_against(
+        self, rows: int, cols: int, date_index: pd.DatetimeIndex | None = None
+    ) -> None:
+        """Check the cubes cover the model's grid, and optionally its calendar.
 
         The three cubes already agree with each other -- that is settled at construction. This
-        is the other half: that they agree with the grid the GIS inputs defined.
+        is the other half: that they agree with the grid the GIS inputs defined, and with the
+        period the model was built for.
 
         Args:
             rows: Number of grid rows the model expects.
             cols: Number of grid columns.
+            date_index: The model's own dates. When given, the drivers must supply one step
+                per date. `None` skips the check, which is what a caller with no calendar of
+                its own does.
 
         Raises:
-            ValueError: The cubes do not cover that grid.
+            ValueError: The cubes do not cover that grid, or they do not span `date_index`.
 
         Examples:
             >>> import numpy as np
@@ -703,6 +709,25 @@ class MeteoInputs:
             raise ValueError(
                 f"the meteorological inputs are {self.rows}x{self.cols} but the model grid is "
                 f"{rows}x{cols}; every input must share the catchment's grid"
+            )
+
+        if date_index is None:
+            return
+
+        if self.time_steps != len(date_index):
+            raise ValueError(
+                f"the meteorological inputs hold {self.time_steps} steps but the model spans "
+                f"{len(date_index)} ({date_index[0]:%Y-%m-%d} to {date_index[-1]:%Y-%m-%d}); "
+                "the run is positional, so a mismatch silently pairs each step with the wrong "
+                "date"
+            )
+        if self.time is not None and (
+            self.time[0] != date_index[0] or self.time[-1] != date_index[-1]
+        ):
+            raise ValueError(
+                f"the meteorological inputs cover {self.time[0]:%Y-%m-%d} to "
+                f"{self.time[-1]:%Y-%m-%d} but the model spans {date_index[0]:%Y-%m-%d} to "
+                f"{date_index[-1]:%Y-%m-%d}"
             )
 
     @classmethod

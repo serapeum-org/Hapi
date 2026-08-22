@@ -227,7 +227,9 @@ class Calibration(Catchment):
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
 
         # basic inputs
         # check if all inputs are included
@@ -372,7 +374,9 @@ class Calibration(Catchment):
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(self.flow_network.rows, self.flow_network.cols)
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
 
         # basic inputs
         # check if all inputs are included
