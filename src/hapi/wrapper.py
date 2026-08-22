@@ -174,7 +174,11 @@ class Wrapper:
             Model.conversion_factor,
         )
 
-        qlake = np.append(qlake, qlake[-1])
+        # No padding: `HBVLake.simulate` already prepends the initial-state slot, exactly as
+        # the distributed model does, and `muskingum_v` preserves length -- so `qlake` is
+        # already `simulation_steps` long and lines up with `quz` slot for slot. Appending a
+        # step here made it one longer than the array it is added to, which raised for every
+        # input and left this entry point unrunnable.
         # both lake & Quz are in m3/s
         Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
             Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
@@ -339,23 +343,20 @@ class Wrapper:
         Wrapper._set_maxbas_output_fields(Model)
 
         qlz1 = np.array(
-            [
-                np.nansum(Model.qlz[:, :, i])
-                for i in range(Model.meteo.simulation_steps)
-            ]
+            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
-            [
-                np.nansum(Model.quz[:, :, i])
-                for i in range(Model.meteo.simulation_steps)
-            ]
+            [np.nansum(Model.quz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
         )  # average of all cells (routed mm/timestep)
 
         qout = qlz1 + quz1
 
         # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)
 
-        Model.qout = qout[:-1] + Lake.QlakeR
+        # Both series carry the initial-state slot, and the non-lake FW1 path drops it from
+        # `qout` before returning -- so the lake series has to be trimmed the same way or the
+        # two cannot be added at all.
+        Model.qout = qout[:-1] + Lake.QlakeR[:-1]
 
     @staticmethod
     def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: Callable | None = None):
