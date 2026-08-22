@@ -302,10 +302,10 @@ class DistributedRRM:
                   array ``(rows, cols, TS)`` in m3/s.
         """
         MAXBAS = np.nanmax(Model.parameters[:, :, -1])
-        # replace novalue cells by nan
-        Model.flow_path_length_arr[
-            Model.flow_path_length_arr == Model.flow_network.no_data_value
-        ] = np.nan
+        # `read_flow_path_length` already masks this raster's own no-data cells to NaN via
+        # pyramids, so no sentinel comparison is needed here -- and the one that used to sit
+        # here compared against the *accumulation* raster's sentinel, which is a different
+        # raster and need not share a no-data value.
 
         MaxFPL = np.nanmax(Model.flow_path_length_arr)
         MinFPL = np.nanmin(Model.flow_path_length_arr)
