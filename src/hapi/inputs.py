@@ -28,6 +28,7 @@ import re
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -573,7 +574,7 @@ class MeteoInputs:
                 f"time has {len(self.time)} entries but the cubes hold {self.time_steps} steps"
             )
 
-    def __setattr__(self, name: str, value) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Set an attribute, dropping the derived long-term average when it goes stale.
 
         `ll_temp` is cached on first use, so replacing `temperature` afterwards would
@@ -710,7 +711,7 @@ class MeteoInputs:
         precipitation: str | Path,
         temperature: str | Path,
         evapotranspiration: str | Path,
-        **kwargs,
+        **kwargs: Any,
     ) -> MeteoInputs:
         r"""Read the three drivers from folders of date-stamped rasters.
 
