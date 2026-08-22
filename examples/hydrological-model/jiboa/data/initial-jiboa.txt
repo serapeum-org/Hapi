@@ -1,5 +1,0 @@
-0			SPOld
-5   		SMOld
-5			UZOld
-5			LZOld
-0			WCOld
