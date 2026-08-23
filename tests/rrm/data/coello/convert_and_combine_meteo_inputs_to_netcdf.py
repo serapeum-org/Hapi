@@ -1,11 +1,11 @@
 r"""Regenerate the Coello NetCDF fixtures from the raster folders.
 
-Packs `prec/`, `temp/` and `evap/` into one NetCDF each, then merges the three into
-`meteo.nc`, whose variables are named after the drivers.
+Two steps, four files: each of `prec/`, `temp/` and `evap/` is packed into its own NetCDF,
+then the three are merged into `meteo.nc` with the variables named after the drivers.
 
 Run from the repository root:
 
-    pixi run -e dev python tests/rrm/data/coello/convert_meteo_inputs_to_netcdf.py
+    pixi run -e dev python tests/rrm/data/coello/convert_and_combine_meteo_inputs_to_netcdf.py
 
 The Coello rasters are named `0_Tair2m_..._2009.01.01.tif` -- a `%Y.%m.%d` date with dots.
 Rhine's are `0_Temp_..._1979_1_1.tif`, so they need `r"\d{4}_\d{1,2}_\d{1,2}"` and
@@ -21,26 +21,29 @@ from hapi.inputs import METEO_VARIABLES, MeteoInputs
 
 root = "tests/rrm/data/coello"
 
-#: driver -> its raster folder. The NetCDF takes the folder's name.
+# Driver -> its raster folder; each NetCDF takes the folder's name.
 FOLDERS = {"precipitation": "prec", "temperature": "temp", "evapotranspiration": "evap"}
 
+# Where the date sits in the file names, and how to parse it.
 READER = dict(regex_string=r"\d{4}.\d{2}.\d{2}", file_name_data_fmt="%Y.%m.%d")
 
-# On a NAS, add gdal_env={"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR"} to READER: GDAL
-# otherwise lists the directory on every open, 369 ms per raster instead of 18 ms. It also
-# stops GDAL finding .aux.xml / world files / .ovr, so only when the folder has none.
+# On a NAS add gdal_env={"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR"} to READER -- GDAL
+# otherwise lists the directory per open, 369 ms a raster instead of 18 ms. It also hides
+# .aux.xml / world files / .ovr, so only where the folder has none.
 
-# %% Pack each driver, then merge the three
+# %% Convert: one NetCDF per driver
 packed = [
     MeteoInputs.raster_folder_to_netcdf(
         f"{root}/{folder}", f"{root}/{folder}.nc", **READER
     )
     for folder in FOLDERS.values()
 ]
+
+# %% Combine: the three into one, variables named after the drivers
 combined = MeteoInputs.combine_netcdf_files(*packed, f"{root}/meteo.nc")
 print(f"written    : {', '.join(p.name for p in packed)}, {combined.name}")
 
-# %% Check what was written still matches the rasters
+# %% Check the merged file still holds what the rasters do
 merged = MeteoInputs.from_netcdf(
     combined,
     precipitation="precipitation",
