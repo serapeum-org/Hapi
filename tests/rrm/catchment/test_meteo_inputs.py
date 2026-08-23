@@ -223,7 +223,7 @@ class TestPerVariableOverrides:
         return folders
 
     def test_a_shared_regex_cannot_serve_both_conventions(self, mixed_convention: dict):
-        """Test that the case `per_variable` exists for is real, not hypothetical.
+        r"""Test that the case `per_variable` exists for is real, not hypothetical.
 
         Test scenario:
             The documented download workflow takes rainfall from CHIRPS and the other two
@@ -242,7 +242,7 @@ class TestPerVariableOverrides:
     def test_per_variable_overrides_only_the_folder_it_names(
         self, mixed_convention: dict
     ):
-        """Test that each folder can be given the regex its own names need.
+        r"""Test that each folder can be given the regex its own names need.
 
         Test scenario:
             The override is merged over the shared arguments for that folder alone, so the

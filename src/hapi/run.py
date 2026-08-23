@@ -71,7 +71,7 @@ class Run(Catchment):
                 row counts, column counts, or temporal lengths.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        fd_rows, fd_cols = self.flow_network.flow_dir_arr.shape
         assert (
             fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
         ), GRID_MISMATCH_ERROR
