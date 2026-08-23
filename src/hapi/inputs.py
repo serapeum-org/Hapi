@@ -1087,7 +1087,15 @@ class MeteoInputs:
     def raster_folder_to_netcdf(
         path: str | Path,
         out_path: str | Path,
-        **kwargs: Any,
+        *,
+        glob: str = "*.tif",
+        regex_string: str = r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str | None = None,
+        start: str | int | None = None,
+        end: str | int | None = None,
+        fmt: str = "%Y-%m-%d",
+        gdal_env: dict[str, str] | None = None,
     ) -> Path:
         r"""Pack one driver's folder of dated rasters into a single NetCDF.
 
@@ -1096,16 +1104,26 @@ class MeteoInputs:
         once into a NetCDF makes later runs read one file, and makes the folder portable --
         the calendar travels inside the file instead of living in the file names.
 
-        The rasters are ordered by :func:`read_rasters`, so the same date handling applies:
-        the format is inferred from the names unless `file_name_data_fmt` says otherwise.
+        The rasters are ordered by :func:`read_rasters`, whose reader arguments are repeated
+        here rather than forwarded as `**kwargs`, so a typo is caught at this call rather
+        than one frame deeper.
 
         Args:
             path: Folder holding one variable's rasters.
             out_path: NetCDF file to write. Overwritten if it exists.
-            **kwargs: Forwarded to :func:`read_rasters` -- `glob`, `regex_string`, `date`,
-                `file_name_data_fmt`, `start`, `end`, `fmt`, `gdal_env`. Pass `start` / `end`
-                to convert a window rather than the whole folder, and `gdal_env` to skip
-                GDAL's per-open directory listing on network storage.
+            glob: :mod:`fnmatch` pattern selecting the rasters. Defaults to `"*.tif"`.
+            regex_string: Where the date sits in each file name.
+            date: Whether the matched value is a date. `False` orders by a plain index
+                instead, which carries no calendar and so cannot be written here.
+            file_name_data_fmt: `strptime` format of the date. Inferred from the names when
+                omitted; pass it for a layout the digits cannot settle, such as a day-first
+                `03.02.1990`.
+            start: Inclusive lower bound, to convert a window rather than the whole folder.
+            end: Inclusive upper bound; see `start`.
+            fmt: `strptime` format of `start` / `end`.
+            gdal_env: GDAL configuration applied for the read, e.g.
+                `{"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR"}` to skip the per-open
+                directory listing on network storage.
 
         Returns:
             Path: The file that was written.
@@ -1123,7 +1141,17 @@ class MeteoInputs:
             ...     "prec.nc", "temp.nc", "evap.nc"
             ... )
         """
-        collection = read_rasters(path, **kwargs)
+        collection = read_rasters(
+            path,
+            glob=glob,
+            regex_string=regex_string,
+            date=date,
+            file_name_data_fmt=file_name_data_fmt,
+            start=start,
+            end=end,
+            fmt=fmt,
+            gdal_env=gdal_env,
+        )
         if collection.time is None:
             raise ValueError(
                 f"the rasters in {path} carry no calendar, so the NetCDF would have no time "
