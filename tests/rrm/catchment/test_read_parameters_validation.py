@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 
 from hapi.catchment import Catchment
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
 MAXBAS_BANDS = 11
 MUSKINGUM_BANDS = 12
@@ -261,6 +262,71 @@ class TestReadParametersLumped:
 
         with pytest.raises(FileNotFoundError, match="does not exist"):
             model.read_parameters(str(tmp_path / "absent.csv"), False)
+
+
+class TestReadLumpedModelQInit:
+    """Tests for the `q_init` guard in `Catchment.read_lumped_model`."""
+
+    def test_a_float_initial_discharge_is_accepted(
+        self, coello_start_date: str, coello_end_date: str, coello_initial_cond: list
+    ):
+        """Test that the documented type is allowed through.
+
+        Test scenario:
+            `q_init` is annotated `float | None` and the conceptual model divides it in two
+            (`q_uz[0] = q_init / 2`), so a float is the only thing it can be. The guard used
+            to assert `not isinstance(q_init, float)` under the message "q_init should be of
+            type float", rejecting exactly the valid input -- so nobody could pass one.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond, q_init=5.0)
+
+        assert model.q_init == pytest.approx(5.0), (
+            f"the initial discharge must be stored, got {model.q_init}"
+        )
+
+    def test_omitting_the_initial_discharge_leaves_it_unset(
+        self, coello_start_date: str, coello_end_date: str, coello_initial_cond: list
+    ):
+        """Test that the guard does not fire when no initial discharge is given.
+
+        Test scenario:
+            `q_init=None` is the default and means "derive it from the initial state", so it
+            must skip the type check rather than fail it.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond)
+
+        assert model.q_init is None, (
+            f"expected no initial discharge, got {model.q_init}"
+        )
+
+    @pytest.mark.parametrize("bad", [5, "5.0", [5.0]], ids=["int", "str", "list"])
+    def test_a_non_float_initial_discharge_is_refused(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_initial_cond: list,
+        bad,
+    ):
+        """Test that anything other than a float is rejected, naming the type wanted.
+
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+            coello_initial_cond: Initial HBV state.
+            bad: A value of the wrong type.
+
+        Test scenario:
+            The value is divided in two inside the conceptual model, so a string or a list
+            fails there rather than here -- far from the call that supplied it.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        with pytest.raises(AssertionError, match="q_init should be of type float"):
+            model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond, q_init=bad)
 
 
 class TestReadLumpedInputs:

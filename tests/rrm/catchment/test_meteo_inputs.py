@@ -17,6 +17,7 @@ from pandas import DataFrame
 from pyramids.dataset import Dataset, DatasetCollection
 from pyramids.netcdf import NetCDF
 
+from hapi import inputs as inputs_module
 from hapi.catchment import Catchment
 from hapi.inputs import METEO_VARIABLES, FlowNetwork, MeteoInputs, read_rasters
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
@@ -413,6 +414,36 @@ class TestWritingNetcdf:
         with pytest.warns(UserWarning, match="matched no file name"):
             with pytest.raises(ValueError, match="no calendar"):
                 MeteoInputs.raster_folder_to_netcdf(tmp_path, tmp_path / "out.nc")
+
+    def test_out_of_order_rasters_are_refused(
+        self, coello_temp_path, monkeypatch, tmp_path
+    ):
+        """Test that a cube arriving out of order is not written.
+
+        Test scenario:
+            The ordering is `read_rasters`' job and it is checked there too, so this is the
+            belt to that braces: a NetCDF whose steps are shuffled looks perfectly valid
+            afterwards -- the count is right and the calendar is present -- so nothing
+            downstream could ever detect it. Cheaper to refuse at the write.
+        """
+        real = inputs_module.read_rasters
+
+        def shuffled(path, **kwargs):
+            collection = real(path, **kwargs)
+            collection.time = list(reversed(list(collection.time)))
+            return collection
+
+        monkeypatch.setattr(inputs_module, "read_rasters", shuffled)
+
+        with pytest.raises(ValueError, match="chronological order") as exc:
+            MeteoInputs.raster_folder_to_netcdf(coello_temp_path, tmp_path / "out.nc")
+
+        assert not (tmp_path / "out.nc").exists(), (
+            "the file must not be written when the order is wrong"
+        )
+        assert "wrong date" in str(exc.value), (
+            f"the error should say what goes wrong, got: {exc.value}"
+        )
 
     def test_combining_names_the_variables_after_the_drivers(
         self, from_netcdf_files: MeteoInputs, tmp_path
