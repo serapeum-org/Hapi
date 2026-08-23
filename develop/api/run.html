@@ -2071,7 +2071,7 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">                row counts, column counts, or temporal lengths.</span>
 <span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
         <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
@@ -2864,7 +2864,7 @@ row counts, column counts, or temporal lengths.</p>
 <span class="sd">            row counts, column counts, or temporal lengths.</span>
 <span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
     <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
