@@ -26,11 +26,11 @@ classifiers = [
 requires-python = ">= 3.11, <4"
 
 dependencies = [
+    "pyramids-gis >=0.54.0",
     "loguru >=0.7.2",
     "numpy >=2.1.3",
     "pandas >=3.0.0",
     "PyYAML >=6.0.2",
-    "pyramids-gis >=0.53.0",
     "requests >=2.31.0",
     "scipy >=1.17.0",
     "serapeum-utils >=0.2.0",

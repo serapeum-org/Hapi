@@ -1203,7 +1203,7 @@ class MeteoInputs:
 
         out = Path(out_path)
         out.unlink(missing_ok=True)
-        collection.to_netcdf(str(out))
+        collection.to_netcdf(out)
         logger.debug(
             f"{collection.time_length} rasters from {path} written to {out} "
             f"({stamps[0]:%Y-%m-%d} to {stamps[-1]:%Y-%m-%d})"
