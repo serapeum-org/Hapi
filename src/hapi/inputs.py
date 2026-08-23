@@ -941,8 +941,16 @@ class MeteoInputs:
         precipitation: str | Path,
         temperature: str | Path,
         evapotranspiration: str | Path,
+        *,
         per_variable: dict[str, dict[str, Any]] | None = None,
-        **kwargs: Any,
+        glob: str = "*.tif",
+        regex_string: str = r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str | None = None,
+        start: str | int | None = None,
+        end: str | int | None = None,
+        fmt: str = "%Y-%m-%d",
+        gdal_env: dict[str, str] | None = None,
     ) -> MeteoInputs:
         r"""Read the three drivers from folders of date-stamped rasters.
 
@@ -950,13 +958,24 @@ class MeteoInputs:
             precipitation: Folder of rainfall rasters.
             temperature: Folder of temperature rasters.
             evapotranspiration: Folder of evapotranspiration rasters.
-            per_variable: Per-folder overrides, keyed by driver name, merged over `kwargs`
-                for that folder only. Needed when the three folders come from different
-                sources, which the documented download workflow produces: CHIRPS names its
-                rainfall `..._2009.01.01.tif` while ERA5 names its temperature
-                `..._20090101.tif`, and no single `regex_string` finds the date in both.
-            **kwargs: Forwarded to :func:`read_rasters` for all three folders -- e.g.
-                `regex_string`, `date`, `file_name_data_fmt`, `start`, `end`, `fmt`, `glob`.
+            per_variable: Per-folder overrides, keyed by driver name, applied over the
+                shared arguments for that folder only. Needed when the three folders come
+                from different sources, which the documented download workflow produces:
+                CHIRPS names its rainfall `..._2009.01.01.tif` while ERA5 names its
+                temperature `..._20090101.tif`, and no single `regex_string` finds the date
+                in both. Its inner keys are the reader arguments below.
+            glob: :mod:`fnmatch` pattern selecting the rasters. Defaults to `"*.tif"`.
+            regex_string: Where the date sits in each file name.
+            date: Whether the matched value is a date. `False` orders by a plain index.
+            file_name_data_fmt: `strptime` format of the date. Inferred from the names when
+                omitted; pass it for a layout the digits cannot settle, such as a day-first
+                `03.02.1990`.
+            start: Inclusive lower bound, to read a window rather than the whole folder.
+            end: Inclusive upper bound; see `start`.
+            fmt: `strptime` format of `start` / `end`.
+            gdal_env: GDAL configuration applied for the reads, e.g.
+                `{"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR"}` to skip the per-open
+                directory listing on network storage.
 
         Returns:
             MeteoInputs: The three cubes plus a calendar -- the rainfall folder's when it carries
@@ -994,11 +1013,28 @@ class MeteoInputs:
                 f"expected any of {list(METEO_VARIABLES)}"
             )
 
+        shared = dict(
+            glob=glob,
+            regex_string=regex_string,
+            date=date,
+            file_name_data_fmt=file_name_data_fmt,
+            start=start,
+            end=end,
+            fmt=fmt,
+            gdal_env=gdal_env,
+        )
+        unknown_keys = {k for o in overrides.values() for k in o} - set(shared)
+        if unknown_keys:
+            raise TypeError(
+                f"per_variable holds {sorted(unknown_keys)}, which are not reader "
+                f"arguments; expected any of {sorted(shared)}"
+            )
+
         cubes, calendar = {}, None
         for name, path in zip(
             METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
         ):
-            collection = read_rasters(path, **{**kwargs, **overrides.get(name, {})})
+            collection = read_rasters(path, **{**shared, **overrides.get(name, {})})
             cubes[name] = np.moveaxis(np.asarray(collection.values), 0, -1)
             if calendar is None and collection.time is not None:
                 calendar = pd.DatetimeIndex(list(collection.time))

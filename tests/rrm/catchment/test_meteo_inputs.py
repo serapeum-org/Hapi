@@ -271,6 +271,29 @@ class TestPerVariableOverrides:
                 f"{name} came back out of order: {recovered}"
             )
 
+    def test_an_unknown_reader_argument_is_refused(self, mixed_convention: dict):
+        """Test that a typo inside an override is reported here, not one frame deeper.
+
+        Test scenario:
+            The outer keys are checked against the driver names, but the inner ones are the
+            reader's own arguments. Forwarding them unchecked meant a mistyped
+            `regex_strings` reached `read_rasters` before raising, away from the call that
+            wrote it -- and, worse, an override that silently did nothing would leave that
+            folder on the shared argument and reintroduce the scrambling it was added to
+            prevent.
+        """
+        with pytest.raises(TypeError, match="not reader arguments") as exc:
+            MeteoInputs.from_rasters(
+                mixed_convention["precipitation"],
+                mixed_convention["temperature"],
+                mixed_convention["evapotranspiration"],
+                per_variable={"temperature": {"regex_strings": r"\d{8}"}},
+            )
+
+        assert "regex_string" in str(exc.value), (
+            f"the error should list the arguments it accepts: {exc.value}"
+        )
+
     def test_an_unknown_driver_name_is_refused(self, mixed_convention: dict):
         """Test that a typo in the override key is reported rather than ignored.
 
