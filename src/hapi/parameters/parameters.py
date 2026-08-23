@@ -1,17 +1,17 @@
 """Hydrological model parameters.
 
-The ``hapi.parameters.parameters`` module provides classes for
+The `hapi.parameters.parameters` module provides classes for
 interacting with the Figshare API to retrieve, download, and manage
 global hydrological parameter sets used by the hapi framework.
 
 The module contains four main classes:
 
-- ``FigshareAPIClient``: low-level HTTP client for the Figshare REST API.
-- ``FileManager``: static helpers for downloading files and clearing
+- `FigshareAPIClient`: low-level HTTP client for the Figshare REST API.
+- `FileManager`: static helpers for downloading files and clearing
   directories.
-- ``ParameterManager``: maps user-friendly parameter-set IDs to Figshare
+- `ParameterManager`: maps user-friendly parameter-set IDs to Figshare
   article IDs and orchestrates file listing / downloading.
-- ``Parameter``: high-level facade that wires everything together and
+- `Parameter`: high-level facade that wires everything together and
   exposes a CLI-friendly interface.
 """
 
@@ -45,7 +45,7 @@ class FigshareAPIClient:
         Args:
             headers (dict, optional): Headers to include in the API
                 requests. Defaults to None, which uses
-                ``{"Content-Type": "application/json"}``.
+                `{"Content-Type": "application/json"}`.
         """
         self.base_url = BASE_URL
         self.headers = headers or {"Content-Type": "application/json"}
@@ -60,7 +60,7 @@ class FigshareAPIClient:
         """Send an HTTP request to the Figshare API.
 
         Args:
-            method (str): HTTP method (e.g., ``'GET'``, ``'POST'``).
+            method (str): HTTP method (e.g., `'GET'`, `'POST'`).
             endpoint (str): API endpoint to interact with.
             data (dict, optional): Payload to include in the request.
                 Defaults to None.
@@ -166,7 +166,7 @@ class FileManager:
                 will be saved.
 
         Raises:
-            ValueError: If the URL scheme is not ``http`` or ``https``.
+            ValueError: If the URL scheme is not `http` or `https`.
             requests.exceptions.HTTPError: If the download request
                 fails.
 
@@ -224,7 +224,7 @@ class ParameterManager:
     r"""Manage hydrological parameters via the Figshare API.
 
     This class maps user-friendly parameter-set identifiers (1--10,
-    ``"avg"``, ``"max"``, ``"min"``) to Figshare article IDs and
+    `"avg"`, `"max"`, `"min"`) to Figshare article IDs and
     provides convenience methods for listing and downloading files.
 
     Attributes:
@@ -232,8 +232,8 @@ class ParameterManager:
             set.
         PARAMETER_NAMES (list): Canonical names of all 18 HBV
             parameters.
-        PARAMETER_SET_ID (list): User-friendly IDs (1--10, ``"avg"``,
-            ``"max"``, ``"min"``).
+        PARAMETER_SET_ID (list): User-friendly IDs (1--10, `"avg"`,
+            `"max"`, `"min"`).
         api_client (FigshareAPIClient): The underlying API client.
 
     Examples:
@@ -303,7 +303,7 @@ class ParameterManager:
 
         Args:
             set_id (int | str): The user-friendly ID of the
-                parameter set (1--10, ``"avg"``, ``"max"``, ``"min"``).
+                parameter set (1--10, `"avg"`, `"max"`, `"min"`).
             version (int, optional): The version of the parameter set.
                 Defaults to None (latest version).
 
@@ -339,8 +339,8 @@ class ParameterManager:
 
         Returns:
             list: A list of file dictionaries, each containing keys
-                such as ``"id"``, ``"name"``, and
-                ``"download_url"``.
+                such as `"id"`, `"name"`, and
+                `"download_url"`.
 
         Examples:
             >>> api_client = FigshareAPIClient()
@@ -385,14 +385,14 @@ class ParameterManager:
 
         Args:
             set_id (int | str): The parameter set ID (1--10,
-                ``"avg"``, ``"max"``, ``"min"``).
+                `"avg"`, `"max"`, `"min"`).
 
         Returns:
             int: The corresponding Figshare article ID.
 
         Raises:
             ValueError: If *set_id* is not found in
-                ``PARAMETER_SET_ID``.
+                `PARAMETER_SET_ID`.
 
         Examples:
             >>> api_client = FigshareAPIClient()
@@ -412,7 +412,7 @@ class ParameterManager:
 class Parameter:
     r"""High-level interface for handling hydrological parameters.
 
-    The ``HAPI_DATA_DIR`` environment variable must be set to the
+    The `HAPI_DATA_DIR` environment variable must be set to the
     directory where parameter sets will be saved when *download_dir* is
     not provided.
 
@@ -450,11 +450,11 @@ class Parameter:
                 use. Defaults to 1.
             download_dir (Path, optional): Directory where parameter
                 files are saved. Defaults to None, which reads from
-                the ``HAPI_DATA_DIR`` environment variable.
+                the `HAPI_DATA_DIR` environment variable.
 
         Raises:
             ValueError: If *download_dir* is None and the
-                ``HAPI_DATA_DIR`` environment variable is not set.
+                `HAPI_DATA_DIR` environment variable is not set.
         """
         self.version = version
         self.api_client = FigshareAPIClient()
@@ -472,13 +472,13 @@ class Parameter:
         r"""Download all parameter sets.
 
         Iterates over every entry in
-        ``ParameterManager.PARAMETER_SET_ID`` and downloads the
+        `ParameterManager.PARAMETER_SET_ID` and downloads the
         corresponding files.
 
         Args:
             download_dir (Path, optional): The directory where
                 parameter sets will be saved. Defaults to None (uses
-                the instance ``download_dir``).
+                the instance `download_dir`).
 
         Examples:
             >>> parameter = Parameter(version=1)  # doctest: +SKIP
@@ -495,11 +495,11 @@ class Parameter:
 
         Args:
             set_id (int | str): The user-friendly ID of the
-                parameter set to download (1--10, ``"avg"``, ``"max"``,
-                ``"min"``).
+                parameter set to download (1--10, `"avg"`, `"max"`,
+                `"min"`).
             download_dir (Path, optional): The directory where the
                 parameter set will be saved. Defaults to None (uses
-                the instance ``download_dir`` with a subdirectory
+                the instance `download_dir` with a subdirectory
                 named after *set_id*).
 
         Raises:
@@ -548,10 +548,10 @@ def main():
 
     This entry point provides three sub-commands:
 
-    - ``download-parameters`` -- download every parameter set.
-    - ``download-parameter-set <set_id>`` -- download one parameter
+    - `download-parameters` -- download every parameter set.
+    - `download-parameter-set <set_id>` -- download one parameter
       set.
-    - ``list-parameter-names`` -- print all parameter names to stdout.
+    - `list-parameter-names` -- print all parameter names to stdout.
 
     Raises:
         ValueError: If invalid or insufficient arguments are provided.
@@ -575,9 +575,9 @@ def main():
             list-parameter-names
 
     See Also:
-        ``hapi.parameters.parameters.Parameter``: For details on the
-            ``Parameter`` class and its methods.
-        ``hapi.parameters.parameters.ParameterManager``: For managing
+        `hapi.parameters.parameters.Parameter`: For details on the
+            `Parameter` class and its methods.
+        `hapi.parameters.parameters.ParameterManager`: For managing
             parameter-related operations.
     """
     import argparse
