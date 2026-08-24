@@ -2460,9 +2460,7 @@ cross-checking against the model's own date index; the run itself is positional.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 668</span>
-<span class="normal"> 669</span>
-<span class="normal"> 670</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 670</span>
 <span class="normal"> 671</span>
 <span class="normal"> 672</span>
 <span class="normal"> 673</span>
@@ -3111,7 +3109,77 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="normal">1316</span>
 <span class="normal">1317</span>
 <span class="normal">1318</span>
-<span class="normal">1319</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">1319</span>
+<span class="normal">1320</span>
+<span class="normal">1321</span>
+<span class="normal">1322</span>
+<span class="normal">1323</span>
+<span class="normal">1324</span>
+<span class="normal">1325</span>
+<span class="normal">1326</span>
+<span class="normal">1327</span>
+<span class="normal">1328</span>
+<span class="normal">1329</span>
+<span class="normal">1330</span>
+<span class="normal">1331</span>
+<span class="normal">1332</span>
+<span class="normal">1333</span>
+<span class="normal">1334</span>
+<span class="normal">1335</span>
+<span class="normal">1336</span>
+<span class="normal">1337</span>
+<span class="normal">1338</span>
+<span class="normal">1339</span>
+<span class="normal">1340</span>
+<span class="normal">1341</span>
+<span class="normal">1342</span>
+<span class="normal">1343</span>
+<span class="normal">1344</span>
+<span class="normal">1345</span>
+<span class="normal">1346</span>
+<span class="normal">1347</span>
+<span class="normal">1348</span>
+<span class="normal">1349</span>
+<span class="normal">1350</span>
+<span class="normal">1351</span>
+<span class="normal">1352</span>
+<span class="normal">1353</span>
+<span class="normal">1354</span>
+<span class="normal">1355</span>
+<span class="normal">1356</span>
+<span class="normal">1357</span>
+<span class="normal">1358</span>
+<span class="normal">1359</span>
+<span class="normal">1360</span>
+<span class="normal">1361</span>
+<span class="normal">1362</span>
+<span class="normal">1363</span>
+<span class="normal">1364</span>
+<span class="normal">1365</span>
+<span class="normal">1366</span>
+<span class="normal">1367</span>
+<span class="normal">1368</span>
+<span class="normal">1369</span>
+<span class="normal">1370</span>
+<span class="normal">1371</span>
+<span class="normal">1372</span>
+<span class="normal">1373</span>
+<span class="normal">1374</span>
+<span class="normal">1375</span>
+<span class="normal">1376</span>
+<span class="normal">1377</span>
+<span class="normal">1378</span>
+<span class="normal">1379</span>
+<span class="normal">1380</span>
+<span class="normal">1381</span>
+<span class="normal">1382</span>
+<span class="normal">1383</span>
+<span class="normal">1384</span>
+<span class="normal">1385</span>
+<span class="normal">1386</span>
+<span class="normal">1387</span>
+<span class="normal">1388</span>
+<span class="normal">1389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MeteoInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.</span>
 
@@ -3493,6 +3561,9 @@ cross-checking against the model's own date index; the run itself is positional.
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Read the three drivers from one NetCDF per variable.</span>
 
@@ -3503,6 +3574,9 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="sd">            variable: Name of the variable to take from each file. `None` (default) takes each</span>
 <span class="sd">                file's only variable, which is what `DatasetCollection.to_netcdf` writes for a</span>
 <span class="sd">                single-band collection.</span>
+<span class="sd">            start: Inclusive lower bound on the period to keep. `None` reads the whole file.</span>
+<span class="sd">            end: Inclusive upper bound; see `start`.</span>
+<span class="sd">            fmt: `strptime` format of `start` / `end` when they are strings.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            MeteoInputs: The three cubes plus a calendar -- the rainfall file's when it carries</span>
@@ -3531,6 +3605,7 @@ cross-checking against the model's own date index; the run itself is positional.
             <span class="n">cubes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cube_from_netcdf</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">calendar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">calendar</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+        <span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_window</span><span class="p">(</span><span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">cubes</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">calendar</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
@@ -3540,6 +3615,9 @@ cross-checking against the model's own date index; the run itself is positional.
         <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Read all three drivers from one NetCDF holding them as separate variables.</span>
 
@@ -3548,9 +3626,15 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="sd">            precipitation: Name of the rainfall variable inside it.</span>
 <span class="sd">            temperature: Name of the temperature variable.</span>
 <span class="sd">            evapotranspiration: Name of the evapotranspiration variable.</span>
+<span class="sd">            start: Inclusive lower bound on the period to keep. `None` reads the whole file.</span>
+<span class="sd">                A packed record often spans decades while a run covers one year, and the</span>
+<span class="sd">                drivers pair with the model's dates by position, so the window is what makes</span>
+<span class="sd">                a long file usable for a short run.</span>
+<span class="sd">            end: Inclusive upper bound; see `start`.</span>
+<span class="sd">            fmt: `strptime` format of `start` / `end` when they are strings.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            MeteoInputs: The three cubes plus the file's calendar.</span>
+<span class="sd">            MeteoInputs: The three cubes plus the file's calendar, trimmed to the window.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: One of the named variables is not in the file.</span>
@@ -3563,7 +3647,8 @@ cross-checking against the model's own date index; the run itself is positional.
                 <span class="n">METEO_VARIABLES</span><span class="p">,</span> <span class="p">(</span><span class="n">precipitation</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">evapotranspiration</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">cubes</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">))</span>
+        <span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_window</span><span class="p">(</span><span class="n">cubes</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">),</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">cubes</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">calendar</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">raster_folder_to_netcdf</span><span class="p">(</span>
@@ -3726,6 +3811,57 @@ cross-checking against the model's own date index; the run itself is positional.
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_window</span><span class="p">(</span>
+        <span class="n">cubes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">calendar</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Trim the cubes and the calendar to an inclusive date range.</span>
+
+<span class="sd">        The raster loader takes `start` / `end` because a folder is read file by file. A</span>
+<span class="sd">        NetCDF is read whole, so the window is applied after the fact -- but a caller running</span>
+<span class="sd">        one year out of a forty-year file still needs it, and the drivers pair with the</span>
+<span class="sd">        model's dates by position, so an untrimmed cube is rejected rather than merely large.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cubes: The three driver cubes, keyed by name.</span>
+<span class="sd">            calendar: The time axis, or None when the file carries no dates.</span>
+<span class="sd">            start: Inclusive lower bound, or None for "from the beginning".</span>
+<span class="sd">            end: Inclusive upper bound, or None for "to the end".</span>
+<span class="sd">            fmt: `strptime` format for `start` / `end` when they are strings.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: The trimmed cubes and calendar, unchanged when no bound was given.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: A bound was given but the file carries no calendar to apply it to,</span>
+<span class="sd">                or the range selects no step.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span>
+        <span class="k">if</span> <span class="n">calendar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"start/end need a calendar, and this file carries none; read it whole, or "</span>
+                <span class="s2">"rebuild it from rasters whose names hold the dates"</span>
+            <span class="p">)</span>
+
+        <span class="n">low</span> <span class="o">=</span> <span class="n">_as_datetime</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">_as_datetime</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">calendar</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keep</span> <span class="o">&amp;=</span> <span class="n">calendar</span> <span class="o">&gt;=</span> <span class="n">low</span>
+        <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keep</span> <span class="o">&amp;=</span> <span class="n">calendar</span> <span class="o">&lt;=</span> <span class="n">high</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"no step falls in [</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">]; the file covers "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">calendar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">%Y-%m-%d</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">calendar</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">%Y-%m-%d</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">c</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">keep</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cubes</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="n">calendar</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NetCDF</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Return a NetCDF's decoded time axis, or None when it carries no calendar.</span>
 
@@ -3816,9 +3952,7 @@ not have one entry per timestep.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">721</span>
 <span class="normal">722</span>
 <span class="normal">723</span>
 <span class="normal">724</span>
@@ -3841,7 +3975,9 @@ not have one entry per timestep.</p>
 <span class="normal">741</span>
 <span class="normal">742</span>
 <span class="normal">743</span>
-<span class="normal">744</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Check the three cubes are 3D and share a shape.</span>
 
 <span class="sd">    Raises:</span>
@@ -3971,9 +4107,7 @@ wrong grid. Re-check on assignment instead.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">748</span>
 <span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
@@ -3994,7 +4128,9 @@ wrong grid. Re-check on assignment instead.</p>
 <span class="normal">766</span>
 <span class="normal">767</span>
 <span class="normal">768</span>
-<span class="normal">769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Set an attribute, keeping the three cubes in agreement.</span>
 
 <span class="sd">    The class promises the cubes share a shape, and `__post_init__` alone cannot hold</span>
@@ -4222,26 +4358,7 @@ contributes would be a guess.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1213</span>
-<span class="normal">1214</span>
-<span class="normal">1215</span>
-<span class="normal">1216</span>
-<span class="normal">1217</span>
-<span class="normal">1218</span>
-<span class="normal">1219</span>
-<span class="normal">1220</span>
-<span class="normal">1221</span>
-<span class="normal">1222</span>
-<span class="normal">1223</span>
-<span class="normal">1224</span>
-<span class="normal">1225</span>
-<span class="normal">1226</span>
-<span class="normal">1227</span>
-<span class="normal">1228</span>
-<span class="normal">1229</span>
-<span class="normal">1230</span>
-<span class="normal">1231</span>
-<span class="normal">1232</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1232</span>
 <span class="normal">1233</span>
 <span class="normal">1234</span>
 <span class="normal">1235</span>
@@ -4289,7 +4406,26 @@ contributes would be a guess.</p>
 <span class="normal">1277</span>
 <span class="normal">1278</span>
 <span class="normal">1279</span>
-<span class="normal">1280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1280</span>
+<span class="normal">1281</span>
+<span class="normal">1282</span>
+<span class="normal">1283</span>
+<span class="normal">1284</span>
+<span class="normal">1285</span>
+<span class="normal">1286</span>
+<span class="normal">1287</span>
+<span class="normal">1288</span>
+<span class="normal">1289</span>
+<span class="normal">1290</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span>
+<span class="normal">1293</span>
+<span class="normal">1294</span>
+<span class="normal">1295</span>
+<span class="normal">1296</span>
+<span class="normal">1297</span>
+<span class="normal">1298</span>
+<span class="normal">1299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_netcdf_files</span><span class="p">(</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -4372,7 +4508,7 @@ contributes would be a guess.</p>
 
 
 <h4 id="hapi.inputs.MeteoInputs.from_netcdf" class="doc doc-heading"><a href="#hapi.inputs.MeteoInputs.from_netcdf" class="toclink">
-            <code class="highlight language-python"><span class="n">from_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span></code>
+            <code class="highlight language-python"><span class="n">from_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'%Y-%m-</span><span class="si">%d</span><span class="s1">'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
@@ -4461,6 +4597,57 @@ contributes would be a guess.</p>
                 <em>required</em>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>start</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | <span title="datetime.datetime">datetime</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Inclusive lower bound on the period to keep. <code>None</code> reads the whole file.
+A packed record often spans decades while a run covers one year, and the
+drivers pair with the model's dates by position, so the window is what makes
+a long file usable for a short run.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>end</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | <span title="datetime.datetime">datetime</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Inclusive upper bound; see <code>start</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>fmt</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>strptime</code> format of <code>start</code> / <code>end</code> when they are strings.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;%Y-%m-%d&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -4485,7 +4672,7 @@ contributes would be a guess.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The three cubes plus the file's calendar.</p>
+                <p>The three cubes plus the file's calendar, trimmed to the window.</p>
               </div>
             </td>
           </tr>
@@ -4528,16 +4715,7 @@ contributes would be a guess.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1090</span>
-<span class="normal">1091</span>
-<span class="normal">1092</span>
-<span class="normal">1093</span>
-<span class="normal">1094</span>
-<span class="normal">1095</span>
-<span class="normal">1096</span>
-<span class="normal">1097</span>
-<span class="normal">1098</span>
-<span class="normal">1099</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1099</span>
 <span class="normal">1100</span>
 <span class="normal">1101</span>
 <span class="normal">1102</span>
@@ -4558,13 +4736,35 @@ contributes would be a guess.</p>
 <span class="normal">1117</span>
 <span class="normal">1118</span>
 <span class="normal">1119</span>
-<span class="normal">1120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1120</span>
+<span class="normal">1121</span>
+<span class="normal">1122</span>
+<span class="normal">1123</span>
+<span class="normal">1124</span>
+<span class="normal">1125</span>
+<span class="normal">1126</span>
+<span class="normal">1127</span>
+<span class="normal">1128</span>
+<span class="normal">1129</span>
+<span class="normal">1130</span>
+<span class="normal">1131</span>
+<span class="normal">1132</span>
+<span class="normal">1133</span>
+<span class="normal">1134</span>
+<span class="normal">1135</span>
+<span class="normal">1136</span>
+<span class="normal">1137</span>
+<span class="normal">1138</span>
+<span class="normal">1139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Read all three drivers from one NetCDF holding them as separate variables.</span>
 
@@ -4573,9 +4773,15 @@ contributes would be a guess.</p>
 <span class="sd">        precipitation: Name of the rainfall variable inside it.</span>
 <span class="sd">        temperature: Name of the temperature variable.</span>
 <span class="sd">        evapotranspiration: Name of the evapotranspiration variable.</span>
+<span class="sd">        start: Inclusive lower bound on the period to keep. `None` reads the whole file.</span>
+<span class="sd">            A packed record often spans decades while a run covers one year, and the</span>
+<span class="sd">            drivers pair with the model's dates by position, so the window is what makes</span>
+<span class="sd">            a long file usable for a short run.</span>
+<span class="sd">        end: Inclusive upper bound; see `start`.</span>
+<span class="sd">        fmt: `strptime` format of `start` / `end` when they are strings.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        MeteoInputs: The three cubes plus the file's calendar.</span>
+<span class="sd">        MeteoInputs: The three cubes plus the file's calendar, trimmed to the window.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        KeyError: One of the named variables is not in the file.</span>
@@ -4588,7 +4794,8 @@ contributes would be a guess.</p>
             <span class="n">METEO_VARIABLES</span><span class="p">,</span> <span class="p">(</span><span class="n">precipitation</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">evapotranspiration</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">cubes</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">))</span>
+    <span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_window</span><span class="p">(</span><span class="n">cubes</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">),</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">cubes</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">calendar</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4604,7 +4811,7 @@ contributes would be a guess.</p>
 
 
 <h4 id="hapi.inputs.MeteoInputs.from_netcdf_files" class="doc doc-heading"><a href="#hapi.inputs.MeteoInputs.from_netcdf_files" class="toclink">
-            <code class="highlight language-python"><span class="n">from_netcdf_files</span><span class="p">(</span><span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span></code>
+            <code class="highlight language-python"><span class="n">from_netcdf_files</span><span class="p">(</span><span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'%Y-%m-</span><span class="si">%d</span><span class="s1">'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
@@ -4695,6 +4902,54 @@ single-band collection.</p>
                   <code>None</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>start</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | <span title="datetime.datetime">datetime</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Inclusive lower bound on the period to keep. <code>None</code> reads the whole file.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>end</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | <span title="datetime.datetime">datetime</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Inclusive upper bound; see <code>start</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>fmt</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>strptime</code> format of <code>start</code> / <code>end</code> when they are strings.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;%Y-%m-%d&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -4764,9 +5019,7 @@ three files do not yield the same shape.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1043</span>
-<span class="normal">1044</span>
-<span class="normal">1045</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1045</span>
 <span class="normal">1046</span>
 <span class="normal">1047</span>
 <span class="normal">1048</span>
@@ -4809,13 +5062,25 @@ three files do not yield the same shape.</p>
 <span class="normal">1085</span>
 <span class="normal">1086</span>
 <span class="normal">1087</span>
-<span class="normal">1088</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span>
+<span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span>
+<span class="normal">1093</span>
+<span class="normal">1094</span>
+<span class="normal">1095</span>
+<span class="normal">1096</span>
+<span class="normal">1097</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf_files</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">evapotranspiration</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeteoInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Read the three drivers from one NetCDF per variable.</span>
 
@@ -4826,6 +5091,9 @@ three files do not yield the same shape.</p>
 <span class="sd">        variable: Name of the variable to take from each file. `None` (default) takes each</span>
 <span class="sd">            file's only variable, which is what `DatasetCollection.to_netcdf` writes for a</span>
 <span class="sd">            single-band collection.</span>
+<span class="sd">        start: Inclusive lower bound on the period to keep. `None` reads the whole file.</span>
+<span class="sd">        end: Inclusive upper bound; see `start`.</span>
+<span class="sd">        fmt: `strptime` format of `start` / `end` when they are strings.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        MeteoInputs: The three cubes plus a calendar -- the rainfall file's when it carries</span>
@@ -4854,6 +5122,7 @@ three files do not yield the same shape.</p>
         <span class="n">cubes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cube_from_netcdf</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">calendar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">calendar</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_calendar</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+    <span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_window</span><span class="p">(</span><span class="n">cubes</span><span class="p">,</span> <span class="n">calendar</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">cubes</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">calendar</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5193,9 +5462,7 @@ one, otherwise the first source that does, and None when none do.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 938</span>
-<span class="normal"> 939</span>
-<span class="normal"> 940</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 940</span>
 <span class="normal"> 941</span>
 <span class="normal"> 942</span>
 <span class="normal"> 943</span>
@@ -5296,7 +5563,9 @@ one, otherwise the first source that does, and None when none do.</p>
 <span class="normal">1038</span>
 <span class="normal">1039</span>
 <span class="normal">1040</span>
-<span class="normal">1041</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_rasters</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -5739,26 +6008,7 @@ time axis to write.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1122</span>
-<span class="normal">1123</span>
-<span class="normal">1124</span>
-<span class="normal">1125</span>
-<span class="normal">1126</span>
-<span class="normal">1127</span>
-<span class="normal">1128</span>
-<span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
-<span class="normal">1133</span>
-<span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span>
-<span class="normal">1137</span>
-<span class="normal">1138</span>
-<span class="normal">1139</span>
-<span class="normal">1140</span>
-<span class="normal">1141</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1141</span>
 <span class="normal">1142</span>
 <span class="normal">1143</span>
 <span class="normal">1144</span>
@@ -5828,7 +6078,26 @@ time axis to write.</p>
 <span class="normal">1208</span>
 <span class="normal">1209</span>
 <span class="normal">1210</span>
-<span class="normal">1211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1211</span>
+<span class="normal">1212</span>
+<span class="normal">1213</span>
+<span class="normal">1214</span>
+<span class="normal">1215</span>
+<span class="normal">1216</span>
+<span class="normal">1217</span>
+<span class="normal">1218</span>
+<span class="normal">1219</span>
+<span class="normal">1220</span>
+<span class="normal">1221</span>
+<span class="normal">1222</span>
+<span class="normal">1223</span>
+<span class="normal">1224</span>
+<span class="normal">1225</span>
+<span class="normal">1226</span>
+<span class="normal">1227</span>
+<span class="normal">1228</span>
+<span class="normal">1229</span>
+<span class="normal">1230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">raster_folder_to_netcdf</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">out_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -6169,9 +6438,7 @@ its own does.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">882</span>
-<span class="normal">883</span>
-<span class="normal">884</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">884</span>
 <span class="normal">885</span>
 <span class="normal">886</span>
 <span class="normal">887</span>
@@ -6223,7 +6490,9 @@ its own does.</p>
 <span class="normal">933</span>
 <span class="normal">934</span>
 <span class="normal">935</span>
-<span class="normal">936</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_against</span><span class="p">(</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_against</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">date_index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Check the cubes cover the model's grid, and optionally its calendar.</span>
@@ -6457,9 +6726,7 @@ is slated to move to <code>digital-rivers</code>, so it is left as it is and doc
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">358</span>
 <span class="normal">359</span>
 <span class="normal">360</span>
 <span class="normal">361</span>
@@ -6739,7 +7006,9 @@ is slated to move to <code>digital-rivers</code>, so it is left as it is and doc
 <span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
-<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlowNetwork</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The catchment's routing network and the grid it defines.</span>
 
@@ -7075,9 +7344,7 @@ a cell index would mean a different place in each.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
 <span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
@@ -7090,7 +7357,9 @@ a cell index would mean a different place in each.</p>
 <span class="normal">435</span>
 <span class="normal">436</span>
 <span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Check the two rasters describe the same grid.</span>
 
 <span class="sd">    Raises:</span>
@@ -7180,16 +7449,16 @@ a cell index would mean a different place in each.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">477</span>
 <span class="normal">478</span>
 <span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span>
 <span class="normal">482</span>
 <span class="normal">483</span>
-<span class="normal">484</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Drop the cached `acc_val` when the array it is derived from is replaced.</span>
 
 <span class="sd">    Args:</span>
@@ -7448,9 +7717,7 @@ inside the catchment.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
 <span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
@@ -7519,7 +7786,9 @@ inside the catchment.</p>
 <span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
-<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_rasters</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span> <span class="n">flow_acc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">flow_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlowNetwork</span><span class="p">:</span>
@@ -7741,9 +8010,7 @@ sends every cell straight to the outlet and does not.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">526</span>
 <span class="normal">527</span>
 <span class="normal">528</span>
 <span class="normal">529</span>
@@ -7762,7 +8029,9 @@ sends every cell straight to the outlet and does not.</p>
 <span class="normal">542</span>
 <span class="normal">543</span>
 <span class="normal">544</span>
-<span class="normal">545</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Report whether the network covers a given grid.</span>
 
 <span class="sd">    Args:</span>
@@ -8207,9 +8476,7 @@ excluded every file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
@@ -8291,7 +8558,9 @@ excluded every file.</p>
 <span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rasters</span><span class="p">(</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rasters</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">glob</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"*.tif"</span><span class="p">,</span>
@@ -8445,77 +8714,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1344</span>
-<span class="normal">1345</span>
-<span class="normal">1346</span>
-<span class="normal">1347</span>
-<span class="normal">1348</span>
-<span class="normal">1349</span>
-<span class="normal">1350</span>
-<span class="normal">1351</span>
-<span class="normal">1352</span>
-<span class="normal">1353</span>
-<span class="normal">1354</span>
-<span class="normal">1355</span>
-<span class="normal">1356</span>
-<span class="normal">1357</span>
-<span class="normal">1358</span>
-<span class="normal">1359</span>
-<span class="normal">1360</span>
-<span class="normal">1361</span>
-<span class="normal">1362</span>
-<span class="normal">1363</span>
-<span class="normal">1364</span>
-<span class="normal">1365</span>
-<span class="normal">1366</span>
-<span class="normal">1367</span>
-<span class="normal">1368</span>
-<span class="normal">1369</span>
-<span class="normal">1370</span>
-<span class="normal">1371</span>
-<span class="normal">1372</span>
-<span class="normal">1373</span>
-<span class="normal">1374</span>
-<span class="normal">1375</span>
-<span class="normal">1376</span>
-<span class="normal">1377</span>
-<span class="normal">1378</span>
-<span class="normal">1379</span>
-<span class="normal">1380</span>
-<span class="normal">1381</span>
-<span class="normal">1382</span>
-<span class="normal">1383</span>
-<span class="normal">1384</span>
-<span class="normal">1385</span>
-<span class="normal">1386</span>
-<span class="normal">1387</span>
-<span class="normal">1388</span>
-<span class="normal">1389</span>
-<span class="normal">1390</span>
-<span class="normal">1391</span>
-<span class="normal">1392</span>
-<span class="normal">1393</span>
-<span class="normal">1394</span>
-<span class="normal">1395</span>
-<span class="normal">1396</span>
-<span class="normal">1397</span>
-<span class="normal">1398</span>
-<span class="normal">1399</span>
-<span class="normal">1400</span>
-<span class="normal">1401</span>
-<span class="normal">1402</span>
-<span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span>
-<span class="normal">1406</span>
-<span class="normal">1407</span>
-<span class="normal">1408</span>
-<span class="normal">1409</span>
-<span class="normal">1410</span>
-<span class="normal">1411</span>
-<span class="normal">1412</span>
-<span class="normal">1413</span>
-<span class="normal">1414</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1414</span>
 <span class="normal">1415</span>
 <span class="normal">1416</span>
 <span class="normal">1417</span>
@@ -8821,7 +9020,77 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="normal">1717</span>
 <span class="normal">1718</span>
 <span class="normal">1719</span>
-<span class="normal">1720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
+<span class="normal">1720</span>
+<span class="normal">1721</span>
+<span class="normal">1722</span>
+<span class="normal">1723</span>
+<span class="normal">1724</span>
+<span class="normal">1725</span>
+<span class="normal">1726</span>
+<span class="normal">1727</span>
+<span class="normal">1728</span>
+<span class="normal">1729</span>
+<span class="normal">1730</span>
+<span class="normal">1731</span>
+<span class="normal">1732</span>
+<span class="normal">1733</span>
+<span class="normal">1734</span>
+<span class="normal">1735</span>
+<span class="normal">1736</span>
+<span class="normal">1737</span>
+<span class="normal">1738</span>
+<span class="normal">1739</span>
+<span class="normal">1740</span>
+<span class="normal">1741</span>
+<span class="normal">1742</span>
+<span class="normal">1743</span>
+<span class="normal">1744</span>
+<span class="normal">1745</span>
+<span class="normal">1746</span>
+<span class="normal">1747</span>
+<span class="normal">1748</span>
+<span class="normal">1749</span>
+<span class="normal">1750</span>
+<span class="normal">1751</span>
+<span class="normal">1752</span>
+<span class="normal">1753</span>
+<span class="normal">1754</span>
+<span class="normal">1755</span>
+<span class="normal">1756</span>
+<span class="normal">1757</span>
+<span class="normal">1758</span>
+<span class="normal">1759</span>
+<span class="normal">1760</span>
+<span class="normal">1761</span>
+<span class="normal">1762</span>
+<span class="normal">1763</span>
+<span class="normal">1764</span>
+<span class="normal">1765</span>
+<span class="normal">1766</span>
+<span class="normal">1767</span>
+<span class="normal">1768</span>
+<span class="normal">1769</span>
+<span class="normal">1770</span>
+<span class="normal">1771</span>
+<span class="normal">1772</span>
+<span class="normal">1773</span>
+<span class="normal">1774</span>
+<span class="normal">1775</span>
+<span class="normal">1776</span>
+<span class="normal">1777</span>
+<span class="normal">1778</span>
+<span class="normal">1779</span>
+<span class="normal">1780</span>
+<span class="normal">1781</span>
+<span class="normal">1782</span>
+<span class="normal">1783</span>
+<span class="normal">1784</span>
+<span class="normal">1785</span>
+<span class="normal">1786</span>
+<span class="normal">1787</span>
+<span class="normal">1788</span>
+<span class="normal">1789</span>
+<span class="normal">1790</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Rainfall-runoff inputs preparation for distributed hydrological models.</span>
 
 <span class="sd">    The Inputs class provides methods to prepare meteorological and parameter</span>
@@ -9261,16 +9530,16 @@ extension (e.g., <code>"data/dem.tif"</code>).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1362</span>
-<span class="normal">1363</span>
-<span class="normal">1364</span>
-<span class="normal">1365</span>
-<span class="normal">1366</span>
-<span class="normal">1367</span>
-<span class="normal">1368</span>
-<span class="normal">1369</span>
-<span class="normal">1370</span>
-<span class="normal">1371</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1432</span>
+<span class="normal">1433</span>
+<span class="normal">1434</span>
+<span class="normal">1435</span>
+<span class="normal">1436</span>
+<span class="normal">1437</span>
+<span class="normal">1438</span>
+<span class="normal">1439</span>
+<span class="normal">1440</span>
+<span class="normal">1441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the Inputs instance with a reference DEM path.</span>
 
 <span class="sd">    Args:</span>
@@ -9538,77 +9807,7 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1592</span>
-<span class="normal">1593</span>
-<span class="normal">1594</span>
-<span class="normal">1595</span>
-<span class="normal">1596</span>
-<span class="normal">1597</span>
-<span class="normal">1598</span>
-<span class="normal">1599</span>
-<span class="normal">1600</span>
-<span class="normal">1601</span>
-<span class="normal">1602</span>
-<span class="normal">1603</span>
-<span class="normal">1604</span>
-<span class="normal">1605</span>
-<span class="normal">1606</span>
-<span class="normal">1607</span>
-<span class="normal">1608</span>
-<span class="normal">1609</span>
-<span class="normal">1610</span>
-<span class="normal">1611</span>
-<span class="normal">1612</span>
-<span class="normal">1613</span>
-<span class="normal">1614</span>
-<span class="normal">1615</span>
-<span class="normal">1616</span>
-<span class="normal">1617</span>
-<span class="normal">1618</span>
-<span class="normal">1619</span>
-<span class="normal">1620</span>
-<span class="normal">1621</span>
-<span class="normal">1622</span>
-<span class="normal">1623</span>
-<span class="normal">1624</span>
-<span class="normal">1625</span>
-<span class="normal">1626</span>
-<span class="normal">1627</span>
-<span class="normal">1628</span>
-<span class="normal">1629</span>
-<span class="normal">1630</span>
-<span class="normal">1631</span>
-<span class="normal">1632</span>
-<span class="normal">1633</span>
-<span class="normal">1634</span>
-<span class="normal">1635</span>
-<span class="normal">1636</span>
-<span class="normal">1637</span>
-<span class="normal">1638</span>
-<span class="normal">1639</span>
-<span class="normal">1640</span>
-<span class="normal">1641</span>
-<span class="normal">1642</span>
-<span class="normal">1643</span>
-<span class="normal">1644</span>
-<span class="normal">1645</span>
-<span class="normal">1646</span>
-<span class="normal">1647</span>
-<span class="normal">1648</span>
-<span class="normal">1649</span>
-<span class="normal">1650</span>
-<span class="normal">1651</span>
-<span class="normal">1652</span>
-<span class="normal">1653</span>
-<span class="normal">1654</span>
-<span class="normal">1655</span>
-<span class="normal">1656</span>
-<span class="normal">1657</span>
-<span class="normal">1658</span>
-<span class="normal">1659</span>
-<span class="normal">1660</span>
-<span class="normal">1661</span>
-<span class="normal">1662</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1662</span>
 <span class="normal">1663</span>
 <span class="normal">1664</span>
 <span class="normal">1665</span>
@@ -9642,7 +9841,77 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 <span class="normal">1693</span>
 <span class="normal">1694</span>
 <span class="normal">1695</span>
-<span class="normal">1696</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1696</span>
+<span class="normal">1697</span>
+<span class="normal">1698</span>
+<span class="normal">1699</span>
+<span class="normal">1700</span>
+<span class="normal">1701</span>
+<span class="normal">1702</span>
+<span class="normal">1703</span>
+<span class="normal">1704</span>
+<span class="normal">1705</span>
+<span class="normal">1706</span>
+<span class="normal">1707</span>
+<span class="normal">1708</span>
+<span class="normal">1709</span>
+<span class="normal">1710</span>
+<span class="normal">1711</span>
+<span class="normal">1712</span>
+<span class="normal">1713</span>
+<span class="normal">1714</span>
+<span class="normal">1715</span>
+<span class="normal">1716</span>
+<span class="normal">1717</span>
+<span class="normal">1718</span>
+<span class="normal">1719</span>
+<span class="normal">1720</span>
+<span class="normal">1721</span>
+<span class="normal">1722</span>
+<span class="normal">1723</span>
+<span class="normal">1724</span>
+<span class="normal">1725</span>
+<span class="normal">1726</span>
+<span class="normal">1727</span>
+<span class="normal">1728</span>
+<span class="normal">1729</span>
+<span class="normal">1730</span>
+<span class="normal">1731</span>
+<span class="normal">1732</span>
+<span class="normal">1733</span>
+<span class="normal">1734</span>
+<span class="normal">1735</span>
+<span class="normal">1736</span>
+<span class="normal">1737</span>
+<span class="normal">1738</span>
+<span class="normal">1739</span>
+<span class="normal">1740</span>
+<span class="normal">1741</span>
+<span class="normal">1742</span>
+<span class="normal">1743</span>
+<span class="normal">1744</span>
+<span class="normal">1745</span>
+<span class="normal">1746</span>
+<span class="normal">1747</span>
+<span class="normal">1748</span>
+<span class="normal">1749</span>
+<span class="normal">1750</span>
+<span class="normal">1751</span>
+<span class="normal">1752</span>
+<span class="normal">1753</span>
+<span class="normal">1754</span>
+<span class="normal">1755</span>
+<span class="normal">1756</span>
+<span class="normal">1757</span>
+<span class="normal">1758</span>
+<span class="normal">1759</span>
+<span class="normal">1760</span>
+<span class="normal">1761</span>
+<span class="normal">1762</span>
+<span class="normal">1763</span>
+<span class="normal">1764</span>
+<span class="normal">1765</span>
+<span class="normal">1766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">"</span><span class="p">,</span>
@@ -9939,77 +10208,77 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1520</span>
-<span class="normal">1521</span>
-<span class="normal">1522</span>
-<span class="normal">1523</span>
-<span class="normal">1524</span>
-<span class="normal">1525</span>
-<span class="normal">1526</span>
-<span class="normal">1527</span>
-<span class="normal">1528</span>
-<span class="normal">1529</span>
-<span class="normal">1530</span>
-<span class="normal">1531</span>
-<span class="normal">1532</span>
-<span class="normal">1533</span>
-<span class="normal">1534</span>
-<span class="normal">1535</span>
-<span class="normal">1536</span>
-<span class="normal">1537</span>
-<span class="normal">1538</span>
-<span class="normal">1539</span>
-<span class="normal">1540</span>
-<span class="normal">1541</span>
-<span class="normal">1542</span>
-<span class="normal">1543</span>
-<span class="normal">1544</span>
-<span class="normal">1545</span>
-<span class="normal">1546</span>
-<span class="normal">1547</span>
-<span class="normal">1548</span>
-<span class="normal">1549</span>
-<span class="normal">1550</span>
-<span class="normal">1551</span>
-<span class="normal">1552</span>
-<span class="normal">1553</span>
-<span class="normal">1554</span>
-<span class="normal">1555</span>
-<span class="normal">1556</span>
-<span class="normal">1557</span>
-<span class="normal">1558</span>
-<span class="normal">1559</span>
-<span class="normal">1560</span>
-<span class="normal">1561</span>
-<span class="normal">1562</span>
-<span class="normal">1563</span>
-<span class="normal">1564</span>
-<span class="normal">1565</span>
-<span class="normal">1566</span>
-<span class="normal">1567</span>
-<span class="normal">1568</span>
-<span class="normal">1569</span>
-<span class="normal">1570</span>
-<span class="normal">1571</span>
-<span class="normal">1572</span>
-<span class="normal">1573</span>
-<span class="normal">1574</span>
-<span class="normal">1575</span>
-<span class="normal">1576</span>
-<span class="normal">1577</span>
-<span class="normal">1578</span>
-<span class="normal">1579</span>
-<span class="normal">1580</span>
-<span class="normal">1581</span>
-<span class="normal">1582</span>
-<span class="normal">1583</span>
-<span class="normal">1584</span>
-<span class="normal">1585</span>
-<span class="normal">1586</span>
-<span class="normal">1587</span>
-<span class="normal">1588</span>
-<span class="normal">1589</span>
-<span class="normal">1590</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1590</span>
+<span class="normal">1591</span>
+<span class="normal">1592</span>
+<span class="normal">1593</span>
+<span class="normal">1594</span>
+<span class="normal">1595</span>
+<span class="normal">1596</span>
+<span class="normal">1597</span>
+<span class="normal">1598</span>
+<span class="normal">1599</span>
+<span class="normal">1600</span>
+<span class="normal">1601</span>
+<span class="normal">1602</span>
+<span class="normal">1603</span>
+<span class="normal">1604</span>
+<span class="normal">1605</span>
+<span class="normal">1606</span>
+<span class="normal">1607</span>
+<span class="normal">1608</span>
+<span class="normal">1609</span>
+<span class="normal">1610</span>
+<span class="normal">1611</span>
+<span class="normal">1612</span>
+<span class="normal">1613</span>
+<span class="normal">1614</span>
+<span class="normal">1615</span>
+<span class="normal">1616</span>
+<span class="normal">1617</span>
+<span class="normal">1618</span>
+<span class="normal">1619</span>
+<span class="normal">1620</span>
+<span class="normal">1621</span>
+<span class="normal">1622</span>
+<span class="normal">1623</span>
+<span class="normal">1624</span>
+<span class="normal">1625</span>
+<span class="normal">1626</span>
+<span class="normal">1627</span>
+<span class="normal">1628</span>
+<span class="normal">1629</span>
+<span class="normal">1630</span>
+<span class="normal">1631</span>
+<span class="normal">1632</span>
+<span class="normal">1633</span>
+<span class="normal">1634</span>
+<span class="normal">1635</span>
+<span class="normal">1636</span>
+<span class="normal">1637</span>
+<span class="normal">1638</span>
+<span class="normal">1639</span>
+<span class="normal">1640</span>
+<span class="normal">1641</span>
+<span class="normal">1642</span>
+<span class="normal">1643</span>
+<span class="normal">1644</span>
+<span class="normal">1645</span>
+<span class="normal">1646</span>
+<span class="normal">1647</span>
+<span class="normal">1648</span>
+<span class="normal">1649</span>
+<span class="normal">1650</span>
+<span class="normal">1651</span>
+<span class="normal">1652</span>
+<span class="normal">1653</span>
+<span class="normal">1654</span>
+<span class="normal">1655</span>
+<span class="normal">1656</span>
+<span class="normal">1657</span>
+<span class="normal">1658</span>
+<span class="normal">1659</span>
+<span class="normal">1660</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -10210,69 +10479,69 @@ not set.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1456</span>
-<span class="normal">1457</span>
-<span class="normal">1458</span>
-<span class="normal">1459</span>
-<span class="normal">1460</span>
-<span class="normal">1461</span>
-<span class="normal">1462</span>
-<span class="normal">1463</span>
-<span class="normal">1464</span>
-<span class="normal">1465</span>
-<span class="normal">1466</span>
-<span class="normal">1467</span>
-<span class="normal">1468</span>
-<span class="normal">1469</span>
-<span class="normal">1470</span>
-<span class="normal">1471</span>
-<span class="normal">1472</span>
-<span class="normal">1473</span>
-<span class="normal">1474</span>
-<span class="normal">1475</span>
-<span class="normal">1476</span>
-<span class="normal">1477</span>
-<span class="normal">1478</span>
-<span class="normal">1479</span>
-<span class="normal">1480</span>
-<span class="normal">1481</span>
-<span class="normal">1482</span>
-<span class="normal">1483</span>
-<span class="normal">1484</span>
-<span class="normal">1485</span>
-<span class="normal">1486</span>
-<span class="normal">1487</span>
-<span class="normal">1488</span>
-<span class="normal">1489</span>
-<span class="normal">1490</span>
-<span class="normal">1491</span>
-<span class="normal">1492</span>
-<span class="normal">1493</span>
-<span class="normal">1494</span>
-<span class="normal">1495</span>
-<span class="normal">1496</span>
-<span class="normal">1497</span>
-<span class="normal">1498</span>
-<span class="normal">1499</span>
-<span class="normal">1500</span>
-<span class="normal">1501</span>
-<span class="normal">1502</span>
-<span class="normal">1503</span>
-<span class="normal">1504</span>
-<span class="normal">1505</span>
-<span class="normal">1506</span>
-<span class="normal">1507</span>
-<span class="normal">1508</span>
-<span class="normal">1509</span>
-<span class="normal">1510</span>
-<span class="normal">1511</span>
-<span class="normal">1512</span>
-<span class="normal">1513</span>
-<span class="normal">1514</span>
-<span class="normal">1515</span>
-<span class="normal">1516</span>
-<span class="normal">1517</span>
-<span class="normal">1518</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1526</span>
+<span class="normal">1527</span>
+<span class="normal">1528</span>
+<span class="normal">1529</span>
+<span class="normal">1530</span>
+<span class="normal">1531</span>
+<span class="normal">1532</span>
+<span class="normal">1533</span>
+<span class="normal">1534</span>
+<span class="normal">1535</span>
+<span class="normal">1536</span>
+<span class="normal">1537</span>
+<span class="normal">1538</span>
+<span class="normal">1539</span>
+<span class="normal">1540</span>
+<span class="normal">1541</span>
+<span class="normal">1542</span>
+<span class="normal">1543</span>
+<span class="normal">1544</span>
+<span class="normal">1545</span>
+<span class="normal">1546</span>
+<span class="normal">1547</span>
+<span class="normal">1548</span>
+<span class="normal">1549</span>
+<span class="normal">1550</span>
+<span class="normal">1551</span>
+<span class="normal">1552</span>
+<span class="normal">1553</span>
+<span class="normal">1554</span>
+<span class="normal">1555</span>
+<span class="normal">1556</span>
+<span class="normal">1557</span>
+<span class="normal">1558</span>
+<span class="normal">1559</span>
+<span class="normal">1560</span>
+<span class="normal">1561</span>
+<span class="normal">1562</span>
+<span class="normal">1563</span>
+<span class="normal">1564</span>
+<span class="normal">1565</span>
+<span class="normal">1566</span>
+<span class="normal">1567</span>
+<span class="normal">1568</span>
+<span class="normal">1569</span>
+<span class="normal">1570</span>
+<span class="normal">1571</span>
+<span class="normal">1572</span>
+<span class="normal">1573</span>
+<span class="normal">1574</span>
+<span class="normal">1575</span>
+<span class="normal">1576</span>
+<span class="normal">1577</span>
+<span class="normal">1578</span>
+<span class="normal">1579</span>
+<span class="normal">1580</span>
+<span class="normal">1581</span>
+<span class="normal">1582</span>
+<span class="normal">1583</span>
+<span class="normal">1584</span>
+<span class="normal">1585</span>
+<span class="normal">1586</span>
+<span class="normal">1587</span>
+<span class="normal">1588</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract upper and lower parameter boundaries for a catchment.</span>
 
@@ -10508,77 +10777,7 @@ irrelevant here and the rasters are read unordered.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1373</span>
-<span class="normal">1374</span>
-<span class="normal">1375</span>
-<span class="normal">1376</span>
-<span class="normal">1377</span>
-<span class="normal">1378</span>
-<span class="normal">1379</span>
-<span class="normal">1380</span>
-<span class="normal">1381</span>
-<span class="normal">1382</span>
-<span class="normal">1383</span>
-<span class="normal">1384</span>
-<span class="normal">1385</span>
-<span class="normal">1386</span>
-<span class="normal">1387</span>
-<span class="normal">1388</span>
-<span class="normal">1389</span>
-<span class="normal">1390</span>
-<span class="normal">1391</span>
-<span class="normal">1392</span>
-<span class="normal">1393</span>
-<span class="normal">1394</span>
-<span class="normal">1395</span>
-<span class="normal">1396</span>
-<span class="normal">1397</span>
-<span class="normal">1398</span>
-<span class="normal">1399</span>
-<span class="normal">1400</span>
-<span class="normal">1401</span>
-<span class="normal">1402</span>
-<span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span>
-<span class="normal">1406</span>
-<span class="normal">1407</span>
-<span class="normal">1408</span>
-<span class="normal">1409</span>
-<span class="normal">1410</span>
-<span class="normal">1411</span>
-<span class="normal">1412</span>
-<span class="normal">1413</span>
-<span class="normal">1414</span>
-<span class="normal">1415</span>
-<span class="normal">1416</span>
-<span class="normal">1417</span>
-<span class="normal">1418</span>
-<span class="normal">1419</span>
-<span class="normal">1420</span>
-<span class="normal">1421</span>
-<span class="normal">1422</span>
-<span class="normal">1423</span>
-<span class="normal">1424</span>
-<span class="normal">1425</span>
-<span class="normal">1426</span>
-<span class="normal">1427</span>
-<span class="normal">1428</span>
-<span class="normal">1429</span>
-<span class="normal">1430</span>
-<span class="normal">1431</span>
-<span class="normal">1432</span>
-<span class="normal">1433</span>
-<span class="normal">1434</span>
-<span class="normal">1435</span>
-<span class="normal">1436</span>
-<span class="normal">1437</span>
-<span class="normal">1438</span>
-<span class="normal">1439</span>
-<span class="normal">1440</span>
-<span class="normal">1441</span>
-<span class="normal">1442</span>
-<span class="normal">1443</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1443</span>
 <span class="normal">1444</span>
 <span class="normal">1445</span>
 <span class="normal">1446</span>
@@ -10589,7 +10788,77 @@ irrelevant here and the rasters are read unordered.
 <span class="normal">1451</span>
 <span class="normal">1452</span>
 <span class="normal">1453</span>
-<span class="normal">1454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
+<span class="normal">1454</span>
+<span class="normal">1455</span>
+<span class="normal">1456</span>
+<span class="normal">1457</span>
+<span class="normal">1458</span>
+<span class="normal">1459</span>
+<span class="normal">1460</span>
+<span class="normal">1461</span>
+<span class="normal">1462</span>
+<span class="normal">1463</span>
+<span class="normal">1464</span>
+<span class="normal">1465</span>
+<span class="normal">1466</span>
+<span class="normal">1467</span>
+<span class="normal">1468</span>
+<span class="normal">1469</span>
+<span class="normal">1470</span>
+<span class="normal">1471</span>
+<span class="normal">1472</span>
+<span class="normal">1473</span>
+<span class="normal">1474</span>
+<span class="normal">1475</span>
+<span class="normal">1476</span>
+<span class="normal">1477</span>
+<span class="normal">1478</span>
+<span class="normal">1479</span>
+<span class="normal">1480</span>
+<span class="normal">1481</span>
+<span class="normal">1482</span>
+<span class="normal">1483</span>
+<span class="normal">1484</span>
+<span class="normal">1485</span>
+<span class="normal">1486</span>
+<span class="normal">1487</span>
+<span class="normal">1488</span>
+<span class="normal">1489</span>
+<span class="normal">1490</span>
+<span class="normal">1491</span>
+<span class="normal">1492</span>
+<span class="normal">1493</span>
+<span class="normal">1494</span>
+<span class="normal">1495</span>
+<span class="normal">1496</span>
+<span class="normal">1497</span>
+<span class="normal">1498</span>
+<span class="normal">1499</span>
+<span class="normal">1500</span>
+<span class="normal">1501</span>
+<span class="normal">1502</span>
+<span class="normal">1503</span>
+<span class="normal">1504</span>
+<span class="normal">1505</span>
+<span class="normal">1506</span>
+<span class="normal">1507</span>
+<span class="normal">1508</span>
+<span class="normal">1509</span>
+<span class="normal">1510</span>
+<span class="normal">1511</span>
+<span class="normal">1512</span>
+<span class="normal">1513</span>
+<span class="normal">1514</span>
+<span class="normal">1515</span>
+<span class="normal">1516</span>
+<span class="normal">1517</span>
+<span class="normal">1518</span>
+<span class="normal">1519</span>
+<span class="normal">1520</span>
+<span class="normal">1521</span>
+<span class="normal">1522</span>
+<span class="normal">1523</span>
+<span class="normal">1524</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Align and crop input rasters to match the source DEM.</span>
 
 <span class="sd">    Reads all rasters from `inputs_dir`, aligns them to the source</span>
