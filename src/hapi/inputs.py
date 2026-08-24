@@ -42,13 +42,13 @@ from pyramids.netcdf import NetCDF
 from hapi.dem import DEM
 
 
-def _as_datetime(value: str | int | None, fmt: str) -> dt.datetime | None:
+def _as_datetime(value: str | int | dt.datetime | None, fmt: str) -> dt.datetime | None:
     """Parse a `start` / `end` bound into a datetime for the date-ordered read.
 
     Args:
-        value: The bound as given by the caller, or None for "unbounded". Declared
-            `str | int` because the numeric ordering takes integer indices; in the date
-            branch it is a date string, and anything else fails the parse below.
+        value: The bound as given by the caller, or None for "unbounded". A `datetime` is
+            returned as it is; `int` is admitted because the numeric ordering takes indices,
+            and in the date branch a string is parsed with `fmt`.
         fmt: `strptime` format of the bound.
 
     Returns:
@@ -57,7 +57,9 @@ def _as_datetime(value: str | int | None, fmt: str) -> dt.datetime | None:
     Raises:
         ValueError: `value` does not match `fmt`.
     """
-    return None if value is None else dt.datetime.strptime(str(value), fmt)
+    if value is None or isinstance(value, dt.datetime):
+        return value
+    return dt.datetime.strptime(str(value), fmt)
 
 
 def _infer_date_format(sample: str) -> str | None:
@@ -1047,6 +1049,9 @@ class MeteoInputs:
         temperature: str | Path,
         evapotranspiration: str | Path,
         variable: str | None = None,
+        start: str | dt.datetime | None = None,
+        end: str | dt.datetime | None = None,
+        fmt: str = "%Y-%m-%d",
     ) -> MeteoInputs:
         """Read the three drivers from one NetCDF per variable.
 
@@ -1057,6 +1062,9 @@ class MeteoInputs:
             variable: Name of the variable to take from each file. `None` (default) takes each
                 file's only variable, which is what `DatasetCollection.to_netcdf` writes for a
                 single-band collection.
+            start: Inclusive lower bound on the period to keep. `None` reads the whole file.
+            end: Inclusive upper bound; see `start`.
+            fmt: `strptime` format of `start` / `end` when they are strings.
 
         Returns:
             MeteoInputs: The three cubes plus a calendar -- the rainfall file's when it carries
@@ -1085,6 +1093,7 @@ class MeteoInputs:
             cubes[name] = _cube_from_netcdf(nc, target)
             if calendar is None:
                 calendar = cls._calendar(nc)
+        cubes, calendar = cls._window(cubes, calendar, start, end, fmt)
         return cls(**cubes, time=calendar)
 
     @classmethod
@@ -1094,6 +1103,9 @@ class MeteoInputs:
         precipitation: str,
         temperature: str,
         evapotranspiration: str,
+        start: str | dt.datetime | None = None,
+        end: str | dt.datetime | None = None,
+        fmt: str = "%Y-%m-%d",
     ) -> MeteoInputs:
         """Read all three drivers from one NetCDF holding them as separate variables.
 
@@ -1102,9 +1114,15 @@ class MeteoInputs:
             precipitation: Name of the rainfall variable inside it.
             temperature: Name of the temperature variable.
             evapotranspiration: Name of the evapotranspiration variable.
+            start: Inclusive lower bound on the period to keep. `None` reads the whole file.
+                A packed record often spans decades while a run covers one year, and the
+                drivers pair with the model's dates by position, so the window is what makes
+                a long file usable for a short run.
+            end: Inclusive upper bound; see `start`.
+            fmt: `strptime` format of `start` / `end` when they are strings.
 
         Returns:
-            MeteoInputs: The three cubes plus the file's calendar.
+            MeteoInputs: The three cubes plus the file's calendar, trimmed to the window.
 
         Raises:
             KeyError: One of the named variables is not in the file.
@@ -1117,7 +1135,8 @@ class MeteoInputs:
                 METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
             )
         }
-        return cls(**cubes, time=cls._calendar(nc))
+        cubes, calendar = cls._window(cubes, cls._calendar(nc), start, end, fmt)
+        return cls(**cubes, time=calendar)
 
     @staticmethod
     def raster_folder_to_netcdf(
@@ -1278,6 +1297,57 @@ class MeteoInputs:
         combined.to_file(str(out))
         logger.debug(f"three drivers combined into {out}")
         return out
+
+    @staticmethod
+    def _window(
+        cubes: dict[str, np.ndarray],
+        calendar: pd.DatetimeIndex | None,
+        start: str | dt.datetime | None,
+        end: str | dt.datetime | None,
+        fmt: str,
+    ) -> tuple[dict[str, np.ndarray], pd.DatetimeIndex | None]:
+        """Trim the cubes and the calendar to an inclusive date range.
+
+        The raster loader takes `start` / `end` because a folder is read file by file. A
+        NetCDF is read whole, so the window is applied after the fact -- but a caller running
+        one year out of a forty-year file still needs it, and the drivers pair with the
+        model's dates by position, so an untrimmed cube is rejected rather than merely large.
+
+        Args:
+            cubes: The three driver cubes, keyed by name.
+            calendar: The time axis, or None when the file carries no dates.
+            start: Inclusive lower bound, or None for "from the beginning".
+            end: Inclusive upper bound, or None for "to the end".
+            fmt: `strptime` format for `start` / `end` when they are strings.
+
+        Returns:
+            tuple: The trimmed cubes and calendar, unchanged when no bound was given.
+
+        Raises:
+            ValueError: A bound was given but the file carries no calendar to apply it to,
+                or the range selects no step.
+        """
+        if start is None and end is None:
+            return cubes, calendar
+        if calendar is None:
+            raise ValueError(
+                "start/end need a calendar, and this file carries none; read it whole, or "
+                "rebuild it from rasters whose names hold the dates"
+            )
+
+        low = _as_datetime(start, fmt) if start is not None else None
+        high = _as_datetime(end, fmt) if end is not None else None
+        keep = np.ones(len(calendar), dtype=bool)
+        if low is not None:
+            keep &= calendar >= low
+        if high is not None:
+            keep &= calendar <= high
+        if not keep.any():
+            raise ValueError(
+                f"no step falls in [{start}, {end}]; the file covers "
+                f"{calendar[0]:%Y-%m-%d} to {calendar[-1]:%Y-%m-%d}"
+            )
+        return {n: c[:, :, keep] for n, c in cubes.items()}, calendar[keep]
 
     @staticmethod
     def _calendar(nc: NetCDF) -> pd.DatetimeIndex | None:

@@ -539,6 +539,140 @@ class TestWritingNetcdf:
         )
 
 
+class TestNetcdfWindow:
+    """Tests for the `start` / `end` window on the NetCDF loaders."""
+
+    def test_a_window_selects_the_requested_days(
+        self, from_combined_netcdf: MeteoInputs
+    ):
+        """Test that the window trims the cubes and the calendar together.
+
+        Test scenario:
+            A packed record often spans decades while a run covers one year, and the drivers
+            pair with the model's dates by position -- so without a window a long file simply
+            cannot drive a short run. The trimmed cubes must be the same slices of the full
+            ones, not merely the right length.
+        """
+        windowed = MeteoInputs.from_netcdf(
+            COMBINED_NC,
+            precipitation="precipitation",
+            temperature="temperature",
+            evapotranspiration="evapotranspiration",
+            start="2009-01-03",
+            end="2009-01-07",
+        )
+
+        assert windowed.time_steps == 5, (
+            f"03 to 07 inclusive is five days, got {windowed.time_steps}"
+        )
+        assert str(windowed.time[0].date()) == "2009-01-03"
+        assert str(windowed.time[-1].date()) == "2009-01-07"
+        for name in METEO_VARIABLES:
+            np.testing.assert_array_equal(
+                getattr(windowed, name),
+                getattr(from_combined_netcdf, name)[:, :, 2:7],
+                err_msg=f"{name} must be the matching slice of the full cube",
+            )
+
+    @pytest.mark.parametrize(
+        "bounds, expected_steps, first, last",
+        [
+            (dict(start="2009-01-08"), 3, "2009-01-08", "2009-01-10"),
+            (dict(end="2009-01-02"), 2, "2009-01-01", "2009-01-02"),
+            (dict(), 10, "2009-01-01", "2009-01-10"),
+        ],
+        ids=["open-ended-start", "open-ended-end", "no-bounds"],
+    )
+    def test_each_bound_is_optional(self, bounds, expected_steps, first, last):
+        """Test that either bound may be omitted.
+
+        Args:
+            bounds: The `start` / `end` combination under test.
+            expected_steps: How many days that selects.
+            first: The first date expected.
+            last: The last date expected.
+
+        Test scenario:
+            "From this date onward" and "up to this date" are both ordinary requests, and
+            omitting both must read the file whole rather than select nothing.
+        """
+        inputs = MeteoInputs.from_netcdf(
+            COMBINED_NC,
+            precipitation="precipitation",
+            temperature="temperature",
+            evapotranspiration="evapotranspiration",
+            **bounds,
+        )
+
+        assert inputs.time_steps == expected_steps, (
+            f"{bounds} should select {expected_steps} steps, got {inputs.time_steps}"
+        )
+        assert str(inputs.time[0].date()) == first
+        assert str(inputs.time[-1].date()) == last
+
+    def test_a_range_outside_the_file_is_refused(self):
+        """Test that selecting nothing raises and names what the file does hold.
+
+        Test scenario:
+            An empty cube would fail far downstream with a shape error that says nothing
+            about the dates, so the mismatch is reported here with the file's actual period.
+        """
+        with pytest.raises(ValueError, match="no step falls in") as exc:
+            MeteoInputs.from_netcdf(
+                COMBINED_NC,
+                precipitation="precipitation",
+                temperature="temperature",
+                evapotranspiration="evapotranspiration",
+                start="2020-01-01",
+                end="2020-12-31",
+            )
+
+        assert "2009-01-01" in str(exc.value), (
+            f"the error should name the period the file covers: {exc.value}"
+        )
+
+    def test_the_per_variable_loader_windows_too(self):
+        """Test that `from_netcdf_files` takes the same window.
+
+        Test scenario:
+            The three loaders are meant to be interchangeable, so a caller who packed one
+            file per driver must be able to window it exactly as the combined-file caller can.
+        """
+        inputs = MeteoInputs.from_netcdf_files(
+            f"{NC_DIR}/prec.nc",
+            f"{NC_DIR}/temp.nc",
+            f"{NC_DIR}/evap.nc",
+            start="2009-01-04",
+            end="2009-01-06",
+        )
+
+        assert inputs.time_steps == 3, f"expected three days, got {inputs.time_steps}"
+        assert str(inputs.time[0].date()) == "2009-01-04"
+
+    def test_a_window_needs_a_calendar(self, tmp_path):
+        """Test that windowing a file with no dates is refused rather than ignored.
+
+        Test scenario:
+            Silently returning the whole record when a window was asked for would hand the
+            model more steps than its date index has, which is the positional mismatch the
+            calendar check exists to prevent.
+        """
+        for i in range(2):
+            Dataset.create_from_array(
+                np.full((3, 3), float(i), dtype="float32"),
+                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
+                epsg=32618,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"plain_{i}.tif"))
+        undated = str(tmp_path / "undated.nc")
+        DatasetCollection.from_files(tmp_path, glob="*.tif").to_netcdf(undated)
+
+        with pytest.raises(ValueError, match="carries none"):
+            MeteoInputs.from_netcdf_files(
+                undated, undated, undated, variable="Band_1", start="2009-01-01"
+            )
+
+
 class TestValidation:
     """Tests for the construction-time checks."""
 
