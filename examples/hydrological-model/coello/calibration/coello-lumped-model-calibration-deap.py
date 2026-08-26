@@ -13,10 +13,11 @@ import random
 
 import statista.descriptors as PC
 from deap import algorithms, base, creator, tools
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 # %% Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
@@ -90,8 +91,8 @@ Coello.OFArgs = []
 
 
 def objfn(individual):
-    # Coello.readParameters(Parameterpath, Snow)
-    Coello.Parameters = individual
+    # Coello.read_parameters(Parameterpath, Snow)
+    Coello.parameters = individual
     Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     error = PC.NSEHF(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
@@ -143,7 +144,7 @@ best_ind = tools.selBest(pop, 1)[0]
 print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
 # %% Run the Model
 
-Coello.Parameters = best_ind
+Coello.parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
@@ -151,21 +152,21 @@ Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
-Metrics = dict()
+metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
+metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
+metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
+metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
+metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(metrics["RMSE"], 2)))
+print("NSE= " + str(round(metrics["NSE"], 2)))
+print("NSEhf= " + str(round(metrics["NSEhf"], 2)))
+print("KGE= " + str(round(metrics["KGE"], 2)))
+print("WB= " + str(round(metrics["WB"], 2)))
 
 # %% Plotting Hydrograph
 

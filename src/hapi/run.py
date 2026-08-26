@@ -21,6 +21,10 @@ from hapi.catchment import Lake as LakeType
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
 
+ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
+COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
+GRID_MISMATCH_ERROR = "all input data should have the same number of rows"
+
 
 class Run(Catchment):
     """Run the catchment model.
@@ -51,15 +55,15 @@ class Run(Catchment):
 
         The following instance attributes are set after execution:
 
-        - ``state_variables``: 4D array (rows, cols, time, states) where
+        - `state_variables`: 4D array (rows, cols, time, states) where
           states are [sp, wc, sm, uz, lv].
-        - ``qlz``: 3D array of the lower zone discharge.
-        - ``quz``: 3D array of the upper zone discharge.
-        - ``qout``: 1D timeseries of discharge at the catchment outlet
+        - `qlz`: 3D array of the lower zone discharge.
+        - `quz`: 3D array of the upper zone discharge.
+        - `qout`: 1D timeseries of discharge at the catchment outlet
           in m3/sec.
-        - ``quz_routed``: 3D array of the upper zone discharge
+        - `quz_routed`: 3D array of the upper zone discharge
           accumulated and routed at each time step.
-        - ``qlz_translated``: 3D array of the lower zone discharge
+        - `qlz_translated`: 3D array of the lower zone discharge
           translated at each time step.
 
         Raises:
@@ -67,27 +71,23 @@ class Run(Catchment):
                 row counts, column counts, or temporal lengths.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows"
-        )
+        fd_rows, fd_cols = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), GRID_MISMATCH_ERROR
 
         # input dimensions
-        assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            ROWS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            COLS_MISMATCH_ERROR
+        )
 
         # run the model
         Wrapper.RRMModel(self)
@@ -107,39 +107,35 @@ class Run(Catchment):
                 dimensions.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows"
-        )
+        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), GRID_MISMATCH_ERROR
 
         # input dimensions
-        assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            ROWS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            COLS_MISMATCH_ERROR
+        )
 
         assert (
-            np.shape(self.BankfullDepth)[0] == self.rows
-            and np.shape(self.RiverWidth)[0] == self.rows
-            and np.shape(self.RiverRoughness)[0] == self.rows
-            and np.shape(self.FloodPlainRoughness)[0] == self.rows
-        ), "all input data should have the same number of rows"
+            np.shape(self.bankfull_depth)[0] == self.flow_network.rows
+            and np.shape(self.river_width)[0] == self.flow_network.rows
+            and np.shape(self.river_roughness)[0] == self.flow_network.rows
+            and np.shape(self.flood_plain_roughness)[0] == self.flow_network.rows
+        ), GRID_MISMATCH_ERROR
         assert (
-            np.shape(self.BankfullDepth)[1] == self.cols
-            and np.shape(self.RiverWidth)[1] == self.cols
-            and np.shape(self.RiverRoughness)[1] == self.cols
-            and np.shape(self.FloodPlainRoughness)[1] == self.cols
+            np.shape(self.bankfull_depth)[1] == self.flow_network.cols
+            and np.shape(self.river_width)[1] == self.flow_network.cols
+            and np.shape(self.river_roughness)[1] == self.flow_network.cols
+            and np.shape(self.flood_plain_roughness)[1] == self.flow_network.cols
         ), "all input data should have the same number of columns"
 
         # run the model
@@ -159,8 +155,8 @@ class Run(Catchment):
 
         Args:
             lake: Lake object containing lake configuration and
-                meteorological data. Must have a ``MeteoData`` attribute
-                with shape ``(time_steps, >= 3)`` where columns are
+                meteorological data. Must have a `MeteoData` attribute
+                with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
 
         Raises:
@@ -169,29 +165,25 @@ class Run(Catchment):
                 does not match the distributed raster data length.
         """
         # input dimensions
-        [fd_rows, fd_cols] = self.flow_dir_arr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, (
-            "all input data should have the same number of rows and columns"
-        )
+        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
+        assert (
+            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
+        ), "all input data should have the same number of rows and columns"
 
         # input dimensions
-        assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            ROWS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            COLS_MISMATCH_ERROR
+        )
 
-        assert np.shape(lake.MeteoData)[0] == np.shape(self.Prec)[2], (
+        assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
             "Lake meteorological data has to have the same length as the distributed raster data"
         )
         assert np.shape(lake.MeteoData)[1] >= 3, (
@@ -211,30 +203,33 @@ class Run(Catchment):
 
         The following instance attributes are set after execution:
 
-        - ``st``: 4D array of state variables.
-        - ``q_out``: 1D array of calculated discharge at the catchment
-          outlet.
-        - ``q_uz``: 3D array of distributed discharge for each cell.
+        - `st`: 4D array of state variables.
+        - `q_out`: 1D array of calculated discharge at the catchment
+          outlet, summed over every cell.
+        - `q_uz`: 3D array of distributed discharge for each cell.
+        - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields
+          read by `save_results` and `plot_distributed_results`. MAXBAS
+          routes each cell straight to the outlet, so a cell of `Qtot` is
+          that cell's *contribution* to the outlet — `np.nansum` over the
+          domain reproduces `q_out`. Use
+          `extract_discharge(frame_work_1=True)`; the default outlet-cell
+          shortcut is invalid for this path and raises.
 
         Raises:
             AssertionError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            ROWS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            COLS_MISMATCH_ERROR
+        )
 
         # run the model
         Wrapper.FW1(self)
@@ -250,26 +245,26 @@ class Run(Catchment):
 
         Args:
             lake: Lake object containing lake configuration and
-                meteorological data. Must have a ``MeteoData`` attribute
-                with shape ``(time_steps, >= 3)`` where columns are
+                meteorological data. Must have a `MeteoData` attribute
+                with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
 
         Note:
             The following catchment attributes should be set before
             calling this method:
 
-            - ``prec_path``: Path to the folder containing precipitation
+            - `prec_path`: Path to the folder containing precipitation
               rasters.
-            - ``evap_path``: Path to the folder containing
+            - `evap_path`: Path to the folder containing
               evapotranspiration rasters.
-            - ``temp_path``: Path to the folder containing temperature
+            - `temp_path`: Path to the folder containing temperature
               rasters.
-            - ``flow_acc_path``: Path to the flow accumulation raster.
-            - ``flow_direction_path``: Path to the flow direction raster.
-            - ``ParPath``: Path to the folder containing parameter
+            - `flow_acc_path`: Path to the flow accumulation raster.
+            - `flow_direction_path`: Path to the flow direction raster.
+            - `ParPath`: Path to the folder containing parameter
               rasters.
-            - ``p2``: List of unoptimized parameters where ``p2[0]``
-              is tfac and ``p2[1]`` is catchment area in km2.
+            - `p2`: List of unoptimized parameters where `p2[0]`
+              is tfac and `p2[1]` is catchment area in km2.
 
         Raises:
             AssertionError: If input data arrays have inconsistent
@@ -279,23 +274,19 @@ class Run(Catchment):
         # input data validation
 
         # input dimensions
-        assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
-        ), "all input data should have the same number of rows"
-        assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
-        ), "all input data should have the same number of columns"
-        assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] == np.shape(self.Temp)[2]
-        ), "all meteorological input data should have the same length"
+        # The three cubes already agree with each other (checked when MeteoInputs was
+        # built); this is the other half -- that they cover the model's grid.
+        self.meteo.validate_against(
+            self.flow_network.rows, self.flow_network.cols, self.date_index
+        )
+        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
+            ROWS_MISMATCH_ERROR
+        )
+        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
+            COLS_MISMATCH_ERROR
+        )
 
-        assert np.shape(lake.MeteoData)[0] == np.shape(self.Prec)[2], (
+        assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
             "Lake meteorological data has to have the same length as the distributed raster data"
         )
         assert np.shape(lake.MeteoData)[1] >= 3, (
@@ -314,7 +305,7 @@ class Run(Catchment):
 
         Executes a lumped conceptual hydrological model, optionally
         routing the generated discharge hydrograph. The simulated
-        discharge is stored in ``self.Qsim`` as a pandas DataFrame
+        discharge is stored in `self.Qsim` as a pandas DataFrame
         indexed by the simulation date range.
 
         Args:
@@ -328,20 +319,20 @@ class Run(Catchment):
             The following attributes should be defined before calling
             this method:
 
-            - ``LumpedModel``: Conceptual model containing a
-              ``simulate`` method.
-            - ``data``: Numpy array of meteorological data with
+            - `LumpedModel`: Conceptual model containing a
+              `simulate` method.
+            - `data`: Numpy array of meteorological data with
               columns for precipitation, evapotranspiration,
               temperature, and long-term average temperature.
-            - ``Parameters``: Numpy array of conceptual model
+            - `Parameters`: Numpy array of conceptual model
               parameters.
-            - ``CatArea``: Catchment area in km2.
-            - ``conversion_factor``: Time conversion factor
+            - `CatArea`: Catchment area in km2.
+            - `conversion_factor`: Time conversion factor
               (e.g., 24 for daily).
-            - ``InitialCond``: List of initial state variable
+            - `InitialCond`: List of initial state variable
               values [sp, sm, uz, lz, wc].
-            - ``Snow``: Whether to use the snow subroutine (0 or 1).
-            - ``q_init``: Initial discharge value.
+            - `Snow`: Whether to use the snow subroutine (0 or 1).
+            - `q_init`: Initial discharge value.
         """
         if routing_fn is None and Route != 0:
             raise ValueError("routing_fn must be a callable when Route != 0")

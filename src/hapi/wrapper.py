@@ -54,35 +54,24 @@ class Wrapper:
            river network.
 
         The method stores results directly on the Model object,
-        including ``quz``, ``qlz``, ``qout``, ``quz_routed``, and
-        ``qlz_translated`` arrays.
+        including `quz`, `qlz`, `qout`, `quz_routed`, and
+        `qlz_translated` arrays.
 
         Args:
             Model: Catchment model object containing:
 
-                - DEM (numpy.ndarray): DEM raster array clipped to
-                  the catchment.
-                - FlowAccArr (numpy.ndarray): Flow accumulation
-                  raster array clipped to the catchment.
-                - flow_dir_arr (numpy.ndarray): Flow direction raster
-                  array clipped to the catchment.
-                - sp_prec (numpy.ndarray): 3D precipitation array
-                  with the same 2D dimensions as the raster input.
-                - sp_et (numpy.ndarray): 3D evapotranspiration array
-                  with the same 2D dimensions as the raster input.
-                - sp_temp (numpy.ndarray): 3D temperature array with
-                  the same 2D dimensions as the raster input.
-                - sp_par (numpy.ndarray): 3D array of spatially
-                  distributed catchment parameters.
-                - p2 (list): Unoptimized parameters where p2[0] is
-                  tfac (1 for hourly, 0.25 for 15 min, 24 for daily)
-                  and p2[1] is catchment area in km2.
-                - kub (float): Upper bound of K value for Muskingum
-                  routing.
-                - klb (float): Lower bound of K value for Muskingum
-                  routing.
-                - init_st (list): Initial state variable values
+                - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,
+                  each `(rows, cols, time)`, plus the calendar they cover.
+                - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation
+                  and direction arrays, the direction table, and the grid they define.
+                - parameters (numpy.ndarray): 3D array of spatially distributed catchment
+                  parameters, `(rows, cols, n_parameters)`.
+                - conversion_factor (float): Depth-to-discharge factor for the temporal
+                  resolution; 24 for daily, 1 for hourly.
+                - area (float): Catchment area in km2.
+                - initial_cond (list): Initial state variable values
                   [sp, sm, uz, lz, wc].
+                - snow (int): 1 to run the snow routine, 0 otherwise.
 
             ll_temp (numpy.ndarray, optional): 3D array of long-term
                 average temperature data. Defaults to None.
@@ -94,6 +83,11 @@ class Wrapper:
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
+
+        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
+        # cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear
+        # the flag a previous MAXBAS run on this same model may have left set.
+        Model._maxbas_routed = False
 
         # Model.qout = Model.qout[:-1]
 
@@ -164,12 +158,16 @@ class Wrapper:
         qlake = routing.muskingum_v(
             Lake.QlakeR,
             Lake.QlakeR[0],
-            Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
-            Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
+            Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
+            Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
             Model.conversion_factor,
         )
 
-        qlake = np.append(qlake, qlake[-1])
+        # No padding: `HBVLake.simulate` already prepends the initial-state slot, exactly as
+        # the distributed model does, and `muskingum_v` preserves length -- so `qlake` is
+        # already `simulation_steps` long and lines up with `quz` slot for slot. Appending a
+        # step here made it one longer than the array it is added to, which raised for every
+        # input and left this entry point unrunnable.
         # both lake & Quz are in m3/s
         Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
             Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
@@ -178,7 +176,45 @@ class Wrapper:
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
+        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
+        # cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear
+        # the flag a previous MAXBAS run on this same model may have left set.
+        Model._maxbas_routed = False
+
         # Model.qout = Model.qout[:-1]
+
+    @staticmethod
+    def _set_maxbas_output_fields(Model: Catchment):
+        """Fill the distributed output fields after a triangular (MAXBAS) run.
+
+        `save_results` and `plot_distributed_results` read `Qtot`,
+        `quz_routed` and `qlz_translated` for their discharge options. Only
+        :meth:`DistRRM.SpatialRouting` (the Muskingum path) used to set them, so
+        after a MAXBAS run they stayed `None` and every discharge option raised
+        `TypeError: 'NoneType' object is not subscriptable`.
+
+        MAXBAS routes each cell's upper zone straight to the outlet with that
+        cell's own `maxbas`, in place, and applies no cell-to-cell translation
+        to the lower zone. So the routed/translated fields *are* the per-cell
+        arrays, and their sum is the per-cell contribution to the outlet
+        hydrograph — `np.nansum(Qtot[:, :, i])` reproduces `qout[i]`. That
+        differs from the Muskingum path, where the fields accumulate downstream
+        and `Qtot` at the outlet cell *is* the outlet discharge.
+
+        `quz_routed` / `qlz_translated` alias `quz` / `qlz` rather than
+        copying them: they hold the same data, and a copy would double the memory
+        of a `(rows, cols, time_steps)` array for no gain. They are outputs, so
+        nothing downstream writes through the alias.
+
+        Args:
+            Model: Catchment whose `quz` / `qlz` have been routed by
+                :meth:`DistRRM.DistMaxbas1`.
+        """
+        Model.quz_routed = Model.quz
+        Model.qlz_translated = Model.qlz
+        Model.Qtot = Model.qlz + Model.quz
+        # Flags the outlet-cell shortcut in `extract_discharge` as invalid here.
+        Model._maxbas_routed = True
 
     @staticmethod
     def FW1(Model: Catchment, ll_temp=None, q_0=None):
@@ -191,6 +227,11 @@ class Wrapper:
 
         The output discharge is computed as the sum of routed upper
         zone and unrouted lower zone discharge across all cells.
+
+        Also fills the per-cell output fields (`Qtot`, `quz_routed`,
+        `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the
+        discharge options of `save_results` / `plot_distributed_results`
+        work on this path; see that method for the MAXBAS semantics.
 
         Args:
             Model: Catchment model object containing the distributed
@@ -205,11 +246,13 @@ class Wrapper:
 
         distrrm.DistMaxbas1(Model)
 
+        Wrapper._set_maxbas_output_fields(Model)
+
         qlz1 = np.array(
-            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.TS)]
+            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
-            [np.nansum(Model.quz[:, :, i]) for i in range(Model.TS)]
+            [np.nansum(Model.quz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
         )  # average of all cells (routed mm/timestep)
 
         Model.qout = qlz1 + quz1
@@ -284,24 +327,25 @@ class Wrapper:
 
         distrrm.DistMaxbas1(Model)
 
+        # Subcatchment fields only: the lake is a lumped inflow with no spatial
+        # extent, so it enters `qout` below but never `Qtot`.
+        Wrapper._set_maxbas_output_fields(Model)
+
         qlz1 = np.array(
-            [
-                np.nansum(Model.qlz[:, :, i])
-                for i in range(Model.Parameters.shape[2] + 1)
-            ]
+            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
-            [
-                np.nansum(Model.quz[:, :, i])
-                for i in range(Model.Parameters.shape[2] + 1)
-            ]
+            [np.nansum(Model.quz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
         )  # average of all cells (routed mm/timestep)
 
         qout = qlz1 + quz1
 
         # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)
 
-        Model.qout = qout[:-1] + Lake.QlakeR
+        # Both series run over `simulation_steps`, and the non-lake FW1 path returns
+        # `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The
+        # lake series has to be trimmed the same way or the two cannot be added at all.
+        Model.qout = qout[:-1] + Lake.QlakeR[:-1]
 
     @staticmethod
     def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: Callable | None = None):
@@ -314,8 +358,8 @@ class Wrapper:
 
         The discharge is converted from mm/timestep to m3/s using
         the catchment area and conversion factor. Results are stored
-        on the Model object as ``quz``, ``qlz``, ``Qsim``, and
-        ``state_variables``.
+        on the Model object as `quz`, `qlz`, `Qsim`, and
+        `state_variables`.
 
         Args:
             Model: Lumped model object containing:
@@ -327,7 +371,7 @@ class Wrapper:
                 - Parameters (numpy.ndarray): Conceptual model
                   parameters.
                 - LumpedModel: Conceptual model instance with a
-                  ``simulate`` method.
+                  `simulate` method.
                 - InitialCond (list): Initial state variable values
                   [sp, sm, uz, lz, wc].
                 - q_init (float): Initial discharge value.
@@ -346,7 +390,7 @@ class Wrapper:
                 discharge hydrograph. Must be callable.
 
         Raises:
-            AssertionError: If ``RoutingFn`` is not callable when
+            AssertionError: If `RoutingFn` is not callable when
                 routing is enabled.
         """
         ### input data validation
@@ -362,31 +406,31 @@ class Wrapper:
         tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.state_variables = Model.LumpedModel.simulate(
+        Model.quz, Model.qlz, Model.state_variables = Model.lumped_model.simulate(
             p,
             t,
             et,
             tm,
-            Model.Parameters,
-            init_st=Model.InitialCond,
+            Model.parameters,
+            init_st=Model.initial_cond,
             q_init=Model.q_init,
-            snow=Model.Snow,
+            snow=Model.snow,
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        Model.quz = Model.quz * Model.CatArea / Model.conversion_factor
-        Model.qlz = Model.qlz * Model.CatArea / Model.conversion_factor
+        Model.quz = Model.quz * Model.area / Model.conversion_factor
+        Model.qlz = Model.qlz * Model.area / Model.conversion_factor
 
         Model.Qsim = Model.quz + Model.qlz
 
-        if Routing != 0 and Model.Maxbas:
-            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])
+        if Routing != 0 and Model.maxbas:
+            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.parameters[-1])
         elif Routing != 0:
             Model.Qsim = RoutingFn(
                 np.array(Model.Qsim[:-1]),
                 Model.Qsim[0],
-                Model.Parameters[-2],
-                Model.Parameters[-1],
+                Model.parameters[-2],
+                Model.parameters[-1],
                 Model.dt,
             )
 

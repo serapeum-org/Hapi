@@ -1,4 +1,4 @@
-from Hapi.parameters.parameters import Parameter
+from hapi.parameters.parameters import Parameter
 
 # parameter_set = 1
 parameter_set = "min"

@@ -20,20 +20,20 @@ sys.path.append(
 path = "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/"  # GIS/4000/
 from datetime import datetime
 
-# import Wrapper
-# import Hapi.GISpy as GIS
-import Hapi.gis.giscatchment as GC
-import Hapi.rrm.hbv as HBV
-import Hapi.rrm.parameters as DP
-import Hapi.sm.performancecriteria as PC
-
 # %library
 import numpy as np
 import pandas as pd
+from osgeo import gdal
+
+# import Wrapper
+# import hapi.GISpy as GIS
+import hapi.gis.giscatchment as GC
+import hapi.rrm.hbv as HBV
+import hapi.rrm.parameters as DP
+import hapi.sm.performancecriteria as PC
 
 # functions
-from Hapi.calibration import RunCalibration
-from osgeo import gdal
+from hapi.calibration import RunCalibration
 
 # from pyOpt import Optimization, ALHSO,Optimizer
 
@@ -179,7 +179,7 @@ cal_parameters = RunCalibration(
     OF_args,
     Qobs,
     OptimizationArgs,
-    printError=1,
+    print_error=1,
 )
 # %% convert parameters to rasters
 ParPath = "par15_7_2018.txt"

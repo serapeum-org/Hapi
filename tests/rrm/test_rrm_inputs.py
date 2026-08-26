@@ -11,7 +11,12 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from shapely.geometry import Polygon
 
-from hapi.inputs import PARAMETERS_LIST, Inputs
+from hapi.inputs import (
+    PARAMETERS_LIST,
+    Inputs,
+    _infer_date_format,
+    read_rasters,
+)
 
 # UTM 18N covers the Coello basin, which the fixtures carry in geographic coordinates.
 PARAMETER_EPSG = 32618
@@ -34,7 +39,7 @@ def test_prepare_inputs(
     assert rpath.exists()
     files = list(rpath.iterdir())
     assert len(files) == 10
-    cube = Datacube.read_multiple_files(str(rpath), with_order=False)
+    cube = Datacube.from_files(str(rpath))
     # if rpath.exists():
     #     rpath.unlink()
 
@@ -58,7 +63,7 @@ class TestExtractParameters:
         assert rpath.exists()
         files = list(rpath.iterdir())
         assert len(files) == 19
-        cube = Datacube.read_multiple_files(str(rpath), with_order=False)
+        cube = Datacube.from_files(str(rpath))
         # if rpath.exists():
         #     rpath.unlink()
 
@@ -162,12 +167,8 @@ def test_create_lumped_parameter():
     # each raster, bypassing the GDAL band-statistics path that
     # create_lumped_inputs relies on (pyramids >= 0.32 returns exact band
     # statistics instead of the sampled values returned by older versions)
-    cube = Datacube.read_multiple_files(
-        path,
-        with_order=True,
-        regex_string=r"\d{4}.\d{2}.\d{2}",
-        date=True,
-        file_name_data_fmt="%Y.%m.%d",
+    cube = Datacube.from_files(
+        path, date_format="%Y.%m.%d", date_regex=r"\d{4}.\d{2}.\d{2}"
     )
     expected = []
     for i in range(cube.time_length):
@@ -312,7 +313,7 @@ class TestPrepareInputs:
 class TestVectorTypes:
     """Tests that Hapi speaks pyramids' vector type and no longer needs geopandas."""
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def basin(self):
         """Return a single-polygon catchment as a plain GeoDataFrame.
 
@@ -325,7 +326,7 @@ class TestVectorTypes:
             crs="EPSG:4326",
         )
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture
     def utm_parameter_set(self, tmp_path, coello_basin, monkeypatch) -> str:
         """Write the 18 HBV parameter rasters in UTM 18N over the Coello basin.
 
@@ -481,3 +482,202 @@ class TestVectorTypes:
             "src/hapi imports it; it arrives transitively via pyramids-gis, which "
             "deliberately excludes it on win_arm64"
         )
+
+
+class TestReadRastersOrdering:
+    """Tests for ``read_rasters``, the adapter over ``DatasetCollection.from_files``."""
+
+    @pytest.fixture
+    def unpadded_rasters(self, tmp_path):
+        """Write 12 rasters whose index is not zero-padded, each holding its own index.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Returns:
+            Path: The folder holding ``0_Par_x.tif`` ... ``11_Par_x.tif``.
+        """
+        for i in range(12):
+            Dataset.create_from_array(
+                np.full((4, 4), float(i), dtype=np.float32),
+                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
+                epsg=4326,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"{i}_Par_x.tif"))
+        return tmp_path
+
+    def test_numeric_mode_orders_by_value_not_lexicographically(self, unpadded_rasters):
+        """Test that a non zero-padded index is ordered numerically.
+
+        Test scenario:
+            ``from_files`` sorts only by date; its default order is lexicographic, which puts
+            ``10_`` before ``2_``. Parameter rasters and the Rhine meteo rasters are not
+            zero-padded, so relying on that order would silently scramble the cube --
+            assigning each parameter to the wrong HBV slot. Each raster carries its own index
+            as its pixel value, so the cube's values spell out the recovered order.
+        """
+        cube = read_rasters(unpadded_rasters, regex_string=r"\d+", date=False)
+
+        recovered = [int(cube.values[i].flat[0]) for i in range(cube.time_length)]
+
+        assert recovered == list(range(12)), (
+            f"expected the rasters in numeric index order, got {recovered}"
+        )
+
+    def test_numeric_mode_start_end_filter_on_the_index(self, unpadded_rasters):
+        """Test that integer ``start``/``end`` select an inclusive index range.
+
+        Test scenario:
+            ``03run_model.py`` reads a season with ``date=False, start=1, end=365``, so the
+            bounds must be read as indices rather than parsed as dates.
+        """
+        cube = read_rasters(
+            unpadded_rasters, regex_string=r"\d+", date=False, start=3, end=7
+        )
+
+        recovered = [int(cube.values[i].flat[0]) for i in range(cube.time_length)]
+
+        assert recovered == [3, 4, 5, 6, 7], (
+            f"expected indices 3..7 inclusive, got {recovered}"
+        )
+
+
+class TestReadRastersDateInference:
+    """Tests for the date-format inference that keeps the default read chronological."""
+
+    @pytest.fixture
+    def dated_rasters(self, tmp_path):
+        """Write 12 rasters named with an unpadded index and a dotted date.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Returns:
+            Path: Folder holding `0_precip_2009.01.01.tif` ... `11_precip_2009.01.12.tif`,
+                each raster carrying its day-of-month as its pixel value.
+        """
+        for i in range(12):
+            Dataset.create_from_array(
+                np.full((4, 4), float(i + 1), dtype=np.float32),
+                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
+                epsg=4326,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"{i}_precip_2009.01.{i + 1:02d}.tif"))
+        return tmp_path
+
+    @pytest.mark.parametrize(
+        "sample, expected",
+        [
+            ("2009.01.01", "%Y.%m.%d"),
+            ("2009_01_01", "%Y_%m_%d"),
+            ("2009-01-01", "%Y-%m-%d"),
+            ("20090101", "%Y%m%d"),
+        ],
+    )
+    def test_unambiguous_layouts_are_inferred(self, sample: str, expected: str):
+        """Test that a leading four-digit year pins the whole layout.
+
+        Args:
+            sample: The substring the regex matched out of a file name.
+            expected: The `strptime` format it implies.
+
+        Test scenario:
+            A four-digit leading run can only be a year, so the two pairs after it can only
+            be month then day. The separators are kept verbatim so `%Y.%m.%d` and `%Y_%m_%d`
+            are told apart, and the run-together CHIRPS/ERA5 forms both resolve.
+        """
+        assert _infer_date_format(sample) == expected, (
+            f"Expected {expected} for {sample}, got {_infer_date_format(sample)}"
+        )
+
+    def test_a_separator_carrying_a_format_directive_is_refused(self):
+        """Test that a `%` between the digit runs is not spliced into the format.
+
+        Test scenario:
+            The separators are copied into the format verbatim, so one containing `%` would
+            build a directive the caller never meant -- `2009%m01%m01` would come out as
+            `%Y%m%m%m%d`. Refusing sends it down the unordered path instead.
+        """
+        assert _infer_date_format("2009%m01%m01") is None, (
+            "a separator holding a format directive must be refused"
+        )
+
+    @pytest.mark.parametrize("sample", ["01.01.2009", "2009.01", "not-a-date", "12345"])
+    def test_ambiguous_layouts_are_refused(self, sample: str):
+        """Test that a layout the digits cannot settle returns None rather than a guess.
+
+        Args:
+            sample: A substring whose date layout is ambiguous or absent.
+
+        Test scenario:
+            `03.02.1990` is either 3 February or 2 March; nothing in the digits says which,
+            and guessing wrong reorders the whole cube. Refusing sends the read down the
+            unordered path with a warning instead.
+        """
+        assert _infer_date_format(sample) is None, (
+            f"{sample} should be refused, got {_infer_date_format(sample)}"
+        )
+
+    def test_default_read_is_chronological_without_an_explicit_format(
+        self, dated_rasters
+    ):
+        """Test that omitting `file_name_data_fmt` still orders the cube by date.
+
+        Test scenario:
+            The docs' own call form passes no format. Reading the folder in file-name order
+            put `10_precip_2009.01.11` in slot 1 -- and because that path also left the time
+            axis unset, neither the length check nor the calendar check could see it. Each
+            raster carries its day-of-month as its value, so the cube spells out its order.
+        """
+        cube = read_rasters(dated_rasters, regex_string=r"\d{4}.\d{2}.\d{2}", date=True)
+
+        recovered = [int(cube.values[i].flat[0]) for i in range(cube.time_length)]
+
+        assert recovered == list(range(1, 13)), (
+            f"expected the rasters in date order, got {recovered}"
+        )
+
+    def test_the_inferred_read_still_builds_the_time_axis(self, dated_rasters):
+        """Test that the inferred format produces the dates the calendar check needs.
+
+        Test scenario:
+            `MeteoInputs.validate_against` only cross-checks the drivers against the model's
+            date range when the cube carries a time axis. The unordered path left it None, so
+            the check was skipped in exactly the case that needed it most.
+        """
+        cube = read_rasters(dated_rasters, regex_string=r"\d{4}.\d{2}.\d{2}", date=True)
+
+        assert cube.time is not None, "the inferred read must build a time axis"
+        assert cube.time[0].strftime("%Y-%m-%d") == "2009-01-01", (
+            f"the axis should start at the first date, got {cube.time[0]}"
+        )
+        assert len(cube.time) == 12, f"expected 12 dates, got {len(cube.time)}"
+
+    def test_an_unmatched_regex_warns_instead_of_ordering_silently(self, dated_rasters):
+        """Test that a regex matching no file name says so rather than reading unordered.
+
+        Test scenario:
+            The fallback is still a lexicographic read, which is what caused the original
+            defect. It is now reached only when the dates cannot be found at all, and it
+            announces itself so the caller can fix the regex.
+        """
+        with pytest.warns(UserWarning, match="matched no file name"):
+            read_rasters(dated_rasters, regex_string=r"\d{8}", date=True)
+
+    def test_an_ambiguous_layout_warns_and_names_what_it_saw(self, tmp_path):
+        """Test that a day-first date warns rather than being silently misread.
+
+        Test scenario:
+            `03.02.1990` cannot be resolved from the digits, so the read falls back and the
+            warning names the string it could not place and how to resolve it.
+        """
+        for day in (1, 2):
+            Dataset.create_from_array(
+                np.full((4, 4), float(day), dtype=np.float32),
+                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
+                epsg=4326,
+                no_data_value=-9999.0,
+            ).to_file(str(tmp_path / f"precip_{day:02d}.02.1990.tif"))
+
+        with pytest.warns(UserWarning, match="file_name_data_fmt"):
+            read_rasters(tmp_path, regex_string=r"\d{2}.\d{2}.\d{4}", date=True)

@@ -6,9 +6,11 @@ import numpy as np
 import datetime as dt
 from osgeo import gdal
 from hapi.calibration import Calibration
-import hapi.rrm.hbv_bergestrom92 as HBV
+from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 
 import statista.descriptors as metrics
+
 
 Path = Comp + "/data/distributed/coello"
 PrecPath = Path + "/prec"
@@ -20,8 +22,8 @@ CalibPath = Path + "/calibration"
 SaveTo = Path + "/results"
 
 AreaCoeff = 1530
-#[sp,sm,uz,lz,wc]
-InitialCond = [0,5,5,5,0]
+# [sp,sm,uz,lz,wc]
+InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
 
 # Create the model object and read the input data
@@ -29,22 +31,19 @@ Snow = 0
 Sdate = '2009-01-01'
 Edate = '2011-12-31'
 name = "Coello"
-Coello = Calibration(name, Sdate, Edate, SpatialResolution = "Distributed")
+Coello = Calibration(name, Sdate, Edate, spatial_resolution="Distributed")
 
 # Meteorological & GIS Data
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.read_flow_acc(FlowAccPath)
-Coello.read_flow_dir(FlowDPath)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 
 # Lumped Model
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 # Gauges Data
-Coello.read_gauge_table(Path+"/stations/gauges.csv", FlowAccPath)
-GaugesPath = Path+"/stations/"
+Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
+GaugesPath = Path + "/stations/"
 Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
@@ -121,12 +120,12 @@ OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 ## Run Calibration algorithm
 
 ```python
-cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs,printError=0)
+cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs,print_error=0)
 
 ```
 ## Save results
 
 ```python
-SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+SpatialVarFun.Function(Coello.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.save_parameters(SaveTo)
 ```

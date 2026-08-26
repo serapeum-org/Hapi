@@ -46,9 +46,9 @@ class Parameters:
         raster.
 
         Args:
-            raster: A pyramids ``Dataset`` to get the spatial information
+            raster: A pyramids `Dataset` to get the spatial information
                 of the catchment (DEM, flow accumulation or flow direction
-                raster), read it using ``Dataset.read_file``.
+                raster), read it using `Dataset.read_file`.
             no_parameters: Number of parameters in the HBV model.
             no_lumped_par: Number of lumped parameters. You have to enter
                 the value of the lumped parameter at the end of the list.
@@ -69,10 +69,10 @@ class Parameters:
             hru: True if the parameters will consider using HRUs.
                 Defaults to False.
             function: Which parameter-distribution strategy to bind to
-                :attr:`Function`. One of ``1`` (:meth:`par3d_lumped`), ``2``
-                (:meth:`par3d`), ``3`` (:meth:`par2d_lumped_k1_lake`) or ``4``
+                :attr:`Function`. One of `1` (:meth:`par3d_lumped`), `2`
+                (:meth:`par3d`), `3` (:meth:`par2d_lumped_k1_lake`) or `4`
                 (:meth:`hydrologic_response_units`). Defaults to 1. Any other value
-                raises :class:`ValueError`. Note that ``hru=True`` overrides the choice
+                raises :class:`ValueError`. Note that `hru=True` overrides the choice
                 with :meth:`hydrologic_response_units` regardless, but the selector is
                 still validated so a typo is not masked.
             k_upper_bound: Upper bound of K value (traveling time in
@@ -85,7 +85,7 @@ class Parameters:
         Raises:
             TypeError: If `raster` is not a pyramids Dataset.
             ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,
-                a `float` such as ``2.0``, and an unhashable value are all rejected
+                a `float` such as `2.0`, and an unhashable value are all rejected
                 rather than coerced or allowed to raise `TypeError`.
             AssertionError: If `no_parameters` is not an integer, if
                 `no_lumped_par` is not an integer, or if the length of
@@ -95,9 +95,9 @@ class Parameters:
 
         Note:
             Cells outside the catchment are identified by pyramids via
-            ``read_array(masked=True)`` and stored as ``NaN`` in
+            `read_array(masked=True)` and stored as `NaN` in
             :attr:`raster_array`, which is promoted to floating point so it can hold
-            them. ``no_elem``, ``celli``/``cellj`` and the width of :attr:`Par2d` all
+            them. `no_elem`, `celli`/`cellj` and the width of :attr:`Par2d` all
             derive from that mask, so the parameter vector length follows the raster's
             real domain.
 
@@ -236,7 +236,7 @@ class Parameters:
             self.no_elem = len(self.values)
         else:
             # Count the cells the pyramids mask left intact (see
-            # Catchment.read_flow_acc for why not Dataset.count_domain_cells).
+            # FlowNetwork.no_elem for why not Dataset.count_domain_cells).
             self.no_elem = int(np.count_nonzero(~np.isnan(self.raster_array)))
 
         self.no_parameters = no_parameters
@@ -285,7 +285,7 @@ class Parameters:
         Args:
             par_g: 1D list or numpy array of parameters. For totally
                 distributed parameters, the length should be
-                ``no_elem * no_parameters``. For lumped parameters, the
+                `no_elem * no_parameters`. For lumped parameters, the
                 lumped parameter values should be appended at the end.
 
         Raises:
@@ -374,7 +374,7 @@ class Parameters:
 
         Args:
             par_g: 1D list or numpy array of lumped parameters.
-                The length should equal ``no_parameters``.
+                The length should equal `no_parameters`.
 
         Raises:
             ValueError: If `par_g` is not a numpy ndarray or a list.
@@ -457,7 +457,7 @@ class Parameters:
                 distributed parameters are listed sequentially, followed
                 by the lumped K1 value, followed by lake parameters at
                 the end. For example, with 14 cells and 11 distributed
-                parameters: ``14 * 11 = 154 + 1 (K1) = 155``.
+                parameters: `14 * 11 = 154 + 1 (K1) = 155`.
             no_parameters_lake: Number of lake parameters to extract
                 from the end of `par_g`.
         """
@@ -515,7 +515,7 @@ class Parameters:
         Args:
             par_g: 1D list or numpy array of parameters. For HRU without
                 lumped parameters, the length should be
-                ``no_elem * no_parameters``. For HRU with lumped
+                `no_elem * no_parameters`. For HRU with lumped
                 parameters, the lumped parameter values should be
                 appended at the end.
 
@@ -752,12 +752,12 @@ class Parameters:
         the number of parameters is the same as the number of parameters
         of the conceptual model.
 
-        The result is stored in the ``ParametersNO`` attribute.
+        The result is stored in the `ParametersNO` attribute.
 
         Note:
             The Parameters object should have the following attributes
-            before calling this method: ``raster``, ``no_parameters``,
-            ``no_lumped_par``, and ``HRUs``.
+            before calling this method: `raster`, `no_parameters`,
+            `no_lumped_par`, and `HRUs`.
         """
         if not self.HRUs:
             if self.no_lumped_par > 0:
@@ -789,15 +789,15 @@ class Parameters:
                 be saved.
 
         Raises:
-            TypeError: `path` is not a ``str``. Output names are built by concatenation
-                (``path + name``), which a ``Path`` does not support.
+            TypeError: `path` is not a `str`. Output names are built by concatenation
+                (`path + name`), which a `Path` does not support.
             FileNotFoundError: The output directory does not exist. Checked up front so
                 the failure does not surface midway through writing.
 
         Note:
             The Parameters object should have the following attributes
-            set before calling this method: ``DistParFn``, ``raster``,
-            ``Par``, ``no_parameters``, ``snow``, ``kub``, and ``klb``.
+            set before calling this method: `DistParFn`, `raster`,
+            `Par`, `no_parameters`, `snow`, `kub`, and `klb`.
         """
         # Not delegated to pyramids: the output names are built by string concatenation
         # below (`path + name`), so this genuinely needs a str, and the directory must

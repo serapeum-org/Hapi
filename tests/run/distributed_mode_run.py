@@ -1,12 +1,12 @@
-"""Created on Sun Jun 24 21:02:34 2018.
-
-@author: Mostafa
-"""
-
 Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
+
+from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.styling.params import CellValues
+from cleopatra.styling.scaling import ColorScaling
 
 import hapi.rrm.hbv_bergestrom92 as HBV
 from hapi.catchment import Catchment
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.run import Run
 
 # %% Paths
@@ -29,12 +29,9 @@ start = "2009-01-01"
 end = "2009-04-10"
 name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.read_flow_acc(FlowAccPath)
-Coello.read_flow_dir(FlowDPath)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 Coello.read_parameters(ParPathRun, Snow)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %% Gauges
@@ -68,13 +65,13 @@ for i in range(len(Coello.GaugesTable)):
     gaugeid = Coello.GaugesTable.loc[i, "id"]
     print("----------------------------------")
     print("Gauge - " + str(gaugeid))
-    print("RMSE= " + str(round(Coello.Metrics.loc["RMSE", gaugeid], 2)))
-    print("NSE= " + str(round(Coello.Metrics.loc["NSE", gaugeid], 2)))
-    print("NSEhf= " + str(round(Coello.Metrics.loc["NSEhf", gaugeid], 2)))
-    print("KGE= " + str(round(Coello.Metrics.loc["KGE", gaugeid], 2)))
-    print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
-    print("Pearson CC= " + str(round(Coello.Metrics.loc["Pearson-CC", gaugeid], 2)))
-    print("R2 = " + str(round(Coello.Metrics.loc["R2", gaugeid], 2)))
+    print("RMSE= " + str(round(Coello.metrics.loc["RMSE", gaugeid], 2)))
+    print("NSE= " + str(round(Coello.metrics.loc["NSE", gaugeid], 2)))
+    print("NSEhf= " + str(round(Coello.metrics.loc["NSEhf", gaugeid], 2)))
+    print("KGE= " + str(round(Coello.metrics.loc["KGE", gaugeid], 2)))
+    print("WB= " + str(round(Coello.metrics.loc["WB", gaugeid], 2)))
+    print("Pearson CC= " + str(round(Coello.metrics.loc["Pearson-CC", gaugeid], 2)))
+    print("R2 = " + str(round(Coello.metrics.loc["R2", gaugeid], 2)))
 # %% plot
 gaugei = 5
 plotstart = "2009-01-01"
@@ -86,8 +83,9 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 Animate the distributed results.
 
 plot_distributed_results forwards the keyword arguments to
-``cleopatra.array_glyph.ArrayGlyph.animate``; see its docstring for the
-full list of supported options.
+``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
+for the full list of supported options. Since cleopatra 0.30 the styling
+keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
 """
 
 plotstart = "2009-01-01"
@@ -98,17 +96,13 @@ Anim = Coello.plot_distributed_results(
     plotend,
     figsize=(9, 9),
     option=1,
-    background_color_threshold=160,
-    display_cell_value=True,
+    cells=CellValues(show=True, background_threshold=160),
     ticks_spacing=5,
     interval=200,
     gauges=True,
     cmap="inferno",
-    text_loc=[0.1, 0.2],
-    point_color="red",
-    color_scale="linear",
-    pid_color="blue",
-    pid_size=25,
+    frame_label=FrameLabel(location=[0.1, 0.2]),
+    color=ColorScaling.linear(),
 )
 
 # %%

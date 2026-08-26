@@ -36,6 +36,7 @@ class Catchment:
 
 ```python
 from hapi.catchment import Catchment
+from hapi.inputs import FlowNetwork, MeteoInputs
 
 start = "2009-01-01"
 end = "2011-12-31"
@@ -61,11 +62,8 @@ ParPathRun = Path + "/Parameter set-Avg/"
 - Then use the each method in the object to read the coresponding data
 
 ```python
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
-Coello.read_flow_acc(FlowAccPath)
-Coello.read_flow_dir(FlowDPath)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 ```
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not
 
@@ -141,13 +139,13 @@ for i in range(len(Coello.GaugesTable)):
 	gaugeid = Coello.GaugesTable.loc[i,'id']
 	print("----------------------------------")
 	print("Gauge - " +str(gaugeid))
-	print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
-	print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
-	print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
-	print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-	print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
-	print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
-	print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
+	print("RMSE= " + str(round(Coello.metrics.loc['RMSE',gaugeid],2)))
+	print("NSE= " + str(round(Coello.metrics.loc['NSE',gaugeid],2)))
+	print("NSEhf= " + str(round(Coello.metrics.loc['NSEhf',gaugeid],2)))
+	print("KGE= " + str(round(Coello.metrics.loc['KGE',gaugeid],2)))
+	print("WB= " + str(round(Coello.metrics.loc['WB',gaugeid],2)))
+	print("Pearson CC= " + str(round(Coello.metrics.loc['Pearson-CC',gaugeid],2)))
+	print("R2 = " + str(round(Coello.metrics.loc['R2',gaugeid],2)))
 ```
 - The `extract_discharge` will print the performance metics
 
@@ -172,11 +170,15 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 - The best way to visualize a time series of distributed data is an animation. The `Catchment` object
   has a `plot_distributed_results` method which animates any of the model results.
 
-The keyword arguments are forwarded to `cleopatra.array_glyph.ArrayGlyph.animate`; see its
-documentation for the full list. The commonly used ones are `figsize`, `interval`, `cmap`,
-`ticks_spacing`, `color_scale` (`"linear"`, `"power"`, `"sym-lognorm"`, `"boundary-norm"`,
-`"midpoint"`), `display_cell_value`, `background_color_threshold`, `text_loc`, `point_color`,
-`pid_color` and `pid_size`.
+The keyword arguments are forwarded to
+`cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`; see its documentation for the full list.
+The plain ones are `figsize`, `interval`, `cmap`, `vmin`/`vmax`, `title` and `ticks_spacing`.
+cleopatra 0.30 moved the styling keywords onto typed group objects, so the colour scale is
+`color=ColorScaling.linear()` (also `.power(gamma=...)`, `.sym_log(...)`, `.midpoint(at=...)`,
+`.boundary(bounds=...)`), the cell-value labels are
+`cells=CellValues(show=True, size=..., background_threshold=...)`, and the frame time-stamp is
+`frame_label=FrameLabel(location=[...], color=...)`. The gauge markers are built by Hapi itself
+when `gauges=True`.
 
 `option` selects the variable to animate:
 
@@ -190,6 +192,10 @@ documentation for the full list. The commonly used ones are `figsize`, `interval
 | 6 | Upper zone | | |
 
 ```python
+from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.styling.params import CellValues
+from cleopatra.styling.scaling import ColorScaling
+
 plotstart = "2009-01-01"
 plotend = "2009-04-20"
 
@@ -202,12 +208,9 @@ anim = Coello.plot_distributed_results(
     ticks_spacing=5,
     interval=200,
     cmap="inferno",
-    color_scale="linear",
-    display_cell_value=True,
-    text_loc=[0.1, 0.2],
-    point_color="red",
-    pid_color="blue",
-    pid_size=25,
+    color=ColorScaling.linear(),
+    cells=CellValues(show=True),
+    frame_label=FrameLabel(location=[0.1, 0.2]),
 )
 ```
 ![Animation](../img/anim.gif)

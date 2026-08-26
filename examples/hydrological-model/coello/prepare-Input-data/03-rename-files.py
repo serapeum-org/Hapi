@@ -14,7 +14,7 @@ and upzip the temp-lumped-example.zip file then you will get rasters with names 
 from the download script from CHIRPS or ECMWF.
 """
 
-from Hapi.rrm.inputs import Inputs as IN
+from hapi.rrm.inputs import Inputs as IN
 
 path = (
     "examples/hydrological-model/data/meteo_data/meteodata_prepared/temp-rename-example"

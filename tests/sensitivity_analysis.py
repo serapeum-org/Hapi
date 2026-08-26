@@ -55,21 +55,21 @@ routing_fn = Routing.muskingum
 ### run the model
 Run.runLumped(Coello, Route, routing_fn)
 # %%
-Metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 # %%
 """
 the Sensitivity class takes 4 main arguments:
@@ -111,7 +111,7 @@ Each parameter has a dictionary with two keys 0: list of parameters with relativ
 
 # For Type 1
 def WrapperType1(Randpar, Route, routing_fn, Qobs):
-    Coello.Parameters = Randpar
+    Coello.parameters = Randpar
 
     Run.runLumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
@@ -120,7 +120,7 @@ def WrapperType1(Randpar, Route, routing_fn, Qobs):
 
 # For Type 2
 def WrapperType2(Randpar, Route, routing_fn, Qobs):
-    Coello.Parameters = Randpar
+    Coello.parameters = Randpar
 
     Run.runLumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])

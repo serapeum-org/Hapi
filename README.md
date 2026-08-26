@@ -36,7 +36,9 @@ Main Features
 -------------
   - Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
    snow processes, and 10 parameters without snow, in addition to 2 parameters of Muskingum routing method
-  - Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF)
+  - Meteorological inputs for the hydrologic model simulation are downloaded with
+    [earthlens](https://github.com/serapeum-org/earthlens) (CHIRPS rainfall, ERA5 temperature and
+    evapotranspiration), which replaces the deprecated earth2observe package
   - GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing
     needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and
     convert different forms of distributed data (rasters, NetCDF, shapefiles)

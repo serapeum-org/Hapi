@@ -26,20 +26,25 @@ classifiers = [
 requires-python = ">= 3.11, <4"
 
 dependencies = [
+    "pyramids-gis >=0.54.0",
     "loguru >=0.7.2",
     "numpy >=2.1.3",
     "pandas >=3.0.0",
     "PyYAML >=6.0.2",
-    # GDAL is vendored inside the pyramids-gis wheel — do not pin gdal directly.
-    "pyramids-gis >=0.46.0",
     "requests >=2.31.0",
     "scipy >=1.17.0",
     "serapeum-utils >=0.2.0",
     "statista >=0.8.0",
     "Oasis-Optimization >=1.0.3",
-    "cleopatra >=0.26.1",
+    "cleopatra >=0.32.0",
     "matplotlib >=3.11.0"
 ]
+
+[project.optional-dependencies]
+# Meteorological input downloads (CHIRPS, ERA5). Optional because the model itself runs on
+# rasters that are already on disk; only the download examples import it. `earthlens[ecmwf]`
+# pulls cdsapi, which the ERA5 backend needs.
+inputs = ["earthlens[ecmwf] >=0.12.0"]
 
 [dependency-groups]
 dev = [
@@ -260,9 +265,16 @@ cmd = "twine upload --non-interactive --repository pypi dist/*"
 depends-on = ["build-dist"]
 description = "Build and upload package to PyPI"
 
+[tool.pixi.feature.inputs.pypi-dependencies]
+# Installs the project's `inputs` extra (earthlens[ecmwf]) so the download examples in
+# docs/examples/meteo-inputs.md can actually run. Kept out of `dev` because earthlens pulls
+# six sub-distributions plus cdsapi, which the model itself never imports.
+hapi-nile = { path = ".", editable = true, extras = ["inputs"] }
+
 [tool.pixi.environments]
 default = { solve-group = "default" }
 dev = { features = ["dev"], solve-group = "default" }
+inputs = { features = ["inputs", "dev"], solve-group = "inputs" }
 docs = { features = ["docs"], solve-group = "docs" }
 py311 = { features = ["py311", "dev"], solve-group = "py311" }
 py312 = { features = ["py312", "dev"], solve-group = "py312" }

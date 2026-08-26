@@ -7,16 +7,17 @@ from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import DatetimeIndex
 
 from hapi.catchment import Catchment
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
 
 def test_create_catchment_instance(coello_rrm_date: list):
-    Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    assert Coello.dt == 1
-    assert isinstance(Coello.Index, DatetimeIndex)
-    assert isinstance(Coello.routing_method, str)
+    coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+    assert coello.dt == 1
+    assert isinstance(coello.date_index, DatetimeIndex)
+    assert isinstance(coello.routing_method, str)
 
 
 class TestLumped:
@@ -25,9 +26,9 @@ class TestLumped:
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_lumped_inputs(lumped_meteo_data_path)
-        assert isinstance(Coello.data, np.ndarray)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        assert isinstance(coello.data, np.ndarray)
 
     def test_read_lumped_model(
         self,
@@ -35,11 +36,11 @@ class TestLumped:
         coello_AreaCoeff: float,
         coello_InitialCond: list,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        assert isinstance(Coello.LumpedModel, HBVLumped)
-        assert isinstance(Coello.CatArea, float)
-        assert isinstance(Coello.InitialCond, list)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        assert isinstance(coello.lumped_model, HBVLumped)
+        assert isinstance(coello.area, float)
+        assert isinstance(coello.initial_cond, list)
 
     def test_read_lumped_read_parameters(
         self,
@@ -47,10 +48,10 @@ class TestLumped:
         lumped_parameters_path: str,
         coello_Snow: int,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_parameters(lumped_parameters_path, coello_Snow)
-        assert isinstance(Coello.Parameters, list)
-        assert Coello.Snow == coello_Snow
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_parameters(lumped_parameters_path, coello_Snow)
+        assert isinstance(coello.parameters, list)
+        assert coello.snow == coello_Snow
 
     def test_read_discharge_gauges(
         self,
@@ -58,9 +59,9 @@ class TestLumped:
         lumped_gauges_path: str,
         coello_gauges_date_fmt: str,
     ):
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
-        assert isinstance(Coello.QGauges, DataFrame)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        assert isinstance(coello.QGauges, DataFrame)
 
     def test_run_lumped(
         self,
@@ -100,15 +101,15 @@ class TestLumped:
         path = "tests/rrm/data/test-Lumped-Model_results.txt"
         if os.path.exists(path):
             os.remove(path)
-        Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.read_lumped_inputs(lumped_meteo_data_path)
-        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        Coello.read_parameters(lumped_parameters_path, coello_Snow)
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        coello.read_parameters(lumped_parameters_path, coello_Snow)
         # discharge gauges
-        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         Route = 1
-        Run.runLumped(Coello, Route, Routing.muskingum_v)
-        Coello.save_results(result=5, path=path)
+        Run.runLumped(coello, Route, Routing.muskingum_v)
+        coello.save_results(result=5, path=path)
 
     # # TODO: still not finished as it does not run the plotHydrograph method
     # def test_PlotHydrograph(
@@ -122,16 +123,16 @@ class TestLumped:
     #         lumped_gauges_path: str,
     #         coello_gauges_date_fmt: str,
     # ):
-    #     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    #     Coello.readLumpedInputs(lumped_meteo_data_path)
-    #     Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-    #     Coello.readParameters(lumped_parameters_path, coello_Snow)
+    #     coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+    #     coello.readLumpedInputs(lumped_meteo_data_path)
+    #     coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    #     coello.read_parameters(lumped_parameters_path, coello_Snow)
     #     # discharge gauges
-    #     Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    #     coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     #     RoutingFn = Routing.muskingum_v
     #     Route = 1
-    #     Run.runLumped(Coello, Route, RoutingFn)
-    #     assert len(Coello.Qsim) == 10 and Coello.Qsim.columns.to_list() == ["q"]
+    #     Run.runLumped(coello, Route, RoutingFn)
+    #     assert len(coello.Qsim) == 10 and coello.Qsim.columns.to_list() == ["q"]
 
 
 class TestDistributed:
@@ -166,7 +167,9 @@ class TestDistributed:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
+            coello_prec_path,
+            coello_temp_path,
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -174,27 +177,10 @@ class TestDistributed:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_temperature(
-            coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_et(
-            coello_temp_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        assert isinstance(coello.Prec, np.ndarray)
-        assert isinstance(coello.Temp, np.ndarray)
-        assert isinstance(coello.ET, np.ndarray)
-        assert coello.Prec.shape == (13, 14, 10)
-        assert coello.ET.shape == (13, 14, 10)
+        assert isinstance(coello.meteo.precipitation, np.ndarray)
+        assert isinstance(coello.meteo.temperature, np.ndarray)
+        assert isinstance(coello.meteo.evapotranspiration, np.ndarray)
+        assert coello.meteo.shape == (13, 14, 10)
 
     def test_read_gis_inputs(
         self,
@@ -213,14 +199,13 @@ class TestDistributed:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_flow_acc(coello_acc_path)
-        coello.read_flow_dir(coello_fd_path)
-        assert coello.Outlet[0][0] == 10
-        assert coello.Outlet[1][0] == 13
-        assert coello.acc_val == coello_acc_values
-        assert isinstance(coello.flow_dir_arr, np.ndarray)
-        assert coello.flow_dir_arr.shape == (13, 14)
-        assert coello.FDT == coello_fdt
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
+        assert coello.flow_network.outlet[0][0] == 10
+        assert coello.flow_network.outlet[1][0] == 13
+        assert coello.flow_network.acc_val == coello_acc_values
+        assert isinstance(coello.flow_network.flow_dir_arr, np.ndarray)
+        assert coello.flow_network.flow_dir_arr.shape == (13, 14)
+        assert coello.flow_network.FDT == coello_fdt
 
     def test_read_lumped_model(
         self,
@@ -238,9 +223,9 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        assert isinstance(coello.LumpedModel, HBVLumped)
-        assert coello.CatArea == coello_cat_area
-        assert coello.InitialCond == coello_initial_cond
+        assert isinstance(coello.lumped_model, HBVLumped)
+        assert coello.area == coello_cat_area
+        assert coello.initial_cond == coello_initial_cond
 
     def test_read_parameters_bound(
         self,
@@ -262,8 +247,8 @@ class TestDistributed:
         coello.read_parameters_bound(UB, LB, Snow)
         assert all(coello.LB == LB)
         assert all(coello.UB == UB)
-        assert coello.Snow == Snow
-        assert coello.Maxbas == False
+        assert coello.snow == Snow
+        assert coello.maxbas == False
 
     def test_read_gauge_table(
         self,
@@ -327,13 +312,13 @@ class TestDistributed:
         )
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
-        assert coello.Parameters.shape == (
+        assert coello.parameters.shape == (
             coello_rows,
             coello_cols,
             coello_no_parameters - 1,
         )
-        assert coello.Snow == Snow
-        assert coello.Maxbas is True
+        assert coello.snow == Snow
+        assert coello.maxbas is True
 
 
 class TestFW1:
@@ -359,7 +344,9 @@ class TestFW1:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
+            coello_prec_path,
+            coello_temp_path,
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -367,26 +354,9 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_temperature(
-            coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_et(
-            coello_temp_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
-        Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
@@ -419,7 +389,9 @@ class TestFW1:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
+            coello_prec_path,
+            coello_temp_path,
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -427,23 +399,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_temperature(
-            coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_et(
-            coello_temp_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
         coello.read_gauge_table(coello_gauges_table, coello_acc_path)
@@ -455,12 +411,19 @@ class TestFW1:
         Run.runFW1(coello)
 
         coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
-        assert isinstance(coello.Metrics, DataFrame)
-        assert len(coello.Metrics) == 7
+        assert isinstance(coello.metrics, DataFrame)
+        assert len(coello.metrics) == 7
         assert len(coello.Qsim) == 10
 
 
-class TestMuskingum:
+class TestSaveAndExtractAfterFW1:
+    """A second FW1 run covering `save_results` and `extract_discharge`.
+
+    Named for what it does: it reads the MAXBAS parameter set and calls `Run.runFW1`, so
+    calling it `TestMuskingum` said the opposite of what it exercises. The Muskingum path
+    is covered by `test_extract_discharge_distributed.py` and `test_meteo_inputs.py`.
+    """
+
     def test_run_dist(
         self,
         coello_start_date: str,
@@ -483,7 +446,9 @@ class TestMuskingum:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
+            coello_prec_path,
+            coello_temp_path,
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -491,23 +456,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_temperature(
-            coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_et(
-            coello_temp_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
@@ -543,7 +492,9 @@ class TestMuskingum:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.read_rainfall(
+        coello.meteo = MeteoInputs.from_rasters(
+            coello_prec_path,
+            coello_temp_path,
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -551,23 +502,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.read_temperature(
-            coello_prec_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_et(
-            coello_temp_path,
-            start=coello_start_date,
-            end=coello_end_date,
-            regex_string=r"\d{4}.\d{2}.\d{2}",
-            date=True,
-            file_name_data_fmt="%Y.%m.%d",
-        )
-        coello.read_flow_acc(coello_acc_path)
+        coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
         coello.read_gauge_table(coello_gauges_table, coello_acc_path)
@@ -579,6 +514,6 @@ class TestMuskingum:
         Run.runFW1(coello)
 
         coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
-        assert isinstance(coello.Metrics, DataFrame)
-        assert len(coello.Metrics) == 7
+        assert isinstance(coello.metrics, DataFrame)
+        assert len(coello.metrics) == 7
         assert len(coello.Qsim) == 10

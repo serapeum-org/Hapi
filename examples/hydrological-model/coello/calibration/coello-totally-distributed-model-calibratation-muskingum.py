@@ -5,6 +5,7 @@ from pyramids.dataset import Dataset
 from statista.descriptors import rmse
 
 from hapi.calibration import Calibration
+from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.rrm.parameters import Parameters as DP
 
@@ -32,12 +33,9 @@ name = "Coello"
 Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
 # %% Meteorological & GIS Data
 
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.read_flow_acc(FlowAccPath)
-Coello.read_flow_dir(FlowDPath)
+Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %%
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)
@@ -134,7 +132,7 @@ ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start
 
 OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% ### Run Calibration
-cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=1)
+cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs, print_error=1)
 # %%
-SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+SpatialVarFun.Function(Coello.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.save_parameters(SaveTo)

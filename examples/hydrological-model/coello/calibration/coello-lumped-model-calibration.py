@@ -6,10 +6,11 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 # %% Paths
 Parameterpath = "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
@@ -97,7 +98,7 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% Run Calibration
 
 cal_parameters = Coello.lumpedCalibration(
-    Basic_inputs, OptimizationArgs, printError=None
+    Basic_inputs, OptimizationArgs, print_error=None
 )
 
 print("Objective Function = " + str(round(cal_parameters[0], 2)))
@@ -105,26 +106,26 @@ print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% Run the Model
 
-Coello.Parameters = cal_parameters[1]
+Coello.parameters = cal_parameters[1]
 Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
-Metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 
 ### Plotting Hydrograph
 
@@ -146,4 +147,4 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = Path + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=5, StartDate=StartDate, EndDate=EndDate, path=Path)
+Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)

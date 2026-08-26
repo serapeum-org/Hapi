@@ -12,10 +12,15 @@ import numpy as np
 
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
-from Hapi.catchment import Catchment, Lake
-from Hapi.rrm.hbv import HBV
-from Hapi.rrm.hbv_lake import HBVLake
-from Hapi.run import Run
+from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.styling.params import CellValues
+from cleopatra.styling.scaling import ColorScaling
+
+from hapi.catchment import Catchment, Lake
+from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.rrm.hbv import HBV
+from hapi.rrm.hbv_lake import HBVLake
+from hapi.run import Run
 
 # %%
 root_dir = Path(r"examples/hydrological-model/jiboa/data")
@@ -57,16 +62,17 @@ Jiboa = Catchment(
 )
 regex_exp = r"\d{4}_\d{1,2}_\d{1,2}_\d{1,2}"
 date_format = "%Y_%m_%d_%H"
-Jiboa.read_rainfall(
-    str(prec_path), regex_string=regex_exp, file_name_data_fmt=date_format
+Jiboa.meteo = MeteoInputs.from_rasters(
+    str(prec_path),
+    str(temp_path),
+    str(evap_path),
+    regex_string=regex_exp,
+    file_name_data_fmt=date_format,
 )
-Jiboa.read_temperature(
-    str(temp_path), regex_string=regex_exp, file_name_data_fmt=date_format
-)
-Jiboa.read_et(str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format)
 
-Jiboa.read_flow_acc(str(flow_acc_path))
-Jiboa.read_flow_dir(str(flow_direction_path))
+Jiboa.flow_network = FlowNetwork.from_rasters(
+    str(flow_acc_path), str(flow_direction_path)
+)
 Jiboa.read_parameters(str(par_path), Snow)
 
 Jiboa.read_lumped_model(HBV, catchment_area, initial_conditions)
@@ -130,13 +136,13 @@ for i in range(len(Jiboa.GaugesTable)):
     gaugeid = Jiboa.GaugesTable.loc[i, "id"]
     print("----------------------------------")
     print("Gauge - " + str(gaugeid))
-    print("RMSE= " + str(round(Jiboa.Metrics.loc["RMSE", gaugeid], 2)))
-    print("NSE= " + str(round(Jiboa.Metrics.loc["NSE", gaugeid], 2)))
-    print("NSEhf= " + str(round(Jiboa.Metrics.loc["NSEhf", gaugeid], 2)))
-    print("KGE= " + str(round(Jiboa.Metrics.loc["KGE", gaugeid], 2)))
-    print("WB= " + str(round(Jiboa.Metrics.loc["WB", gaugeid], 2)))
-    print("Pearson CC= " + str(round(Jiboa.Metrics.loc["Pearson-CC", gaugeid], 2)))
-    print("R2 = " + str(round(Jiboa.Metrics.loc["R2", gaugeid], 2)))
+    print("RMSE= " + str(round(Jiboa.metrics.loc["RMSE", gaugeid], 2)))
+    print("NSE= " + str(round(Jiboa.metrics.loc["NSE", gaugeid], 2)))
+    print("NSEhf= " + str(round(Jiboa.metrics.loc["NSEhf", gaugeid], 2)))
+    print("KGE= " + str(round(Jiboa.metrics.loc["KGE", gaugeid], 2)))
+    print("WB= " + str(round(Jiboa.metrics.loc["WB", gaugeid], 2)))
+    print("Pearson CC= " + str(round(Jiboa.metrics.loc["Pearson-CC", gaugeid], 2)))
+    print("R2 = " + str(round(Jiboa.metrics.loc["R2", gaugeid], 2)))
 # %%
 Qobs = Jiboa.QGauges[Jiboa.GaugesTable.loc[0, "id"]]
 
@@ -174,8 +180,10 @@ Animate the distributed results.
 plot_distributed_results animates the time series of the meteorological
 inputs and the results calculated by the model, like the total discharge,
 upper zone and lower zone discharge, and the state variables. The keyword
-arguments are forwarded to ``cleopatra.array_glyph.ArrayGlyph.animate``;
-see its docstring for the full list of supported options.
+arguments are forwarded to
+``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
+for the full list of supported options. Since cleopatra 0.30 the styling
+keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
 """
 
 plotstart = "2012-07-20"
@@ -186,18 +194,13 @@ Anim = Jiboa.plot_distributed_results(
     plotend,
     figsize=(8, 8),
     option=3,
-    background_color_threshold=160,
-    display_cell_value=False,
+    cells=CellValues(show=False, background_threshold=160),
     ticks_spacing=10,
     interval=10,
     gauges=False,
     cmap="inferno",
-    text_loc=[0.6, 0.8],
-    point_color="red",
-    color_scale="power",
-    pid_color="blue",
-    pid_size=25,
-    gamma=0.08,
+    frame_label=FrameLabel(location=[0.6, 0.8]),
+    color=ColorScaling.power(gamma=0.08),
 )
 # %%
 Path = save_to + "anim.mov"

@@ -14,10 +14,11 @@ import random
 
 import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
-from Hapi.calibration import Calibration
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+
+from hapi.calibration import Calibration
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 # %% Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
@@ -92,8 +93,8 @@ Coello.OFArgs = []
 
 
 def objfn(individual):
-    # Coello.readParameters(Parameterpath, Snow)
-    Coello.Parameters = individual
+    # Coello.read_parameters(Parameterpath, Snow)
+    Coello.parameters = individual
     Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     NSE = metrics.nse_hf(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
@@ -146,7 +147,7 @@ best_ind = tools.selBest(pop, 1)[0]
 print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
 # %% Run the Model
 
-Coello.Parameters = best_ind
+Coello.parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
@@ -154,21 +155,21 @@ Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
-Metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 # %% Plotting Hydrograph
 
 gaugei = 0

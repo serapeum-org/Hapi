@@ -10,7 +10,7 @@ import geopandas as gpd
 
 # import numpy as np
 # import pandas as pd
-from Hapi.rrm.inputs import Inputs as IN
+from hapi.rrm.inputs import Inputs as IN
 
 BasinF = "data/GIS/Hapi_GIS_Data/BasinExtractParameters.shp"
 SaveTo = "data/parameters"

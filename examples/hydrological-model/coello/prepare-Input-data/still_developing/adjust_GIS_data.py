@@ -17,7 +17,7 @@ os.chdir("F:/02Case studies/Coello/HAPI/Data")
 import gdal
 
 # functions
-import Hapi.gis.raster as GIS
+import hapi.gis.raster as GIS
 
 # %library
 # import numpy as np

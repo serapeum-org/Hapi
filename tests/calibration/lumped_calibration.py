@@ -95,24 +95,24 @@ print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% run the model
-Coello.Parameters = cal_parameters[1]
+Coello.parameters = cal_parameters[1]
 Run.runLumped(Coello, Route, routing_fn)
 # %% calculate performance criteria
-Metrics = dict()
+scores = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(scores["RMSE"], 2)))
+print("NSE= " + str(round(scores["NSE"], 2)))
+print("NSEhf= " + str(round(scores["NSEhf"], 2)))
+print("KGE= " + str(round(scores["KGE"], 2)))
+print("WB= " + str(round(scores["WB"], 2)))
 # %% plotting
 gaugei = 0
 plotstart = "2009-01-01"

@@ -4,10 +4,11 @@ import matplotlib
 
 matplotlib.use("TkAgg")
 import statista.descriptors as PC
-from Hapi.catchment import Catchment
-from Hapi.routing import Routing
-from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from Hapi.run import Run
+
+from hapi.catchment import Catchment
+from hapi.routing import Routing
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.run import Run
 
 # %% data
 parameter_path = "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
@@ -31,7 +32,7 @@ Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 Snow = False  # no snow subroutine
 Coello.read_parameters(parameter_path, Snow)
-# Coello.Parameters
+# Coello.parameters
 # %% ### Observed flow
 Coello.read_discharge_gauges(path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %%  ### Routing
@@ -40,7 +41,7 @@ Coello.read_discharge_gauges(path + "Qout_c.csv", fmt="%Y-%m-%d")
 RoutingFn = Routing.muskingum_v
 Route = 1
 # %% ### Run The Model
-# Coello.Parameters = [1.0171762638840873,
+# Coello.parameters = [1.0171762638840873,
 #                      358.6427125027168,
 #                      1.459834925116025,
 #                      0.2031178594731058,
@@ -55,22 +56,22 @@ Route = 1
 Run.runLumped(Coello, Route, RoutingFn)
 # %% ### Calculate performance criteria
 # Coello.extractDischarge(OnlyOutlet=True)
-Metrics = dict()
+metrics = dict()
 
 # gaugeid = Coello.QGauges.columns[-1]
 Qobs = Coello.QGauges["q"]
 
-Metrics["RMSE"] = PC.rmse(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.nse(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.nse_hf(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.kge(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.wb(Qobs, Coello.Qsim["q"])
+metrics["RMSE"] = PC.rmse(Qobs, Coello.Qsim["q"])
+metrics["NSE"] = PC.nse(Qobs, Coello.Qsim["q"])
+metrics["NSEhf"] = PC.nse_hf(Qobs, Coello.Qsim["q"])
+metrics["KGE"] = PC.kge(Qobs, Coello.Qsim["q"])
+metrics["WB"] = PC.wb(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
+print("RMSE= " + str(round(metrics["RMSE"], 2)))
+print("NSE= " + str(round(metrics["NSE"], 2)))
+print("NSEhf= " + str(round(metrics["NSEhf"], 2)))
+print("KGE= " + str(round(metrics["KGE"], 2)))
+print("WB= " + str(round(metrics["WB"], 2)))
 # %% ### Plot Hydrograph
 gaugei = 0
 plotstart = "2009-01-01"
