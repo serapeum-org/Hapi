@@ -1688,7 +1688,7 @@ concrete implementations of all required subroutines.</p>
 <span class="gp">... </span>    <span class="n">temp</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">ltt</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">utt</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">prec</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">rfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">rainfall=10.0, snowfall=0.0</span>
 </code></pre></div>
 
@@ -2419,7 +2419,7 @@ concrete implementations of all required subroutines.</p>
 <span class="normal">799</span>
 <span class="normal">800</span>
 <span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBV</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;HBV-96 lumped conceptual rainfall-runoff model.</span>
+<span class="w">    </span><span class="sd">"""HBV-96 lumped conceptual rainfall-runoff model.</span>
 
 <span class="sd">    The HBV (Hydrologiska Byrans Vattenbalansavdelning) model is a</span>
 <span class="sd">    conceptual hydrological model that simulates catchment discharge</span>
@@ -2446,13 +2446,13 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">        ...     temp=5.0, ltt=0.0, utt=2.0, prec=10.0,</span>
 <span class="sd">        ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">        rainfall=10.0, snowfall=0.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">precipitation</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ltt</span><span class="p">,</span> <span class="n">utt</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rfcf</span><span class="p">,</span> <span class="n">sfcf</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Partition precipitation into rainfall and snowfall.</span>
+<span class="w">        </span><span class="sd">"""Partition precipitation into rainfall and snowfall.</span>
 
 <span class="sd">        If temperature is lower than ``ltt``, all precipitation is</span>
 <span class="sd">        considered snowfall. If temperature is higher than ``utt``, all</span>
@@ -2481,7 +2481,7 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     temp=10.0, ltt=0.0, utt=2.0, prec=15.0,</span>
 <span class="sd">            ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">            rainfall=15.0, snowfall=0.0</span>
 
 <span class="sd">            Temperature below the lower threshold produces only</span>
@@ -2491,7 +2491,7 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     temp=-5.0, ltt=0.0, utt=2.0, prec=15.0,</span>
 <span class="sd">            ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">            rainfall=0.0, snowfall=15.0</span>
 
 <span class="sd">            Temperature between thresholds produces a mix:</span>
@@ -2500,9 +2500,9 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     temp=1.0, ltt=0.0, utt=2.0, prec=10.0,</span>
 <span class="sd">            ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">            rainfall=5.0, snowfall=5.0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;=</span> <span class="n">ltt</span><span class="p">:</span>  <span class="c1"># if temp &lt;= lower temp threshold</span>
             <span class="n">rf</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># no rainfall all the precipitation will convert into snowfall</span>
             <span class="n">sf</span> <span class="o">=</span> <span class="n">prec</span> <span class="o">*</span> <span class="n">sfcf</span>
@@ -2521,7 +2521,7 @@ concrete implementations of all required subroutines.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">snow</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="n">cfmax</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">ttm</span><span class="p">,</span> <span class="n">cfr</span><span class="p">,</span> <span class="n">cwh</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">wc_old</span><span class="p">,</span> <span class="n">sp_old</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate snow accumulation, melt, and refreezing.</span>
+<span class="w">        </span><span class="sd">"""Simulate snow accumulation, melt, and refreezing.</span>
 
 <span class="sd">        The snow pack consists of two states: Water Content (``wc``)</span>
 <span class="sd">        and Snow Pack (``sp``). The water content corresponds to the</span>
@@ -2560,9 +2560,9 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     cwh=0.1, rf=2.0, sf=0.0,</span>
 <span class="sd">            ...     wc_old=0.0, sp_old=10.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;infiltration={inf:.2f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"infiltration={inf:.2f}")</span>
 <span class="sd">            infiltration=1.55</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;wc_new={wc_new:.2f}, sp_new={sp_new:.2f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"wc_new={wc_new:.2f}, sp_new={sp_new:.2f}")</span>
 <span class="sd">            wc_new=0.95, sp_new=9.5</span>
 
 <span class="sd">            When temperature is below the melt threshold, water</span>
@@ -2573,11 +2573,11 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     cwh=0.1, rf=0.0, sf=5.0,</span>
 <span class="sd">            ...     wc_old=2.0, sp_old=10.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;infiltration={inf:.2f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"infiltration={inf:.2f}")</span>
 <span class="sd">            infiltration=1.40</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;sp_new={sp_new:.2f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"sp_new={sp_new:.2f}")</span>
 <span class="sd">            sp_new=15.1</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">ttm</span><span class="p">:</span>  <span class="c1"># if temp &gt; melting threshold</span>
             <span class="c1"># then either some snow will melt or the entire snow will melt</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -2623,7 +2623,7 @@ concrete implementations of all required subroutines.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">soil</span><span class="p">(</span>  <span class="c1"># type: ignore[override]  # tfac,</span>
         <span class="n">fc</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">etf</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">,</span> <span class="n">lp</span><span class="p">,</span> <span class="n">c_flux</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">sm_old</span><span class="p">,</span> <span class="n">uz_old</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute soil moisture balance and recharge to the upper zone.</span>
+<span class="w">        </span><span class="sd">"""Compute soil moisture balance and recharge to the upper zone.</span>
 
 <span class="sd">        The soil routine checks the amount of water that can infiltrate</span>
 <span class="sd">        the soil from liquid precipitation and snow pack melting. A</span>
@@ -2663,9 +2663,9 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     tm=18.0, e_corr=1.0, lp=0.3, c_flux=0.01,</span>
 <span class="sd">            ...     inf=5.0, ep=3.0, sm_old=100.0, uz_old=10.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;sm_new={sm_new:.2f}, uz_int_1={uz_int_1:.2f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"sm_new={sm_new:.2f}, uz_int_1={uz_int_1:.2f}")</span>
 <span class="sd">            sm_new=101.13, uz_int_1=11.25</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">qdr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
             <span class="n">sm_old</span> <span class="o">+</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">fc</span><span class="p">,</span> <span class="mi">0</span>
         <span class="p">)</span>  <span class="c1"># direct run off as soil moisture exceeded the field capacity</span>
@@ -2700,7 +2700,7 @@ concrete implementations of all required subroutines.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span>  <span class="c1"># type: ignore[override]  # tfac,area,</span>
         <span class="n">perc</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">lz_old</span><span class="p">,</span> <span class="n">uz_int_1</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transform upper and lower zone storage into discharge.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Transform upper and lower zone storage into discharge.</span>
 
 <span class="sd">        The response routine converts the current values of the upper</span>
 <span class="sd">        and lower storage zones into discharge components. It also</span>
@@ -2733,11 +2733,11 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     perc=0.5, alpha=0.5, k=0.01, k1=0.001,</span>
 <span class="sd">            ...     lz_old=20.0, uz_int_1=15.0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;q_upper={q_0:.4f}, q_lower={q_1:.4f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"q_upper={q_0:.4f}, q_lower={q_1:.4f}")</span>
 <span class="sd">            q_upper=0.0381, q_lower=0.0205</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;uz_new={uz_new:.4f}, lz_new={lz_new:.4f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"uz_new={uz_new:.4f}, lz_new={lz_new:.4f}")</span>
 <span class="sd">            uz_new=14.4619, lz_new=20.4795</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># upper zone</span>
         <span class="c1"># if perc &gt; Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min</span>
         <span class="n">uz_int_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">uz_int_1</span> <span class="o">-</span> <span class="n">perc</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
@@ -2768,7 +2768,7 @@ concrete implementations of all required subroutines.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate transfer function weights using a triangular shape.</span>
+<span class="w">        </span><span class="sd">"""Generate transfer function weights using a triangular shape.</span>
 
 <span class="sd">        Creates a set of weights for the triangular transfer function</span>
 <span class="sd">        used in discharge routing. The weights grow linearly up to the</span>
@@ -2788,9 +2788,9 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            &gt;&gt;&gt; weights = HBV.tf(5)</span>
 <span class="sd">            &gt;&gt;&gt; print(weights.round(4))</span>
 <span class="sd">            [0.1429 0.2857 0.2857 0.1429 0.1429]</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;sum={weights.sum():.4f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"sum={weights.sum():.4f}")</span>
 <span class="sd">            sum=1.0000</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">:</span>
@@ -2805,7 +2805,7 @@ concrete implementations of all required subroutines.</p>
         <span class="k">return</span> <span class="n">wi</span>  <span class="c1"># type: ignore[no-any-return]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route discharge through a triangular transfer function.</span>
+<span class="w">        </span><span class="sd">"""Route discharge through a triangular transfer function.</span>
 
 <span class="sd">        Applies the triangular transfer function to the discharge time</span>
 <span class="sd">        series. The transfer function smooths the hydrograph by</span>
@@ -2832,8 +2832,8 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            &gt;&gt;&gt; q_routed = model.routing(q, maxbas=3)</span>
 <span class="sd">            &gt;&gt;&gt; print(q_routed.round(4))</span>
 <span class="sd">            [0.   0.   2.5  4.   2.5  0.5]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
         <span class="c1"># Get integer part of maxbas</span>
         <span class="c1">#    maxbas = int(maxbas)</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -2842,7 +2842,7 @@ concrete implementations of all required subroutines.</p>
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
         <span class="c1"># rout the discharge signal</span>
-        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
         <span class="n">q_temp</span> <span class="o">=</span> <span class="n">q</span>
         <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
             <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>
@@ -2853,7 +2853,7 @@ concrete implementations of all required subroutines.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">step_run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">state_variable</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a single time step of the HBV model.</span>
+<span class="w">        </span><span class="sd">"""Execute a single time step of the HBV model.</span>
 
 <span class="sd">        Parses the parameter vector, input vector, and state variables,</span>
 <span class="sd">        then sequentially runs the precipitation, snow, soil, and</span>
@@ -2911,14 +2911,14 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            &gt;&gt;&gt; q_uz, q_lz, new_states = model.step_run(</span>
 <span class="sd">            ...     par, inputs, states, snow=0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;q_uz={q_uz:.4f}, q_lz={q_lz:.4f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"q_uz={q_uz:.4f}, q_lz={q_lz:.4f}")</span>
 <span class="sd">            q_uz=0.0727, q_lz=0.0078</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">## Parse of parameters from input vector to model</span>
         <span class="c1"># picipitation function</span>
         <span class="k">if</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">18</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;current version of HBV (with snow) takes 18 parameter you have entered &quot;</span>
+                <span class="s2">"current version of HBV (with snow) takes 18 parameter you have entered "</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
             <span class="p">)</span>
             <span class="n">ltt</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -2951,11 +2951,11 @@ concrete implementations of all required subroutines.</p>
             <span class="n">sfcf</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># there is no snow</span>
             <span class="c1"># snow function</span>
             <span class="n">ttm</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># should be very low lower than lowest temp as temp is 25 all the time so it does not matter</span>
-            <span class="n">cfmax</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># as there is no melting  and sp+sf=zero all the time so it doesn&#39;t matter the value of cfmax</span>
+            <span class="n">cfmax</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax</span>
             <span class="n">cwh</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="mf">0.00001</span>  <span class="c1"># as sp is always zero it doesn&#39;t matter all wc will go as inf</span>
+                <span class="mf">0.00001</span>  <span class="c1"># as sp is always zero it doesn't matter all wc will go as inf</span>
             <span class="p">)</span>
-            <span class="n">cfr</span> <span class="o">=</span> <span class="mf">0.000001</span>  <span class="c1"># as temp &gt; ttm all the time so it doesn&#39;t matter the value of cfr but put it zero</span>
+            <span class="n">cfr</span> <span class="o">=</span> <span class="mf">0.000001</span>  <span class="c1"># as temp &gt; ttm all the time so it doesn't matter the value of cfr but put it zero</span>
             <span class="c1"># soil function</span>
             <span class="n">fc</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">beta</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -3028,7 +3028,7 @@ concrete implementations of all required subroutines.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the HBV model for the full precipitation time series.</span>
+<span class="w">        </span><span class="sd">"""Run the HBV model for the full precipitation time series.</span>
 
 <span class="sd">        Executes the HBV model for ``n`` time steps (the length of the</span>
 <span class="sd">        precipitation array). The results contain ``n+1`` values as</span>
@@ -3091,18 +3091,18 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            ...     prec, temp_arr, et, None, par,</span>
 <span class="sd">            ...     init_st=init_st, snow=0,</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(f&quot;q_uz length={len(q_uz)}, first={q_uz[0]:.4f}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f"q_uz length={len(q_uz)}, first={q_uz[0]:.4f}")</span>
 <span class="sd">            q_uz length=6, first=0.0727</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># data type</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;state variables are 5 and the given initial values are &quot;</span>
+            <span class="s2">"state variables are 5 and the given initial values are "</span>
             <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">))</span>
         <span class="p">)</span>
-        <span class="c1"># assert type(p2) == list, &quot; p2 should be of type list&quot;</span>
-        <span class="c1"># assert len(p2) == 2, &quot;p2 should contains tfac and catchment area&quot;</span>
+        <span class="c1"># assert type(p2) == list, " p2 should be of type list"</span>
+        <span class="c1"># assert len(p2) == 2, "p2 should contains tfac and catchment area"</span>
         <span class="k">assert</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot; snow input defines whether to consider snow subroutine or not it has to be 0 or 1&quot;</span>
+            <span class="s2">" snow input defines whether to consider snow subroutine or not it has to be 0 or 1"</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">init_st</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># 0  1  2  3  4  5</span>
@@ -3315,7 +3315,7 @@ rainfall:</p>
 <span class="gp">... </span>    <span class="n">temp</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">ltt</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">utt</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">prec</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">rfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">rainfall=15.0, snowfall=0.0</span>
 </code></pre></div>
     <p>Temperature below the lower threshold produces only
@@ -3324,7 +3324,7 @@ snowfall:</p>
 <span class="gp">... </span>    <span class="n">temp</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">ltt</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">utt</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">prec</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">rfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">rainfall=0.0, snowfall=15.0</span>
 </code></pre></div>
     <p>Temperature between thresholds produces a mix:</p>
@@ -3332,7 +3332,7 @@ snowfall:</p>
 <span class="gp">... </span>    <span class="n">temp</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ltt</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">utt</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">prec</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">rfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sfcf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rainfall=</span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s2">, snowfall=</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">rainfall=5.0, snowfall=5.0</span>
 </code></pre></div>
 
@@ -3406,7 +3406,7 @@ snowfall:</p>
 <span class="normal">180</span>
 <span class="normal">181</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">precipitation</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ltt</span><span class="p">,</span> <span class="n">utt</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rfcf</span><span class="p">,</span> <span class="n">sfcf</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Partition precipitation into rainfall and snowfall.</span>
+<span class="w">    </span><span class="sd">"""Partition precipitation into rainfall and snowfall.</span>
 
 <span class="sd">    If temperature is lower than ``ltt``, all precipitation is</span>
 <span class="sd">    considered snowfall. If temperature is higher than ``utt``, all</span>
@@ -3435,7 +3435,7 @@ snowfall:</p>
 <span class="sd">        ...     temp=10.0, ltt=0.0, utt=2.0, prec=15.0,</span>
 <span class="sd">        ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">        rainfall=15.0, snowfall=0.0</span>
 
 <span class="sd">        Temperature below the lower threshold produces only</span>
@@ -3445,7 +3445,7 @@ snowfall:</p>
 <span class="sd">        ...     temp=-5.0, ltt=0.0, utt=2.0, prec=15.0,</span>
 <span class="sd">        ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">        rainfall=0.0, snowfall=15.0</span>
 
 <span class="sd">        Temperature between thresholds produces a mix:</span>
@@ -3454,9 +3454,9 @@ snowfall:</p>
 <span class="sd">        ...     temp=1.0, ltt=0.0, utt=2.0, prec=10.0,</span>
 <span class="sd">        ...     rfcf=1.0, sfcf=1.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;rainfall={rf}, snowfall={sf}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"rainfall={rf}, snowfall={sf}")</span>
 <span class="sd">        rainfall=5.0, snowfall=5.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;=</span> <span class="n">ltt</span><span class="p">:</span>  <span class="c1"># if temp &lt;= lower temp threshold</span>
         <span class="n">rf</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># no rainfall all the precipitation will convert into snowfall</span>
         <span class="n">sf</span> <span class="o">=</span> <span class="n">prec</span> <span class="o">*</span> <span class="n">sfcf</span>
@@ -3651,9 +3651,9 @@ storage [mm].</p>
 <span class="gp">... </span>    <span class="n">perc</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">k1</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">lz_old</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">uz_int_1</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;q_upper=</span><span class="si">{</span><span class="n">q_0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, q_lower=</span><span class="si">{</span><span class="n">q_1</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"q_upper=</span><span class="si">{</span><span class="n">q_0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, q_lower=</span><span class="si">{</span><span class="n">q_1</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">q_upper=0.0381, q_lower=0.0205</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;uz_new=</span><span class="si">{</span><span class="n">uz_new</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, lz_new=</span><span class="si">{</span><span class="n">lz_new</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"uz_new=</span><span class="si">{</span><span class="n">uz_new</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, lz_new=</span><span class="si">{</span><span class="n">lz_new</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">uz_new=14.4619, lz_new=20.4795</span>
 </code></pre></div>
 
@@ -3732,7 +3732,7 @@ storage [mm].</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span>  <span class="c1"># type: ignore[override]  # tfac,area,</span>
     <span class="n">perc</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">lz_old</span><span class="p">,</span> <span class="n">uz_int_1</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transform upper and lower zone storage into discharge.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Transform upper and lower zone storage into discharge.</span>
 
 <span class="sd">    The response routine converts the current values of the upper</span>
 <span class="sd">    and lower storage zones into discharge components. It also</span>
@@ -3765,11 +3765,11 @@ storage [mm].</p>
 <span class="sd">        ...     perc=0.5, alpha=0.5, k=0.01, k1=0.001,</span>
 <span class="sd">        ...     lz_old=20.0, uz_int_1=15.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;q_upper={q_0:.4f}, q_lower={q_1:.4f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"q_upper={q_0:.4f}, q_lower={q_1:.4f}")</span>
 <span class="sd">        q_upper=0.0381, q_lower=0.0205</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;uz_new={uz_new:.4f}, lz_new={lz_new:.4f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"uz_new={uz_new:.4f}, lz_new={lz_new:.4f}")</span>
 <span class="sd">        uz_new=14.4619, lz_new=20.4795</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># upper zone</span>
     <span class="c1"># if perc &gt; Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min</span>
     <span class="n">uz_int_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">uz_int_1</span> <span class="o">-</span> <span class="n">perc</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
@@ -3979,7 +3979,7 @@ length as <code>q</code>.</p>
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route discharge through a triangular transfer function.</span>
+<span class="w">    </span><span class="sd">"""Route discharge through a triangular transfer function.</span>
 
 <span class="sd">    Applies the triangular transfer function to the discharge time</span>
 <span class="sd">    series. The transfer function smooths the hydrograph by</span>
@@ -4006,8 +4006,8 @@ length as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; q_routed = model.routing(q, maxbas=3)</span>
 <span class="sd">        &gt;&gt;&gt; print(q_routed.round(4))</span>
 <span class="sd">        [0.   0.   2.5  4.   2.5  0.5]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
     <span class="c1"># Get integer part of maxbas</span>
     <span class="c1">#    maxbas = int(maxbas)</span>
     <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -4016,7 +4016,7 @@ length as <code>q</code>.</p>
     <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
     <span class="c1"># rout the discharge signal</span>
-    <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
     <span class="n">q_temp</span> <span class="o">=</span> <span class="n">q</span>
     <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
         <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>
@@ -4280,7 +4280,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="gp">... </span>    <span class="n">prec</span><span class="p">,</span> <span class="n">temp_arr</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">init_st</span><span class="o">=</span><span class="n">init_st</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;q_uz length=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">q_uz</span><span class="p">)</span><span class="si">}</span><span class="s2">, first=</span><span class="si">{</span><span class="n">q_uz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"q_uz length=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">q_uz</span><span class="p">)</span><span class="si">}</span><span class="s2">, first=</span><span class="si">{</span><span class="n">q_uz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">q_uz length=6, first=0.0727</span>
 </code></pre></div>
 
@@ -4400,7 +4400,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HBV model for the full precipitation time series.</span>
+<span class="w">    </span><span class="sd">"""Run the HBV model for the full precipitation time series.</span>
 
 <span class="sd">    Executes the HBV model for ``n`` time steps (the length of the</span>
 <span class="sd">    precipitation array). The results contain ``n+1`` values as</span>
@@ -4463,18 +4463,18 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="sd">        ...     prec, temp_arr, et, None, par,</span>
 <span class="sd">        ...     init_st=init_st, snow=0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;q_uz length={len(q_uz)}, first={q_uz[0]:.4f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"q_uz length={len(q_uz)}, first={q_uz[0]:.4f}")</span>
 <span class="sd">        q_uz length=6, first=0.0727</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># data type</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;state variables are 5 and the given initial values are &quot;</span>
+        <span class="s2">"state variables are 5 and the given initial values are "</span>
         <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">))</span>
     <span class="p">)</span>
-    <span class="c1"># assert type(p2) == list, &quot; p2 should be of type list&quot;</span>
-    <span class="c1"># assert len(p2) == 2, &quot;p2 should contains tfac and catchment area&quot;</span>
+    <span class="c1"># assert type(p2) == list, " p2 should be of type list"</span>
+    <span class="c1"># assert len(p2) == 2, "p2 should contains tfac and catchment area"</span>
     <span class="k">assert</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot; snow input defines whether to consider snow subroutine or not it has to be 0 or 1&quot;</span>
+        <span class="s2">" snow input defines whether to consider snow subroutine or not it has to be 0 or 1"</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">init_st</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># 0  1  2  3  4  5</span>
@@ -4740,9 +4740,9 @@ and infiltration occurs:</p>
 <span class="gp">... </span>    <span class="n">cwh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">wc_old</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sp_old</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;infiltration=</span><span class="si">{</span><span class="n">inf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"infiltration=</span><span class="si">{</span><span class="n">inf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">infiltration=1.55</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wc_new=</span><span class="si">{</span><span class="n">wc_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, sp_new=</span><span class="si">{</span><span class="n">sp_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"wc_new=</span><span class="si">{</span><span class="n">wc_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, sp_new=</span><span class="si">{</span><span class="n">sp_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">wc_new=0.95, sp_new=9.5</span>
 </code></pre></div>
     <p>When temperature is below the melt threshold, water
@@ -4752,9 +4752,9 @@ refreezes:</p>
 <span class="gp">... </span>    <span class="n">cwh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">wc_old</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sp_old</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;infiltration=</span><span class="si">{</span><span class="n">inf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"infiltration=</span><span class="si">{</span><span class="n">inf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">infiltration=1.40</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sp_new=</span><span class="si">{</span><span class="n">sp_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sp_new=</span><span class="si">{</span><span class="n">sp_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">sp_new=15.1</span>
 </code></pre></div>
 
@@ -4865,7 +4865,7 @@ refreezes:</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">snow</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
     <span class="n">cfmax</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">ttm</span><span class="p">,</span> <span class="n">cfr</span><span class="p">,</span> <span class="n">cwh</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">wc_old</span><span class="p">,</span> <span class="n">sp_old</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulate snow accumulation, melt, and refreezing.</span>
+<span class="w">    </span><span class="sd">"""Simulate snow accumulation, melt, and refreezing.</span>
 
 <span class="sd">    The snow pack consists of two states: Water Content (``wc``)</span>
 <span class="sd">    and Snow Pack (``sp``). The water content corresponds to the</span>
@@ -4904,9 +4904,9 @@ refreezes:</p>
 <span class="sd">        ...     cwh=0.1, rf=2.0, sf=0.0,</span>
 <span class="sd">        ...     wc_old=0.0, sp_old=10.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;infiltration={inf:.2f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"infiltration={inf:.2f}")</span>
 <span class="sd">        infiltration=1.55</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;wc_new={wc_new:.2f}, sp_new={sp_new:.2f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"wc_new={wc_new:.2f}, sp_new={sp_new:.2f}")</span>
 <span class="sd">        wc_new=0.95, sp_new=9.5</span>
 
 <span class="sd">        When temperature is below the melt threshold, water</span>
@@ -4917,11 +4917,11 @@ refreezes:</p>
 <span class="sd">        ...     cwh=0.1, rf=0.0, sf=5.0,</span>
 <span class="sd">        ...     wc_old=2.0, sp_old=10.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;infiltration={inf:.2f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"infiltration={inf:.2f}")</span>
 <span class="sd">        infiltration=1.40</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;sp_new={sp_new:.2f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"sp_new={sp_new:.2f}")</span>
 <span class="sd">        sp_new=15.1</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">ttm</span><span class="p">:</span>  <span class="c1"># if temp &gt; melting threshold</span>
         <span class="c1"># then either some snow will melt or the entire snow will melt</span>
         <span class="k">if</span> <span class="p">(</span>
@@ -5240,7 +5240,7 @@ infiltration:</p>
 <span class="gp">... </span>    <span class="n">tm</span><span class="o">=</span><span class="mf">18.0</span><span class="p">,</span> <span class="n">e_corr</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">c_flux</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">inf</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">ep</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">sm_old</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">uz_old</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sm_new=</span><span class="si">{</span><span class="n">sm_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, uz_int_1=</span><span class="si">{</span><span class="n">uz_int_1</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sm_new=</span><span class="si">{</span><span class="n">sm_new</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, uz_int_1=</span><span class="si">{</span><span class="n">uz_int_1</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">sm_new=101.13, uz_int_1=11.25</span>
 </code></pre></div>
 
@@ -5326,7 +5326,7 @@ infiltration:</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">soil</span><span class="p">(</span>  <span class="c1"># type: ignore[override]  # tfac,</span>
     <span class="n">fc</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">etf</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">,</span> <span class="n">lp</span><span class="p">,</span> <span class="n">c_flux</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">sm_old</span><span class="p">,</span> <span class="n">uz_old</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute soil moisture balance and recharge to the upper zone.</span>
+<span class="w">    </span><span class="sd">"""Compute soil moisture balance and recharge to the upper zone.</span>
 
 <span class="sd">    The soil routine checks the amount of water that can infiltrate</span>
 <span class="sd">    the soil from liquid precipitation and snow pack melting. A</span>
@@ -5366,9 +5366,9 @@ infiltration:</p>
 <span class="sd">        ...     tm=18.0, e_corr=1.0, lp=0.3, c_flux=0.01,</span>
 <span class="sd">        ...     inf=5.0, ep=3.0, sm_old=100.0, uz_old=10.0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;sm_new={sm_new:.2f}, uz_int_1={uz_int_1:.2f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"sm_new={sm_new:.2f}, uz_int_1={uz_int_1:.2f}")</span>
 <span class="sd">        sm_new=101.13, uz_int_1=11.25</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">qdr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
         <span class="n">sm_old</span> <span class="o">+</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">fc</span><span class="p">,</span> <span class="mi">0</span>
     <span class="p">)</span>  <span class="c1"># direct run off as soil moisture exceeded the field capacity</span>
@@ -5586,7 +5586,7 @@ does not have 18 elements.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">q_uz</span><span class="p">,</span> <span class="n">q_lz</span><span class="p">,</span> <span class="n">new_states</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">step_run</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">par</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;q_uz=</span><span class="si">{</span><span class="n">q_uz</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, q_lz=</span><span class="si">{</span><span class="n">q_lz</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"q_uz=</span><span class="si">{</span><span class="n">q_uz</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, q_lz=</span><span class="si">{</span><span class="n">q_lz</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">q_uz=0.0727, q_lz=0.0078</span>
 </code></pre></div>
 
@@ -5769,7 +5769,7 @@ does not have 18 elements.</p>
 <span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step_run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">state_variable</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a single time step of the HBV model.</span>
+<span class="w">    </span><span class="sd">"""Execute a single time step of the HBV model.</span>
 
 <span class="sd">    Parses the parameter vector, input vector, and state variables,</span>
 <span class="sd">    then sequentially runs the precipitation, snow, soil, and</span>
@@ -5827,14 +5827,14 @@ does not have 18 elements.</p>
 <span class="sd">        &gt;&gt;&gt; q_uz, q_lz, new_states = model.step_run(</span>
 <span class="sd">        ...     par, inputs, states, snow=0,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;q_uz={q_uz:.4f}, q_lz={q_lz:.4f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"q_uz={q_uz:.4f}, q_lz={q_lz:.4f}")</span>
 <span class="sd">        q_uz=0.0727, q_lz=0.0078</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1">## Parse of parameters from input vector to model</span>
     <span class="c1"># picipitation function</span>
     <span class="k">if</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">18</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;current version of HBV (with snow) takes 18 parameter you have entered &quot;</span>
+            <span class="s2">"current version of HBV (with snow) takes 18 parameter you have entered "</span>
             <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
         <span class="p">)</span>
         <span class="n">ltt</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -5867,11 +5867,11 @@ does not have 18 elements.</p>
         <span class="n">sfcf</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># there is no snow</span>
         <span class="c1"># snow function</span>
         <span class="n">ttm</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># should be very low lower than lowest temp as temp is 25 all the time so it does not matter</span>
-        <span class="n">cfmax</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># as there is no melting  and sp+sf=zero all the time so it doesn&#39;t matter the value of cfmax</span>
+        <span class="n">cfmax</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax</span>
         <span class="n">cwh</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="mf">0.00001</span>  <span class="c1"># as sp is always zero it doesn&#39;t matter all wc will go as inf</span>
+            <span class="mf">0.00001</span>  <span class="c1"># as sp is always zero it doesn't matter all wc will go as inf</span>
         <span class="p">)</span>
-        <span class="n">cfr</span> <span class="o">=</span> <span class="mf">0.000001</span>  <span class="c1"># as temp &gt; ttm all the time so it doesn&#39;t matter the value of cfr but put it zero</span>
+        <span class="n">cfr</span> <span class="o">=</span> <span class="mf">0.000001</span>  <span class="c1"># as temp &gt; ttm all the time so it doesn't matter the value of cfr but put it zero</span>
         <span class="c1"># soil function</span>
         <span class="n">fc</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -6034,7 +6034,7 @@ function base. Must be &gt;= 1.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">weights</span> <span class="o">=</span> <span class="n">HBV</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
 <span class="go">[0.1429 0.2857 0.2857 0.1429 0.1429]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sum=</span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sum=</span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="go">sum=1.0000</span>
 </code></pre></div>
 
@@ -6079,7 +6079,7 @@ function base. Must be &gt;= 1.</p>
 <span class="normal">467</span>
 <span class="normal">468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate transfer function weights using a triangular shape.</span>
+<span class="w">    </span><span class="sd">"""Generate transfer function weights using a triangular shape.</span>
 
 <span class="sd">    Creates a set of weights for the triangular transfer function</span>
 <span class="sd">    used in discharge routing. The weights grow linearly up to the</span>
@@ -6099,9 +6099,9 @@ function base. Must be &gt;= 1.</p>
 <span class="sd">        &gt;&gt;&gt; weights = HBV.tf(5)</span>
 <span class="sd">        &gt;&gt;&gt; print(weights.round(4))</span>
 <span class="sd">        [0.1429 0.2857 0.2857 0.1429 0.1429]</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;sum={weights.sum():.4f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f"sum={weights.sum():.4f}")</span>
 <span class="sd">        sum=1.0000</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">:</span>

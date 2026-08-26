@@ -2458,7 +2458,7 @@ supplied rating curve.</p>
 <span class="normal">887</span>
 <span class="normal">888</span>
 <span class="normal">889</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVLake</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;HBV-96 model variant with an explicit lake sub-model.</span>
+<span class="w">    </span><span class="sd">"""HBV-96 model variant with an explicit lake sub-model.</span>
 
 <span class="sd">    ``HBVLake`` extends the standard HBV-96 rainfall-runoff model by</span>
 <span class="sd">    adding a lake component that transforms the catchment outflow using</span>
@@ -2495,11 +2495,11 @@ supplied rating curve.</p>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; len(q_sim) == n + 1</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_precipitation</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ltt</span><span class="p">,</span> <span class="n">utt</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rfcf</span><span class="p">,</span> <span class="n">sfcf</span><span class="p">,</span> <span class="n">tfac</span><span class="p">,</span> <span class="n">pcorr</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Separate precipitation into rainfall and snowfall.</span>
+<span class="w">        </span><span class="sd">"""Separate precipitation into rainfall and snowfall.</span>
 
 <span class="sd">        If the temperature is at or below ``ltt``, all precipitation is</span>
 <span class="sd">        snowfall.  If the temperature is at or above ``utt``, all</span>
@@ -2534,7 +2534,7 @@ supplied rating curve.</p>
 <span class="sd">            ...     rfcf=1.0, sfcf=1.0, tfac=1.0, pcorr=1.0,</span>
 <span class="sd">            ... )</span>
 <span class="sd">            (10.0, 0.0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># if temp &lt;= lower temp threshold</span>
         <span class="k">if</span> <span class="n">temp</span> <span class="o">&lt;=</span> <span class="n">ltt</span><span class="p">:</span>
             <span class="c1"># no rainfall all the precipitation will convert into snowfall</span>
@@ -2556,7 +2556,7 @@ supplied rating curve.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_snow</span><span class="p">(</span><span class="n">cfmax</span><span class="p">,</span> <span class="n">tfac</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">ttm</span><span class="p">,</span> <span class="n">cfr</span><span class="p">,</span> <span class="n">cwh</span><span class="p">,</span> <span class="n">_rf</span><span class="p">,</span> <span class="n">_sf</span><span class="p">,</span> <span class="n">wc_old</span><span class="p">,</span> <span class="n">sp_old</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute snow accumulation, melt, and infiltration.</span>
+<span class="w">        </span><span class="sd">"""Compute snow accumulation, melt, and infiltration.</span>
 
 <span class="sd">        The snow pack has two states: solid snow pack (``sp``) and</span>
 <span class="sd">        liquid water content (``wc``).  When the temperature exceeds</span>
@@ -2591,7 +2591,7 @@ supplied rating curve.</p>
 <span class="sd">            ...     wc_old=0.0, sp_old=10.0,</span>
 <span class="sd">            ... )</span>
 <span class="sd">            (2.0, 1.0, 0.0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># if temp &gt; melting threshold</span>
         <span class="k">if</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">ttm</span><span class="p">:</span>
             <span class="c1"># then either some snow will melt or the entire snow will melt</span>
@@ -2637,7 +2637,7 @@ supplied rating curve.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">_soil</span><span class="p">(</span>
         <span class="n">fc</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">etf</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">,</span> <span class="n">lp</span><span class="p">,</span> <span class="n">tfac</span><span class="p">,</span> <span class="n">c_flux</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">sm_old</span><span class="p">,</span> <span class="n">uz_old</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute soil moisture balance and recharge to the upper zone.</span>
+<span class="w">        </span><span class="sd">"""Compute soil moisture balance and recharge to the upper zone.</span>
 
 <span class="sd">        This routine determines how much infiltrating water is stored as</span>
 <span class="sd">        soil moisture and how much becomes runoff routed to the upper</span>
@@ -2682,7 +2682,7 @@ supplied rating curve.</p>
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; qdr</span>
 <span class="sd">            0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">#    qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity</span>
         <span class="n">qdr</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">_in</span> <span class="o">=</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">qdr</span>
@@ -2714,7 +2714,7 @@ supplied rating curve.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_response</span><span class="p">(</span><span class="n">tfac</span><span class="p">,</span> <span class="n">perc</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">lz_old</span><span class="p">,</span> <span class="n">uz_int_1</span><span class="p">,</span> <span class="n">qdr</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transform upper and lower zone storage into discharge.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Transform upper and lower zone storage into discharge.</span>
 
 <span class="sd">        The response routine percolates water from the upper zone to the</span>
 <span class="sd">        lower zone, computes non-linear upper zone discharge and linear</span>
@@ -2747,7 +2747,7 @@ supplied rating curve.</p>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; q &gt; 0</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># upper zone</span>
         <span class="c1"># if perc &gt; Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min</span>
         <span class="n">uz_int_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">uz_int_1</span> <span class="o">-</span> <span class="n">perc</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># upper zone after percolation</span>
@@ -2777,7 +2777,7 @@ supplied rating curve.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_lake</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">curve</span><span class="p">,</span> <span class="n">tfac</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">q_new</span><span class="p">,</span> <span class="n">lv_old</span><span class="p">,</span> <span class="n">ltt</span><span class="p">,</span> <span class="n">c_le</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">lakeA</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute lake outflow and updated lake volume.</span>
+<span class="w">        </span><span class="sd">"""Compute lake outflow and updated lake volume.</span>
 
 <span class="sd">        The lake receives inflow from the catchment response routine,</span>
 <span class="sd">        gains water from precipitation on the lake surface, and loses</span>
@@ -2820,7 +2820,7 @@ supplied rating curve.</p>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; qout &gt;= 0</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># lower zone</span>
         <span class="c1"># explicit representation of the lake where lake will be represented by a rating curve</span>
         <span class="c1"># lake evaporation</span>
@@ -2859,7 +2859,7 @@ supplied rating curve.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate triangular transfer function weights.</span>
+<span class="w">        </span><span class="sd">"""Generate triangular transfer function weights.</span>
 
 <span class="sd">        Produces a normalised weight array with a triangular shape.</span>
 <span class="sd">        The first half of the weights form the rising limb and the</span>
@@ -2879,7 +2879,7 @@ supplied rating curve.</p>
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; len(w)</span>
 <span class="sd">            3</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">wi</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxbas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># if maxbas=3 so x=[1,2,3]</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -2896,7 +2896,7 @@ supplied rating curve.</p>
         <span class="k">return</span> <span class="n">wi</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route a discharge time series using a triangular function.</span>
+<span class="w">        </span><span class="sd">"""Route a discharge time series using a triangular function.</span>
 
 <span class="sd">        Convolves the input discharge array with triangular weights</span>
 <span class="sd">        generated by ``_tf`` to smooth the hydrograph.</span>
@@ -2920,8 +2920,8 @@ supplied rating curve.</p>
 <span class="sd">            &gt;&gt;&gt; q_r = model._routing(q, maxbas=3)</span>
 <span class="sd">            &gt;&gt;&gt; len(q_r) == len(q)</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Maxbas value has to be larger than 1&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
         <span class="c1"># Get integer part of maxbas</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
@@ -2929,7 +2929,7 @@ supplied rating curve.</p>
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
 
         <span class="c1"># rout the discharge signal</span>
-        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+        <span class="n">q_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
         <span class="n">q_temp</span> <span class="o">=</span> <span class="n">q</span>
         <span class="k">for</span> <span class="n">w_i</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span>
             <span class="n">q_r</span> <span class="o">+=</span> <span class="n">q_temp</span> <span class="o">*</span> <span class="n">w_i</span>
@@ -2939,7 +2939,7 @@ supplied rating curve.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_max_bas</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute MAXBAS routing weights using an equilateral triangle.</span>
+<span class="w">        </span><span class="sd">"""Compute MAXBAS routing weights using an equilateral triangle.</span>
 
 <span class="sd">        Generates routing weights based on an equilateral triangle whose</span>
 <span class="sd">        base length equals ``maxbas``.  Unlike ``_tf``, this method</span>
@@ -2961,7 +2961,7 @@ supplied rating curve.</p>
 <span class="sd">            5</span>
 <span class="sd">            &gt;&gt;&gt; abs(w.sum() - 1.0) &lt; 0.01</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">yant</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Just to verify how far from the unit is the result</span>
 
@@ -2973,7 +2973,7 @@ supplied rating curve.</p>
 
         <span class="n">peak_point</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">%</span> <span class="mi">2</span>
 
-        <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = &quot;up&quot;  ; 2 = down</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = "up"  ; 2 = down</span>
 
         <span class="k">if</span> <span class="n">real_part</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># even number 2,4,6,8,10</span>
             <span class="n">maxbas_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">int_part</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># if even add 1</span>
@@ -2984,7 +2984,7 @@ supplied rating curve.</p>
             <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">ynow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="c1"># Integral of x dx with a slope of 60 degree Equilateral triangle</span>
-                <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>  <span class="c1"># &#39; Area / Total Area</span>
+                <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>  <span class="c1"># ' Area / Total Area</span>
 
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -3005,7 +3005,7 @@ supplied rating curve.</p>
                     <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
                         <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span>
                     <span class="p">)</span>
-                    <span class="c1"># &#39;sum of the two heights in the descending part of the triangle</span>
+                    <span class="c1"># 'sum of the two heights in the descending part of the triangle</span>
                     <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>
                     <span class="c1"># Multiplying by the height of the trapezoidal and dividing by 2</span>
 
@@ -3030,7 +3030,7 @@ supplied rating curve.</p>
         <span class="k">return</span> <span class="n">maxbas_w</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">routing_maxbas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Route a hydrograph using MAXBAS equilateral-triangle weights.</span>
+<span class="w">        </span><span class="sd">"""Route a hydrograph using MAXBAS equilateral-triangle weights.</span>
 
 <span class="sd">        Computes routing by convolving the input hydrograph with weights</span>
 <span class="sd">        derived from ``calculate_max_bas``.  This method supports</span>
@@ -3052,7 +3052,7 @@ supplied rating curve.</p>
 <span class="sd">            &gt;&gt;&gt; qout = model.routing_maxbas(q, maxbas=3)</span>
 <span class="sd">            &gt;&gt;&gt; qout.shape == (7, 1)</span>
 <span class="sd">            True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># CALCULATE maxbas WEIGHTS</span>
         <span class="n">maxbas_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_max_bas</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
         <span class="n">qw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">maxbas_w</span><span class="p">)))</span>
@@ -3092,7 +3092,7 @@ supplied rating curve.</p>
         <span class="k">return</span> <span class="n">qout</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_step_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">catchment_parameters</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">state_variables</span><span class="p">,</span> <span class="n">curve</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a single time step of the HBV-lake model.</span>
+<span class="w">        </span><span class="sd">"""Execute a single time step of the HBV-lake model.</span>
 
 <span class="sd">        Runs all sub-routines (precipitation, snow, soil, response, and</span>
 <span class="sd">        lake) for one time step and returns the lake outflow discharge</span>
@@ -3140,7 +3140,7 @@ supplied rating curve.</p>
 <span class="sd">            &gt;&gt;&gt; q, st = model._step_run(par, p2, v, DEF_ST, curve)</span>
 <span class="sd">            &gt;&gt;&gt; len(st)</span>
 <span class="sd">            6</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">## Parse of parameters from input vector to model</span>
         <span class="c1"># picipitation function</span>
         <span class="n">ltt</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># parameters[0] # less than utt and less than lowest temp to prevent sf formation</span>
@@ -3149,9 +3149,9 @@ supplied rating curve.</p>
         <span class="n">sfcf</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># parameters[17] # there is no snow</span>
         <span class="c1"># snow function</span>
         <span class="n">ttm</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># parameters[2] #should be very low lower than lowest temp as temp is 25 all the time so it does not matter</span>
-        <span class="n">cfmax</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># parameters[3] as there is no melting  and sp+sf=zero all the time so it doesn&#39;t matter the value of cfmax</span>
-        <span class="n">cwh</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># parameters[12] as sp is always zero it doesn&#39;t matter all wc will go as inf</span>
-        <span class="n">cfr</span> <span class="o">=</span> <span class="mf">0.000001</span>  <span class="c1"># parameters[13] as temp &gt; ttm all the time so it doesn&#39;t matter the value of cfr but put it zero</span>
+        <span class="n">cfmax</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># parameters[3] as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax</span>
+        <span class="n">cwh</span> <span class="o">=</span> <span class="mf">0.00001</span>  <span class="c1"># parameters[12] as sp is always zero it doesn't matter all wc will go as inf</span>
+        <span class="n">cfr</span> <span class="o">=</span> <span class="mf">0.000001</span>  <span class="c1"># parameters[13] as temp &gt; ttm all the time so it doesn't matter the value of cfr but put it zero</span>
         <span class="c1"># soil function</span>
         <span class="n">fc</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -3232,7 +3232,7 @@ supplied rating curve.</p>
         <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">lake_sim</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the HBV-lake model over a precipitation time series.</span>
+<span class="w">        </span><span class="sd">"""Run the HBV-lake model over a precipitation time series.</span>
 
 <span class="sd">        Iterates ``_step_run`` for each time step in the precipitation</span>
 <span class="sd">        array and returns the full discharge time series and model</span>
@@ -3293,7 +3293,7 @@ supplied rating curve.</p>
 <span class="sd">            6</span>
 <span class="sd">            &gt;&gt;&gt; len(states)</span>
 <span class="sd">            6</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">init_st</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># If unspecified, [0.0, 30.0, 30.0, 30.0, 0.0] mm</span>
             <span class="n">st</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEF_ST</span><span class="p">]</span>  <span class="c1"># if not given take the default</span>
         <span class="k">else</span><span class="p">:</span>
@@ -3510,7 +3510,7 @@ duration.  Can be a non-integer value.</p>
 <span class="normal">601</span>
 <span class="normal">602</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_max_bas</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute MAXBAS routing weights using an equilateral triangle.</span>
+<span class="w">    </span><span class="sd">"""Compute MAXBAS routing weights using an equilateral triangle.</span>
 
 <span class="sd">    Generates routing weights based on an equilateral triangle whose</span>
 <span class="sd">    base length equals ``maxbas``.  Unlike ``_tf``, this method</span>
@@ -3532,7 +3532,7 @@ duration.  Can be a non-integer value.</p>
 <span class="sd">        5</span>
 <span class="sd">        &gt;&gt;&gt; abs(w.sum() - 1.0) &lt; 0.01</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">yant</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Just to verify how far from the unit is the result</span>
 
@@ -3544,7 +3544,7 @@ duration.  Can be a non-integer value.</p>
 
     <span class="n">peak_point</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">%</span> <span class="mi">2</span>
 
-    <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = &quot;up&quot;  ; 2 = down</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = "up"  ; 2 = down</span>
 
     <span class="k">if</span> <span class="n">real_part</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># even number 2,4,6,8,10</span>
         <span class="n">maxbas_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">int_part</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># if even add 1</span>
@@ -3555,7 +3555,7 @@ duration.  Can be a non-integer value.</p>
         <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">ynow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="c1"># Integral of x dx with a slope of 60 degree Equilateral triangle</span>
-            <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>  <span class="c1"># &#39; Area / Total Area</span>
+            <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>  <span class="c1"># ' Area / Total Area</span>
 
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2</span>
             <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -3576,7 +3576,7 @@ duration.  Can be a non-integer value.</p>
                 <span class="n">ynow</span> <span class="o">=</span> <span class="n">maxbas</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
                     <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">maxbas</span> <span class="o">/</span> <span class="mf">2.0</span>
                 <span class="p">)</span>
-                <span class="c1"># &#39;sum of the two heights in the descending part of the triangle</span>
+                <span class="c1"># 'sum of the two heights in the descending part of the triangle</span>
                 <span class="n">maxbas_w</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">ynow</span> <span class="o">+</span> <span class="n">yant</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_a</span>
                 <span class="c1"># Multiplying by the height of the trapezoidal and dividing by 2</span>
 
@@ -3772,7 +3772,7 @@ duration.</p>
 <span class="normal">662</span>
 <span class="normal">663</span>
 <span class="normal">664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing_maxbas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route a hydrograph using MAXBAS equilateral-triangle weights.</span>
+<span class="w">    </span><span class="sd">"""Route a hydrograph using MAXBAS equilateral-triangle weights.</span>
 
 <span class="sd">    Computes routing by convolving the input hydrograph with weights</span>
 <span class="sd">    derived from ``calculate_max_bas``.  This method supports</span>
@@ -3794,7 +3794,7 @@ duration.</p>
 <span class="sd">        &gt;&gt;&gt; qout = model.routing_maxbas(q, maxbas=3)</span>
 <span class="sd">        &gt;&gt;&gt; qout.shape == (7, 1)</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># CALCULATE maxbas WEIGHTS</span>
     <span class="n">maxbas_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_max_bas</span><span class="p">(</span><span class="n">maxbas</span><span class="p">)</span>
     <span class="n">qw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">maxbas_w</span><span class="p">)))</span>
@@ -4212,7 +4212,7 @@ interface compatibility.</p>
     <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">lake_sim</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HBV-lake model over a precipitation time series.</span>
+<span class="w">    </span><span class="sd">"""Run the HBV-lake model over a precipitation time series.</span>
 
 <span class="sd">    Iterates ``_step_run`` for each time step in the precipitation</span>
 <span class="sd">    array and returns the full discharge time series and model</span>
@@ -4273,7 +4273,7 @@ interface compatibility.</p>
 <span class="sd">        6</span>
 <span class="sd">        &gt;&gt;&gt; len(states)</span>
 <span class="sd">        6</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">init_st</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># If unspecified, [0.0, 30.0, 30.0, 30.0, 0.0] mm</span>
         <span class="n">st</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEF_ST</span><span class="p">]</span>  <span class="c1"># if not given take the default</span>
     <span class="k">else</span><span class="p">:</span>

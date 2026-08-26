@@ -2071,8 +2071,52 @@ routing.</p>
 <span class="normal">388</span>
 <span class="normal">389</span>
 <span class="normal">390</span>
-<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects rainfall-runoff model components with spatial routing.</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
 <span class="sd">    the lumped run of the distributed model with the spatial routing</span>
@@ -2086,15 +2130,15 @@ routing.</p>
 <span class="sd">        FW1Withlake: Run distributed RRM with lake and triangular</span>
 <span class="sd">            routing.</span>
 <span class="sd">        Lumped: Run a lumped conceptual model with optional routing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Wrapper class.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize the Wrapper class."""</span>
         <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">RRMModel</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed rainfall-runoff model with spatial routing.</span>
+<span class="w">        </span><span class="sd">"""Run the distributed rainfall-runoff model with spatial routing.</span>
 
 <span class="sd">        Connects two modules:</span>
 
@@ -2104,52 +2148,46 @@ routing.</p>
 <span class="sd">           river network.</span>
 
 <span class="sd">        The method stores results directly on the Model object,</span>
-<span class="sd">        including ``quz``, ``qlz``, ``qout``, ``quz_routed``, and</span>
-<span class="sd">        ``qlz_translated`` arrays.</span>
+<span class="sd">        including `quz`, `qlz`, `qout`, `quz_routed`, and</span>
+<span class="sd">        `qlz_translated` arrays.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Model: Catchment model object containing:</span>
 
-<span class="sd">                - DEM (numpy.ndarray): DEM raster array clipped to</span>
-<span class="sd">                  the catchment.</span>
-<span class="sd">                - FlowAccArr (numpy.ndarray): Flow accumulation</span>
-<span class="sd">                  raster array clipped to the catchment.</span>
-<span class="sd">                - flow_dir_arr (numpy.ndarray): Flow direction raster</span>
-<span class="sd">                  array clipped to the catchment.</span>
-<span class="sd">                - sp_prec (numpy.ndarray): 3D precipitation array</span>
-<span class="sd">                  with the same 2D dimensions as the raster input.</span>
-<span class="sd">                - sp_et (numpy.ndarray): 3D evapotranspiration array</span>
-<span class="sd">                  with the same 2D dimensions as the raster input.</span>
-<span class="sd">                - sp_temp (numpy.ndarray): 3D temperature array with</span>
-<span class="sd">                  the same 2D dimensions as the raster input.</span>
-<span class="sd">                - sp_par (numpy.ndarray): 3D array of spatially</span>
-<span class="sd">                  distributed catchment parameters.</span>
-<span class="sd">                - p2 (list): Unoptimized parameters where p2[0] is</span>
-<span class="sd">                  tfac (1 for hourly, 0.25 for 15 min, 24 for daily)</span>
-<span class="sd">                  and p2[1] is catchment area in km2.</span>
-<span class="sd">                - kub (float): Upper bound of K value for Muskingum</span>
-<span class="sd">                  routing.</span>
-<span class="sd">                - klb (float): Lower bound of K value for Muskingum</span>
-<span class="sd">                  routing.</span>
-<span class="sd">                - init_st (list): Initial state variable values</span>
+<span class="sd">                - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,</span>
+<span class="sd">                  each `(rows, cols, time)`, plus the calendar they cover.</span>
+<span class="sd">                - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation</span>
+<span class="sd">                  and direction arrays, the direction table, and the grid they define.</span>
+<span class="sd">                - parameters (numpy.ndarray): 3D array of spatially distributed catchment</span>
+<span class="sd">                  parameters, `(rows, cols, n_parameters)`.</span>
+<span class="sd">                - conversion_factor (float): Depth-to-discharge factor for the temporal</span>
+<span class="sd">                  resolution; 24 for daily, 1 for hourly.</span>
+<span class="sd">                - area (float): Catchment area in km2.</span>
+<span class="sd">                - initial_cond (list): Initial state variable values</span>
 <span class="sd">                  [sp, sm, uz, lz, wc].</span>
+<span class="sd">                - snow (int): 1 to run the snow routine, 0 otherwise.</span>
 
 <span class="sd">            ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
 <span class="sd">                average temperature data. Defaults to None.</span>
 <span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># run the rainfall runoff model separately</span>
         <span class="n">distrrm</span><span class="o">.</span><span class="n">run_lumped_model</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
         <span class="c1"># run the GIS part to rout from cell to another</span>
         <span class="n">distrrm</span><span class="o">.</span><span class="n">SpatialRouting</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
+        <span class="c1"># Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that</span>
+        <span class="c1"># cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear</span>
+        <span class="c1"># the flag a previous MAXBAS run on this same model may have left set.</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">_maxbas_routed</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="c1"># Model.qout = Model.qout[:-1]</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">RRMWithlake</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with lake simulation and routing.</span>
+<span class="w">        </span><span class="sd">"""Run the distributed RRM with lake simulation and routing.</span>
 
 <span class="sd">        Connects three modules: the lake module, the distributed</span>
 <span class="sd">        rainfall-runoff module, and the spatial routing module. The</span>
@@ -2178,7 +2216,7 @@ routing.</p>
 <span class="sd">                average temperature data. Defaults to None.</span>
 <span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plake</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">et</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
@@ -2214,12 +2252,16 @@ routing.</p>
         <span class="n">qlake</span> <span class="o">=</span> <span class="n">routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">(</span>
             <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span><span class="p">,</span>
             <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">],</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">11</span><span class="p">],</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">],</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">11</span><span class="p">],</span>
             <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">qlake</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qlake</span><span class="p">,</span> <span class="n">qlake</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># No padding: `HBVLake.simulate` already prepends the initial-state slot, exactly as</span>
+        <span class="c1"># the distributed model does, and `muskingum_v` preserves length -- so `qlake` is</span>
+        <span class="c1"># already `simulation_steps` long and lines up with `quz` slot for slot. Appending a</span>
+        <span class="c1"># step here made it one longer than the array it is added to, which raised for every</span>
+        <span class="c1"># input and left this entry point unrunnable.</span>
         <span class="c1"># both lake &amp; Quz are in m3/s</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">qlake</span>
@@ -2228,11 +2270,49 @@ routing.</p>
         <span class="c1"># run the GIS part to rout from cell to another</span>
         <span class="n">distrrm</span><span class="o">.</span><span class="n">SpatialRouting</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
+        <span class="c1"># Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that</span>
+        <span class="c1"># cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear</span>
+        <span class="c1"># the flag a previous MAXBAS run on this same model may have left set.</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">_maxbas_routed</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="c1"># Model.qout = Model.qout[:-1]</span>
 
     <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_maxbas_output_fields</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Fill the distributed output fields after a triangular (MAXBAS) run.</span>
+
+<span class="sd">        `save_results` and `plot_distributed_results` read `Qtot`,</span>
+<span class="sd">        `quz_routed` and `qlz_translated` for their discharge options. Only</span>
+<span class="sd">        :meth:`DistRRM.SpatialRouting` (the Muskingum path) used to set them, so</span>
+<span class="sd">        after a MAXBAS run they stayed `None` and every discharge option raised</span>
+<span class="sd">        `TypeError: 'NoneType' object is not subscriptable`.</span>
+
+<span class="sd">        MAXBAS routes each cell's upper zone straight to the outlet with that</span>
+<span class="sd">        cell's own `maxbas`, in place, and applies no cell-to-cell translation</span>
+<span class="sd">        to the lower zone. So the routed/translated fields *are* the per-cell</span>
+<span class="sd">        arrays, and their sum is the per-cell contribution to the outlet</span>
+<span class="sd">        hydrograph — `np.nansum(Qtot[:, :, i])` reproduces `qout[i]`. That</span>
+<span class="sd">        differs from the Muskingum path, where the fields accumulate downstream</span>
+<span class="sd">        and `Qtot` at the outlet cell *is* the outlet discharge.</span>
+
+<span class="sd">        `quz_routed` / `qlz_translated` alias `quz` / `qlz` rather than</span>
+<span class="sd">        copying them: they hold the same data, and a copy would double the memory</span>
+<span class="sd">        of a `(rows, cols, time_steps)` array for no gain. They are outputs, so</span>
+<span class="sd">        nothing downstream writes through the alias.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Model: Catchment whose `quz` / `qlz` have been routed by</span>
+<span class="sd">                :meth:`DistRRM.DistMaxbas1`.</span>
+<span class="sd">        """</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">quz_routed</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">qlz_translated</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">Qtot</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">+</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span>
+        <span class="c1"># Flags the outlet-cell shortcut in `extract_discharge` as invalid here.</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">_maxbas_routed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">FW1</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with triangular function-1 routing.</span>
+<span class="w">        </span><span class="sd">"""Run the distributed RRM with triangular function-1 routing.</span>
 
 <span class="sd">        Connects two modules:</span>
 
@@ -2242,6 +2322,11 @@ routing.</p>
 <span class="sd">        The output discharge is computed as the sum of routed upper</span>
 <span class="sd">        zone and unrouted lower zone discharge across all cells.</span>
 
+<span class="sd">        Also fills the per-cell output fields (`Qtot`, `quz_routed`,</span>
+<span class="sd">        `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the</span>
+<span class="sd">        discharge options of `save_results` / `plot_distributed_results`</span>
+<span class="sd">        work on this path; see that method for the MAXBAS semantics.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            Model: Catchment model object containing the distributed</span>
 <span class="sd">                model configuration, parameters, and spatial data.</span>
@@ -2249,17 +2334,19 @@ routing.</p>
 <span class="sd">                average temperature data. Defaults to None.</span>
 <span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># subcatchment</span>
         <span class="n">distrrm</span><span class="o">.</span><span class="n">run_lumped_model</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
         <span class="n">distrrm</span><span class="o">.</span><span class="n">DistMaxbas1</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">_set_maxbas_output_fields</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+
         <span class="n">qlz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)]</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
         <span class="p">)</span>  <span class="c1"># average of all cells (not routed mm/timestep)</span>
         <span class="n">quz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)]</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
         <span class="p">)</span>  <span class="c1"># average of all cells (routed mm/timestep)</span>
 
         <span class="n">Model</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="n">qlz1</span> <span class="o">+</span> <span class="n">quz1</span>
@@ -2268,7 +2355,7 @@ routing.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">FW1Withlake</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with lake and triangular routing.</span>
+<span class="w">        </span><span class="sd">"""Run the distributed RRM with lake and triangular routing.</span>
 
 <span class="sd">        Connects three modules:</span>
 
@@ -2299,7 +2386,7 @@ routing.</p>
 <span class="sd">                average temperature data. Defaults to None.</span>
 <span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plake</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">et</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
@@ -2334,28 +2421,29 @@ routing.</p>
 
         <span class="n">distrrm</span><span class="o">.</span><span class="n">DistMaxbas1</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
+        <span class="c1"># Subcatchment fields only: the lake is a lumped inflow with no spatial</span>
+        <span class="c1"># extent, so it enters `qout` below but never `Qtot`.</span>
+        <span class="n">Wrapper</span><span class="o">.</span><span class="n">_set_maxbas_output_fields</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+
         <span class="n">qlz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="p">]</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
         <span class="p">)</span>  <span class="c1"># average of all cells (not routed mm/timestep)</span>
         <span class="n">quz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="p">]</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
         <span class="p">)</span>  <span class="c1"># average of all cells (routed mm/timestep)</span>
 
         <span class="n">qout</span> <span class="o">=</span> <span class="n">qlz1</span> <span class="o">+</span> <span class="n">quz1</span>
 
         <span class="c1"># qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)</span>
 
-        <span class="n">Model</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="n">qout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span>
+        <span class="c1"># Both series run over `simulation_steps`, and the non-lake FW1 path returns</span>
+        <span class="c1"># `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The</span>
+        <span class="c1"># lake series has to be trimmed the same way or the two cannot be added at all.</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="n">qout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Lumped</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a lumped conceptual model with optional routing.</span>
+<span class="w">        </span><span class="sd">"""Run a lumped conceptual model with optional routing.</span>
 
 <span class="sd">        Executes a lumped rainfall-runoff model (e.g., HBV) to</span>
 <span class="sd">        compute the upper and lower zone discharge, then optionally</span>
@@ -2364,8 +2452,8 @@ routing.</p>
 
 <span class="sd">        The discharge is converted from mm/timestep to m3/s using</span>
 <span class="sd">        the catchment area and conversion factor. Results are stored</span>
-<span class="sd">        on the Model object as ``quz``, ``qlz``, ``Qsim``, and</span>
-<span class="sd">        ``state_variables``.</span>
+<span class="sd">        on the Model object as `quz`, `qlz`, `Qsim`, and</span>
+<span class="sd">        `state_variables`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            Model: Lumped model object containing:</span>
@@ -2377,7 +2465,7 @@ routing.</p>
 <span class="sd">                - Parameters (numpy.ndarray): Conceptual model</span>
 <span class="sd">                  parameters.</span>
 <span class="sd">                - LumpedModel: Conceptual model instance with a</span>
-<span class="sd">                  ``simulate`` method.</span>
+<span class="sd">                  `simulate` method.</span>
 <span class="sd">                - InitialCond (list): Initial state variable values</span>
 <span class="sd">                  [sp, sm, uz, lz, wc].</span>
 <span class="sd">                - q_init (float): Initial discharge value.</span>
@@ -2396,13 +2484,13 @@ routing.</p>
 <span class="sd">                discharge hydrograph. Must be callable.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If ``RoutingFn`` is not callable when</span>
+<span class="sd">            AssertionError: If `RoutingFn` is not callable when</span>
 <span class="sd">                routing is enabled.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">### input data validation</span>
         <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">),</span> <span class="p">(</span>
-                <span class="s2">&quot;routing function should be of type callable (function that takes arguments)&quot;</span>
+                <span class="s2">"routing function should be of type callable (function that takes arguments)"</span>
             <span class="p">)</span>
 
         <span class="c1"># data</span>
@@ -2412,31 +2500,31 @@ routing.</p>
         <span class="n">tm</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
 
         <span class="c1"># from the conceptual model calculate the upper and lower response mm/time step</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">LumpedModel</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">lumped_model</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
             <span class="n">p</span><span class="p">,</span>
             <span class="n">t</span><span class="p">,</span>
             <span class="n">et</span><span class="p">,</span>
             <span class="n">tm</span><span class="p">,</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">,</span>
-            <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">InitialCond</span><span class="p">,</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">initial_cond</span><span class="p">,</span>
             <span class="n">q_init</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">q_init</span><span class="p">,</span>
-            <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Snow</span><span class="p">,</span>
+            <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)</span>
         <span class="c1"># if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">CatArea</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">CatArea</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
 
         <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span>
 
-        <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">Maxbas</span><span class="p">:</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">RoutingFn</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">RoutingFn</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">RoutingFn</span><span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
                 <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
-                <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                 <span class="n">Model</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
             <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2475,6 +2563,10 @@ routing.</p>
 </ol>
 <p>The output discharge is computed as the sum of routed upper
 zone and unrouted lower zone discharge across all cells.</p>
+<p>Also fills the per-cell output fields (<code>Qtot</code>, <code>quz_routed</code>,
+<code>qlz_translated</code>) via :meth:<code>_set_maxbas_output_fields</code>, so the
+discharge options of <code>save_results</code> / <code>plot_distributed_results</code>
+work on this path; see that method for the MAXBAS semantics.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2545,43 +2637,50 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">FW1</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with triangular function-1 routing.</span>
+<span class="w">    </span><span class="sd">"""Run the distributed RRM with triangular function-1 routing.</span>
 
 <span class="sd">    Connects two modules:</span>
 
@@ -2591,6 +2690,11 @@ Defaults to None.</p>
 <span class="sd">    The output discharge is computed as the sum of routed upper</span>
 <span class="sd">    zone and unrouted lower zone discharge across all cells.</span>
 
+<span class="sd">    Also fills the per-cell output fields (`Qtot`, `quz_routed`,</span>
+<span class="sd">    `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the</span>
+<span class="sd">    discharge options of `save_results` / `plot_distributed_results`</span>
+<span class="sd">    work on this path; see that method for the MAXBAS semantics.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        Model: Catchment model object containing the distributed</span>
 <span class="sd">            model configuration, parameters, and spatial data.</span>
@@ -2598,17 +2702,19 @@ Defaults to None.</p>
 <span class="sd">            average temperature data. Defaults to None.</span>
 <span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">            Defaults to None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># subcatchment</span>
     <span class="n">distrrm</span><span class="o">.</span><span class="n">run_lumped_model</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
     <span class="n">distrrm</span><span class="o">.</span><span class="n">DistMaxbas1</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">_set_maxbas_output_fields</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+
     <span class="n">qlz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
     <span class="p">)</span>  <span class="c1"># average of all cells (not routed mm/timestep)</span>
     <span class="n">quz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">TS</span><span class="p">)]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
     <span class="p">)</span>  <span class="c1"># average of all cells (routed mm/timestep)</span>
 
     <span class="n">Model</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="n">qlz1</span> <span class="o">+</span> <span class="n">quz1</span>
@@ -2747,50 +2853,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
@@ -2832,9 +2895,53 @@ Defaults to None.</p>
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
-<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">FW1Withlake</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with lake and triangular routing.</span>
+<span class="w">    </span><span class="sd">"""Run the distributed RRM with lake and triangular routing.</span>
 
 <span class="sd">    Connects three modules:</span>
 
@@ -2865,7 +2972,7 @@ Defaults to None.</p>
 <span class="sd">            average temperature data. Defaults to None.</span>
 <span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">            Defaults to None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">plake</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">et</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
@@ -2900,24 +3007,25 @@ Defaults to None.</p>
 
     <span class="n">distrrm</span><span class="o">.</span><span class="n">DistMaxbas1</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
+    <span class="c1"># Subcatchment fields only: the lake is a lumped inflow with no spatial</span>
+    <span class="c1"># extent, so it enters `qout` below but never `Qtot`.</span>
+    <span class="n">Wrapper</span><span class="o">.</span><span class="n">_set_maxbas_output_fields</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+
     <span class="n">qlz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="p">]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
     <span class="p">)</span>  <span class="c1"># average of all cells (not routed mm/timestep)</span>
     <span class="n">quz1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="p">]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">simulation_steps</span><span class="p">)]</span>
     <span class="p">)</span>  <span class="c1"># average of all cells (routed mm/timestep)</span>
 
     <span class="n">qout</span> <span class="o">=</span> <span class="n">qlz1</span> <span class="o">+</span> <span class="n">quz1</span>
 
     <span class="c1"># qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)</span>
 
-    <span class="n">Model</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="n">qout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span>
+    <span class="c1"># Both series run over `simulation_steps`, and the non-lake FW1 path returns</span>
+    <span class="c1"># `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The</span>
+    <span class="c1"># lake series has to be trimmed the same way or the two cannot be added at all.</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="n">qout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3067,51 +3175,7 @@ routing is enabled.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">350</span>
 <span class="normal">351</span>
 <span class="normal">352</span>
 <span class="normal">353</span>
@@ -3152,9 +3216,53 @@ routing is enabled.</p>
 <span class="normal">388</span>
 <span class="normal">389</span>
 <span class="normal">390</span>
-<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">Lumped</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a lumped conceptual model with optional routing.</span>
+<span class="w">    </span><span class="sd">"""Run a lumped conceptual model with optional routing.</span>
 
 <span class="sd">    Executes a lumped rainfall-runoff model (e.g., HBV) to</span>
 <span class="sd">    compute the upper and lower zone discharge, then optionally</span>
@@ -3163,8 +3271,8 @@ routing is enabled.</p>
 
 <span class="sd">    The discharge is converted from mm/timestep to m3/s using</span>
 <span class="sd">    the catchment area and conversion factor. Results are stored</span>
-<span class="sd">    on the Model object as ``quz``, ``qlz``, ``Qsim``, and</span>
-<span class="sd">    ``state_variables``.</span>
+<span class="sd">    on the Model object as `quz`, `qlz`, `Qsim`, and</span>
+<span class="sd">    `state_variables`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        Model: Lumped model object containing:</span>
@@ -3176,7 +3284,7 @@ routing is enabled.</p>
 <span class="sd">            - Parameters (numpy.ndarray): Conceptual model</span>
 <span class="sd">              parameters.</span>
 <span class="sd">            - LumpedModel: Conceptual model instance with a</span>
-<span class="sd">              ``simulate`` method.</span>
+<span class="sd">              `simulate` method.</span>
 <span class="sd">            - InitialCond (list): Initial state variable values</span>
 <span class="sd">              [sp, sm, uz, lz, wc].</span>
 <span class="sd">            - q_init (float): Initial discharge value.</span>
@@ -3195,13 +3303,13 @@ routing is enabled.</p>
 <span class="sd">            discharge hydrograph. Must be callable.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If ``RoutingFn`` is not callable when</span>
+<span class="sd">        AssertionError: If `RoutingFn` is not callable when</span>
 <span class="sd">            routing is enabled.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1">### input data validation</span>
     <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">&quot;routing function should be of type callable (function that takes arguments)&quot;</span>
+            <span class="s2">"routing function should be of type callable (function that takes arguments)"</span>
         <span class="p">)</span>
 
     <span class="c1"># data</span>
@@ -3211,31 +3319,31 @@ routing is enabled.</p>
     <span class="n">tm</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
 
     <span class="c1"># from the conceptual model calculate the upper and lower response mm/time step</span>
-    <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">LumpedModel</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span><span class="p">,</span> <span class="n">Model</span><span class="o">.</span><span class="n">state_variables</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">lumped_model</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
         <span class="n">p</span><span class="p">,</span>
         <span class="n">t</span><span class="p">,</span>
         <span class="n">et</span><span class="p">,</span>
         <span class="n">tm</span><span class="p">,</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">,</span>
-        <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">InitialCond</span><span class="p">,</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+        <span class="n">init_st</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">initial_cond</span><span class="p">,</span>
         <span class="n">q_init</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">q_init</span><span class="p">,</span>
-        <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">Snow</span><span class="p">,</span>
+        <span class="n">snow</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)</span>
     <span class="c1"># if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25</span>
-    <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">CatArea</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
-    <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">CatArea</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">Model</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span>
 
     <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">Model</span><span class="o">.</span><span class="n">qlz</span>
 
-    <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">Maxbas</span><span class="p">:</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">RoutingFn</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">Model</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">RoutingFn</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">elif</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">RoutingFn</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
             <span class="n">Model</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
-            <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+            <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
             <span class="n">Model</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3299,29 +3407,18 @@ including <code>quz</code>, <code>qlz</code>, <code>qout</code>, <code>quz_route
               <div class="doc-md-description">
                 <p>Catchment model object containing:</p>
 <ul>
-<li>DEM (numpy.ndarray): DEM raster array clipped to
-  the catchment.</li>
-<li>FlowAccArr (numpy.ndarray): Flow accumulation
-  raster array clipped to the catchment.</li>
-<li>flow_dir_arr (numpy.ndarray): Flow direction raster
-  array clipped to the catchment.</li>
-<li>sp_prec (numpy.ndarray): 3D precipitation array
-  with the same 2D dimensions as the raster input.</li>
-<li>sp_et (numpy.ndarray): 3D evapotranspiration array
-  with the same 2D dimensions as the raster input.</li>
-<li>sp_temp (numpy.ndarray): 3D temperature array with
-  the same 2D dimensions as the raster input.</li>
-<li>sp_par (numpy.ndarray): 3D array of spatially
-  distributed catchment parameters.</li>
-<li>p2 (list): Unoptimized parameters where p2[0] is
-  tfac (1 for hourly, 0.25 for 15 min, 24 for daily)
-  and p2[1] is catchment area in km2.</li>
-<li>kub (float): Upper bound of K value for Muskingum
-  routing.</li>
-<li>klb (float): Lower bound of K value for Muskingum
-  routing.</li>
-<li>init_st (list): Initial state variable values
+<li>meteo (:class:<code>~hapi.inputs.MeteoInputs</code>): The three driver cubes,
+  each <code>(rows, cols, time)</code>, plus the calendar they cover.</li>
+<li>flow_network (:class:<code>~hapi.inputs.FlowNetwork</code>): The flow accumulation
+  and direction arrays, the direction table, and the grid they define.</li>
+<li>parameters (numpy.ndarray): 3D array of spatially distributed catchment
+  parameters, <code>(rows, cols, n_parameters)</code>.</li>
+<li>conversion_factor (float): Depth-to-discharge factor for the temporal
+  resolution; 24 for daily, 1 for hourly.</li>
+<li>area (float): Catchment area in km2.</li>
+<li>initial_cond (list): Initial state variable values
   [sp, sm, uz, lz, wc].</li>
+<li>snow (int): 1 to run the snow routine, 0 otherwise.</li>
 </ul>
               </div>
             </td>
@@ -3414,15 +3511,9 @@ Defaults to None.</p>
 <span class="normal">87</span>
 <span class="normal">88</span>
 <span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">RRMModel</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed rainfall-runoff model with spatial routing.</span>
+<span class="w">    </span><span class="sd">"""Run the distributed rainfall-runoff model with spatial routing.</span>
 
 <span class="sd">    Connects two modules:</span>
 
@@ -3432,46 +3523,40 @@ Defaults to None.</p>
 <span class="sd">       river network.</span>
 
 <span class="sd">    The method stores results directly on the Model object,</span>
-<span class="sd">    including ``quz``, ``qlz``, ``qout``, ``quz_routed``, and</span>
-<span class="sd">    ``qlz_translated`` arrays.</span>
+<span class="sd">    including `quz`, `qlz`, `qout`, `quz_routed`, and</span>
+<span class="sd">    `qlz_translated` arrays.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        Model: Catchment model object containing:</span>
 
-<span class="sd">            - DEM (numpy.ndarray): DEM raster array clipped to</span>
-<span class="sd">              the catchment.</span>
-<span class="sd">            - FlowAccArr (numpy.ndarray): Flow accumulation</span>
-<span class="sd">              raster array clipped to the catchment.</span>
-<span class="sd">            - flow_dir_arr (numpy.ndarray): Flow direction raster</span>
-<span class="sd">              array clipped to the catchment.</span>
-<span class="sd">            - sp_prec (numpy.ndarray): 3D precipitation array</span>
-<span class="sd">              with the same 2D dimensions as the raster input.</span>
-<span class="sd">            - sp_et (numpy.ndarray): 3D evapotranspiration array</span>
-<span class="sd">              with the same 2D dimensions as the raster input.</span>
-<span class="sd">            - sp_temp (numpy.ndarray): 3D temperature array with</span>
-<span class="sd">              the same 2D dimensions as the raster input.</span>
-<span class="sd">            - sp_par (numpy.ndarray): 3D array of spatially</span>
-<span class="sd">              distributed catchment parameters.</span>
-<span class="sd">            - p2 (list): Unoptimized parameters where p2[0] is</span>
-<span class="sd">              tfac (1 for hourly, 0.25 for 15 min, 24 for daily)</span>
-<span class="sd">              and p2[1] is catchment area in km2.</span>
-<span class="sd">            - kub (float): Upper bound of K value for Muskingum</span>
-<span class="sd">              routing.</span>
-<span class="sd">            - klb (float): Lower bound of K value for Muskingum</span>
-<span class="sd">              routing.</span>
-<span class="sd">            - init_st (list): Initial state variable values</span>
+<span class="sd">            - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,</span>
+<span class="sd">              each `(rows, cols, time)`, plus the calendar they cover.</span>
+<span class="sd">            - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation</span>
+<span class="sd">              and direction arrays, the direction table, and the grid they define.</span>
+<span class="sd">            - parameters (numpy.ndarray): 3D array of spatially distributed catchment</span>
+<span class="sd">              parameters, `(rows, cols, n_parameters)`.</span>
+<span class="sd">            - conversion_factor (float): Depth-to-discharge factor for the temporal</span>
+<span class="sd">              resolution; 24 for daily, 1 for hourly.</span>
+<span class="sd">            - area (float): Catchment area in km2.</span>
+<span class="sd">            - initial_cond (list): Initial state variable values</span>
 <span class="sd">              [sp, sm, uz, lz, wc].</span>
+<span class="sd">            - snow (int): 1 to run the snow routine, 0 otherwise.</span>
 
 <span class="sd">        ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
 <span class="sd">            average temperature data. Defaults to None.</span>
 <span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">            Defaults to None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># run the rainfall runoff model separately</span>
     <span class="n">distrrm</span><span class="o">.</span><span class="n">run_lumped_model</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 
     <span class="c1"># run the GIS part to rout from cell to another</span>
     <span class="n">distrrm</span><span class="o">.</span><span class="n">SpatialRouting</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+
+    <span class="c1"># Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that</span>
+    <span class="c1"># cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear</span>
+    <span class="c1"># the flag a previous MAXBAS run on this same model may have left set.</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">_maxbas_routed</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3603,7 +3688,13 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
 <span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
@@ -3682,9 +3773,12 @@ Defaults to None.</p>
 <span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
-<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">RRMWithlake</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed RRM with lake simulation and routing.</span>
+<span class="w">    </span><span class="sd">"""Run the distributed RRM with lake simulation and routing.</span>
 
 <span class="sd">    Connects three modules: the lake module, the distributed</span>
 <span class="sd">    rainfall-runoff module, and the spatial routing module. The</span>
@@ -3713,7 +3807,7 @@ Defaults to None.</p>
 <span class="sd">            average temperature data. Defaults to None.</span>
 <span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
 <span class="sd">            Defaults to None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">plake</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">et</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
@@ -3749,12 +3843,16 @@ Defaults to None.</p>
     <span class="n">qlake</span> <span class="o">=</span> <span class="n">routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">(</span>
         <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span><span class="p">,</span>
         <span class="n">Lake</span><span class="o">.</span><span class="n">QlakeR</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">],</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">Parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">11</span><span class="p">],</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">],</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">11</span><span class="p">],</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">conversion_factor</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">qlake</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qlake</span><span class="p">,</span> <span class="n">qlake</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># No padding: `HBVLake.simulate` already prepends the initial-state slot, exactly as</span>
+    <span class="c1"># the distributed model does, and `muskingum_v` preserves length -- so `qlake` is</span>
+    <span class="c1"># already `simulation_steps` long and lines up with `quz` slot for slot. Appending a</span>
+    <span class="c1"># step here made it one longer than the array it is added to, which raised for every</span>
+    <span class="c1"># input and left this entry point unrunnable.</span>
     <span class="c1"># both lake &amp; Quz are in m3/s</span>
     <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Lake</span><span class="o">.</span><span class="n">OutflowCell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">qlake</span>
@@ -3762,6 +3860,11 @@ Defaults to None.</p>
 
     <span class="c1"># run the GIS part to rout from cell to another</span>
     <span class="n">distrrm</span><span class="o">.</span><span class="n">SpatialRouting</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+
+    <span class="c1"># Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that</span>
+    <span class="c1"># cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear</span>
+    <span class="c1"># the flag a previous MAXBAS run on this same model may have left set.</span>
+    <span class="n">Model</span><span class="o">.</span><span class="n">_maxbas_routed</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3792,7 +3895,7 @@ Defaults to None.</p>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Wrapper class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Initialize the Wrapper class."""</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>

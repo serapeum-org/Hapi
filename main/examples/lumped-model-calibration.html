@@ -1361,13 +1361,13 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">statista.metrics</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metrics</span>
 
-    <span class="n">Parameterpath</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/lumped/Coello_Lumped2021-03-08_muskingum.txt&quot;</span>
-    <span class="n">MeteoDataPath</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/lumped/meteo_data-MSWEP.csv&quot;</span>
-    <span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">&quot;/data/lumped/&quot;</span>
+    <span class="n">Parameterpath</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">"/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"</span>
+    <span class="n">MeteoDataPath</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">"/data/lumped/meteo_data-MSWEP.csv"</span>
+    <span class="n">Path</span> <span class="o">=</span> <span class="n">Comp</span> <span class="o">+</span> <span class="s2">"/data/lumped/"</span>
 
-    <span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;2009-01-01&quot;</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;2011-12-31&quot;</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Coello&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="s2">"2011-12-31"</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"Coello"</span>
 
     <span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     <span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_inputs</span><span class="p">(</span><span class="n">MeteoDataPath</span><span class="p">)</span>
@@ -1383,10 +1383,10 @@
     <span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_model</span><span class="p">(</span><span class="n">HBVLumped</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
 
     <span class="c1"># Calibration boundaries</span>
-    <span class="n">UB</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/lumped/UB-3.txt&quot;</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">UB</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/lumped/UB-3.txt"</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">parnames</span> <span class="o">=</span> <span class="n">UB</span><span class="o">.</span><span class="n">index</span>
     <span class="n">UB</span> <span class="o">=</span> <span class="n">UB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">LB</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/lumped/LB-3.txt&quot;</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">LB</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/lumped/LB-3.txt"</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">LB</span> <span class="o">=</span> <span class="n">LB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
     <span class="n">Maxbas</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1401,7 +1401,7 @@
 
     <span class="c1">### Objective function</span>
     <span class="c1"># outlet discharge</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">Path</span><span class="o">+</span><span class="s2">&quot;Qout_c.csv&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">Path</span><span class="o">+</span><span class="s2">"Qout_c.csv"</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">OF_args</span><span class="o">=</span><span class="p">[]</span>
     <span class="n">OF</span><span class="o">=</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span>
@@ -1410,12 +1410,12 @@
 </code></pre></div>
 - after defining all the components of the lumped model, we have to define the calibration arguments</p>
 <div class="highlight"><pre><span></span><code>    <span class="n">ApiObjArgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hms</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">hmcr</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span> <span class="n">dbw</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">fileout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">xinit</span> <span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                          <span class="n">filename</span><span class="o">=</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">&quot;/Lumped_History&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
+                          <span class="n">filename</span><span class="o">=</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/Lumped_History"</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span><span class="o">+</span><span class="s2">".txt"</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="p">)):</span>
         <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">ApiObjArgs</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i</span><span class="p">]]))</span>
 
-    <span class="c1"># pll_type = &#39;POA&#39;</span>
+    <span class="c1"># pll_type = 'POA'</span>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">ApiSolveArgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">store_sol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">display_opts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">store_hst</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hot_start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1425,11 +1425,11 @@
 <ul>
 <li>Run Calibration</li>
 </ul>
-<div class="highlight"><pre><span></span><code>    <span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">lumpedCalibration</span><span class="p">(</span><span class="n">Basic_inputs</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">printError</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code>    <span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">lumpedCalibration</span><span class="p">(</span><span class="n">Basic_inputs</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">print_error</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Objective Function = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Parameters are &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; min&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Objective Function = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Parameters are "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Time = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">'time'</span><span class="p">]</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">" min"</span><span class="p">)</span>
 </code></pre></div>
 
 

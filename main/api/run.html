@@ -1706,11 +1706,7 @@ need to create the Catchment object first to run the model.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/run.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 25</span>
-<span class="normal"> 26</span>
-<span class="normal"> 27</span>
-<span class="normal"> 28</span>
-<span class="normal"> 29</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
 <span class="normal"> 30</span>
 <span class="normal"> 31</span>
 <span class="normal"> 32</span>
@@ -2030,17 +2026,8 @@ need to create the Catchment object first to run the model.</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the catchment model.</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Run the catchment model.</span>
 
 <span class="sd">    The Run sub-class validates the spatial data and hands it to the</span>
 <span class="sd">    Wrapper class. It is a sub-class of the Catchment class, so you</span>
@@ -2052,14 +2039,14 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">        runFW1: Run the FW1 distributed model.</span>
 <span class="sd">        RunFW1withLake: Run the FW1 model with a lake component.</span>
 <span class="sd">        runLumped: Run the lumped conceptual model.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Run class.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize the Run class."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">RunHapi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed hydrological model.</span>
+<span class="w">        </span><span class="sd">"""Run the distributed hydrological model.</span>
 
 <span class="sd">        Validates that all input arrays (precipitation, evapotranspiration,</span>
 <span class="sd">        temperature, parameters, and flow direction) have consistent</span>
@@ -2068,51 +2055,47 @@ need to create the Catchment object first to run the model.</p>
 
 <span class="sd">        The following instance attributes are set after execution:</span>
 
-<span class="sd">        - ``state_variables``: 4D array (rows, cols, time, states) where</span>
+<span class="sd">        - `state_variables`: 4D array (rows, cols, time, states) where</span>
 <span class="sd">          states are [sp, wc, sm, uz, lv].</span>
-<span class="sd">        - ``qlz``: 3D array of the lower zone discharge.</span>
-<span class="sd">        - ``quz``: 3D array of the upper zone discharge.</span>
-<span class="sd">        - ``qout``: 1D timeseries of discharge at the catchment outlet</span>
+<span class="sd">        - `qlz`: 3D array of the lower zone discharge.</span>
+<span class="sd">        - `quz`: 3D array of the upper zone discharge.</span>
+<span class="sd">        - `qout`: 1D timeseries of discharge at the catchment outlet</span>
 <span class="sd">          in m3/sec.</span>
-<span class="sd">        - ``quz_routed``: 3D array of the upper zone discharge</span>
+<span class="sd">        - `quz_routed`: 3D array of the upper zone discharge</span>
 <span class="sd">          accumulated and routed at each time step.</span>
-<span class="sd">        - ``qlz_translated``: 3D array of the lower zone discharge</span>
+<span class="sd">        - `qlz_translated`: 3D array of the lower zone discharge</span>
 <span class="sd">          translated at each time step.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">                row counts, column counts, or temporal lengths.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-        <span class="p">)</span>
+        <span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
 
         <span class="c1"># input dimensions</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">ROWS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">COLS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
 
         <span class="c1"># run the model</span>
         <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the flood model.</span>
+<span class="w">        </span><span class="sd">"""Run the flood model.</span>
 
 <span class="sd">        Runs the conceptual distributed hydrological model with</span>
 <span class="sd">        additional validation for river geometry inputs (bankfull depth,</span>
@@ -2122,52 +2105,48 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">            AssertionError: If meteorological input arrays, parameter</span>
 <span class="sd">                arrays, or river geometry arrays have inconsistent</span>
 <span class="sd">                dimensions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
+
+        <span class="c1"># input dimensions</span>
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">ROWS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">COLS_MISMATCH_ERROR</span>
         <span class="p">)</span>
 
-        <span class="c1"># input dimensions</span>
         <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flood_plain_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+        <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
         <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
-
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_roughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flood_plain_roughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">"all input data should have the same number of columns"</span>
 
         <span class="c1"># run the model</span>
         <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RRM has finished&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"RRM has finished"</span><span class="p">)</span>
         <span class="c1"># SV = SaintVenant()</span>
         <span class="c1"># SV.KinematicRaster(self)</span>
-        <span class="c1"># print(&quot;1D model Run has finished&quot;)</span>
+        <span class="c1"># print("1D model Run has finished")</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the distributed model with a lake component.</span>
+<span class="w">        </span><span class="sd">"""Run the distributed model with a lake component.</span>
 
 <span class="sd">        Validates that all input arrays have consistent dimensions and</span>
 <span class="sd">        that the lake meteorological data matches the simulation period,</span>
@@ -2176,90 +2155,89 @@ need to create the Catchment object first to run the model.</p>
 
 <span class="sd">        Args:</span>
 <span class="sd">            lake: Lake object containing lake configuration and</span>
-<span class="sd">                meteorological data. Must have a ``MeteoData`` attribute</span>
-<span class="sd">                with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">                meteorological data. Must have a `MeteoData` attribute</span>
+<span class="sd">                with shape `(time_steps, &gt;= 3)` where columns are</span>
 <span class="sd">                rain, ET, and temperature.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">                dimensions or if the lake meteorological data length</span>
 <span class="sd">                does not match the distributed raster data length.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
-        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;all input data should have the same number of rows and columns&quot;</span>
+        <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="p">),</span> <span class="s2">"all input data should have the same number of rows and columns"</span>
+
+        <span class="c1"># input dimensions</span>
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">ROWS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">COLS_MISMATCH_ERROR</span>
         <span class="p">)</span>
 
-        <span class="c1"># input dimensions</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
-
-        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span>
-            <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">"Lake meteorological data has to have the same length as the distributed raster data"</span>
         <span class="p">)</span>
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;Lake Meteo data has to have at least three columns of rain, ET, and Temp&quot;</span>
+            <span class="s2">"Lake Meteo data has to have at least three columns of rain, ET, and Temp"</span>
         <span class="p">)</span>
 
         <span class="c1"># run the model</span>
         <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMWithlake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed hydrological model.</span>
+<span class="w">        </span><span class="sd">"""Run the FW1 distributed hydrological model.</span>
 
 <span class="sd">        Validates that all input arrays have consistent dimensions,</span>
 <span class="sd">        then executes the FW1 model via the Wrapper.</span>
 
 <span class="sd">        The following instance attributes are set after execution:</span>
 
-<span class="sd">        - ``st``: 4D array of state variables.</span>
-<span class="sd">        - ``q_out``: 1D array of calculated discharge at the catchment</span>
-<span class="sd">          outlet.</span>
-<span class="sd">        - ``q_uz``: 3D array of distributed discharge for each cell.</span>
+<span class="sd">        - `st`: 4D array of state variables.</span>
+<span class="sd">        - `q_out`: 1D array of calculated discharge at the catchment</span>
+<span class="sd">          outlet, summed over every cell.</span>
+<span class="sd">        - `q_uz`: 3D array of distributed discharge for each cell.</span>
+<span class="sd">        - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields</span>
+<span class="sd">          read by `save_results` and `plot_distributed_results`. MAXBAS</span>
+<span class="sd">          routes each cell straight to the outlet, so a cell of `Qtot` is</span>
+<span class="sd">          that cell's *contribution* to the outlet — `np.nansum` over the</span>
+<span class="sd">          domain reproduces `q_out`. Use</span>
+<span class="sd">          `extract_discharge(frame_work_1=True)`; the default outlet-cell</span>
+<span class="sd">          shortcut is invalid for this path and raises.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">                row counts, column counts, or temporal lengths.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+<span class="sd">        """</span>
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">ROWS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">COLS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
 
         <span class="c1"># run the model</span>
         <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed model with a lake component.</span>
+<span class="w">        </span><span class="sd">"""Run the FW1 distributed model with a lake component.</span>
 
 <span class="sd">        Validates that all input arrays have consistent dimensions and</span>
 <span class="sd">        that the lake meteorological data matches the simulation period,</span>
@@ -2267,56 +2245,52 @@ need to create the Catchment object first to run the model.</p>
 
 <span class="sd">        Args:</span>
 <span class="sd">            lake: Lake object containing lake configuration and</span>
-<span class="sd">                meteorological data. Must have a ``MeteoData`` attribute</span>
-<span class="sd">                with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">                meteorological data. Must have a `MeteoData` attribute</span>
+<span class="sd">                with shape `(time_steps, &gt;= 3)` where columns are</span>
 <span class="sd">                rain, ET, and temperature.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            The following catchment attributes should be set before</span>
 <span class="sd">            calling this method:</span>
 
-<span class="sd">            - ``prec_path``: Path to the folder containing precipitation</span>
+<span class="sd">            - `prec_path`: Path to the folder containing precipitation</span>
 <span class="sd">              rasters.</span>
-<span class="sd">            - ``evap_path``: Path to the folder containing</span>
+<span class="sd">            - `evap_path`: Path to the folder containing</span>
 <span class="sd">              evapotranspiration rasters.</span>
-<span class="sd">            - ``temp_path``: Path to the folder containing temperature</span>
+<span class="sd">            - `temp_path`: Path to the folder containing temperature</span>
 <span class="sd">              rasters.</span>
-<span class="sd">            - ``flow_acc_path``: Path to the flow accumulation raster.</span>
-<span class="sd">            - ``flow_direction_path``: Path to the flow direction raster.</span>
-<span class="sd">            - ``ParPath``: Path to the folder containing parameter</span>
+<span class="sd">            - `flow_acc_path`: Path to the flow accumulation raster.</span>
+<span class="sd">            - `flow_direction_path`: Path to the flow direction raster.</span>
+<span class="sd">            - `ParPath`: Path to the folder containing parameter</span>
 <span class="sd">              rasters.</span>
-<span class="sd">            - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
-<span class="sd">              is tfac and ``p2[1]`` is catchment area in km2.</span>
+<span class="sd">            - `p2`: List of unoptimized parameters where `p2[0]`</span>
+<span class="sd">              is tfac and `p2[1]` is catchment area in km2.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">                dimensions or if the lake meteorological data length</span>
 <span class="sd">                does not match the distributed raster data length.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># input data validation</span>
 
         <span class="c1"># input dimensions</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+        <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+        <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">ROWS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+            <span class="n">COLS_MISMATCH_ERROR</span>
+        <span class="p">)</span>
 
-        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span>
-            <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">"Lake meteorological data has to have the same length as the distributed raster data"</span>
         <span class="p">)</span>
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;Lake Meteo data has to have at least three columns rain, ET, and Temp&quot;</span>
+            <span class="s2">"Lake Meteo data has to have at least three columns rain, ET, and Temp"</span>
         <span class="p">)</span>
 
         <span class="c1"># run the model</span>
@@ -2327,11 +2301,11 @@ need to create the Catchment object first to run the model.</p>
         <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">routing_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the lumped conceptual model.</span>
+<span class="w">        </span><span class="sd">"""Run the lumped conceptual model.</span>
 
 <span class="sd">        Executes a lumped conceptual hydrological model, optionally</span>
 <span class="sd">        routing the generated discharge hydrograph. The simulated</span>
-<span class="sd">        discharge is stored in ``self.Qsim`` as a pandas DataFrame</span>
+<span class="sd">        discharge is stored in `self.Qsim` as a pandas DataFrame</span>
 <span class="sd">        indexed by the simulation date range.</span>
 
 <span class="sd">        Args:</span>
@@ -2345,34 +2319,34 @@ need to create the Catchment object first to run the model.</p>
 <span class="sd">            The following attributes should be defined before calling</span>
 <span class="sd">            this method:</span>
 
-<span class="sd">            - ``LumpedModel``: Conceptual model containing a</span>
-<span class="sd">              ``simulate`` method.</span>
-<span class="sd">            - ``data``: Numpy array of meteorological data with</span>
+<span class="sd">            - `LumpedModel`: Conceptual model containing a</span>
+<span class="sd">              `simulate` method.</span>
+<span class="sd">            - `data`: Numpy array of meteorological data with</span>
 <span class="sd">              columns for precipitation, evapotranspiration,</span>
 <span class="sd">              temperature, and long-term average temperature.</span>
-<span class="sd">            - ``Parameters``: Numpy array of conceptual model</span>
+<span class="sd">            - `Parameters`: Numpy array of conceptual model</span>
 <span class="sd">              parameters.</span>
-<span class="sd">            - ``CatArea``: Catchment area in km2.</span>
-<span class="sd">            - ``conversion_factor``: Time conversion factor</span>
+<span class="sd">            - `CatArea`: Catchment area in km2.</span>
+<span class="sd">            - `conversion_factor`: Time conversion factor</span>
 <span class="sd">              (e.g., 24 for daily).</span>
-<span class="sd">            - ``InitialCond``: List of initial state variable</span>
+<span class="sd">            - `InitialCond`: List of initial state variable</span>
 <span class="sd">              values [sp, sm, uz, lz, wc].</span>
-<span class="sd">            - ``Snow``: Whether to use the snow subroutine (0 or 1).</span>
-<span class="sd">            - ``q_init``: Initial discharge value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            - `Snow`: Whether to use the snow subroutine (0 or 1).</span>
+<span class="sd">            - `q_init`: Initial discharge value.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">routing_fn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Route</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;routing_fn must be a callable when Route != 0&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_resolution</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;daily&quot;</span><span class="p">:</span>
-            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"routing_fn must be a callable when Route != 0"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_resolution</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"daily"</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"h"</span><span class="p">)</span>
 
         <span class="n">Qsim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
 
         <span class="n">Wrapper</span><span class="o">.</span><span class="n">Lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Route</span><span class="p">,</span> <span class="n">routing_fn</span><span class="p">)</span>
-        <span class="n">Qsim</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span>
+        <span class="n">Qsim</span><span class="p">[</span><span class="s2">"q"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">Qsim</span><span class="p">[:]</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Lumped model run has finished successfully&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Lumped model run has finished successfully"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2484,7 +2458,12 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
@@ -2537,17 +2516,8 @@ does not match the distributed raster data length.</p>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed model with a lake component.</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFW1withLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Run the FW1 distributed model with a lake component.</span>
 
 <span class="sd">    Validates that all input arrays have consistent dimensions and</span>
 <span class="sd">    that the lake meteorological data matches the simulation period,</span>
@@ -2555,56 +2525,52 @@ does not match the distributed raster data length.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lake: Lake object containing lake configuration and</span>
-<span class="sd">            meteorological data. Must have a ``MeteoData`` attribute</span>
-<span class="sd">            with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">            meteorological data. Must have a `MeteoData` attribute</span>
+<span class="sd">            with shape `(time_steps, &gt;= 3)` where columns are</span>
 <span class="sd">            rain, ET, and temperature.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The following catchment attributes should be set before</span>
 <span class="sd">        calling this method:</span>
 
-<span class="sd">        - ``prec_path``: Path to the folder containing precipitation</span>
+<span class="sd">        - `prec_path`: Path to the folder containing precipitation</span>
 <span class="sd">          rasters.</span>
-<span class="sd">        - ``evap_path``: Path to the folder containing</span>
+<span class="sd">        - `evap_path`: Path to the folder containing</span>
 <span class="sd">          evapotranspiration rasters.</span>
-<span class="sd">        - ``temp_path``: Path to the folder containing temperature</span>
+<span class="sd">        - `temp_path`: Path to the folder containing temperature</span>
 <span class="sd">          rasters.</span>
-<span class="sd">        - ``flow_acc_path``: Path to the flow accumulation raster.</span>
-<span class="sd">        - ``flow_direction_path``: Path to the flow direction raster.</span>
-<span class="sd">        - ``ParPath``: Path to the folder containing parameter</span>
+<span class="sd">        - `flow_acc_path`: Path to the flow accumulation raster.</span>
+<span class="sd">        - `flow_direction_path`: Path to the flow direction raster.</span>
+<span class="sd">        - `ParPath`: Path to the folder containing parameter</span>
 <span class="sd">          rasters.</span>
-<span class="sd">        - ``p2``: List of unoptimized parameters where ``p2[0]``</span>
-<span class="sd">          is tfac and ``p2[1]`` is catchment area in km2.</span>
+<span class="sd">        - `p2`: List of unoptimized parameters where `p2[0]`</span>
+<span class="sd">          is tfac and `p2[1]` is catchment area in km2.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">            dimensions or if the lake meteorological data length</span>
 <span class="sd">            does not match the distributed raster data length.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input data validation</span>
 
     <span class="c1"># input dimensions</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">ROWS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">COLS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
 
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span>
-        <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">,</span> <span class="p">(</span>
+        <span class="s2">"Lake meteorological data has to have the same length as the distributed raster data"</span>
     <span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;Lake Meteo data has to have at least three columns rain, ET, and Temp&quot;</span>
+        <span class="s2">"Lake Meteo data has to have at least three columns rain, ET, and Temp"</span>
     <span class="p">)</span>
 
     <span class="c1"># run the model</span>
@@ -2710,12 +2676,8 @@ dimensions.</p>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the flood model.</span>
+<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunFloodModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Run the flood model.</span>
 
 <span class="sd">    Runs the conceptual distributed hydrological model with</span>
 <span class="sd">    additional validation for river geometry inputs (bankfull depth,</span>
@@ -2725,46 +2687,42 @@ dimensions.</p>
 <span class="sd">        AssertionError: If meteorological input arrays, parameter</span>
 <span class="sd">            arrays, or river geometry arrays have inconsistent</span>
 <span class="sd">            dimensions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
+
+    <span class="c1"># input dimensions</span>
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">ROWS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">COLS_MISMATCH_ERROR</span>
     <span class="p">)</span>
 
-    <span class="c1"># input dimensions</span>
     <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flood_plain_roughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span>
+    <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
     <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
-
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BankfullDepth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverWidth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiverRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FloodPlainRoughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bankfull_depth</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_width</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">river_roughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flood_plain_roughness</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">"all input data should have the same number of columns"</span>
 
     <span class="c1"># run the model</span>
     <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RRM has finished&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"RRM has finished"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2833,11 +2791,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
@@ -2885,7 +2839,7 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">93</span>
 <span class="normal">94</span>
 <span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">RunHapi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed hydrological model.</span>
+<span class="w">    </span><span class="sd">"""Run the distributed hydrological model.</span>
 
 <span class="sd">    Validates that all input arrays (precipitation, evapotranspiration,</span>
 <span class="sd">    temperature, parameters, and flow direction) have consistent</span>
@@ -2894,48 +2848,44 @@ row counts, column counts, or temporal lengths.</p>
 
 <span class="sd">    The following instance attributes are set after execution:</span>
 
-<span class="sd">    - ``state_variables``: 4D array (rows, cols, time, states) where</span>
+<span class="sd">    - `state_variables`: 4D array (rows, cols, time, states) where</span>
 <span class="sd">      states are [sp, wc, sm, uz, lv].</span>
-<span class="sd">    - ``qlz``: 3D array of the lower zone discharge.</span>
-<span class="sd">    - ``quz``: 3D array of the upper zone discharge.</span>
-<span class="sd">    - ``qout``: 1D timeseries of discharge at the catchment outlet</span>
+<span class="sd">    - `qlz`: 3D array of the lower zone discharge.</span>
+<span class="sd">    - `quz`: 3D array of the upper zone discharge.</span>
+<span class="sd">    - `qout`: 1D timeseries of discharge at the catchment outlet</span>
 <span class="sd">      in m3/sec.</span>
-<span class="sd">    - ``quz_routed``: 3D array of the upper zone discharge</span>
+<span class="sd">    - `quz_routed`: 3D array of the upper zone discharge</span>
 <span class="sd">      accumulated and routed at each time step.</span>
-<span class="sd">    - ``qlz_translated``: 3D array of the lower zone discharge</span>
+<span class="sd">    - `qlz_translated`: 3D array of the lower zone discharge</span>
 <span class="sd">      translated at each time step.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">            row counts, column counts, or temporal lengths.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-    <span class="p">)</span>
+    <span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="n">GRID_MISMATCH_ERROR</span>
 
     <span class="c1"># input dimensions</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">ROWS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">COLS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
 
     <span class="c1"># run the model</span>
     <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2963,10 +2913,10 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Run class.&quot;&quot;&quot;</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Initialize the Run class."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2997,8 +2947,15 @@ then executes the FW1 model via the Wrapper.</p>
 <ul>
 <li><code>st</code>: 4D array of state variables.</li>
 <li><code>q_out</code>: 1D array of calculated discharge at the catchment
-  outlet.</li>
+  outlet, summed over every cell.</li>
 <li><code>q_uz</code>: 3D array of distributed discharge for each cell.</li>
+<li><code>Qtot</code>, <code>quz_routed</code>, <code>qlz_translated</code>: 3D per-cell fields
+  read by <code>save_results</code> and <code>plot_distributed_results</code>. MAXBAS
+  routes each cell straight to the outlet, so a cell of <code>Qtot</code> is
+  that cell's <em>contribution</em> to the outlet — <code>np.nansum</code> over the
+  domain reproduces <code>q_out</code>. Use
+  <code>extract_discharge(frame_work_1=True)</code>; the default outlet-cell
+  shortcut is invalid for this path and raises.</li>
 </ul>
 
 
@@ -3028,7 +2985,15 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
@@ -3059,48 +3024,46 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the FW1 distributed hydrological model.</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runFW1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Run the FW1 distributed hydrological model.</span>
 
 <span class="sd">    Validates that all input arrays have consistent dimensions,</span>
 <span class="sd">    then executes the FW1 model via the Wrapper.</span>
 
 <span class="sd">    The following instance attributes are set after execution:</span>
 
-<span class="sd">    - ``st``: 4D array of state variables.</span>
-<span class="sd">    - ``q_out``: 1D array of calculated discharge at the catchment</span>
-<span class="sd">      outlet.</span>
-<span class="sd">    - ``q_uz``: 3D array of distributed discharge for each cell.</span>
+<span class="sd">    - `st`: 4D array of state variables.</span>
+<span class="sd">    - `q_out`: 1D array of calculated discharge at the catchment</span>
+<span class="sd">      outlet, summed over every cell.</span>
+<span class="sd">    - `q_uz`: 3D array of distributed discharge for each cell.</span>
+<span class="sd">    - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields</span>
+<span class="sd">      read by `save_results` and `plot_distributed_results`. MAXBAS</span>
+<span class="sd">      routes each cell straight to the outlet, so a cell of `Qtot` is</span>
+<span class="sd">      that cell's *contribution* to the outlet — `np.nansum` over the</span>
+<span class="sd">      domain reproduces `q_out`. Use</span>
+<span class="sd">      `extract_discharge(frame_work_1=True)`; the default outlet-cell</span>
+<span class="sd">      shortcut is invalid for this path and raises.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">            row counts, column counts, or temporal lengths.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
+<span class="sd">    """</span>
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">ROWS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">COLS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
 
     <span class="c1"># run the model</span>
     <span class="n">Wrapper</span><span class="o">.</span><span class="n">FW1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3191,7 +3154,11 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
@@ -3235,16 +3202,8 @@ does not match the distributed raster data length.</p>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the distributed model with a lake component.</span>
+<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runHAPIwithLake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Run the distributed model with a lake component.</span>
 
 <span class="sd">    Validates that all input arrays have consistent dimensions and</span>
 <span class="sd">    that the lake meteorological data matches the simulation period,</span>
@@ -3253,49 +3212,45 @@ does not match the distributed raster data length.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lake: Lake object containing lake configuration and</span>
-<span class="sd">            meteorological data. Must have a ``MeteoData`` attribute</span>
-<span class="sd">            with shape ``(time_steps, &gt;= 3)`` where columns are</span>
+<span class="sd">            meteorological data. Must have a `MeteoData` attribute</span>
+<span class="sd">            with shape `(time_steps, &gt;= 3)` where columns are</span>
 <span class="sd">            rain, ET, and temperature.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If input data arrays have inconsistent</span>
 <span class="sd">            dimensions or if the lake meteorological data length</span>
 <span class="sd">            does not match the distributed raster data length.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
-    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">assert</span> <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;all input data should have the same number of rows and columns&quot;</span>
+    <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
+    <span class="p">),</span> <span class="s2">"all input data should have the same number of rows and columns"</span>
+
+    <span class="c1"># input dimensions</span>
+    <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
+    <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">validate_against</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_index</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">ROWS_MISMATCH_ERROR</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">(</span>
+        <span class="n">COLS_MISMATCH_ERROR</span>
     <span class="p">)</span>
 
-    <span class="c1"># input dimensions</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of rows&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Parameters</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="s2">&quot;all input data should have the same number of columns&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ET</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temp</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;all meteorological input data should have the same length&quot;</span>
-
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Prec</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span>
-        <span class="s2">&quot;Lake meteorological data has to have the same length as the distributed raster data&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">,</span> <span class="p">(</span>
+        <span class="s2">"Lake meteorological data has to have the same length as the distributed raster data"</span>
     <span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lake</span><span class="o">.</span><span class="n">MeteoData</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;Lake Meteo data has to have at least three columns of rain, ET, and Temp&quot;</span>
+        <span class="s2">"Lake Meteo data has to have at least three columns of rain, ET, and Temp"</span>
     <span class="p">)</span>
 
     <span class="c1"># run the model</span>
     <span class="n">Wrapper</span><span class="o">.</span><span class="n">RRMWithlake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lake</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Run has finished&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3399,7 +3354,16 @@ this method:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span>
@@ -3440,25 +3404,16 @@ this method:</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">runLumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">routing_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the lumped conceptual model.</span>
+<span class="w">    </span><span class="sd">"""Run the lumped conceptual model.</span>
 
 <span class="sd">    Executes a lumped conceptual hydrological model, optionally</span>
 <span class="sd">    routing the generated discharge hydrograph. The simulated</span>
-<span class="sd">    discharge is stored in ``self.Qsim`` as a pandas DataFrame</span>
+<span class="sd">    discharge is stored in `self.Qsim` as a pandas DataFrame</span>
 <span class="sd">    indexed by the simulation date range.</span>
 
 <span class="sd">    Args:</span>
@@ -3472,34 +3427,34 @@ this method:</p>
 <span class="sd">        The following attributes should be defined before calling</span>
 <span class="sd">        this method:</span>
 
-<span class="sd">        - ``LumpedModel``: Conceptual model containing a</span>
-<span class="sd">          ``simulate`` method.</span>
-<span class="sd">        - ``data``: Numpy array of meteorological data with</span>
+<span class="sd">        - `LumpedModel`: Conceptual model containing a</span>
+<span class="sd">          `simulate` method.</span>
+<span class="sd">        - `data`: Numpy array of meteorological data with</span>
 <span class="sd">          columns for precipitation, evapotranspiration,</span>
 <span class="sd">          temperature, and long-term average temperature.</span>
-<span class="sd">        - ``Parameters``: Numpy array of conceptual model</span>
+<span class="sd">        - `Parameters`: Numpy array of conceptual model</span>
 <span class="sd">          parameters.</span>
-<span class="sd">        - ``CatArea``: Catchment area in km2.</span>
-<span class="sd">        - ``conversion_factor``: Time conversion factor</span>
+<span class="sd">        - `CatArea`: Catchment area in km2.</span>
+<span class="sd">        - `conversion_factor`: Time conversion factor</span>
 <span class="sd">          (e.g., 24 for daily).</span>
-<span class="sd">        - ``InitialCond``: List of initial state variable</span>
+<span class="sd">        - `InitialCond`: List of initial state variable</span>
 <span class="sd">          values [sp, sm, uz, lz, wc].</span>
-<span class="sd">        - ``Snow``: Whether to use the snow subroutine (0 or 1).</span>
-<span class="sd">        - ``q_init``: Initial discharge value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        - `Snow`: Whether to use the snow subroutine (0 or 1).</span>
+<span class="sd">        - `q_init`: Initial discharge value.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">routing_fn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Route</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;routing_fn must be a callable when Route != 0&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_resolution</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;daily&quot;</span><span class="p">:</span>
-        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"routing_fn must be a callable when Route != 0"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_resolution</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"daily"</span><span class="p">:</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"h"</span><span class="p">)</span>
 
     <span class="n">Qsim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
 
     <span class="n">Wrapper</span><span class="o">.</span><span class="n">Lumped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Route</span><span class="p">,</span> <span class="n">routing_fn</span><span class="p">)</span>
-    <span class="n">Qsim</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span>
+    <span class="n">Qsim</span><span class="p">[</span><span class="s2">"q"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">Qsim</span><span class="p">[:]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Lumped model run has finished successfully&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Lumped model run has finished successfully"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

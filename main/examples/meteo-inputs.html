@@ -1364,23 +1364,162 @@
 </code></pre></div>
 <p>Distributed meteorological data can be obtain from gauge data with some interpolation method or from remote sensing data</p>
 <h1 id="remote-sensing-data"><a class="toclink" href="#remote-sensing-data">Remote Sensing Data</a><a class="headerlink" href="#remote-sensing-data" title="Permanent link">#</a></h1>
-<p>The remote sensing module that used to download CHIRPS and ECMWF data was moved out of
-Hapi into its own package, <a href="https://pypi.org/project/earth2observe/">earth2observe</a>:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>earth2observe
+<p>Remote sensing inputs are downloaded with <a href="https://github.com/serapeum-org/earthlens">earthlens</a>, which replaces the
+deprecated <code>earth2observe</code> package:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>earthlens<span class="w">            </span><span class="c1"># CHIRPS and the other keyless backends</span>
+pip<span class="w"> </span>install<span class="w"> </span>earthlens<span class="o">[</span>ecmwf<span class="o">]</span><span class="w">     </span><span class="c1"># adds cdsapi, required for the ERA5 download below</span>
 </code></pre></div>
-<p>earth2observe covers the same sources Hapi used to handle:</p>
+<p>Inside this repository the same dependency is the <code>inputs</code> extra, wired to the <code>inputs</code> pixi environment (the <code>dev</code>
+environment on top of <code>earthlens[ecmwf]</code>), so the downloads below run without a separate install:</p>
+<div class="highlight"><pre><span></span><code>pixi<span class="w"> </span>run<span class="w"> </span>-e<span class="w"> </span>inputs<span class="w"> </span>python<span class="w"> </span>examples/hydrological-model/coello/prepare-Input-data/00-coello-data_download.py
+</code></pre></div>
+<p>earthlens exposes a single facade, <code>EarthLens</code>, that routes the request to the backend named by <code>data_source</code>. It
+covers the sources Hapi used to handle, among many others:</p>
 <ul>
-<li><strong>CHIRPS</strong> — the Climate Hazards Group InfraRed Precipitation with Station data, a
-  quasi-global rainfall data set combining satellite imagery with in-situ station data
-  on a 0.05 degree grid, from 1981 to near present.</li>
-<li><strong>ECMWF</strong> — the ERA-Interim archive, which requires a registered account and an API
-  key set up on your machine (see the
-  <a href="https://apps.ecmwf.int/registration/">ECMWF registration</a> and the
-  <a href="https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key">API key instructions</a>).</li>
+<li><strong>CHIRPS</strong> (<code>data_source="chc"</code>) — the Climate Hazards Group InfraRed Precipitation with Station data, a
+  quasi-global rainfall data set combining satellite imagery with in-situ station data on a 0.05 degree grid, from
+  1981 to near present. Served over anonymous FTP, so it needs no credentials.</li>
+<li><strong>ERA5</strong> (<code>data_source="ecmwf"</code>) — the Copernicus Climate Data Store reanalysis that replaces the retired
+  ERA-Interim archive. It requires a free <a href="https://cds.climate.copernicus.eu/">CDS account</a> and a <code>~/.cdsapirc</code>
+  holding the Personal Access Token (see the <a href="https://cds.climate.copernicus.eu/how-to-api">CDS API instructions</a>).</li>
 </ul>
-<p>Once the rasters are downloaded, prepare them for the model with <code>hapi.inputs.Inputs</code>,
-which aligns every raster to the catchment DEM — see
-<a href="gis-inputs.html">GIS inputs</a> and <a href="parameters.html">Parameters</a>.</p>
+<h2 id="rainfall-from-chirps"><a class="toclink" href="#rainfall-from-chirps">Rainfall from CHIRPS</a><a class="headerlink" href="#rainfall-from-chirps" title="Permanent link">#</a></h2>
+<p>Passing <code>variables</code> as a plain list uses the global CHIRPS-2.0 series, and <code>temporal_resolution</code> selects the
+dataset (<code>"daily"</code> → <code>global-daily</code>, <code>"monthly"</code> → <code>global-monthly</code>). The dict shape, e.g.
+<code>variables={"africa-pentad": ["precipitation"]}</code>, reaches the rest of the CHC catalog.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLens</span>
+
+<span class="n">EarthLens</span><span class="p">(</span>
+    <span class="n">data_source</span><span class="o">=</span><span class="s2">"chc"</span><span class="p">,</span>
+    <span class="n">temporal_resolution</span><span class="o">=</span><span class="s2">"daily"</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">"2009-01-01"</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">"2009-02-01"</span><span class="p">,</span>
+    <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"precipitation"</span><span class="p">],</span>
+    <span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mf">4.190755</span><span class="p">,</span> <span class="mf">4.643963</span><span class="p">],</span>
+    <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">75.649243</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.727286</span><span class="p">],</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">"examples/hydrological-model/data/meteo_data/earthlens/prec"</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">cores</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div>
+<p>CHIRPS fetches one file per date, so <code>cores</code> runs the retrieval in parallel (without a progress bar). Each date is
+clipped to the bounding box and written as <code>&lt;dataset&gt;_&lt;variable&gt;_%Y.%m.%d.tif</code>, for example
+<code>global-daily_precipitation_2009.01.01.tif</code>.</p>
+<h2 id="temperature-and-evapotranspiration-from-era5"><a class="toclink" href="#temperature-and-evapotranspiration-from-era5">Temperature and evapotranspiration from ERA5</a><a class="headerlink" href="#temperature-and-evapotranspiration-from-era5" title="Permanent link">#</a></h2>
+<p>ERA5 variables are addressed by the <code>(dataset, variable)</code> pair, so <code>variables</code> is a dict keyed by the CDS dataset
+name. Use the catalog to look up the codes:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.ecmwf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
+
+<span class="n">catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">datasets</span><span class="p">))</span>
+<span class="n">catalog</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"reanalysis-era5-single-levels"</span><span class="p">,</span> <span class="s2">"2m-temperature"</span><span class="p">)</span>
+</code></pre></div>
+<p>Unlike CHIRPS, the ECMWF backend writes <strong>one NetCDF per variable</strong> rather than per-date rasters. Passing
+<code>aggregate=AggregationConfig(...)</code> slices that NetCDF into per-date GeoTIFFs, which is the shape
+<code>Inputs.prepare_inputs</code> expects:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AggregationConfig</span><span class="p">,</span> <span class="n">EarthLens</span>
+
+<span class="n">root</span> <span class="o">=</span> <span class="s2">"examples/hydrological-model/data/meteo_data/earthlens"</span>
+
+<span class="n">EarthLens</span><span class="p">(</span>
+    <span class="n">data_source</span><span class="o">=</span><span class="s2">"ecmwf"</span><span class="p">,</span>
+    <span class="n">temporal_resolution</span><span class="o">=</span><span class="s2">"daily"</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="s2">"2009-01-01"</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="s2">"2009-02-01"</span><span class="p">,</span>
+    <span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">"reanalysis-era5-single-levels"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"2m-temperature"</span><span class="p">]},</span>
+    <span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mf">4.190755</span><span class="p">,</span> <span class="mf">4.643963</span><span class="p">],</span>
+    <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">75.649243</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.727286</span><span class="p">],</span>
+    <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">/netcdf"</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">aggregate</span><span class="o">=</span><span class="n">AggregationConfig</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="s2">"1D"</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">/temp"</span><span class="p">))</span>
+</code></pre></div>
+<p><code>op="auto"</code> reads the catalog's <code>is_flux</code> flag so each window gets the right reduction: state variables such as
+<code>2m-temperature</code> are averaged, flux variables such as <code>evaporation</code> and <code>total-precipitation</code> are summed. Keeping
+the NetCDF in its own folder leaves the GeoTIFF directory holding nothing else, since <code>prepare_inputs</code> reads a
+whole folder at once.</p>
+<p>ERA5 evapotranspiration is negative by convention — the meteorological convention is that downward vertical fluxes
+are positive — so the values must be flipped before the model reads them. <code>Dataset.apply(np.abs)</code> does that; see
+<code>01-coello-prepare_inputdata.py</code> in the <a href="https://github.com/serapeum-org/Hapi/tree/main/examples/hydrological-model/coello/prepare-Input-data">prepare-Input-data examples</a>.</p>
+<h2 id="matching-the-file-names-when-reading-the-rasters"><a class="toclink" href="#matching-the-file-names-when-reading-the-rasters">Matching the file names when reading the rasters</a><a class="headerlink" href="#matching-the-file-names-when-reading-the-rasters" title="Permanent link">#</a></h2>
+<p><code>MeteoInputs.from_rasters</code> locates the date in each file name with <code>regex_string</code> and parses it with
+<code>file_name_data_fmt</code>, so the two must match the names the backend produced:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Example file name</th>
+<th><code>regex_string</code></th>
+<th><code>file_name_data_fmt</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CHIRPS</td>
+<td><code>global-daily_precipitation_2009.01.01.tif</code></td>
+<td><code>r"\d{4}.\d{2}.\d{2}"</code> (the default)</td>
+<td><code>"%Y.%m.%d"</code></td>
+</tr>
+<tr>
+<td>ERA5 (aggregated)</td>
+<td><code>2m_temperature_1D_20090101.tif</code></td>
+<td><code>r"\d{8}"</code></td>
+<td><code>"%Y%m%d"</code></td>
+</tr>
+</tbody>
+</table>
+<p>The download example above takes rainfall from CHIRPS and the other two from ERA5, so the three folders do not
+share a naming convention — <code>r"\d{4}.\d{2}.\d{2}"</code> finds no date in <code>..._20090101.tif</code>, and <code>r"\d{8}"</code> finds none
+in <code>..._2009.01.01.tif</code>. Pass the differing argument per folder with <code>per_variable</code>, which is merged over the shared
+arguments for that folder only:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span>
+    <span class="n">prec_path</span><span class="p">,</span>
+    <span class="n">temp_path</span><span class="p">,</span>
+    <span class="n">evap_path</span><span class="p">,</span>
+    <span class="n">per_variable</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"temperature"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"regex_string"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">},</span>
+        <span class="s2">"evapotranspiration"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"regex_string"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><code>file_name_data_fmt</code> is not needed here: it is inferred from the first name <code>regex_string</code> matches, per folder. Pass
+it only for a layout the digits cannot settle, such as a day-first <code>03.02.1990</code>.</p>
+<p>When all three folders do come from one source, the shared arguments are enough:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">prec_path</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">,</span> <span class="n">evap_path</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="packing-the-rasters-into-netcdf"><a class="toclink" href="#packing-the-rasters-into-netcdf">Packing the rasters into NetCDF</a><a class="headerlink" href="#packing-the-rasters-into-netcdf" title="Permanent link">#</a></h2>
+<p>A folder of per-date GeoTIFFs is the slowest thing the model can be driven from: every run
+re-opens every file. Packing each driver once turns that into a single read, and the calendar
+travels inside the file instead of living in the file names.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeteoInputs</span>
+
+<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">prec_path</span><span class="p">,</span> <span class="s2">"prec.nc"</span><span class="p">)</span>
+<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">evap_path</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_netcdf_files</span><span class="p">(</span><span class="s2">"prec.nc"</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">)</span>
+</code></pre></div>
+<p>It takes the same reader arguments as <code>from_rasters</code>, so <code>start</code> / <code>end</code> convert a window
+rather than the whole folder, and it refuses to write a file whose steps carry no dates —
+a NetCDF with no time axis cannot be checked against the model's date range later.</p>
+<p>On network storage, pass <code>gdal_env</code> to skip GDAL's per-open directory listing:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span>
+    <span class="n">temp_path</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="n">gdal_env</span><span class="o">=</span><span class="p">{</span><span class="s2">"GDAL_DISABLE_READDIR_ON_OPEN"</span><span class="p">:</span> <span class="s2">"EMPTY_DIR"</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>That listing is a remote round-trip per raster — 369 ms against 18 ms over one 14,823-file
+folder. It is not the default because disabling it also stops GDAL finding <code>.aux.xml</code>, world
+files and <code>.ovr</code> sidecars.</p>
+<h3 id="one-file-for-all-three-drivers"><a class="toclink" href="#one-file-for-all-three-drivers">One file for all three drivers</a><a class="headerlink" href="#one-file-for-all-three-drivers" title="Permanent link">#</a></h3>
+<p>The three single-variable files can then be merged, which names each variable after its
+driver so a reader asks for it by name rather than guessing at whatever the band was called:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MeteoInputs</span><span class="o">.</span><span class="n">combine_netcdf_files</span><span class="p">(</span><span class="s2">"prec.nc"</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">,</span> <span class="s2">"meteo.nc"</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
+    <span class="s2">"meteo.nc"</span><span class="p">,</span>
+    <span class="n">precipitation</span><span class="o">=</span><span class="s2">"precipitation"</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="s2">"temperature"</span><span class="p">,</span>
+    <span class="n">evapotranspiration</span><span class="o">=</span><span class="s2">"evapotranspiration"</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Once the rasters are downloaded, prepare them for the model with <code>hapi.inputs.Inputs</code>, which aligns every raster to
+the catchment DEM — see <a href="gis-inputs.html">GIS inputs</a> and <a href="parameters.html">Parameters</a>.</p>
 
 
 
