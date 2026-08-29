@@ -1,4 +1,4 @@
-"""Distributed Muskingum model driven from a single combined NetCDF.
+"""Distributed Muskingum model driven from a single combined NetCDF, built from YAML.
 
 Standalone version of the workflow behind
 `tests/rrm/catchment/test_e2e_coello_from_netcdf.py::TestMuskingumPipeline::
@@ -7,6 +7,10 @@ replaces the three raster-folder reads, so the model touches no meteorological r
 `meteo.nc` packs the rainfall, temperature and evapotranspiration folders bundled under
 `tests/rrm/data/coello/{prec,temp,evap}` into one file with the calendar inside it -- see
 `tests/rrm/data/coello/convert_and_combine_meteo_inputs_to_netcdf.py` for how it was built.
+
+Everything that used to be a "Paths" block of hardcoded assignments now lives in
+`coello-distributed-model-run-netcdf.yaml`, next to this script -- `Catchment.from_yaml` reads
+it and assembles the `Catchment` the same way `_build` did in the e2e test.
 """
 
 from __future__ import annotations
@@ -14,43 +18,12 @@ from __future__ import annotations
 import numpy as np
 
 from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.run import Run
 
-# %% Paths
-Path = "tests/rrm/data/coello"
-MeteoPath = f"{Path}/meteo.nc"
-FlowAccPath = f"{Path}/gis/acc4000.tif"
-FlowDPath = f"{Path}/gis/fd4000.tif"
-ParPath = f"{Path}/parameters/muskingum"
-GaugesTablePath = f"{Path}/calibration/gauges.csv"
-GaugesPath = f"{Path}/calibration"
-
-# %% Meteorological data -- the whole point: one file, no raster reads
-AreaCoeff = 1530
-InitialCond = [0, 5, 5, 5, 0]
-Snow = 0
-
-start = "2009-01-01"
-end = "2009-01-10"
-name = "Coello"
-
-Coello = Catchment(name, start, end, spatial_resolution="Distributed")
-Coello.meteo = MeteoInputs.from_netcdf(
-    MeteoPath,
-    precipitation="precipitation",
-    temperature="temperature",
-    evapotranspiration="evapotranspiration",
+# %% Load the configuration and build the model
+Coello = Catchment.from_yaml(
+    "examples/hydrological-model/coello/run/coello-distributed-model-run-netcdf.yaml"
 )
-
-Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
-Coello.read_parameters(ParPath, Snow, maxbas=False)
-Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
-
-# %% Gauges
-Coello.read_gauge_table(GaugesTablePath, FlowAccPath)
-Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 
 # %% Check the drivers actually came from the file and cover the model
 print(f"meteo grid + steps : {Coello.meteo.shape}")
@@ -60,8 +33,12 @@ print(f"model period       : {Coello.date_index[0]} -> {Coello.date_index[-1]}")
 assert Coello.meteo.time_steps == len(Coello.date_index), (
     "the drivers must hold exactly as many steps as the model spans"
 )
-assert Coello.meteo.time[0] == Coello.date_index[0], "the drivers must start where the model does"
-assert Coello.meteo.time[-1] == Coello.date_index[-1], "the drivers must end where the model does"
+assert Coello.meteo.time[0] == Coello.date_index[0], (
+    "the drivers must start where the model does"
+)
+assert Coello.meteo.time[-1] == Coello.date_index[-1], (
+    "the drivers must end where the model does"
+)
 
 # %% Run the model
 """
@@ -88,7 +65,9 @@ Run.RunHapi(Coello)
 inside = ~np.isnan(Coello.flow_network.flow_acc_arr)
 for field_name in ("Qtot", "quz_routed", "qlz_translated"):
     field = getattr(Coello, field_name)
-    print(f"{field_name:15s} shape {field.shape}, finite inside: {np.isfinite(field[inside]).all()}")
+    print(
+        f"{field_name:15s} shape {field.shape}, finite inside: {np.isfinite(field[inside]).all()}"
+    )
 
 # %% Extract discharge at every gauge and score against the observations
 Coello.extract_discharge(calculate_metrics=True)
@@ -103,9 +82,12 @@ for gauge_id in Coello.GaugesTable["id"]:
     print(f"WB=      {Coello.metrics.loc['WB', gauge_id]:.2f}")
 
 # %% Save the routed discharge to rasters, one per time step
+# save_results re-reads the flow-accumulation raster for georeferencing; FlowNetwork keeps only
+# the arrays, not the source path, so this repeats the path already given in the YAML.
+FlowAccPath = "tests/rrm/data/coello/gis/acc4000.tif"
 SaveTo = "results/saved rasters/"
 Coello.save_results(flow_acc_path=FlowAccPath, result=1, path=SaveTo)
 print(f"rasters written to  : {SaveTo}")
 
 # %% Plot the hydrograph at the outlet gauge (row position, not the gauge id)
-Coello.plot_hydrograph(start, end, Coello.GaugesTable.index[-1])
+Coello.plot_hydrograph(Coello.start, Coello.end, Coello.GaugesTable.index[-1])

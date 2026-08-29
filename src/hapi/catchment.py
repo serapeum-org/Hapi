@@ -190,6 +190,24 @@ class Catchment:
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
 
+    @classmethod
+    def from_yaml(cls, path: str) -> Catchment:
+        """Read a YAML run configuration and assemble a `Catchment` from it.
+
+        Delegates to `hapi.config.from_yaml`, imported inside this method rather than at
+        module level: `hapi.config` imports `Catchment` itself (to build one), so a top-level
+        import here would be circular.
+
+        Args:
+            path: Path to the YAML file. See `hapi.config` for the schema.
+
+        Returns:
+            Catchment: The model, with every input read, parsed and assigned.
+        """
+        from hapi.config import from_yaml
+
+        return from_yaml(path)
+
     def read_flow_path_length(self, path: str):
         """Read the flow path length raster.
 
@@ -674,8 +692,10 @@ class Catchment:
             self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
 
         if split:
-            start_date = dt.datetime.strptime(start_date, fmt)
-            end_date = dt.datetime.strptime(end_date, fmt)
+            if isinstance(start_date, str):
+                start_date = dt.datetime.strptime(start_date, fmt)
+            if isinstance(end_date, str):
+                end_date = dt.datetime.strptime(end_date, fmt)
             self.QGauges = self.QGauges.loc[start_date:end_date]
 
         logger.debug("Gauges data are read successfully")
@@ -890,8 +910,10 @@ class Catchment:
             tuple: A tuple of (fig, ax) where fig is the matplotlib
                 Figure and ax is the matplotlib Axes object.
         """
-        start_date = dt.datetime.strptime(start_date, fmt)
-        end_date = dt.datetime.strptime(end_date, fmt)
+        if isinstance(start_date, str):
+            start_date = dt.datetime.strptime(start_date, fmt)
+        if isinstance(end_date, str):
+            end_date = dt.datetime.strptime(end_date, fmt)
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
@@ -1162,12 +1184,12 @@ class Catchment:
         """
         if start == "":
             start = self.date_index[0]
-        else:
+        elif isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
 
         if end == "":
             end = self.date_index[-1]
-        else:
+        elif isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
         start_i = np.nonzero(self.date_index == start)[0][0]

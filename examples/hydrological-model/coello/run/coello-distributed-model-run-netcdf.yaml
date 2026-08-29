@@ -1,0 +1,37 @@
+catchment:
+  name: Coello
+  start: "2009-01-01"
+  end: "2009-01-10"
+  spatial_resolution: distributed
+  temporal_resolution: daily
+  routing_method: muskingum
+
+meteo:
+  source: netcdf
+  path: tests/rrm/data/coello/meteo.nc
+  precipitation: precipitation
+  temperature: temperature
+  evapotranspiration: evapotranspiration
+
+flow_network:
+  flow_accumulation: tests/rrm/data/coello/gis/acc4000.tif
+  flow_direction: tests/rrm/data/coello/gis/fd4000.tif
+
+parameters:
+  path: tests/rrm/data/coello/parameters/muskingum
+  snow: false
+  maxbas: false
+
+conceptual_model:
+  model_class: HBVBergestrom92
+  catchment_area: 1530
+  initial_condition: [0, 5, 5, 5, 0]
+
+gauges:
+  table: tests/rrm/data/coello/calibration/gauges.csv
+  discharge: tests/rrm/data/coello/calibration
+  column: id
+  fmt: "%Y-%m-%d"
+
+outputs:
+  results_dir: "results/saved rasters/"
