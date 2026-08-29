@@ -34,4 +34,4 @@ gauges:
   fmt: "%Y-%m-%d"
 
 outputs:
-  results_dir: "results/saved rasters/"
+  results_dir: results/saved rasters/
