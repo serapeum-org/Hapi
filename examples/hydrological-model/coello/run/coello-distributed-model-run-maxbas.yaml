@@ -1,0 +1,34 @@
+catchment:
+  name: Coello
+  start: "2009-01-01"
+  end: "2009-04-10"
+  spatial_resolution: distributed
+  temporal_resolution: daily
+  routing_method: maxbas
+
+meteo:
+  source: rasters
+  precipitation: examples/hydrological-model/data/distributed_model/prec
+  temperature: examples/hydrological-model/data/distributed_model/temp
+  evapotranspiration: examples/hydrological-model/data/distributed_model/evap
+  file_name_data_fmt: "%Y.%m.%d"
+
+# MAXBAS sends every cell straight to the outlet, so no flow-direction raster is read.
+flow_network:
+  flow_accumulation: examples/hydrological-model/data/distributed_model/GIS/acc4000.tif
+
+parameters:
+  path: examples/hydrological-model/data/distributed_model/parameters_initial_maxbas
+  snow: false
+  maxbas: true
+
+conceptual_model:
+  model_class: HBVBergestrom92
+  catchment_area: 1530
+  initial_condition: [0, 5, 5, 5, 0]
+
+gauges:
+  table: examples/hydrological-model/data/distributed_model/stations/gauges.csv
+  discharge: examples/hydrological-model/data/distributed_model/stations/
+  column: id
+  fmt: "%Y-%m-%d"

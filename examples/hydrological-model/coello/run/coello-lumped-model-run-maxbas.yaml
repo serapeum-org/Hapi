@@ -1,0 +1,28 @@
+catchment:
+  name: Coello
+  start: "2009-01-01"
+  end: "2011-12-31"
+  spatial_resolution: lumped
+  temporal_resolution: daily
+
+# Lumped mode reads one CSV of catchment-average drivers, not a grid: columns are
+# [date, precipitation, ET, temperature], optionally followed by the long-term average.
+meteo:
+  path: examples/hydrological-model/data/lumped_model/meteo_data-MSWEP.csv
+
+# A single parameter file rather than a folder of rasters. `maxbas: true` says the set carries
+# the triangular-routing parameter; the routing function itself is chosen at run time.
+parameters:
+  path: examples/hydrological-model/data/lumped_model/coello-lumped-parameters2022-03-13-maxbas.txt
+  snow: false
+  maxbas: true
+
+conceptual_model:
+  model_class: HBVBergestrom92
+  catchment_area: 1530
+  initial_condition: [0, 10, 10, 10, 0]
+
+# One discharge file, and no gauge table: locating gauges on a grid is a distributed concern.
+gauges:
+  discharge: examples/hydrological-model/data/lumped_model/Qout_c.csv
+  fmt: "%Y-%m-%d"
