@@ -542,6 +542,81 @@ class TestRunConfigCrossFieldRules:
         with pytest.raises(ValidationError, match="needs meteo.path"):
             RunConfig.model_validate(lumped_mapping)
 
+    @pytest.mark.parametrize(
+        "block, field",
+        [("catchment", "start"), ("catchment", "end"), ("meteo", "start")],
+    )
+    def test_a_date_that_does_not_match_its_format_is_refused(
+        self, distributed_mapping, block, field
+    ):
+        """Test that every date is checked against the format it is written in.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            block: The block carrying the date.
+            field: The date field to corrupt.
+
+        Test scenario:
+            The module promises a validated config is consumable without re-checking, but an
+            unparseable date slipped through to fail later inside `Catchment.__init__` -- or,
+            for the meteo bounds, deep in the loader.
+        """
+        distributed_mapping[block][field] = "not-a-date"
+
+        with pytest.raises(ValidationError, match="does not match its format") as exc:
+            RunConfig.model_validate(distributed_mapping)
+
+        assert f"{block}.{field}" in str(exc.value), (
+            f"the error should name the offending field: {exc.value}"
+        )
+
+    def test_a_period_that_ends_before_it_starts_is_refused(self, distributed_mapping):
+        """Test that a reversed period is caught at parse time.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            Nothing checked the order, so a reversed period produced an empty date index and
+            failed far downstream on a shape mismatch that said nothing about the dates.
+        """
+        distributed_mapping["catchment"]["start"] = "2009-01-10"
+        distributed_mapping["catchment"]["end"] = "2009-01-01"
+
+        with pytest.raises(ValidationError, match="is after"):
+            RunConfig.model_validate(distributed_mapping)
+
+    def test_a_lumped_configuration_may_not_carry_a_flow_network(self, lumped_mapping):
+        """Test that a grid block on a lumped run is refused rather than ignored.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+
+        Test scenario:
+            `extra="forbid"` exists so a misspelled key fails loudly rather than being
+            dropped. Silently discarding a correctly spelled but inapplicable block is the
+            same silence by another route -- the user's block simply never took effect.
+        """
+        lumped_mapping["flow_network"] = {"flow_accumulation": "acc.tif"}
+
+        with pytest.raises(ValidationError, match="has no grid"):
+            RunConfig.model_validate(lumped_mapping)
+
+    def test_a_lumped_configuration_may_not_name_a_grid_meteo_source(self, lumped_mapping):
+        """Test that a grid loader on a lumped run is refused.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+
+        Test scenario:
+            Lumped mode reads `meteo.path` with `pd.read_csv` regardless of `source`, so a
+            `source: netcdf` config would hand a `.nc` file to the CSV reader.
+        """
+        lumped_mapping["meteo"]["source"] = "netcdf"
+
+        with pytest.raises(ValidationError, match="does not apply"):
+            RunConfig.model_validate(lumped_mapping)
+
     def test_parameters_and_gauges_may_both_be_omitted(self, distributed_mapping):
         """Test that a configuration carrying neither optional block still validates.
 
@@ -788,6 +863,30 @@ class TestCatchmentFromYaml:
         assert "HBVBergestrom92" in str(exc.value), (
             f"the error should list the known models: {exc.value}"
         )
+
+    def test_an_unregistered_model_class_is_refused_before_the_readers_run(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that the registry lookup happens before any input is read.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            The lookup needs nothing but the config, so running it after the parameter folder
+            read charged a typo the full cost of that I/O and left a partly-populated model
+            behind. Pointing every input at a path that does not exist isolates the ordering:
+            if the readers ran first the failure would name a missing file instead.
+        """
+        distributed_mapping["conceptual_model"]["model_class"] = "HBV97"
+        distributed_mapping["parameters"]["path"] = "no/such/parameters"
+        distributed_mapping["meteo"]["path"] = "no/such/meteo.nc"
+        distributed_mapping["flow_network"]["flow_accumulation"] = "no/such/acc.tif"
+        distributed_mapping["flow_network"]["flow_direction"] = "no/such/fd.tif"
+
+        with pytest.raises(ValueError, match="not.*registered"):
+            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
     @pytest.mark.parametrize("cls", [Catchment, Calibration])
     def test_the_builder_returns_the_class_it_was_called_on(

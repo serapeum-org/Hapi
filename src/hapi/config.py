@@ -81,6 +81,7 @@ Examples:
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -331,9 +332,61 @@ class RunConfig(BaseModel):
                         f"{self.parameters.maxbas}; the parameter set and the routing method "
                         f"must agree, or the run reads the wrong parameter as the routing one"
                     )
-        elif self.meteo.path is None:
-            raise ValueError(
-                "catchment.spatial_resolution is 'lumped', which needs meteo.path -- the CSV "
-                "of catchment-average drivers"
-            )
+        else:
+            if self.meteo.path is None:
+                raise ValueError(
+                    "catchment.spatial_resolution is 'lumped', which needs meteo.path -- the "
+                    "CSV of catchment-average drivers"
+                )
+            # `extra="forbid"` exists so a misspelled key fails rather than being dropped;
+            # accepting a correctly spelled but inapplicable block would be the same silence
+            # by another route. A lumped run has no grid, so neither block can be honoured.
+            if self.flow_network is not None:
+                raise ValueError(
+                    "catchment.spatial_resolution is 'lumped', which has no grid, so a "
+                    "flow_network block cannot be used"
+                )
+            if self.meteo.source != "rasters":
+                raise ValueError(
+                    f"catchment.spatial_resolution is 'lumped', which reads meteo.path as a "
+                    f"CSV of catchment-average drivers; meteo.source "
+                    f"{self.meteo.source!r} does not apply"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def _check_the_dates_parse_and_are_ordered(self) -> RunConfig:
+        """Check every date against the format it is written in, and that the period runs.
+
+        Returns:
+            RunConfig: This config, unchanged.
+
+        Raises:
+            ValueError: A date does not match its format, or a period ends before it starts.
+        """
+        for label, value, fmt in (
+            ("catchment.start", self.catchment.start, self.catchment.fmt),
+            ("catchment.end", self.catchment.end, self.catchment.fmt),
+            ("meteo.start", self.meteo.start, self.meteo.fmt),
+            ("meteo.end", self.meteo.end, self.meteo.fmt),
+        ):
+            if value is None:
+                continue
+            try:
+                datetime.strptime(value, fmt)
+            except ValueError as error:
+                raise ValueError(
+                    f"{label} {value!r} does not match its format {fmt!r}: {error}"
+                ) from error
+
+        for first, second, fmt, block in (
+            (self.catchment.start, self.catchment.end, self.catchment.fmt, "catchment"),
+            (self.meteo.start, self.meteo.end, self.meteo.fmt, "meteo"),
+        ):
+            if first is None or second is None:
+                continue
+            if datetime.strptime(first, fmt) > datetime.strptime(second, fmt):
+                raise ValueError(
+                    f"{block}.start {first!r} is after {block}.end {second!r}"
+                )
         return self
