@@ -2005,13 +2005,7 @@ lumped one, which has no grid to put it on.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">410</span>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
@@ -2170,7 +2164,38 @@ lumped one, which has no grid to put it on.</p>
 <span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
-<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The full input set for one `Catchment` build.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2195,6 +2220,45 @@ lumped one, which has no grid to put it on.</p>
     <span class="n">gauges</span><span class="p">:</span> <span class="n">GaugesConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">flow_network</span><span class="p">:</span> <span class="n">FlowNetworkConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">outputs</span><span class="p">:</span> <span class="n">OutputsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"after"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_the_routing_method_matches_the_parameter_set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Make `routing_method` agree with the parameter set, deriving it where it is unstated.</span>
+
+<span class="sd">        The parameter-count check downstream cannot catch a disagreement: a MAXBAS set holds 11</span>
+<span class="sd">        parameters and a Muskingum set 12, and `parameters.maxbas` is what selects which count</span>
+<span class="sd">        is expected, so a set that contradicts the routing method still counts correctly. The</span>
+<span class="sd">        run then completes, reading the Muskingum X as the MAXBAS value (or K and X out of a</span>
+<span class="sd">        MAXBAS set), and produces a hydrograph that is quietly wrong.</span>
+
+<span class="sd">        A lumped run picks its routing function at the call site rather than from this</span>
+<span class="sd">        attribute, so `routing_method` is not load-bearing there -- but it is public, it is what</span>
+<span class="sd">        `distrrm.SpatialRouting` keys off, and leaving it saying `Muskingum` on a run using a</span>
+<span class="sd">        MAXBAS parameter set would mislead the next reader. An unstated one is therefore</span>
+<span class="sd">        derived from the parameter set rather than left at its default.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RunConfig: This config, with `catchment.routing_method` filled in where it was</span>
+<span class="sd">                unstated and the parameter set says which it is.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: `catchment.routing_method` and `parameters.maxbas` disagree.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="s2">"routing_method"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">model_fields_set</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">=</span> <span class="s2">"maxbas"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span> <span class="k">else</span> <span class="s2">"muskingum"</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">==</span> <span class="s2">"maxbas"</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"catchment.routing_method is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span><span class="si">!r}</span><span class="s2"> but "</span>
+                <span class="sa">f</span><span class="s2">"parameters.maxbas is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">; the parameter set and the "</span>
+                <span class="sa">f</span><span class="s2">"routing method must agree, or the run reads the wrong parameter as the "</span>
+                <span class="sa">f</span><span class="s2">"routing one"</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"after"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_blocks_match_the_spatial_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunConfig</span><span class="p">:</span>
@@ -2244,20 +2308,6 @@ lumped one, which has no grid to put it on.</p>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"meteo.source is 'netcdf', which needs meteo.path"</span><span class="p">)</span>
-            <span class="c1"># The parameter-count check cannot catch a mismatch here: a MAXBAS set holds 11</span>
-            <span class="c1"># parameters and a Muskingum set 12, and `parameters.maxbas` is what selects which</span>
-            <span class="c1"># count is expected -- so a set that disagrees with the routing method still counts</span>
-            <span class="c1"># correctly. The run then completes, reading the Muskingum X as the MAXBAS value</span>
-            <span class="c1"># (or K and X out of a MAXBAS set), and produces a hydrograph that is quietly wrong.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">wants_maxbas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">==</span> <span class="s2">"maxbas"</span>
-                <span class="k">if</span> <span class="n">wants_maxbas</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">"catchment.routing_method is "</span>
-                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span><span class="si">!r}</span><span class="s2"> but parameters.maxbas is "</span>
-                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">; the parameter set and the routing method "</span>
-                        <span class="sa">f</span><span class="s2">"must agree, or the run reads the wrong parameter as the routing one"</span>
-                    <span class="p">)</span>
             <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span>
                 <span class="n">_METEO_FIELDS_BY_SOURCE</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="p">],</span>
@@ -2461,10 +2511,11 @@ back out in <code>fmt</code>, so both spellings work.</p>
             <td>
               <div class="doc-md-description">
                 <p><code>"muskingum"</code> or <code>"maxbas"</code>. Assigned onto <code>model.routing_method</code>, and
-constrains two other blocks: Muskingum routes along the network so it requires
-<code>flow_network.flow_direction</code>, and the method must agree with
-<code>parameters.maxbas</code>. Which <code>Run.*</code> entry point actually routes with it is still
-the caller's choice.</p>
+constrains one other block: Muskingum routes along the network, so a distributed
+run needs <code>flow_network.flow_direction</code>. Left unwritten it is derived from
+<code>parameters.maxbas</code>, which describes the same choice from the parameter set's
+side; written, it must agree with it. Which <code>Run.*</code> entry point actually routes
+with it is still the caller's choice.</p>
               </div>
             </td>
           </tr>
@@ -2521,7 +2572,8 @@ the caller's choice.</p>
 <span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CatchmentConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">255</span>
+<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CatchmentConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The `Catchment` constructor arguments.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2535,10 +2587,11 @@ the caller's choice.</p>
 <span class="sd">            `gauges`, and whether `flow_network` is required.</span>
 <span class="sd">        temporal_resolution: `"daily"` or `"hourly"`.</span>
 <span class="sd">        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`, and</span>
-<span class="sd">            constrains two other blocks: Muskingum routes along the network so it requires</span>
-<span class="sd">            `flow_network.flow_direction`, and the method must agree with</span>
-<span class="sd">            `parameters.maxbas`. Which `Run.*` entry point actually routes with it is still</span>
-<span class="sd">            the caller's choice.</span>
+<span class="sd">            constrains one other block: Muskingum routes along the network, so a distributed</span>
+<span class="sd">            run needs `flow_network.flow_direction`. Left unwritten it is derived from</span>
+<span class="sd">            `parameters.maxbas`, which describes the same choice from the parameter set's</span>
+<span class="sd">            side; written, it must agree with it. Which `Run.*` entry point actually routes</span>
+<span class="sd">            with it is still the caller's choice.</span>
 <span class="sd">    """</span>
 
     <span class="n">model_config</span> <span class="o">=</span> <span class="n">_STRICT</span>
@@ -2780,8 +2833,7 @@ takes the single variable a file holds, which is an error if it holds several.</
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
-<span class="normal">259</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
@@ -2831,7 +2883,8 @@ takes the single variable a file holds, which is an error if it holds several.</
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MeteoConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">309</span>
+<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MeteoConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The meteorological drivers: a distributed grid or a lumped CSV.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2966,8 +3019,7 @@ every cell straight to the outlet and never reads one, so it may be omitted.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
-<span class="normal">313</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
@@ -2978,7 +3030,8 @@ every cell straight to the outlet and never reads one, so it may be omitted.</p>
 <span class="normal">321</span>
 <span class="normal">322</span>
 <span class="normal">323</span>
-<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FlowNetworkConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">324</span>
+<span class="normal">325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FlowNetworkConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The routing network. Distributed runs only.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3088,8 +3141,7 @@ check and then reads the wrong parameter as the routing one.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
-<span class="normal">328</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
 <span class="normal">331</span>
@@ -3105,7 +3157,8 @@ check and then reads the wrong parameter as the routing one.</p>
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
-<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ParametersConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">344</span>
+<span class="normal">345</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ParametersConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Where the conceptual-model parameters live.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3228,8 +3281,7 @@ by the builder, which owns the registry of available models.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">347</span>
-<span class="normal">348</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
@@ -3246,7 +3298,8 @@ by the builder, which owns the registry of available models.</p>
 <span class="normal">362</span>
 <span class="normal">363</span>
 <span class="normal">364</span>
-<span class="normal">365</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConceptualModelConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">365</span>
+<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConceptualModelConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The lumped conceptual model, run per cell (distributed) or per catchment (lumped).</span>
 
 <span class="sd">    Attributes:</span>
@@ -3372,6 +3425,20 @@ names while the files stay named after the ids.</p>
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="hapi.config.GaugesConfig.table_fmt">table_fmt</span></code></td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>strptime</code> format for the gauge table's optional <code>start</code> / <code>end</code> columns,
+which bound each gauge's validity period. A separate field because the table is a
+separate file that a separate hand may have written; <code>None</code> falls back to <code>fmt</code>,
+which is right whenever the two were written together.</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -3384,8 +3451,7 @@ names while the files stay named after the ids.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">368</span>
-<span class="normal">369</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
@@ -3405,7 +3471,13 @@ names while the files stay named after the ids.</p>
 <span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
-<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GaugesConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GaugesConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The observed discharge the run is scored against.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3418,6 +3490,10 @@ names while the files stay named after the ids.</p>
 <span class="sd">            names while the files stay named after the ids.</span>
 <span class="sd">        delimiter: Discharge CSV delimiter.</span>
 <span class="sd">        fmt: `strptime` format for the discharge CSV's date column.</span>
+<span class="sd">        table_fmt: `strptime` format for the gauge table's optional `start` / `end` columns,</span>
+<span class="sd">            which bound each gauge's validity period. A separate field because the table is a</span>
+<span class="sd">            separate file that a separate hand may have written; `None` falls back to `fmt`,</span>
+<span class="sd">            which is right whenever the two were written together.</span>
 <span class="sd">    """</span>
 
     <span class="n">model_config</span> <span class="o">=</span> <span class="n">_STRICT</span>
@@ -3427,6 +3503,7 @@ names while the files stay named after the ids.</p>
     <span class="n">column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"id"</span>
     <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">","</span>
     <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span>
+    <span class="n">table_fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3498,16 +3575,16 @@ names while the files stay named after the ids.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">398</span>
 <span class="normal">399</span>
 <span class="normal">400</span>
-<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">OutputsConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">OutputsConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Where to write results after the run.</span>
 
 <span class="sd">    Attributes:</span>
