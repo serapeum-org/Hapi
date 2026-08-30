@@ -947,6 +947,48 @@ class TestCatchmentFromYaml:
 
         assert model.name == "Río Coello", f"the name was corrupted on read: {model.name!r}"
 
+    def test_the_configuration_stays_reachable_on_the_model(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that blocks the build does not consume survive on `model.config`.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            `outputs` describes where results go, so nothing in the build reads it. Discarding
+            the config would leave it parsed but unreachable, forcing a caller to restate in
+            Python a path the file already gives -- which is what the shipped example used to
+            do.
+        """
+        distributed_mapping["outputs"] = {"results_dir": "somewhere/else/"}
+
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.config is not None, "the configuration should be kept on the model"
+        assert model.config.outputs.results_dir == "somewhere/else/", (
+            f"outputs did not survive: {model.config.outputs}"
+        )
+        assert model.config.flow_network.flow_accumulation is not None, (
+            "the flow-accumulation path should stay reachable for save_results"
+        )
+
+    def test_a_hand_built_model_has_no_configuration(self, coello_start_date, coello_end_date):
+        """Test that `config` is None on a model that was not built from a file.
+
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+
+        Test scenario:
+            The attribute has to be safe to check on any catchment, so a hand-assembled one
+            reports no configuration rather than raising `AttributeError`.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        assert model.config is None, f"expected no configuration, got {model.config}"
+
     def test_an_invalid_configuration_fails_before_anything_is_read(
         self, distributed_mapping, tmp_path
     ):

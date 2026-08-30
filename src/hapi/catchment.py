@@ -226,6 +226,11 @@ class Catchment:
         self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
+        #: The configuration this model was built from, when it came from
+        #: :meth:`from_yaml`; `None` for a model assembled by hand. Carries the blocks the
+        #: build itself does not consume, such as `outputs`, so a caller need not restate a
+        #: path the file already gives.
+        self.config: RunConfig | None = None
 
     @classmethod
     def from_yaml(cls, path: str) -> Self:
@@ -357,6 +362,9 @@ class Catchment:
                 fmt=gauges.fmt,
             )
 
+        # Kept so the blocks the build does not itself consume stay reachable -- `outputs`
+        # above all, which describes where results go rather than what the model reads.
+        model.config = config
         return model
 
     def read_flow_path_length(self, path: str):

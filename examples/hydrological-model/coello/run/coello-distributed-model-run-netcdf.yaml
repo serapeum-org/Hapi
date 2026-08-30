@@ -33,5 +33,6 @@ gauges:
   column: id
   fmt: "%Y-%m-%d"
 
+# Written beside the other example outputs rather than into the repository root.
 outputs:
-  results_dir: results/saved rasters/
+  results_dir: examples/hydrological-model/data/distributed_model/results/

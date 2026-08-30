@@ -30,15 +30,12 @@ print(f"meteo grid + steps : {Coello.meteo.shape}")
 print(f"model steps        : {len(Coello.date_index)}")
 print(f"meteo period       : {Coello.meteo.time[0]} -> {Coello.meteo.time[-1]}")
 print(f"model period       : {Coello.date_index[0]} -> {Coello.date_index[-1]}")
-assert Coello.meteo.time_steps == len(Coello.date_index), (
-    "the drivers must hold exactly as many steps as the model spans"
-)
-assert Coello.meteo.time[0] == Coello.date_index[0], (
-    "the drivers must start where the model does"
-)
-assert Coello.meteo.time[-1] == Coello.date_index[-1], (
-    "the drivers must end where the model does"
-)
+if Coello.meteo.time_steps != len(Coello.date_index):
+    raise ValueError("the drivers must hold exactly as many steps as the model spans")
+if Coello.meteo.time[0] != Coello.date_index[0]:
+    raise ValueError("the drivers must start where the model does")
+if Coello.meteo.time[-1] != Coello.date_index[-1]:
+    raise ValueError("the drivers must end where the model does")
 
 # %% Run the model
 """
@@ -82,12 +79,16 @@ for gauge_id in Coello.GaugesTable["id"]:
     print(f"WB=      {Coello.metrics.loc['WB', gauge_id]:.2f}")
 
 # %% Save the routed discharge to rasters, one per time step
-# save_results re-reads the flow-accumulation raster for georeferencing; FlowNetwork keeps only
-# the arrays, not the source path, so this repeats the path already given in the YAML.
-FlowAccPath = "tests/rrm/data/coello/gis/acc4000.tif"
-SaveTo = "results/saved rasters/"
-Coello.save_results(flow_acc_path=FlowAccPath, result=1, path=SaveTo)
-print(f"rasters written to  : {SaveTo}")
+# Both paths come from the configuration rather than being restated here: `save_results`
+# re-reads the flow-accumulation raster for georeferencing (FlowNetwork keeps only the arrays,
+# not the source path), and `outputs.results_dir` says where the rasters go.
+save_to = Coello.config.outputs.results_dir
+Coello.save_results(
+    flow_acc_path=Coello.config.flow_network.flow_accumulation,
+    result=1,
+    path=save_to,
+)
+print(f"rasters written to  : {save_to}")
 
 # %% Plot the hydrograph at the outlet gauge (row position, not the gauge id)
 Coello.plot_hydrograph(Coello.start, Coello.end, Coello.GaugesTable.index[-1])
