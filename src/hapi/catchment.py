@@ -125,6 +125,65 @@ def _resolve_config_paths(config: RunConfig, base: Path) -> None:
         config.outputs.results_dir = resolve(config.outputs.results_dir)
 
 
+def _check_the_configured_paths_exist(config: RunConfig, distributed: bool) -> None:
+    """Check every input path the run will open, before the first reader runs.
+
+    The readers fail one at a time and in the order the build happens to call them, so a typo
+    in the gauge table is only reported after the whole meteorological cube and the parameter
+    folder have been read -- minutes, on a real grid, to learn about a line the file could have
+    been checked for at once. Every missing path is named together instead, so one pass over
+    the message fixes the file.
+
+    Only the paths the chosen shape will actually open are checked, which is the same set the
+    schema validated the configuration against.
+
+    Args:
+        config: The parsed configuration, with its paths already resolved.
+        distributed: Whether this is a distributed run.
+
+    Raises:
+        FileNotFoundError: One or more configured paths do not exist.
+    """
+    candidates: list[tuple[str, str | None]] = []
+    if config.parameters is not None:
+        candidates.append(("parameters.path", config.parameters.path))
+
+    if distributed:
+        # Under `source="netcdf"` the three driver fields name variables inside `meteo.path`,
+        # not paths, so only the file itself is checked.
+        if config.meteo.source == "netcdf":
+            candidates.append(("meteo.path", config.meteo.path))
+        else:
+            candidates += [
+                (f"meteo.{name}", getattr(config.meteo, name))
+                for name in METEO_VARIABLES
+            ]
+        if config.flow_network is not None:
+            candidates += [
+                ("flow_network.flow_accumulation", config.flow_network.flow_accumulation),
+                ("flow_network.flow_direction", config.flow_network.flow_direction),
+            ]
+    else:
+        candidates.append(("meteo.path", config.meteo.path))
+
+    if config.gauges is not None:
+        candidates += [
+            ("gauges.discharge", config.gauges.discharge),
+            ("gauges.table", config.gauges.table),
+        ]
+
+    missing = [
+        f"{field} -> {value}"
+        for field, value in candidates
+        if value is not None and not Path(value).exists()
+    ]
+    if missing:
+        raise FileNotFoundError(
+            "the run configuration names inputs that do not exist:\n  "
+            + "\n  ".join(missing)
+        )
+
+
 @contextmanager
 def _name_the_path(path) -> Iterator[None]:
     """Re-raise a pyramids `FileNotFoundError` with the offending path in the message.
@@ -397,6 +456,7 @@ class Catchment:
         model_class = CONCEPTUAL_MODELS[conceptual_model.model_class]
 
         distributed = catchment.spatial_resolution == "distributed"
+        _check_the_configured_paths_exist(config, distributed)
         if distributed:
             model.meteo = MeteoInputs.from_config(
                 config.meteo,
