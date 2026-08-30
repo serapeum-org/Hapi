@@ -9,7 +9,8 @@ at known locations based on a given performance function.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from pathlib import Path
+from typing import Any, NoReturn
 
 import numpy as np
 import pandas as pd
@@ -85,6 +86,27 @@ class Run(Catchment):
     def __init__(self):
         """Initialize the Run class."""
         self.Qsim: np.ndarray | pd.DataFrame | None = None
+
+    @classmethod
+    def from_yaml(cls, path: str | Path) -> NoReturn:
+        """Refuse to build a `Run`, explaining the pattern instead.
+
+        `Run` subclasses `Catchment` to hold its entry points, not to be a catchment: its
+        `__init__` takes no arguments, so the inherited `Catchment.from_yaml` could only fail
+        with a `TypeError` about constructor arity -- an error saying nothing about what to do
+        instead. The methods here are called on a model built elsewhere.
+
+        Args:
+            path: Ignored; present so the signature matches the one it overrides.
+
+        Raises:
+            TypeError: Always.
+        """
+        raise TypeError(
+            "Run cannot be built from a configuration; it holds the entry points that run a "
+            "model built elsewhere. Build the model with Catchment.from_yaml(path) and pass "
+            "it in, e.g. Run.RunHapi(model)."
+        )
 
     def RunHapi(self):
         """Run the distributed hydrological model.

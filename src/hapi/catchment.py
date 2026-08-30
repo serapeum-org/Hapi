@@ -366,8 +366,8 @@ class Catchment:
 
         Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the
         same constructor arguments. `Run` does not: it overrides `__init__` to take none, and
-        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so
-        `Run.from_yaml` raises `TypeError` rather than silently building the wrong thing.
+        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so it
+        overrides this method to refuse the call and say so.
 
         Args:
             path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for

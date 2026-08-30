@@ -1096,11 +1096,12 @@ class TestCatchmentFromYaml:
 
         Test scenario:
             `Run` inherits the classmethod but overrides `__init__` to take only `self`, and
-            its entry points are called unbound on a catchment (`Run.RunHapi(model)`). Pins
-            that the mismatch surfaces as a `TypeError` at the constructor rather than as a
-            half-built model, so the docstring's warning stays true.
+            its entry points are called unbound on a catchment (`Run.RunHapi(model)`). The
+            override refuses the call with a message naming that pattern, rather than letting
+            constructor arity produce a `TypeError` about an unexpected keyword argument --
+            an error that says nothing about what to do instead.
         """
-        with pytest.raises(TypeError, match="unexpected keyword argument"):
+        with pytest.raises(TypeError, match="Catchment.from_yaml"):
             Run.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
     def test_a_lumped_configuration_reads_the_averaged_driver_csv(
