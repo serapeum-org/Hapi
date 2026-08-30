@@ -39,6 +39,11 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from pyramids.netcdf import NetCDF
 
+from hapi.config import (
+    NETCDF_PATH_MESSAGE,
+    MeteoConfig,
+    missing_drivers_message,
+)
 from hapi.dem import DEM
 
 
@@ -155,8 +160,8 @@ def read_rasters(
     regex_string: str = r"\d{4}.\d{2}.\d{2}",
     date: bool = True,
     file_name_data_fmt: str | None = None,
-    start: str | int | None = None,
-    end: str | int | None = None,
+    start: str | int | dt.datetime | None = None,
+    end: str | int | dt.datetime | None = None,
     fmt: str = "%Y-%m-%d",
     gdal_env: dict[str, str] | None = None,
 ) -> Datacube:
@@ -230,6 +235,13 @@ def read_rasters(
         )
 
     if not date:
+        # The numeric ordering bounds by the index in the file name, so a datetime has no
+        # meaning here -- `int()` would fail on it several frames down.
+        if isinstance(start, dt.datetime) or isinstance(end, dt.datetime):
+            raise TypeError(
+                "a datetime bound needs date=True; with date=False the rasters are ordered "
+                "by the number in their name, so start/end are indices"
+            )
         return _read_by_index(path, glob, regex_string, start, end, gdal_env)
 
     return Datacube.from_files(path, glob=glob, gdal_env=gdal_env)
@@ -949,8 +961,8 @@ class MeteoInputs:
         regex_string: str = r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
         file_name_data_fmt: str | None = None,
-        start: str | int | None = None,
-        end: str | int | None = None,
+        start: str | int | dt.datetime | None = None,
+        end: str | int | dt.datetime | None = None,
         fmt: str = "%Y-%m-%d",
         gdal_env: dict[str, str] | None = None,
     ) -> MeteoInputs:
@@ -1138,6 +1150,162 @@ class MeteoInputs:
         cubes, calendar = cls._window(cubes, cls._calendar(nc), start, end, fmt)
         return cls(**cubes, time=calendar)
 
+    @classmethod
+    def from_config(
+        cls,
+        config: MeteoConfig,
+        start: str | None = None,
+        end: str | None = None,
+        fmt: str = "%Y-%m-%d",
+    ) -> MeteoInputs:
+        """Build the drivers with whichever loader the configuration's `source` names.
+
+        The dispatch behind a `meteo` block of a YAML run configuration: `"rasters"` reads three
+        folders, `"netcdf_files"` one file per driver, and `"netcdf"` a single combined file
+        whose variables the block names. `hapi.config.RunConfig` has already checked that the
+        fields the chosen source needs are set, so this calls the loader directly.
+
+        Each bound is parsed with the format it was written in -- `config.fmt` for a bound the
+        block states, `fmt` for one inherited from the caller -- and handed on as a `datetime`.
+        The two formats are independent fields, so parsing an inherited bound with the block's
+        format would either fail loudly or, between two mutually parseable layouts such as
+        `"%d-%m-%Y"` and `"%m-%d-%Y"`, silently window the drivers to the wrong period.
+
+        Args:
+            config: The `meteo` block of a distributed configuration.
+            start: Window start used when `config.start` is unset, so the drivers can default to
+                the period the model spans. `None` leaves the lower bound open.
+            end: Window end used when `config.end` is unset. `None` leaves it open.
+            fmt: `strptime` format of `start` / `end`, the inherited bounds. Bounds stated by
+                the block are parsed with `config.fmt` instead.
+
+        Returns:
+            MeteoInputs: The three cubes plus the calendar, windowed to the requested period.
+
+        Raises:
+            ValueError: A field the chosen source needs is unset -- one of the three drivers, or
+                `path` for `source="netcdf"`. `RunConfig` rejects such a configuration, so this
+                only fires for a `MeteoConfig` built by hand.
+
+        Examples:
+            The paths below are fixtures in the Hapi repository, so these run from a checkout
+            rather than an installed wheel; substitute your own file to try them elsewhere.
+
+            - Load a combined NetCDF by naming the variable each driver sits in:
+                ```python
+                >>> from hapi.config import MeteoConfig
+                >>> from hapi.inputs import MeteoInputs
+                >>> meteo = MeteoInputs.from_config(
+                ...     MeteoConfig(
+                ...         source="netcdf",
+                ...         path="tests/rrm/data/coello/meteo.nc",
+                ...         precipitation="precipitation",
+                ...         temperature="temperature",
+                ...         evapotranspiration="evapotranspiration",
+                ...     )
+                ... )
+                >>> meteo.shape
+                (13, 14, 10)
+                >>> meteo.time[0].strftime("%Y-%m-%d")
+                '2009-01-01'
+
+                ```
+            - Narrow the same file to part of its record with the fallback window:
+                ```python
+                >>> from hapi.config import MeteoConfig
+                >>> from hapi.inputs import MeteoInputs
+                >>> meteo = MeteoInputs.from_config(
+                ...     MeteoConfig(
+                ...         source="netcdf",
+                ...         path="tests/rrm/data/coello/meteo.nc",
+                ...         precipitation="precipitation",
+                ...         temperature="temperature",
+                ...         evapotranspiration="evapotranspiration",
+                ...     ),
+                ...     start="2009-01-03",
+                ...     end="2009-01-07",
+                ... )
+                >>> meteo.time_steps
+                5
+                >>> meteo.time[-1].strftime("%Y-%m-%d")
+                '2009-01-07'
+
+                ```
+
+        See Also:
+            from_rasters: The loader `source="rasters"` dispatches to.
+            from_netcdf: The loader `source="netcdf"` dispatches to.
+            from_netcdf_files: The loader `source="netcdf_files"` dispatches to.
+        """
+        # Resolve each bound with the format it was written in, then pass datetimes on so the
+        # loader's own `fmt` cannot re-parse them.
+        window_start = (
+            _as_datetime(config.start, config.fmt)
+            if config.start is not None
+            else _as_datetime(start, fmt)
+        )
+        window_end = (
+            _as_datetime(config.end, config.fmt)
+            if config.end is not None
+            else _as_datetime(end, fmt)
+        )
+
+        # The three are optional on the model because a lumped configuration sets none of them,
+        # while every distributed source needs all three. `RunConfig` enforces that, so reaching
+        # the raise means a `MeteoConfig` was built by hand -- and it raises the same sentence,
+        # phrased once in `hapi.config`, because it is the same rule. Bound to locals so the
+        # check both reports what is missing and narrows the type for the calls below.
+        precipitation = config.precipitation
+        temperature = config.temperature
+        evapotranspiration = config.evapotranspiration
+        if precipitation is None or temperature is None or evapotranspiration is None:
+            missing = [
+                name for name in METEO_VARIABLES if getattr(config, name) is None
+            ]
+            raise ValueError(missing_drivers_message(missing))
+
+        if config.source == "rasters":
+            extra: dict[str, Any] = {}
+            if config.per_variable is not None:
+                extra["per_variable"] = config.per_variable
+            if config.gdal_env is not None:
+                extra["gdal_env"] = config.gdal_env
+            return cls.from_rasters(
+                precipitation,
+                temperature,
+                evapotranspiration,
+                glob=config.glob,
+                regex_string=config.regex_string,
+                file_name_data_fmt=config.file_name_data_fmt,
+                start=window_start,
+                end=window_end,
+                fmt=config.fmt,
+                **extra,
+            )
+
+        if config.source == "netcdf":
+            if config.path is None:
+                raise ValueError(NETCDF_PATH_MESSAGE)
+            return cls.from_netcdf(
+                config.path,
+                precipitation=precipitation,
+                temperature=temperature,
+                evapotranspiration=evapotranspiration,
+                start=window_start,
+                end=window_end,
+                fmt=config.fmt,
+            )
+
+        return cls.from_netcdf_files(
+            precipitation,
+            temperature,
+            evapotranspiration,
+            variable=config.variable,
+            start=window_start,
+            end=window_end,
+            fmt=config.fmt,
+        )
+
     @staticmethod
     def raster_folder_to_netcdf(
         path: str | Path,
@@ -1147,8 +1315,8 @@ class MeteoInputs:
         regex_string: str = r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
         file_name_data_fmt: str | None = None,
-        start: str | int | None = None,
-        end: str | int | None = None,
+        start: str | int | dt.datetime | None = None,
+        end: str | int | dt.datetime | None = None,
         fmt: str = "%Y-%m-%d",
         gdal_env: dict[str, str] | None = None,
     ) -> Path:

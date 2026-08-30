@@ -87,9 +87,10 @@ class Parameters:
             ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,
                 a `float` such as `2.0`, and an unhashable value are all rejected
                 rather than coerced or allowed to raise `TypeError`.
-            AssertionError: If `no_parameters` is not an integer, if
-                `no_lumped_par` is not an integer, or if the length of
-                `lumped_par_pos` does not match `no_lumped_par`.
+            TypeError: If `no_parameters` or `no_lumped_par` is not an
+                integer.
+            ValueError: If the length of `lumped_par_pos` does not match
+                `no_lumped_par`.
             ValueError: If `lumped_par_pos` is not a list when
                 `no_lumped_par` >= 1.
 
@@ -149,17 +150,24 @@ class Parameters:
             raise TypeError(
                 "raster should be a pyramids Dataset, read it using pyramids.dataset.Dataset.read_file"
             )
-        assert isinstance(no_parameters, int), " no_parameters should be integer number"
-        assert isinstance(no_lumped_par, int), (
-            "no of lumped parameters should be integer"
-        )
+        if not isinstance(no_parameters, int):
+            raise TypeError(
+                f"no_parameters should be integer number, got "
+                f"{type(no_parameters).__name__}"
+            )
+        if not isinstance(no_lumped_par, int):
+            raise TypeError(
+                f"no of lumped parameters should be integer, got "
+                f"{type(no_lumped_par).__name__}"
+            )
 
         if no_lumped_par >= 1:
             if isinstance(lumped_par_pos, list):
-                assert no_lumped_par == len(lumped_par_pos), (
-                    f"you have to entered {no_lumped_par} no of lumped parameters but only {len(lumped_par_pos)} "
-                    f"position "
-                )
+                if no_lumped_par != len(lumped_par_pos):
+                    raise ValueError(
+                        f"you have to entered {no_lumped_par} no of lumped parameters "
+                        f"but only {len(lumped_par_pos)} position "
+                    )
             else:  # if not int or list
                 raise ValueError(
                     "you have one or more lumped parameters, so the position has to be entered as a list"
@@ -289,7 +297,7 @@ class Parameters:
                 lumped parameter values should be appended at the end.
 
         Raises:
-            AssertionError: If the length of `par_g` does not match the
+            ValueError: If the length of `par_g` does not match the
                 expected number of parameters based on the number of
                 elements and lumped parameters.
         """
@@ -303,20 +311,25 @@ class Parameters:
         if self.no_lumped_par > 0:
             par_no = (self.no_elem * self.no_parameters) + self.no_lumped_par
 
-            assert len(par_g) == par_no, (
-                f"As there is {self.no_lumped_par} lumped parameters, length of input parameters should be "
-                f"{self.no_elem}"
-                + f"*({self.no_parameters + self.no_lumped_par} - {self.no_lumped_par}) + {self.no_lumped_par} = "
-                + f"{self.no_elem * (self.no_parameters - self.no_lumped_par) + self.no_lumped_par} not {len(par_g)}"
-                + " probably you have to add the value of the lumped parameter at the end of the list"
-            )
+            if len(par_g) != par_no:
+                raise ValueError(
+                    f"As there is {self.no_lumped_par} lumped parameters, length of "
+                    f"input parameters should be {self.no_elem}"
+                    f"*({self.no_parameters + self.no_lumped_par} - "
+                    f"{self.no_lumped_par}) + {self.no_lumped_par} = "
+                    f"{self.no_elem * (self.no_parameters - self.no_lumped_par) + self.no_lumped_par}"
+                    f" not {len(par_g)} probably you have to add the value of the "
+                    f"lumped parameter at the end of the list"
+                )
         else:
             # if there are no lumped parameters
             par_no = self.no_elem * self.no_parameters
-            assert len(par_g) == par_no, (
-                f"As there is no lumped parameters length of input parameters should be {self.no_elem} * "
-                + f"{self.no_parameters} = {self.no_elem * self.no_parameters}"
-            )
+            if len(par_g) != par_no:
+                raise ValueError(
+                    f"As there is no lumped parameters length of input parameters "
+                    f"should be {self.no_elem} * {self.no_parameters} = "
+                    f"{self.no_elem * self.no_parameters}"
+                )
 
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
@@ -523,7 +536,7 @@ class Parameters:
             ValueError: If `par_g` is not a numpy ndarray or a list, or
                 if the length of `par_g` does not match the expected
                 number of parameters.
-            AssertionError: If there are lumped parameters and the length
+            ValueError: If there are lumped parameters and the length
                 of `par_g` does not match the expected total.
         """
         # input data validation
@@ -536,15 +549,15 @@ class Parameters:
         # input values
         if self.no_lumped_par > 0:
             par_no = (self.no_elem * self.no_parameters) + self.no_lumped_par
-            assert len(par_g) == par_no, (
-                f"As there is {self.no_lumped_par} lumped parameters, length of input parameters should be "
-                f"{self.no_elem}*({self.no_parameters}-{self.no_lumped_par})+{self.no_lumped_par}="
-                + str(
-                    self.no_elem * (self.no_parameters - self.no_lumped_par)
-                    + self.no_lumped_par
+            if len(par_g) != par_no:
+                raise ValueError(
+                    f"As there is {self.no_lumped_par} lumped parameters, length of "
+                    f"input parameters should be {self.no_elem}*"
+                    f"({self.no_parameters}-{self.no_lumped_par})+{self.no_lumped_par}="
+                    f"{self.no_elem * (self.no_parameters - self.no_lumped_par) + self.no_lumped_par}"
+                    f" not {len(par_g)} probably you have to add the value of the "
+                    f"lumped parameter at the end of the list"
                 )
-                + f" not {len(par_g)} probably you have to add the value of the lumped parameter at the end of the list"
-            )
         else:
             # if there is no lumped parameters
             if not len(par_g) == self.no_elem * self.no_parameters:

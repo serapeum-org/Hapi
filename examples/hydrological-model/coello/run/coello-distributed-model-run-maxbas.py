@@ -1,44 +1,22 @@
-"""Distributed model with a maxbas routing scheme."""
+"""Distributed model with a maxbas routing scheme, built from YAML.
 
-import datetime as dt
+Everything that used to be a "Paths" block of hardcoded assignments now lives in
+`coello-distributed-model-run-maxbas.yaml`, next to this script -- `Catchment.from_yaml` reads
+it and assembles the model. Running it stays here, as in any hand-wired script.
 
-import pandas as pd
-from pyramids.dataset import Dataset
+MAXBAS sends every cell straight to the outlet, so the config loads no flow-direction raster and
+`extract_discharge` needs `frame_work_1=True`: a cell of `Qtot` is that cell's contribution to
+the outlet rather than the discharge at it, which makes the per-gauge shortcut invalid.
+"""
+
+from __future__ import annotations
 
 from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.run import Run
 
-# %% Paths
-Path = "examples/hydrological-model/data/distributed_model"
-PrecPath = f"{Path}/prec"
-Evap_Path = f"{Path}/evap"
-TempPath = f"{Path}/temp"
-FlowAccPath = f"{Path}/GIS/acc4000.tif"
-FlowDPath = f"{Path}/GIS/fd4000.tif"
-ParPath = f"{Path}/parameters_initial_maxbas"
-# %% Meteorological data
-AreaCoeff = 1530
-InitialCond = [0, 5, 5, 5, 0]
-Snow = 0
-"""
-Create the model object and read the input data
-"""
-start = "2009-01-01"
-end = "2009-04-10"
-name = "Coello"
-Coello = Catchment(name, start, end, spatial_resolution="Distributed")
-Coello.meteo = MeteoInputs.from_rasters(
-    PrecPath, TempPath, Evap_Path, file_name_data_fmt="%Y.%m.%d"
-)
+# %% Load the configuration and build the model
+Coello = Catchment.from_yaml(__file__.removesuffix(".py") + ".yaml")
 
-Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath)
-Coello.read_parameters(ParPath, Snow, maxbas=True)
-Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
-# %% Gauges
-Coello.read_gauge_table(f"{Path}/stations/gauges.csv", FlowAccPath)
-Coello.read_discharge_gauges(f"{Path}/stations/", column="id", fmt="%Y-%m-%d")
 # %% Run the model
 """
 Outputs:
@@ -59,6 +37,7 @@ Outputs:
         3D array of the lower zone discharge translated at each time step
 """
 Run.runFW1(Coello)
+
 # %% calculate performance criteria
 Coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
 
@@ -70,23 +49,6 @@ print("NSE= " + str(round(Coello.metrics.loc["NSE", gaugeid], 2)))
 print("NSEhf= " + str(round(Coello.metrics.loc["NSEhf", gaugeid], 2)))
 print("KGE= " + str(round(Coello.metrics.loc["KGE", gaugeid], 2)))
 print("WB= " + str(round(Coello.metrics.loc["WB", gaugeid], 2)))
-# %% plot
-i = 5
-gaugei = 5
-plotstart = "2009-01-01"
-plotend = "2011-12-31"
 
-Coello.plot_hydrograph(plotstart, plotend, gaugei)
-# %% store the result into rasters
-# create list of names
-src = Dataset.read_file(FlowAccPath)
-s = dt.datetime(2012, 6, 14, 19, 00, 00)
-e = dt.datetime(2013, 12, 23, 00, 00, 00)
-index = pd.date_range(s, e, freq="1H")
-resultspath = "results/"
-names = [resultspath + str(i)[:-6] for i in index]
-names = [i.replace("-", "_") for i in names]
-names = [i.replace(" ", "_") for i in names]
-names = [i + ".tif" for i in names]
-
-# Raster.RastersLike(src,q_uz_routed[:,:,:-1],names)
+# %% plot the hydrograph at the outlet gauge (row position, not the gauge id)
+Coello.plot_hydrograph(Coello.start, Coello.end, Coello.GaugesTable.index[-1])

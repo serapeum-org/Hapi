@@ -62,16 +62,16 @@ jobs:
         # fix to apply.
         run: pre-commit run --all-files --show-diff-on-failure --color=always
         env:
-          SKIP: no-commit-to-branch,mypy,pytest-check,notebook-check,pixi-lock-check
+          SKIP: no-commit-to-branch,mypy,pytest-check,notebook-check,pixi-lock-check,doctest-executable-modules
 
   # Type check. mypy needs the full `dev` pixi env (typed deps and an importable
   # package) but is neither platform- nor Python-version-sensitive, so one runner
   # covers it. It runs nowhere else in CI today.
   #
-  # No doctest step yet: the `>>>` examples in the HBV modules are stale and the
-  # matching pre-commit hook is disabled for the same reason. Add
-  # `pixi run -e dev pytest --doctest-modules src -p no:cacheprovider` here once they
-  # are repaired, and re-enable the hook alongside it.
+  # The doctest step below covers only the modules whose examples run; the `>>>` examples
+  # in the HBV modules are stale, which is why the whole-`src` pre-commit hook is still
+  # disabled. Widen the `doctests` task in pyproject.toml as those are repaired, and
+  # re-enable that hook once it covers everything.
   static:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -89,3 +89,12 @@ jobs:
 
       - name: Type check with mypy
         run: pixi run -e dev mypy
+
+      # These examples assert on concrete values read from real data, so running them is
+      # what keeps them from drifting into prose. Needs the repo root as the working
+      # directory, which is where the paths in them are written from.
+      - name: Run the executable docstring examples
+        run: pixi run -e dev doctests
+        env:
+          HAPI_DATA_DIR: src/hapi/parameters
+          MPLBACKEND: Agg

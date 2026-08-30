@@ -26,6 +26,30 @@ OBJECTIVE_FN_ARGS_ERROR = (
 )
 
 
+def _check_optimization_args(api_obj_args: Any, api_solve_args: Any) -> None:
+    """Check the two argument bundles the optimizer is handed are mappings.
+
+    Both are unpacked with `**` inside Oasis, so anything else fails there rather than at the
+    call that supplied it. Every calibration entry point makes the same pair of checks.
+
+    Args:
+        api_obj_args: Keyword arguments forwarded to the objective function.
+        api_solve_args: Keyword arguments forwarded to the solver.
+
+    Raises:
+        TypeError: Either bundle is not a dict.
+    """
+    if not isinstance(api_obj_args, dict):
+        raise TypeError(
+            f"the objective-function arguments should be a dict, got "
+            f"{type(api_obj_args).__name__}"
+        )
+    if not isinstance(api_solve_args, dict):
+        raise TypeError(
+            f"the solver arguments should be a dict, got {type(api_solve_args).__name__}"
+        )
+
+
 class Calibration(Catchment):
     """Calibration class for distributed hydrological model parameter optimization.
 
@@ -46,9 +70,9 @@ class Calibration(Catchment):
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: str | None = "Lumped",
-        temporal_resolution: str | None = "Daily",
-        routing_method: str | None = "Muskingum",
+        spatial_resolution: str = "Lumped",
+        temporal_resolution: str = "Daily",
+        routing_method: str = "Muskingum",
     ):
         """Initialize the Calibration object.
 
@@ -78,6 +102,38 @@ class Calibration(Catchment):
         self.OFArgs: list | None = None
         self.OFvalue: float | None = None
 
+    def _declare_the_parameter_variables(
+        self, opt_prob: Optimization, initial_values: list | None = None
+    ) -> None:
+        """Add one continuous optimisation variable per parameter, bounded by LB and UB.
+
+        Every calibration entry point declares the same variables the same way; only the
+        lumped one can also seed them with a starting point.
+
+        Args:
+            opt_prob: The problem being built.
+            initial_values: One starting value per parameter, or None to let the optimiser
+                choose.
+
+        Raises:
+            ValueError: `initial_values` is given and does not hold one value per parameter.
+        """
+        # One starting value per parameter. A shorter list used to index out of range
+        # part-way through building the problem, naming neither argument and leaving
+        # `opt_prob` half-populated.
+        seeded = initial_values is not None and len(initial_values) > 0
+        if seeded and len(initial_values) != len(self.LB):
+            raise ValueError(
+                f"initial_values must hold one value per parameter; the bounds define "
+                f"{len(self.LB)} and {len(initial_values)} were given"
+            )
+
+        for i in range(len(self.LB)):
+            seed = {"value": initial_values[i]} if seeded else {}
+            opt_prob.addVar(
+                f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i], **seed
+            )
+
     def read_objective_function(
         self, objective_function: Callable[..., Any], args: list | None
     ):
@@ -93,12 +149,14 @@ class Calibration(Catchment):
                 objective function. If None, defaults to an empty list.
 
         Raises:
-            AssertionError: If objective_function is not callable.
+            TypeError: If objective_function is not callable.
         """
         # check objective_function
-        assert callable(objective_function), (
-            "The Objective function should be a function"
-        )
+        if not callable(objective_function):
+            raise TypeError(
+                f"The Objective function should be a function, got "
+                f"{type(objective_function).__name__}"
+            )
         self.objective_function = objective_function
 
         if args is None:
@@ -215,15 +273,15 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            AssertionError: If input dimensions are inconsistent or if
-                optimization arguments are not dictionaries.
+            ValueError: If input dimensions are inconsistent.
+            TypeError: If either bundle of optimization arguments is not a
+                dict.
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        assert (
-            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
-        ), ROWS_MISMATCH_ERROR
+        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
+            raise ValueError(ROWS_MISMATCH_ERROR)
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
@@ -243,8 +301,7 @@ class Calibration(Catchment):
         pll_type = optimization_args[1]
         api_solve_args = optimization_args[2]
         # check optimization arguement
-        assert type(api_obj_args) is dict, "store_history should be 0 or 1"
-        assert type(api_solve_args) is dict, "history_fname should be of type string "
+        _check_optimization_args(api_obj_args, api_solve_args)
 
         print("Calibration starts")
 
@@ -290,8 +347,7 @@ class Calibration(Catchment):
 
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
-        for i in range(len(self.LB)):
-            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
+        self._declare_the_parameter_variables(opt_prob)
 
         opt_prob.addObj("f")
 
@@ -364,8 +420,9 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            AssertionError: If input dimensions are inconsistent or if
-                optimization arguments are not dictionaries.
+            ValueError: If input dimensions are inconsistent.
+            TypeError: If either bundle of optimization arguments is not a
+                dict.
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -390,8 +447,7 @@ class Calibration(Catchment):
         pll_type = optimization_args[1]
         api_solve_args = optimization_args[2]
         # check optimization arguement
-        assert type(api_obj_args) is dict, "store_history should be 0 or 1"
-        assert type(api_solve_args) is dict, "history_fname should be of type string "
+        _check_optimization_args(api_obj_args, api_solve_args)
 
         print("Calibration starts")
 
@@ -428,8 +484,7 @@ class Calibration(Catchment):
 
         # define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
-        for i in range(len(self.LB)):
-            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
+        self._declare_the_parameter_variables(opt_prob)
 
         print(opt_prob)
 
@@ -500,15 +555,20 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            AssertionError: If `basic_inputs` is missing required keys
-                `"Route"` or `"RoutingFn"`, or if optimization
-                arguments are not dictionaries.
+            ValueError: If `basic_inputs` is missing required keys
+                `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is
+                given and does not hold one value per parameter.
+            TypeError: If either bundle of optimization arguments is not a
+                dict.
         """
         # basic inputs
         # check if all inputs are included
-        assert all(["Route", "RoutingFn"][i] in basic_inputs for i in range(2)), (
-            "basic_inputs should contain ['p2','init_st','UB','LB'] "
-        )
+        missing = [key for key in ("Route", "RoutingFn") if key not in basic_inputs]
+        if missing:
+            raise ValueError(
+                f"basic_inputs should contain 'Route' and 'RoutingFn'; "
+                f"{', '.join(missing)} is missing"
+            )
 
         route = basic_inputs["Route"]
         routing_fn = basic_inputs["RoutingFn"]
@@ -524,10 +584,7 @@ class Calibration(Catchment):
         pll_type = optimization_args[1]
         api_solve_args = optimization_args[2]
         # check optimization arguement
-        assert isinstance(api_obj_args, dict), "store_history should be 0 or 1"
-        assert isinstance(api_solve_args, dict), (
-            "history_fname should be of type string "
-        )
+        _check_optimization_args(api_obj_args, api_solve_args)
 
         print("Calibration starts")
 
@@ -566,18 +623,7 @@ class Calibration(Catchment):
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
 
-        if initial_values != []:
-            for i in range(len(self.LB)):
-                opt_prob.addVar(
-                    f"x{i}",
-                    type="c",
-                    lower=self.LB[i],
-                    upper=self.UB[i],
-                    value=initial_values[i],
-                )
-        else:
-            for i in range(len(self.LB)):
-                opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
+        self._declare_the_parameter_variables(opt_prob, initial_values)
 
         opt_prob.addObj("f")
 

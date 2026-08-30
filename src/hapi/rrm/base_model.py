@@ -272,7 +272,7 @@ class BaseConceptualModel(ABC):
                 length as ``q``.
 
         Raises:
-            AssertionError: If ``maxbas`` is less than 1.
+            ValueError: If ``maxbas`` is less than 1.
 
         Examples:
             >>> import numpy as np

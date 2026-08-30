@@ -9,7 +9,8 @@ at known locations based on a given performance function.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from pathlib import Path
+from typing import Any, NoReturn
 
 import numpy as np
 import pandas as pd
@@ -24,6 +25,47 @@ from hapi.wrapper import Wrapper
 ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
 COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
 GRID_MISMATCH_ERROR = "all input data should have the same number of rows"
+
+
+def _check_parameters_cover_grid(model: Catchment) -> None:
+    """Check the parameter array spans the catchment grid.
+
+    The same two checks every distributed entry point makes before handing the model to the
+    wrapper: a parameter array smaller than the grid is indexed out of range inside the
+    per-cell loop, far from the call that supplied it.
+
+    Args:
+        model: The model about to run, carrying `parameters` and `flow_network`.
+
+    Raises:
+        ValueError: The parameter array has the wrong number of rows or columns.
+    """
+    if np.shape(model.parameters)[0] != model.flow_network.rows:
+        raise ValueError(ROWS_MISMATCH_ERROR)
+    if np.shape(model.parameters)[1] != model.flow_network.cols:
+        raise ValueError(COLS_MISMATCH_ERROR)
+
+
+def _check_lake_meteo(model: Catchment, lake: LakeType) -> None:
+    """Check the lake's record lines up with the distributed drivers.
+
+    Args:
+        model: The model about to run, whose `meteo` sets the expected length.
+        lake: The lake whose `MeteoData` is checked.
+
+    Raises:
+        ValueError: The lake record is a different length from the distributed drivers, or
+            carries fewer than the three columns the lake model reads.
+    """
+    if np.shape(lake.MeteoData)[0] != model.meteo.time_steps:
+        raise ValueError(
+            "Lake meteorological data has to have the same length as the distributed "
+            "raster data"
+        )
+    if np.shape(lake.MeteoData)[1] < 3:
+        raise ValueError(
+            "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
+        )
 
 
 class Run(Catchment):
@@ -44,6 +86,55 @@ class Run(Catchment):
     def __init__(self):
         """Initialize the Run class."""
         self.Qsim: np.ndarray | pd.DataFrame | None = None
+
+    @classmethod
+    def from_yaml(cls, path: str | Path) -> NoReturn:
+        """Refuse to build a `Run`, explaining the pattern instead.
+
+        `Run` subclasses `Catchment` to hold its entry points, not to be a catchment: its
+        `__init__` takes no arguments, so the inherited `Catchment.from_yaml` could only fail
+        with a `TypeError` about constructor arity -- an error saying nothing about what to do
+        instead. The methods here are called on a model built elsewhere.
+
+        Args:
+            path: Ignored; present so the signature matches the one it overrides.
+
+        Raises:
+            TypeError: Always.
+
+        Examples:
+            - The refusal names the pattern to use instead:
+                ```python
+                >>> from hapi.run import Run
+                >>> try:
+                ...     Run.from_yaml("coello-lumped-model-run.yaml")
+                ... except TypeError as error:
+                ...     print(str(error).split(";")[0])
+                Run cannot be built from a configuration
+
+                ```
+            - Build the model with `Catchment.from_yaml` and hand it to the entry point:
+                ```python
+                >>> from hapi.catchment import Catchment
+                >>> from hapi.routing import Routing
+                >>> from hapi.run import Run
+                >>> model = Catchment.from_yaml(
+                ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+                ... )
+                >>> Run.runLumped(model, 1, Routing.muskingum_v)
+                >>> len(model.Qsim)
+                1095
+
+                ```
+
+        See Also:
+            hapi.catchment.Catchment.from_yaml: The classmethod that does build a model.
+        """
+        raise TypeError(
+            "Run cannot be built from a configuration; it holds the entry points that run a "
+            "model built elsewhere. Build the model with Catchment.from_yaml(path) and pass "
+            "it in, e.g. Run.RunHapi(model)."
+        )
 
     def RunHapi(self):
         """Run the distributed hydrological model.
@@ -67,14 +158,13 @@ class Run(Catchment):
           translated at each time step.
 
         Raises:
-            AssertionError: If input data arrays have inconsistent
+            ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
         # input dimensions
         fd_rows, fd_cols = self.flow_network.flow_dir_arr.shape
-        assert (
-            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
-        ), GRID_MISMATCH_ERROR
+        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
+            raise ValueError(GRID_MISMATCH_ERROR)
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
@@ -82,13 +172,7 @@ class Run(Catchment):
         self.meteo.validate_against(
             self.flow_network.rows, self.flow_network.cols, self.date_index
         )
-        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            ROWS_MISMATCH_ERROR
-        )
-        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            COLS_MISMATCH_ERROR
-        )
-
+        _check_parameters_cover_grid(self)
         # run the model
         Wrapper.RRMModel(self)
 
@@ -102,15 +186,14 @@ class Run(Catchment):
         river width, river roughness, and flood plain roughness).
 
         Raises:
-            AssertionError: If meteorological input arrays, parameter
+            ValueError: If meteorological input arrays, parameter
                 arrays, or river geometry arrays have inconsistent
                 dimensions.
         """
         # input dimensions
         [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        assert (
-            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
-        ), GRID_MISMATCH_ERROR
+        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
+            raise ValueError(GRID_MISMATCH_ERROR)
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
@@ -118,25 +201,27 @@ class Run(Catchment):
         self.meteo.validate_against(
             self.flow_network.rows, self.flow_network.cols, self.date_index
         )
-        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            ROWS_MISMATCH_ERROR
-        )
-        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            COLS_MISMATCH_ERROR
-        )
-
-        assert (
-            np.shape(self.bankfull_depth)[0] == self.flow_network.rows
-            and np.shape(self.river_width)[0] == self.flow_network.rows
-            and np.shape(self.river_roughness)[0] == self.flow_network.rows
-            and np.shape(self.flood_plain_roughness)[0] == self.flow_network.rows
-        ), GRID_MISMATCH_ERROR
-        assert (
-            np.shape(self.bankfull_depth)[1] == self.flow_network.cols
-            and np.shape(self.river_width)[1] == self.flow_network.cols
-            and np.shape(self.river_roughness)[1] == self.flow_network.cols
-            and np.shape(self.flood_plain_roughness)[1] == self.flow_network.cols
-        ), "all input data should have the same number of columns"
+        _check_parameters_cover_grid(self)
+        if any(
+            np.shape(arr)[0] != self.flow_network.rows
+            for arr in (
+                self.bankfull_depth,
+                self.river_width,
+                self.river_roughness,
+                self.flood_plain_roughness,
+            )
+        ):
+            raise ValueError(GRID_MISMATCH_ERROR)
+        if any(
+            np.shape(arr)[1] != self.flow_network.cols
+            for arr in (
+                self.bankfull_depth,
+                self.river_width,
+                self.river_roughness,
+                self.flood_plain_roughness,
+            )
+        ):
+            raise ValueError("all input data should have the same number of columns")
 
         # run the model
         Wrapper.RRMModel(self)
@@ -160,15 +245,16 @@ class Run(Catchment):
                 rain, ET, and temperature.
 
         Raises:
-            AssertionError: If input data arrays have inconsistent
+            ValueError: If input data arrays have inconsistent
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
         # input dimensions
         [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        assert (
-            fd_rows == self.flow_network.rows and fd_cols == self.flow_network.cols
-        ), "all input data should have the same number of rows and columns"
+        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
+            raise ValueError(
+                "all input data should have the same number of rows and columns"
+            )
 
         # input dimensions
         # The three cubes already agree with each other (checked when MeteoInputs was
@@ -176,20 +262,8 @@ class Run(Catchment):
         self.meteo.validate_against(
             self.flow_network.rows, self.flow_network.cols, self.date_index
         )
-        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            ROWS_MISMATCH_ERROR
-        )
-        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            COLS_MISMATCH_ERROR
-        )
-
-        assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
-            "Lake meteorological data has to have the same length as the distributed raster data"
-        )
-        assert np.shape(lake.MeteoData)[1] >= 3, (
-            "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
-        )
-
+        _check_parameters_cover_grid(self)
+        _check_lake_meteo(self, lake)
         # run the model
         Wrapper.RRMWithlake(self, lake)
 
@@ -216,7 +290,7 @@ class Run(Catchment):
           shortcut is invalid for this path and raises.
 
         Raises:
-            AssertionError: If input data arrays have inconsistent
+            ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
         # The three cubes already agree with each other (checked when MeteoInputs was
@@ -224,13 +298,7 @@ class Run(Catchment):
         self.meteo.validate_against(
             self.flow_network.rows, self.flow_network.cols, self.date_index
         )
-        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            ROWS_MISMATCH_ERROR
-        )
-        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            COLS_MISMATCH_ERROR
-        )
-
+        _check_parameters_cover_grid(self)
         # run the model
         Wrapper.FW1(self)
 
@@ -267,7 +335,7 @@ class Run(Catchment):
               is tfac and `p2[1]` is catchment area in km2.
 
         Raises:
-            AssertionError: If input data arrays have inconsistent
+            ValueError: If input data arrays have inconsistent
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
@@ -279,19 +347,8 @@ class Run(Catchment):
         self.meteo.validate_against(
             self.flow_network.rows, self.flow_network.cols, self.date_index
         )
-        assert np.shape(self.parameters)[0] == self.flow_network.rows, (
-            ROWS_MISMATCH_ERROR
-        )
-        assert np.shape(self.parameters)[1] == self.flow_network.cols, (
-            COLS_MISMATCH_ERROR
-        )
-
-        assert np.shape(lake.MeteoData)[0] == self.meteo.time_steps, (
-            "Lake meteorological data has to have the same length as the distributed raster data"
-        )
-        assert np.shape(lake.MeteoData)[1] >= 3, (
-            "Lake Meteo data has to have at least three columns rain, ET, and Temp"
-        )
+        _check_parameters_cover_grid(self)
+        _check_lake_meteo(self, lake)
 
         # run the model
         Wrapper.FW1Withlake(self, lake)

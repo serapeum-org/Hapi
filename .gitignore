@@ -200,3 +200,9 @@ tests/mo/*
 /tests/rrm/data/test_results/prepare_inputs/7_precip_2009.01.08.tif
 /tests/rrm/data/test_results/prepare_inputs/8_precip_2009.01.09.tif
 /tests/rrm/data/test_results/prepare_inputs/9_precip_2009.01.10.tif
+
+# Output of the four YAML-driven Coello examples. They write into the same data tree they
+# read from, so their results sit beside tracked inputs; the inputs stay tracked and the
+# per-run artefacts do not.
+/examples/hydrological-model/data/distributed_model/results/Result_*.tif
+/examples/hydrological-model/data/lumped_model/*Results-Lumped-Model_*.txt

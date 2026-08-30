@@ -390,14 +390,16 @@ class Wrapper:
                 discharge hydrograph. Must be callable.
 
         Raises:
-            AssertionError: If `RoutingFn` is not callable when
+            TypeError: If `RoutingFn` is not callable when
                 routing is enabled.
         """
         ### input data validation
         if Routing != 0:
-            assert callable(RoutingFn), (
-                "routing function should be of type callable (function that takes arguments)"
-            )
+            if not callable(RoutingFn):
+                raise TypeError(
+                    "routing function should be of type callable (function that takes "
+                    f"arguments), got {type(RoutingFn).__name__}"
+                )
 
         # data
         p = Model.data[:, 0]

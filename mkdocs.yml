@@ -104,6 +104,7 @@ nav:
       - dev/Installation.md
   - API Reference:
       - api/catchment.md
+      - api/config.md
       - api/dem.md
       - api/calibration.md
       - api/inputs.md
@@ -125,6 +126,7 @@ nav:
       - examples/meteo-inputs.md
       - examples/muskingum.md
       - examples/parameters.md
+      - examples/run-configuration.md
   - Change logs: change-log.md
 
 extra:

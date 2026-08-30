@@ -286,3 +286,70 @@ class TestLumpedRouting:
 
         with pytest.raises(ValueError, match="routing_fn"):
             Run.runLumped(model, Route=1)
+
+
+class TestCalculateWeightsGuard:
+    """Tests for the MAXBAS lower bound in `Routing.calculate_weights`."""
+
+    @pytest.mark.parametrize(
+        "maxbas, symptom",
+        [
+            (0.5, "one weight and an all-zero hydrograph, silently"),
+            (0, "an IndexError about axis 1"),
+            (float("nan"), "'cannot convert float NaN to integer'"),
+        ],
+        ids=["fractional", "zero", "nan"],
+    )
+    def test_a_maxbas_below_one_is_refused(self, maxbas, symptom):
+        """Test that each below-one MAXBAS is refused by name.
+
+        Args:
+            maxbas: A MAXBAS value below the one whole step a triangle needs.
+            symptom: What it produced before the guard, for the failure message.
+
+        Test scenario:
+            `triangular_routing_2` and the three conceptual models already carried this
+            check; `calculate_weights` -- which `triangular_routing_1` and `DistMaxbas1`
+            resolve their weights through -- did not, and each value failed differently or
+            not at all.
+        """
+        with pytest.raises(ValueError, match="at least 1") as exc:
+            Routing.calculate_weights(maxbas)
+
+        assert str(maxbas) in str(exc.value), (
+            f"the error should name the value, given it used to produce {symptom}: {exc.value}"
+        )
+
+    def test_the_guard_reaches_triangular_routing_1(self):
+        """Test that the routing function itself refuses, not only the weights helper.
+
+        Test scenario:
+            `triangular_routing_1` is what the lumped MAXBAS example and `DistMaxbas1` call,
+            and it delegates to `calculate_weights` on its first line -- so the guard has to
+            surface there rather than being swallowed.
+        """
+        q = np.array([0.0, 1.0, 3.0, 7.0, 10.0])
+
+        with pytest.raises(ValueError, match="at least 1"):
+            Routing.triangular_routing_1(q, 0.2)
+
+    @pytest.mark.parametrize(
+        "maxbas", [1, 4.5, 5], ids=["minimum", "fractional", "whole"]
+    )
+    def test_a_valid_maxbas_still_routes(self, maxbas):
+        """Test that the guard leaves every accepted MAXBAS working.
+
+        Args:
+            maxbas: A MAXBAS at or above the bound, integer and fractional.
+
+        Test scenario:
+            The bound is `not maxbas >= 1` so that NaN fails it; the boundary value itself
+            must still pass, and fractional support is what separates this function from
+            `triangular_routing_2`.
+        """
+        weights = Routing.calculate_weights(maxbas)
+
+        assert len(weights) >= 1, f"expected weights for maxbas={maxbas}, got {weights}"
+        assert np.isclose(weights.sum(), 1.0, atol=0.05), (
+            f"triangular weights should be normalised, got {weights.sum()}"
+        )

@@ -20,25 +20,31 @@ import inspect
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Self
 
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
+import yaml
 from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
 from loguru import logger
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
+from hapi.config import RunConfig
 from hapi.inputs import (
+    METEO_VARIABLES,
     FlowNetwork,
     MeteoInputs,
     _warn_if_no_sentinel,
     read_rasters,
 )
+from hapi.rrm.hbv import HBV
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
 if TYPE_CHECKING:
     import matplotlib.animation
@@ -54,6 +60,131 @@ PARAMETER_COUNTS = {
     (True, False): 17,
     (False, False): 12,
 }
+
+#: Conceptual models `conceptual_model.model_class` can name in a YAML configuration.
+#: `read_lumped_model` still takes any `type[BaseConceptualModel]`, so this only bounds what the
+#: YAML shorthand can reach, not what the class accepts.
+CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
+    "HBVBergestrom92": HBVBergestrom92,
+    "HBV": HBV,
+}
+
+#: Accepted routing methods, mapped to the one spelling the internals compare against.
+#: `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` exactly, so the constructor
+#: canonicalises rather than storing what it was handed. `"Kinematic"` belongs here because
+#: that comparison is also how the flood model selects its own path: a non-Muskingum method
+#: with a real `bankfull_depth` skips the cell, which `Run.RunFloodModel` relies on.
+#: `hapi.config.CatchmentConfig.routing_method` exposes the first two to YAML and says why the
+#: third is not; a method added here needs a decision there too.
+ROUTING_METHODS = {
+    "muskingum": "Muskingum",
+    "maxbas": "MAXBAS",
+    "kinematic": "Kinematic",
+}
+
+
+def _resolve_config_paths(config: RunConfig, base: Path) -> None:
+    """Rewrite every relative path in a configuration against the file it came from.
+
+    A configuration names its inputs relative to itself, so it runs from any working directory
+    and can be moved with the data it points at. Resolving against the process's working
+    directory instead would make a file valid only from the one place it happened to be written
+    for. An absolute path is left alone.
+
+    `meteo`'s three driver fields are paths only for the folder and per-file sources; under
+    `source="netcdf"` they name variables inside `meteo.path` and must not be touched.
+
+    Args:
+        config: The parsed configuration, rewritten in place.
+        base: Directory of the configuration file.
+    """
+
+    def resolve(value: str | None) -> str | None:
+        if value is None:
+            return value
+        return value if Path(value).is_absolute() else str((base / value).resolve())
+
+    if config.meteo.source != "netcdf":
+        for field in METEO_VARIABLES:
+            setattr(config.meteo, field, resolve(getattr(config.meteo, field)))
+    config.meteo.path = resolve(config.meteo.path)
+
+    if config.flow_network is not None:
+        # `flow_accumulation` and the two below are required fields, so `resolve` cannot
+        # return None for them; the cast keeps that visible rather than widening the model.
+        config.flow_network.flow_accumulation = str(
+            resolve(config.flow_network.flow_accumulation)
+        )
+        config.flow_network.flow_direction = resolve(config.flow_network.flow_direction)
+    if config.parameters is not None:
+        config.parameters.path = str(resolve(config.parameters.path))
+    if config.gauges is not None:
+        config.gauges.table = resolve(config.gauges.table)
+        config.gauges.discharge = str(resolve(config.gauges.discharge))
+    if config.outputs is not None:
+        config.outputs.results_dir = resolve(config.outputs.results_dir)
+
+
+def _check_the_configured_paths_exist(config: RunConfig, distributed: bool) -> None:
+    """Check every input path the run will open, before the first reader runs.
+
+    The readers fail one at a time and in the order the build happens to call them, so a typo
+    in the gauge table is only reported after the whole meteorological cube and the parameter
+    folder have been read -- minutes, on a real grid, to learn about a line the file could have
+    been checked for at once. Every missing path is named together instead, so one pass over
+    the message fixes the file.
+
+    Only the paths the chosen shape will actually open are checked, which is the same set the
+    schema validated the configuration against.
+
+    Args:
+        config: The parsed configuration, with its paths already resolved.
+        distributed: Whether this is a distributed run.
+
+    Raises:
+        FileNotFoundError: One or more configured paths do not exist.
+    """
+    candidates: list[tuple[str, str | None]] = []
+    if config.parameters is not None:
+        candidates.append(("parameters.path", config.parameters.path))
+
+    if distributed:
+        # Under `source="netcdf"` the three driver fields name variables inside `meteo.path`,
+        # not paths, so only the file itself is checked.
+        if config.meteo.source == "netcdf":
+            candidates.append(("meteo.path", config.meteo.path))
+        else:
+            candidates += [
+                (f"meteo.{name}", getattr(config.meteo, name))
+                for name in METEO_VARIABLES
+            ]
+        if config.flow_network is not None:
+            candidates += [
+                (
+                    "flow_network.flow_accumulation",
+                    config.flow_network.flow_accumulation,
+                ),
+                ("flow_network.flow_direction", config.flow_network.flow_direction),
+            ]
+    else:
+        candidates.append(("meteo.path", config.meteo.path))
+
+    if config.gauges is not None:
+        candidates += [
+            ("gauges.discharge", config.gauges.discharge),
+            ("gauges.table", config.gauges.table),
+        ]
+
+    missing = [
+        f"{field} -> {value}"
+        for field, value in candidates
+        if value is not None and not Path(value).exists()
+    ]
+    if missing:
+        raise FileNotFoundError(
+            "the run configuration names inputs that do not exist:\n  "
+            + "\n  ".join(missing)
+        )
 
 
 @contextmanager
@@ -112,18 +243,36 @@ class Catchment:
                 "Distributed". Default is "Lumped".
             temporal_resolution (str, optional): "Hourly" or "Daily".
                 Default is "Daily".
-            routing_method (str, optional): Routing method name.
-                Default is "Muskingum".
+            routing_method (str, optional): "Muskingum", "MAXBAS" or
+                "Kinematic", matched case-insensitively and stored
+                canonicalised. Default is "Muskingum".
 
         Raises:
+            TypeError: If `spatial_resolution`, `temporal_resolution` or
+                `routing_method` is not a string.
             ValueError: If `spatial_resolution` is not "lumped" or
                 "distributed".
             ValueError: If `temporal_resolution` is not "daily" or
                 "hourly".
+            ValueError: If `routing_method` is not "Muskingum", "MAXBAS" or
+                "Kinematic".
         """
         self.name = name
         self.start = dt.datetime.strptime(start_data, fmt)
         self.end = dt.datetime.strptime(end, fmt)
+
+        # All three of the mode arguments are lower-cased below, so a non-string reaches
+        # `.lower()` and raises an `AttributeError` naming neither the argument nor the class.
+        # Checked together, once, rather than three times over.
+        for argument, value in (
+            ("spatial_resolution", spatial_resolution),
+            ("temporal_resolution", temporal_resolution),
+            ("routing_method", routing_method),
+        ):
+            if not isinstance(value, str):
+                raise TypeError(
+                    f"{argument} must be a string, got {type(value).__name__}"
+                )
 
         if spatial_resolution.lower() not in ["lumped", "distributed"]:
             raise ValueError(
@@ -148,7 +297,17 @@ class Catchment:
             self.conversion_factor = CONVERSION_FACTOR * 1 / 24
             self.date_index = pd.date_range(self.start, self.end, freq="h")
 
-        self.routing_method = routing_method
+        # Canonicalised like the two resolutions above, and for a sharper reason:
+        # `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` case-sensitively, and
+        # the false branch reads `bankfull_depth`, which is None outside the flood model. Left
+        # verbatim, a lower-case "muskingum" therefore routed every cell down the MAXBAS branch
+        # and raised `TypeError: 'NoneType' object is not subscriptable`.
+        if routing_method.lower() not in ROUTING_METHODS:
+            raise ValueError(
+                f"available routing methods are {', '.join(map(repr, ROUTING_METHODS))}, "
+                f"got {routing_method!r}"
+            )
+        self.routing_method = ROUTING_METHODS[routing_method.lower()]
         self.parameters: np.ndarray | list | None = None
         self.data: np.ndarray | None = None
         #: The three meteorological drivers. Assign a :class:`~hapi.inputs.MeteoInputs`
@@ -189,6 +348,176 @@ class Catchment:
         self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
+        #: The configuration this model was built from, when it came from
+        #: :meth:`from_yaml`; `None` for a model assembled by hand. Carries the blocks the
+        #: build itself does not consume, such as `outputs`, so a caller need not restate a
+        #: path the file already gives.
+        self.config: RunConfig | None = None
+
+    @classmethod
+    def from_yaml(cls, path: str | Path) -> Self:
+        """Read a YAML run configuration and assemble a model from it.
+
+        The alternate constructor for the build-then-mutate pattern this class documents: it
+        constructs the model, assigns `meteo` and (distributed only) `flow_network`, then makes
+        the `read_*` calls in the order they depend on each other -- the sequence a hand-written
+        script's block of path assignments used to drive by hand.
+
+        `hapi.config` only parses and validates; every assignment onto the model happens here.
+        Running the model stays the caller's job, through whichever `Run.*` entry point suits
+        `routing_method` and `spatial_resolution`.
+
+        Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the
+        same constructor arguments. `Run` does not: it overrides `__init__` to take none, and
+        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so it
+        overrides this method to refuse the call and say so.
+
+        Args:
+            path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for
+                the schema.
+
+        Returns:
+            Self: The model, with every input read, parsed and assigned.
+
+        Raises:
+            FileNotFoundError: No file at `path`.
+            yaml.YAMLError: The file is not valid YAML.
+            pydantic.ValidationError: The file is missing a required field, carries an unknown
+                one, or breaks one of the cross-field rules in :class:`hapi.config.RunConfig`.
+            ValueError: The file is empty, or `conceptual_model.model_class` names a model
+                that is not in `CONCEPTUAL_MODELS`.
+
+        Examples:
+            The configurations below ship with the Hapi repository, so these run from a
+            checkout rather than an installed wheel; point at your own file to try them
+            elsewhere.
+
+            - Build a lumped model and inspect what the configuration gave it:
+                ```python
+                >>> from hapi.catchment import Catchment
+                >>> model = Catchment.from_yaml(
+                ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+                ... )
+                >>> model.name
+                'Coello'
+                >>> model.spatial_resolution
+                'lumped'
+                >>> len(model.date_index)
+                1095
+
+                ```
+            - Build a distributed model, whose drivers and routing network come from the
+              `meteo` and `flow_network` blocks:
+                ```python
+                >>> from hapi.catchment import Catchment
+                >>> model = Catchment.from_yaml(
+                ...     "examples/hydrological-model/coello/run/"
+                ...     "coello-distributed-model-run-netcdf.yaml"
+                ... )
+                >>> model.meteo.shape
+                (13, 14, 10)
+                >>> model.flow_network.rows, model.flow_network.cols
+                (13, 14)
+                >>> model.routing_method
+                'Muskingum'
+
+                ```
+        """
+        # Explicit encoding: without it the file is decoded with the locale codec, so a
+        # non-ASCII catchment name or path mojibakes on a machine whose default is not UTF-8
+        # -- and does so silently, since the corrupted text is still valid YAML.
+        text = Path(path).read_text(encoding="utf-8")
+        mapping = yaml.safe_load(text)
+        # An empty file parses to None, which pydantic would report as the opaque
+        # "Input should be a valid dictionary" without saying which file was empty.
+        if mapping is None:
+            raise ValueError(f"the run configuration at {path} is empty")
+        config = RunConfig.model_validate(mapping)
+        # Relative paths belong to the file, not to whatever directory the process happens to
+        # be in, so a configuration runs from anywhere and travels with the data it names.
+        _resolve_config_paths(config, Path(path).resolve().parent)
+        catchment = config.catchment
+
+        # The first three go positionally on purpose: `Catchment.__init__` calls its second
+        # parameter `start_data` and `Calibration.__init__` calls it `start`, so naming them
+        # would break `Calibration.from_yaml` -- which this method is documented to support --
+        # while still working here. Renaming the parameter is the fix, and is breaking.
+        model = cls(
+            catchment.name,
+            catchment.start,
+            catchment.end,
+            fmt=catchment.fmt,
+            spatial_resolution=catchment.spatial_resolution,
+            temporal_resolution=catchment.temporal_resolution,
+            routing_method=catchment.routing_method,
+        )
+
+        # Resolved before any reader runs: it needs nothing but the config, and a typo here
+        # would otherwise cost the whole parameter folder read before failing.
+        conceptual_model = config.conceptual_model
+        if conceptual_model.model_class not in CONCEPTUAL_MODELS:
+            raise ValueError(
+                f"conceptual_model.model_class {conceptual_model.model_class!r} is not "
+                f"registered; known models are {sorted(CONCEPTUAL_MODELS)}"
+            )
+        model_class = CONCEPTUAL_MODELS[conceptual_model.model_class]
+
+        distributed = catchment.spatial_resolution == "distributed"
+        _check_the_configured_paths_exist(config, distributed)
+        if distributed:
+            model.meteo = MeteoInputs.from_config(
+                config.meteo,
+                start=catchment.start,
+                end=catchment.end,
+                fmt=catchment.fmt,
+            )
+            model.flow_network = FlowNetwork.from_rasters(
+                config.flow_network.flow_accumulation,
+                config.flow_network.flow_direction,
+            )
+        else:
+            model.read_lumped_inputs(config.meteo.path)
+
+        # A calibration derives its parameters from the bounds `read_parameters_bound` is
+        # given rather than reading a fitted set, so the block is optional.
+        if config.parameters is not None:
+            model.read_parameters(
+                config.parameters.path,
+                config.parameters.snow,
+                maxbas=config.parameters.maxbas,
+            )
+
+        model.read_lumped_model(
+            model_class,
+            conceptual_model.catchment_area,
+            conceptual_model.initial_condition,
+            conceptual_model.q_init,
+        )
+
+        # Equally optional: a run that is not scored against observations has no gauges.
+        gauges = config.gauges
+        if gauges is not None:
+            if distributed:
+                # The table's validity-period columns and the discharge files' index are two
+                # different files' date layouts, so they get two fields -- with the table
+                # falling back to the discharge format, which is right whenever one hand wrote
+                # both.
+                model.read_gauge_table(
+                    gauges.table,
+                    config.flow_network.flow_accumulation,
+                    fmt=gauges.table_fmt or gauges.fmt,
+                )
+            model.read_discharge_gauges(
+                gauges.discharge,
+                delimiter=gauges.delimiter,
+                column=gauges.column,
+                fmt=gauges.fmt,
+            )
+
+        # Kept so the blocks the build does not itself consume stay reachable -- `outputs`
+        # above all, which describes where results go rather than what the model reads.
+        model.config = config
+        return model
 
     def read_flow_path_length(self, path: str):
         """Read the flow path length raster.
@@ -388,6 +717,8 @@ class Catchment:
                 None.
 
         Raises:
+            TypeError: If `initial_condition` is not a list, or if
+                `q_init` is given and is not a float.
             ValueError: If `lumped_model` is not a class or if
                 `initial_condition` does not contain exactly 5
                 values.
@@ -400,6 +731,14 @@ class Catchment:
         self.lumped_model = lumped_model()
         self.area = catchment_area
 
+        # Typed before it is measured. The other order called `len` first, so None reported
+        # "object of type 'NoneType' has no len()" rather than naming the argument, and the
+        # `is not None` the type check then carried could never be false -- `len` would
+        # already have raised.
+        if not isinstance(initial_condition, list):
+            raise TypeError(
+                f"init_st should be of type list, got {type(initial_condition).__name__}"
+            )
         if len(initial_condition) != 5:
             raise ValueError(
                 f"state variables are 5 and the given initial values are {len(initial_condition)}"
@@ -407,12 +746,11 @@ class Catchment:
 
         self.initial_cond = initial_condition
 
-        if q_init is not None:
-            assert isinstance(q_init, float), "q_init should be of type float"
+        if q_init is not None and not isinstance(q_init, float):
+            raise TypeError(
+                f"q_init should be of type float, got {type(q_init).__name__}"
+            )
         self.q_init = q_init
-
-        if self.initial_cond is not None:
-            assert isinstance(self.initial_cond, list), "init_st should be of type list"
 
         logger.debug("Lumped model is read successfully")
 
@@ -612,15 +950,19 @@ class Catchment:
                 (distributed) or file (lumped).
             delimiter (str, optional): Delimiter between the date and
                 the discharge column. Default is ",".
-            column (str, optional): Name of the column in the gauge
-                table containing the file names. Default is "id".
+            column (str, optional): Gauge-table column naming the columns of the
+                resulting `QGauges` frame. It does not select the file names --
+                those always come from the "id" column. Default is "id".
             fmt (str, optional): Date format in the discharge files.
                 Default is "%Y-%m-%d".
             split (bool, optional): True to subset the data between
                 `start_date` and `end_date`. Default is False.
-            start_date (str, optional): Start date for subsetting.
+            start_date (str | dt.datetime, optional): Start date for
+                subsetting. A string is parsed with `fmt`; a datetime is
+                used as it is.
                 Default is "".
-            end_date (str, optional): End date for subsetting.
+            end_date (str | dt.datetime, optional): End date for
+                subsetting. See `start_date`.
                 Default is "".
             readfrom (str, optional): Number of rows to skip when
                 reading the CSV. Default is "".
@@ -628,7 +970,7 @@ class Catchment:
         Raises:
             FileNotFoundError: If the discharge file does not exist
                 (lumped mode).
-            AssertionError: If the gauge table has not been read yet
+            ValueError: If the gauge table has not been read yet
                 (distributed mode).
         """
         if self.temporal_resolution.lower() == "daily":
@@ -637,48 +979,103 @@ class Catchment:
             ind = pd.date_range(self.start, self.end, freq="h")
 
         if self.spatial_resolution.lower() == "distributed":
-            assert hasattr(self, "GaugesTable"), "please read the gauges' table first"
-
-            self.QGauges = pd.DataFrame(
-                index=ind, columns=self.GaugesTable[column].tolist()
+            self._read_one_discharge_file_per_gauge(
+                path, ind, delimiter, column, fmt, readfrom
             )
-
-            for i in range(len(self.GaugesTable)):
-                name = self.GaugesTable.loc[i, "id"]
-                if readfrom != "":
-                    f = pd.read_csv(
-                        f"{path}/{name}.csv",
-                        index_col=0,
-                        delimiter=delimiter,
-                        skiprows=readfrom,
-                    )  # ,#delimiter="\t"
-                else:
-                    f = pd.read_csv(
-                        f"{path}/{name}.csv",
-                        header=0,
-                        index_col=0,
-                        delimiter=delimiter,
-                    )
-
-                f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-                self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
         else:
-            if not os.path.exists(path):
-                raise FileNotFoundError(
-                    f"The file you have entered{path} does not exist"
-                )
-
-            self.QGauges = pd.DataFrame(index=ind)
-            f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
-            f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-            self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
+            self._read_the_single_discharge_file(path, ind, delimiter, fmt)
 
         if split:
-            start_date = dt.datetime.strptime(start_date, fmt)
-            end_date = dt.datetime.strptime(end_date, fmt)
+            if isinstance(start_date, str):
+                start_date = dt.datetime.strptime(start_date, fmt)
+            if isinstance(end_date, str):
+                end_date = dt.datetime.strptime(end_date, fmt)
             self.QGauges = self.QGauges.loc[start_date:end_date]
 
         logger.debug("Gauges data are read successfully")
+
+    def _read_one_discharge_file_per_gauge(
+        self,
+        path: str,
+        index: pd.DatetimeIndex,
+        delimiter: str,
+        column: str,
+        fmt: str,
+        readfrom: str,
+    ) -> None:
+        """Fill `QGauges` from a folder holding one CSV per gauge id.
+
+        Args:
+            path: Folder of per-gauge CSVs, each named after a gauge id.
+            index: The model's date index, which the frame is built on.
+            delimiter: Discharge CSV delimiter.
+            column: Gauge-table column naming the frame's columns.
+            fmt: `strptime` format for each file's date column.
+            readfrom: Rows to skip, or "" to read from the header.
+
+        Raises:
+            ValueError: `read_gauge_table` has not been called yet.
+        """
+        # `__init__` sets GaugesTable to None, so the `hasattr` this replaced was always
+        # true and never guarded anything: a caller who skipped `read_gauge_table` got a
+        # `TypeError` on None a few lines down instead.
+        if self.GaugesTable is None:
+            raise ValueError(
+                "the gauge table has not been read yet; call read_gauge_table before "
+                "read_discharge_gauges in distributed mode"
+            )
+
+        # The frame is labelled from `column` but every file is named after `id`, so the
+        # two are tracked separately: filling by `int(name)` instead of by the label the
+        # frame was built with left a `column != "id"` table with the requested columns
+        # all-NaN and a second set of id-named ones beside them, silently.
+        labels = self.GaugesTable[column].tolist()
+        self.QGauges = pd.DataFrame(index=index, columns=labels)
+
+        for i in range(len(self.GaugesTable)):
+            name = self.GaugesTable.loc[i, "id"]
+            if readfrom != "":
+                f = pd.read_csv(
+                    f"{path}/{name}.csv",
+                    index_col=0,
+                    delimiter=delimiter,
+                    skiprows=readfrom,
+                )
+            else:
+                f = pd.read_csv(
+                    f"{path}/{name}.csv",
+                    header=0,
+                    index_col=0,
+                    delimiter=delimiter,
+                )
+
+            f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
+            self.QGauges[labels[i]] = f.loc[self.start : self.end, f.columns[-1]]
+
+    def _read_the_single_discharge_file(
+        self, path: str, index: pd.DatetimeIndex, delimiter: str, fmt: str
+    ) -> None:
+        """Fill `QGauges` from one CSV, the lumped case.
+
+        A lumped run has no grid to locate gauges on, so there is one hydrograph and no
+        gauge table: the frame takes the file's own first column as its only column.
+
+        Args:
+            path: The discharge CSV.
+            index: The model's date index, which the frame is built on.
+            delimiter: Discharge CSV delimiter.
+            fmt: `strptime` format for the file's date column.
+
+        Raises:
+            FileNotFoundError: `path` does not exist.
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The file you have entered{path} does not exist")
+
+        self.QGauges = pd.DataFrame(index=index)
+        f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
+        f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
+        self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
 
     def read_parameters_bound(
         self,
@@ -701,13 +1098,15 @@ class Catchment:
                 maxbas. Default is False.
 
         Raises:
-            AssertionError: If the lengths of `upper_bound` and
+            ValueError: If the lengths of `upper_bound` and
                 `lower_bound` are not equal.
             ValueError: If `snow` is not a boolean.
         """
-        assert len(upper_bound) == len(lower_bound), (
-            "the length of UB should be the same as LB"
-        )
+        if len(upper_bound) != len(lower_bound):
+            raise ValueError(
+                f"the length of UB should be the same as LB, got {len(upper_bound)} and "
+                f"{len(lower_bound)}"
+            )
         self.UB = np.array(upper_bound)
         self.LB = np.array(lower_bound)
 
@@ -859,8 +1258,10 @@ class Catchment:
         r"""Plot simulated and observed hydrographs for a given gauge.
 
         Args:
-            start_date (str): Starting date for the plot.
-            end_date (str): End date for the plot.
+            start_date (str | dt.datetime): Starting date for the plot. A
+                string is parsed with `fmt`; a datetime is used as it is.
+            end_date (str | dt.datetime): End date for the plot. See
+                `start_date`.
             gauge (int): Index of the gauge in the GaugesTable.
             hapi_color (tuple | str, optional): Color of the
                 simulated hydrograph. Default is "#004c99".
@@ -890,8 +1291,10 @@ class Catchment:
             tuple: A tuple of (fig, ax) where fig is the matplotlib
                 Figure and ax is the matplotlib Axes object.
         """
-        start_date = dt.datetime.strptime(start_date, fmt)
-        end_date = dt.datetime.strptime(end_date, fmt)
+        if isinstance(start_date, str):
+            start_date = dt.datetime.strptime(start_date, fmt)
+        if isinstance(end_date, str):
+            end_date = dt.datetime.strptime(end_date, fmt)
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
@@ -1144,12 +1547,16 @@ class Catchment:
                 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
                 8 - Water content. For lumped mode, 5 saves all
                 variables. Default is 1.
-            start (str, optional): Start date for the output period.
+            start (str | dt.datetime, optional): Start date for the
+                output period. A string is parsed with `fmt`; a datetime
+                is used as it is.
                 If empty, uses the first index. Default is "".
-            end (str, optional): End date for the output period. If
+            end (str | dt.datetime, optional): End date for the output
+                period. See `start`. If
                 empty, uses the last index. Default is "".
-            path (str, optional): Path to the output directory
-                (distributed) or file (lumped). Default is "".
+            path (str, optional): Output directory (distributed, created
+                if it does not exist) or the CSV file itself (lumped).
+                Default is "", the working directory.
             prefix (str, optional): Prefix for the output file
                 names. Default is "".
             fmt (str, optional): Date format for parsing `start` and
@@ -1158,16 +1565,25 @@ class Catchment:
         Raises:
             Exception: If `flow_acc_path` is not provided in
                 distributed mode.
+            TypeError: If `path` is not a string. `outputs.results_dir`
+                is optional in a run configuration, so a caller
+                forwarding it can hold None.
             ValueError: If `result` is not a valid option.
         """
+        if not isinstance(path, str):
+            raise TypeError(
+                f"path must be a string naming a directory (distributed) or a file "
+                f"(lumped), got {type(path).__name__}"
+            )
+
         if start == "":
             start = self.date_index[0]
-        else:
+        elif isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
 
         if end == "":
             end = self.date_index[-1]
-        else:
+        elif isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
         start_i = np.nonzero(self.date_index == start)[0][0]
@@ -1184,12 +1600,16 @@ class Catchment:
             if prefix == "":
                 prefix = "Result_"
 
-            # create a list of names
-            path = path + prefix
-            names = [path + str(i)[:10] for i in self.date_index[start_i:end_i]]
-            # names = [i.replace("-", "_") for i in names]
-            # names = [i.replace(" ", "_") for i in names]
-            names = [i + ".tif" for i in names]
+            # `path` names a directory here, unlike the lumped branch below where it is the
+            # CSV itself. Joined rather than concatenated: the old `path + prefix` wrote
+            # `some/dirResult_2009-01-01.tif` for any directory given without a trailing
+            # separator, which is how a directory is normally written.
+            if path and not os.path.isdir(path):
+                os.makedirs(path, exist_ok=True)
+            names = [
+                os.path.join(path, f"{prefix}{str(i)[:10]}.tif")
+                for i in self.date_index[start_i:end_i]
+            ]
             if result == 1:
                 arr = self.Qtot[:, :, start_i:end_i]
             elif result == 2:
@@ -1243,7 +1663,10 @@ class Catchment:
                 data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
-                assert False, "the possible options are from 1 to 5"
+                raise ValueError(
+                    f"in lumped mode the result parameter takes a value between 1 and 5, "
+                    f"given: {result}"
+                )
 
         logger.debug("Data is saved successfully")
 
@@ -1288,7 +1711,10 @@ class Lake:
         elif temporal_resolution.lower() == "hourly":
             self.Index = pd.date_range(start, end, freq="h")
         else:
-            assert False, "Error"
+            raise ValueError(
+                f"available temporal resolutions are 'daily' and 'hourly', got "
+                f"{temporal_resolution!r}"
+            )
 
         self.MeteoData: np.ndarray | None = None
         self.Parameters: list | None = None
@@ -1360,7 +1786,7 @@ class Lake:
 
         Raises:
             ValueError: If `lumped_model` is not a class.
-            AssertionError: If `initial_condition` is not a list.
+            TypeError: If `initial_condition` is not a list.
         """
         if not inspect.isclass(lumped_model):
             raise ValueError(
@@ -1373,8 +1799,10 @@ class Lake:
         self.LakeArea = lake_area
         self.InitialCond = initial_condition
 
-        if self.InitialCond is not None:
-            assert isinstance(self.InitialCond, list), "init_st should be of type list"
+        if self.InitialCond is not None and not isinstance(self.InitialCond, list):
+            raise TypeError(
+                f"init_st should be of type list, got {type(self.InitialCond).__name__}"
+            )
 
         self.Snow = snow
         self.OutflowCell = outflow_cell

@@ -35,7 +35,12 @@ dependencies = [
     "statista >=0.8.0",
     "Oasis-Optimization >=1.0.3",
     "cleopatra >=0.32.0",
-    "matplotlib >=3.11.0"
+    "matplotlib >=3.11.0",
+    "pyyaml >=6.0",
+    # Capped at the major boundary: `hapi.config` is built on pydantic 2's API -- ConfigDict
+    # spreading, `protected_namespaces=()`, `model_fields_set`, `Field(min_length=...)` on a
+    # list -- none of which a pydantic 3 is obliged to keep.
+    "pydantic >=2.0,<3"
 ]
 
 [project.optional-dependencies]
@@ -248,6 +253,18 @@ description = "Run the main test suite"
 [tool.pixi.tasks.test-all]
 cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing"
 description = "Run all test suite"
+
+[tool.pixi.tasks.doctests]
+# Not `src` as a whole: 19 doctests in the hbv / hbv_bergestrom92 / hbv_lake modules fail and
+# are why the pre-commit doctest hook is commented out. These four are green, and their
+# examples assert on concrete values read from real data, so they are worth running rather
+# than leaving as prose that drifts. Add a module here once its examples pass.
+cmd = [
+    "pytest", "--doctest-modules", "-p", "no:cacheprovider", "--no-cov",
+    "src/hapi/config.py", "src/hapi/catchment.py",
+    "src/hapi/inputs.py", "src/hapi/routing.py", "src/hapi/run.py",
+]
+description = "Run the doctests of the modules whose examples are executable"
 
 [tool.pixi.tasks.notebooks]
 cmd = "pytest --nbval --nbval-lax --verbose -p no:cacheprovider examples"

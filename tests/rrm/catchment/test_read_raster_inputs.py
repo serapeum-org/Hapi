@@ -14,6 +14,7 @@ equality, so such values now survive.
 
 from __future__ import annotations
 
+import datetime as dt
 import re
 from pathlib import Path
 
@@ -22,7 +23,7 @@ import pytest
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs, read_rasters
 
 CELL_SIZE = 4000.0
 """Cell size in metres used by every synthetic raster here (matches the Coello grid)."""
@@ -590,6 +591,28 @@ class TestDirectoryReaders:
             MeteoInputs.from_rasters(
                 str(empty), str(empty), str(empty), file_name_data_fmt="%Y.%m.%d"
             )
+
+    @pytest.mark.parametrize("bound", ["start", "end"])
+    def test_a_datetime_bound_needs_the_date_ordering(self, coello_prec_path, bound):
+        """Test that a datetime bound is refused when the rasters are ordered by index.
+
+        Args:
+            coello_prec_path: A folder of dated rasters.
+            bound: Which bound to pass as a datetime.
+
+        Test scenario:
+            With `date=False` the rasters are ordered by the number in their name, so the
+            bounds are indices and a datetime has no meaning -- `int()` would fail on it
+            several frames down, in a message naming neither the argument nor the mode.
+        """
+        bounds = {bound: dt.datetime(2009, 1, 1)}
+
+        with pytest.raises(TypeError, match="needs date=True") as exc:
+            read_rasters(coello_prec_path, date=False, **bounds)
+
+        assert "indices" in str(exc.value), (
+            f"the error should say what the bounds mean in this mode: {exc.value}"
+        )
 
 
 class TestReadFlowDir:
