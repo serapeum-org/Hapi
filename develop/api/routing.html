@@ -2037,7 +2037,12 @@ approaches:</p>
 <span class="normal">390</span>
 <span class="normal">391</span>
 <span class="normal">392</span>
-<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Routing methods for translating and attenuating discharge hydrographs.</span>
 
 <span class="sd">    This class provides static methods for two families of routing</span>
@@ -2240,7 +2245,12 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; q_routed = Routing.triangular_routing_2(q, maxbas=3)</span>
 <span class="sd">        """</span>
         <span class="c1"># input data validation</span>
-        <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+        <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+        <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+        <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+        <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Get integer part of maxbas</span>
@@ -2560,12 +2570,7 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/routing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
 <span class="normal">245</span>
@@ -2647,7 +2652,12 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 <span class="normal">321</span>
 <span class="normal">322</span>
 <span class="normal">323</span>
-<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_weights</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate triangular routing weights for a given MAXBAS value.</span>
 
@@ -3585,12 +3595,7 @@ length as <code>Q</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/routing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
@@ -3652,7 +3657,12 @@ length as <code>Q</code>.</p>
 <span class="normal">390</span>
 <span class="normal">391</span>
 <span class="normal">392</span>
-<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_1</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">MAXBAS</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge using triangular weights (fractional MAXBAS).</span>
 
@@ -3906,7 +3916,12 @@ length as <code>q</code>.</p>
 <span class="normal">232</span>
 <span class="normal">233</span>
 <span class="normal">234</span>
-<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_2</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge using a triangular transfer function (integer MAXBAS).</span>
 
@@ -3936,7 +3951,12 @@ length as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; q_routed = Routing.triangular_routing_2(q, maxbas=3)</span>
 <span class="sd">    """</span>
     <span class="c1"># input data validation</span>
-    <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+    <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+    <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+    <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+    <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Get integer part of maxbas</span>

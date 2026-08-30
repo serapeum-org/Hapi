@@ -2218,7 +2218,10 @@ calibration.</p>
 <span class="normal">632</span>
 <span class="normal">633</span>
 <span class="normal">634</span>
-<span class="normal">635</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calibration class for distributed hydrological model parameter optimization.</span>
 
 <span class="sd">    The Calibration class connects the parameter spatial distribution function</span>
@@ -2409,8 +2412,9 @@ calibration.</p>
 <span class="sd">                - res[1]: The optimal parameter set.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If input dimensions are inconsistent or if</span>
-<span class="sd">                optimization arguments are not dictionaries.</span>
+<span class="sd">            ValueError: If input dimensions are inconsistent.</span>
+<span class="sd">            TypeError: If either bundle of optimization arguments is not a</span>
+<span class="sd">                dict.</span>
 <span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
@@ -2556,8 +2560,9 @@ calibration.</p>
 <span class="sd">                - res[1]: The optimal parameter set.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If input dimensions are inconsistent or if</span>
-<span class="sd">                optimization arguments are not dictionaries.</span>
+<span class="sd">            ValueError: If input dimensions are inconsistent.</span>
+<span class="sd">            TypeError: If either bundle of optimization arguments is not a</span>
+<span class="sd">                dict.</span>
 <span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
@@ -2692,8 +2697,9 @@ calibration.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If `basic_inputs` is missing required keys</span>
-<span class="sd">                `"Route"` or `"RoutingFn"`, or if optimization</span>
-<span class="sd">                arguments are not dictionaries.</span>
+<span class="sd">                `"Route"` or `"RoutingFn"`.</span>
+<span class="sd">            TypeError: If either bundle of optimization arguments is not a</span>
+<span class="sd">                dict.</span>
 <span class="sd">        """</span>
         <span class="c1"># basic inputs</span>
         <span class="c1"># check if all inputs are included</span>
@@ -2953,8 +2959,18 @@ at each iteration. Default is None.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If input dimensions are inconsistent or if
-optimization arguments are not dictionaries.</p>
+                <p>If input dimensions are inconsistent.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="TypeError">TypeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If either bundle of optimization arguments is not a
+dict.</p>
               </div>
             </td>
           </tr>
@@ -2964,8 +2980,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">348</span>
-<span class="normal">349</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
 <span class="normal">352</span>
@@ -3093,7 +3108,9 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">474</span>
 <span class="normal">475</span>
 <span class="normal">476</span>
-<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -3136,8 +3153,9 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">            - res[1]: The optimal parameter set.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If input dimensions are inconsistent or if</span>
-<span class="sd">            optimization arguments are not dictionaries.</span>
+<span class="sd">        ValueError: If input dimensions are inconsistent.</span>
+<span class="sd">        TypeError: If either bundle of optimization arguments is not a</span>
+<span class="sd">            dict.</span>
 <span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
@@ -3834,8 +3852,18 @@ values at each iteration. Default is None.</p>
             <td>
               <div class="doc-md-description">
                 <p>If <code>basic_inputs</code> is missing required keys
-<code>"Route"</code> or <code>"RoutingFn"</code>, or if optimization
-arguments are not dictionaries.</p>
+<code>"Route"</code> or <code>"RoutingFn"</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="TypeError">TypeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If either bundle of optimization arguments is not a
+dict.</p>
               </div>
             </td>
           </tr>
@@ -3845,9 +3873,7 @@ arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">481</span>
 <span class="normal">482</span>
 <span class="normal">483</span>
 <span class="normal">484</span>
@@ -4001,7 +4027,10 @@ arguments are not dictionaries.</p>
 <span class="normal">632</span>
 <span class="normal">633</span>
 <span class="normal">634</span>
-<span class="normal">635</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4049,8 +4078,9 @@ arguments are not dictionaries.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If `basic_inputs` is missing required keys</span>
-<span class="sd">            `"Route"` or `"RoutingFn"`, or if optimization</span>
-<span class="sd">            arguments are not dictionaries.</span>
+<span class="sd">            `"Route"` or `"RoutingFn"`.</span>
+<span class="sd">        TypeError: If either bundle of optimization arguments is not a</span>
+<span class="sd">            dict.</span>
 <span class="sd">    """</span>
     <span class="c1"># basic inputs</span>
     <span class="c1"># check if all inputs are included</span>
@@ -4474,8 +4504,18 @@ at each iteration. Default is None.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If input dimensions are inconsistent or if
-optimization arguments are not dictionaries.</p>
+                <p>If input dimensions are inconsistent.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="TypeError">TypeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If either bundle of optimization arguments is not a
+dict.</p>
               </div>
             </td>
           </tr>
@@ -4634,7 +4674,8 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
-<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">346</span>
+<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4681,8 +4722,9 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">            - res[1]: The optimal parameter set.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If input dimensions are inconsistent or if</span>
-<span class="sd">            optimization arguments are not dictionaries.</span>
+<span class="sd">        ValueError: If input dimensions are inconsistent.</span>
+<span class="sd">        TypeError: If either bundle of optimization arguments is not a</span>
+<span class="sd">            dict.</span>
 <span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>

@@ -2422,7 +2422,12 @@ concrete implementations of all required subroutines.</p>
 <span class="normal">802</span>
 <span class="normal">803</span>
 <span class="normal">804</span>
-<span class="normal">805</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBV</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBV</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""HBV-96 lumped conceptual rainfall-runoff model.</span>
 
 <span class="sd">    The HBV (Hydrologiska Byrans Vattenbalansavdelning) model is a</span>
@@ -2837,7 +2842,12 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            &gt;&gt;&gt; print(q_routed.round(4))</span>
 <span class="sd">            [0.   0.   2.5  4.   2.5  0.5]</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+        <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+        <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+        <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+        <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># Get integer part of maxbas</span>
         <span class="c1">#    maxbas = int(maxbas)</span>
@@ -3987,7 +3997,12 @@ length as <code>q</code>.</p>
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span>
-<span class="normal">515</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge through a triangular transfer function.</span>
 
 <span class="sd">    Applies the triangular transfer function to the discharge time</span>
@@ -4016,7 +4031,12 @@ length as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; print(q_routed.round(4))</span>
 <span class="sd">        [0.   0.   2.5  4.   2.5  0.5]</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+    <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+    <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+    <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+    <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="c1"># Get integer part of maxbas</span>
     <span class="c1">#    maxbas = int(maxbas)</span>
@@ -4297,12 +4317,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">698</span>
 <span class="normal">699</span>
 <span class="normal">700</span>
 <span class="normal">701</span>
@@ -4409,7 +4424,12 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="normal">802</span>
 <span class="normal">803</span>
 <span class="normal">804</span>
-<span class="normal">805</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the HBV model for the full precipitation time series.</span>
@@ -5607,12 +5627,7 @@ does not have 18 elements.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">522</span>
 <span class="normal">523</span>
 <span class="normal">524</span>
 <span class="normal">525</span>
@@ -5781,7 +5796,12 @@ does not have 18 elements.</p>
 <span class="normal">688</span>
 <span class="normal">689</span>
 <span class="normal">690</span>
-<span class="normal">691</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step_run</span><span class="p">(</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step_run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">state_variable</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Execute a single time step of the HBV model.</span>

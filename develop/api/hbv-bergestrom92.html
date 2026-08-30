@@ -2280,7 +2280,12 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
-<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVBergestrom92</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBVBergestrom92</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""HBV Bergestrom 1992 lumped conceptual hydrological model.</span>
 
 <span class="sd">    This class implements the HBV-96 model variant based on</span>
@@ -2678,7 +2683,12 @@ the <code>precipitation</code>, <code>snow</code>, <code>soil</code>, <code>resp
 <span class="sd">            &gt;&gt;&gt; len(q_r) == len(q)</span>
 <span class="sd">            True</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+        <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+        <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+        <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+        <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># Get integer part of maxbas</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -3757,7 +3767,12 @@ shape as <code>q</code>.</p>
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Apply triangular transfer function routing to discharge.</span>
 
 <span class="sd">    Routes the discharge signal through a triangular transfer</span>
@@ -3785,7 +3800,12 @@ shape as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; len(q_r) == len(q)</span>
 <span class="sd">        True</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+    <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+    <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+    <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+    <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="c1"># Get integer part of maxbas</span>
     <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -4044,12 +4064,7 @@ Defaults to 0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv_bergestrom92.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
 <span class="normal">461</span>
@@ -4223,7 +4238,12 @@ Defaults to 0.</p>
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
-<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Run the HBV Bergestrom92 model simulation.</span>
