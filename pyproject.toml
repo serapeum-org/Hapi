@@ -259,7 +259,11 @@ description = "Run all test suite"
 # are why the pre-commit doctest hook is commented out. These four are green, and their
 # examples assert on concrete values read from real data, so they are worth running rather
 # than leaving as prose that drifts. Add a module here once its examples pass.
-cmd = "pytest --doctest-modules -p no:cacheprovider --no-cov src/hapi/config.py src/hapi/catchment.py src/hapi/inputs.py src/hapi/routing.py"
+cmd = [
+    "pytest", "--doctest-modules", "-p", "no:cacheprovider", "--no-cov",
+    "src/hapi/config.py", "src/hapi/catchment.py",
+    "src/hapi/inputs.py", "src/hapi/routing.py",
+]
 description = "Run the doctests of the modules whose examples are executable"
 
 [tool.pixi.tasks.notebooks]
