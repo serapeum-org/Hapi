@@ -3326,7 +3326,20 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="normal">1512</span>
 <span class="normal">1513</span>
 <span class="normal">1514</span>
-<span class="normal">1515</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">1515</span>
+<span class="normal">1516</span>
+<span class="normal">1517</span>
+<span class="normal">1518</span>
+<span class="normal">1519</span>
+<span class="normal">1520</span>
+<span class="normal">1521</span>
+<span class="normal">1522</span>
+<span class="normal">1523</span>
+<span class="normal">1524</span>
+<span class="normal">1525</span>
+<span class="normal">1526</span>
+<span class="normal">1527</span>
+<span class="normal">1528</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MeteoInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.</span>
 
@@ -3821,8 +3834,9 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="sd">            MeteoInputs: The three cubes plus the calendar, windowed to the requested period.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: A field the chosen source needs is unset. `RunConfig` rejects such a</span>
-<span class="sd">                configuration, so this only fires for a `MeteoConfig` built by hand.</span>
+<span class="sd">            ValueError: A field the chosen source needs is unset -- one of the three drivers, or</span>
+<span class="sd">                `path` for `source="netcdf"`. `RunConfig` rejects such a configuration, so this</span>
+<span class="sd">                only fires for a `MeteoConfig` built by hand.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            - Load a combined NetCDF by naming the variable each driver sits in:</span>
@@ -3874,13 +3888,21 @@ cross-checking against the model's own date index; the run itself is positional.
         <span class="n">start</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">start</span> <span class="ow">or</span> <span class="n">start</span>
         <span class="n">end</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">end</span> <span class="ow">or</span> <span class="n">end</span>
 
-        <span class="c1"># Optional on the model because a lumped configuration sets none of them; every</span>
-        <span class="c1"># distributed source needs all three, which `RunConfig` enforces before this runs.</span>
-        <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meteo.precipitation is required"</span>
-        <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">temperature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meteo.temperature is required"</span>
-        <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">"meteo.evapotranspiration is required"</span>
-        <span class="p">)</span>
+        <span class="c1"># The three are optional on the model because a lumped configuration sets none of them,</span>
+        <span class="c1"># while every distributed source needs all three. `RunConfig` enforces that, so reaching</span>
+        <span class="c1"># the raise means a `MeteoConfig` was built by hand. Bound to locals so the check both</span>
+        <span class="c1"># reports what is missing and narrows the type for the calls below.</span>
+        <span class="n">precipitation</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span>
+        <span class="n">temperature</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">temperature</span>
+        <span class="n">evapotranspiration</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span>
+        <span class="k">if</span> <span class="n">precipitation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">temperature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">evapotranspiration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">METEO_VARIABLES</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"MeteoInputs needs all three drivers; the configuration leaves "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> unset"</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"rasters"</span><span class="p">:</span>
             <span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -3889,9 +3911,9 @@ cross-checking against the model's own date index; the run itself is positional.
             <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">gdal_env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">extra</span><span class="p">[</span><span class="s2">"gdal_env"</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">gdal_env</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span><span class="p">,</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">,</span>
+                <span class="n">precipitation</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="p">,</span>
+                <span class="n">evapotranspiration</span><span class="p">,</span>
                 <span class="n">glob</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">glob</span><span class="p">,</span>
                 <span class="n">regex_string</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">regex_string</span><span class="p">,</span>
                 <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
@@ -3902,21 +3924,25 @@ cross-checking against the model's own date index; the run itself is positional.
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meteo.path is required for source 'netcdf'"</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"source 'netcdf' reads the three drivers out of one file, so the "</span>
+                    <span class="s2">"configuration must set meteo.path"</span>
+                <span class="p">)</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
                 <span class="n">config</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-                <span class="n">precipitation</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">precipitation</span><span class="p">,</span>
-                <span class="n">temperature</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-                <span class="n">evapotranspiration</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">,</span>
+                <span class="n">precipitation</span><span class="o">=</span><span class="n">precipitation</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+                <span class="n">evapotranspiration</span><span class="o">=</span><span class="n">evapotranspiration</span><span class="p">,</span>
                 <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
                 <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                 <span class="n">fmt</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fmt</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_netcdf_files</span><span class="p">(</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span><span class="p">,</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">,</span>
+            <span class="n">precipitation</span><span class="p">,</span>
+            <span class="n">temperature</span><span class="p">,</span>
+            <span class="n">evapotranspiration</span><span class="p">,</span>
             <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
             <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
             <span class="n">fmt</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fmt</span><span class="p">,</span>
@@ -4630,20 +4656,7 @@ contributes would be a guess.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1358</span>
-<span class="normal">1359</span>
-<span class="normal">1360</span>
-<span class="normal">1361</span>
-<span class="normal">1362</span>
-<span class="normal">1363</span>
-<span class="normal">1364</span>
-<span class="normal">1365</span>
-<span class="normal">1366</span>
-<span class="normal">1367</span>
-<span class="normal">1368</span>
-<span class="normal">1369</span>
-<span class="normal">1370</span>
-<span class="normal">1371</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1371</span>
 <span class="normal">1372</span>
 <span class="normal">1373</span>
 <span class="normal">1374</span>
@@ -4697,7 +4710,20 @@ contributes would be a guess.</p>
 <span class="normal">1422</span>
 <span class="normal">1423</span>
 <span class="normal">1424</span>
-<span class="normal">1425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1425</span>
+<span class="normal">1426</span>
+<span class="normal">1427</span>
+<span class="normal">1428</span>
+<span class="normal">1429</span>
+<span class="normal">1430</span>
+<span class="normal">1431</span>
+<span class="normal">1432</span>
+<span class="normal">1433</span>
+<span class="normal">1434</span>
+<span class="normal">1435</span>
+<span class="normal">1436</span>
+<span class="normal">1437</span>
+<span class="normal">1438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_netcdf_files</span><span class="p">(</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -4901,12 +4927,13 @@ the period the model spans. <code>None</code> leaves the lower bound open.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A field the chosen source needs is unset. <code>RunConfig</code> rejects such a
-configuration, so this only fires for a <code>MeteoConfig</code> built by hand.</p>
+                <p>A field the chosen source needs is unset -- one of the three drivers, or
+<code>path</code> for <code>source="netcdf"</code>. <code>RunConfig</code> rejects such a configuration, so this
+only fires for a <code>MeteoConfig</code> built by hand.</p>
               </div>
             </td>
           </tr>
@@ -5087,7 +5114,20 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 <span class="normal">1262</span>
 <span class="normal">1263</span>
 <span class="normal">1264</span>
-<span class="normal">1265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1265</span>
+<span class="normal">1266</span>
+<span class="normal">1267</span>
+<span class="normal">1268</span>
+<span class="normal">1269</span>
+<span class="normal">1270</span>
+<span class="normal">1271</span>
+<span class="normal">1272</span>
+<span class="normal">1273</span>
+<span class="normal">1274</span>
+<span class="normal">1275</span>
+<span class="normal">1276</span>
+<span class="normal">1277</span>
+<span class="normal">1278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_config</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">MeteoConfig</span><span class="p">,</span>
@@ -5111,8 +5151,9 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 <span class="sd">        MeteoInputs: The three cubes plus the calendar, windowed to the requested period.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: A field the chosen source needs is unset. `RunConfig` rejects such a</span>
-<span class="sd">            configuration, so this only fires for a `MeteoConfig` built by hand.</span>
+<span class="sd">        ValueError: A field the chosen source needs is unset -- one of the three drivers, or</span>
+<span class="sd">            `path` for `source="netcdf"`. `RunConfig` rejects such a configuration, so this</span>
+<span class="sd">            only fires for a `MeteoConfig` built by hand.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        - Load a combined NetCDF by naming the variable each driver sits in:</span>
@@ -5164,13 +5205,21 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
     <span class="n">start</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">start</span> <span class="ow">or</span> <span class="n">start</span>
     <span class="n">end</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">end</span> <span class="ow">or</span> <span class="n">end</span>
 
-    <span class="c1"># Optional on the model because a lumped configuration sets none of them; every</span>
-    <span class="c1"># distributed source needs all three, which `RunConfig` enforces before this runs.</span>
-    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meteo.precipitation is required"</span>
-    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">temperature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meteo.temperature is required"</span>
-    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">"meteo.evapotranspiration is required"</span>
-    <span class="p">)</span>
+    <span class="c1"># The three are optional on the model because a lumped configuration sets none of them,</span>
+    <span class="c1"># while every distributed source needs all three. `RunConfig` enforces that, so reaching</span>
+    <span class="c1"># the raise means a `MeteoConfig` was built by hand. Bound to locals so the check both</span>
+    <span class="c1"># reports what is missing and narrows the type for the calls below.</span>
+    <span class="n">precipitation</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">temperature</span>
+    <span class="n">evapotranspiration</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span>
+    <span class="k">if</span> <span class="n">precipitation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">temperature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">evapotranspiration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">METEO_VARIABLES</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"MeteoInputs needs all three drivers; the configuration leaves "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> unset"</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"rasters"</span><span class="p">:</span>
         <span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -5179,9 +5228,9 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">gdal_env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">extra</span><span class="p">[</span><span class="s2">"gdal_env"</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">gdal_env</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span><span class="p">,</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">,</span>
+            <span class="n">precipitation</span><span class="p">,</span>
+            <span class="n">temperature</span><span class="p">,</span>
+            <span class="n">evapotranspiration</span><span class="p">,</span>
             <span class="n">glob</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">glob</span><span class="p">,</span>
             <span class="n">regex_string</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">regex_string</span><span class="p">,</span>
             <span class="n">file_name_data_fmt</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">file_name_data_fmt</span><span class="p">,</span>
@@ -5192,21 +5241,25 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meteo.path is required for source 'netcdf'"</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"source 'netcdf' reads the three drivers out of one file, so the "</span>
+                <span class="s2">"configuration must set meteo.path"</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
             <span class="n">config</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-            <span class="n">precipitation</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">precipitation</span><span class="p">,</span>
-            <span class="n">temperature</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-            <span class="n">evapotranspiration</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">,</span>
+            <span class="n">precipitation</span><span class="o">=</span><span class="n">precipitation</span><span class="p">,</span>
+            <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+            <span class="n">evapotranspiration</span><span class="o">=</span><span class="n">evapotranspiration</span><span class="p">,</span>
             <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
             <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
             <span class="n">fmt</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fmt</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_netcdf_files</span><span class="p">(</span>
-        <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span><span class="p">,</span>
-        <span class="n">config</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-        <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">,</span>
+        <span class="n">precipitation</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">,</span>
+        <span class="n">evapotranspiration</span><span class="p">,</span>
         <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
         <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
         <span class="n">fmt</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fmt</span><span class="p">,</span>
@@ -6726,20 +6779,7 @@ time axis to write.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1267</span>
-<span class="normal">1268</span>
-<span class="normal">1269</span>
-<span class="normal">1270</span>
-<span class="normal">1271</span>
-<span class="normal">1272</span>
-<span class="normal">1273</span>
-<span class="normal">1274</span>
-<span class="normal">1275</span>
-<span class="normal">1276</span>
-<span class="normal">1277</span>
-<span class="normal">1278</span>
-<span class="normal">1279</span>
-<span class="normal">1280</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1280</span>
 <span class="normal">1281</span>
 <span class="normal">1282</span>
 <span class="normal">1283</span>
@@ -6815,7 +6855,20 @@ time axis to write.</p>
 <span class="normal">1353</span>
 <span class="normal">1354</span>
 <span class="normal">1355</span>
-<span class="normal">1356</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1356</span>
+<span class="normal">1357</span>
+<span class="normal">1358</span>
+<span class="normal">1359</span>
+<span class="normal">1360</span>
+<span class="normal">1361</span>
+<span class="normal">1362</span>
+<span class="normal">1363</span>
+<span class="normal">1364</span>
+<span class="normal">1365</span>
+<span class="normal">1366</span>
+<span class="normal">1367</span>
+<span class="normal">1368</span>
+<span class="normal">1369</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">raster_folder_to_netcdf</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">out_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -9432,20 +9485,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1540</span>
-<span class="normal">1541</span>
-<span class="normal">1542</span>
-<span class="normal">1543</span>
-<span class="normal">1544</span>
-<span class="normal">1545</span>
-<span class="normal">1546</span>
-<span class="normal">1547</span>
-<span class="normal">1548</span>
-<span class="normal">1549</span>
-<span class="normal">1550</span>
-<span class="normal">1551</span>
-<span class="normal">1552</span>
-<span class="normal">1553</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1553</span>
 <span class="normal">1554</span>
 <span class="normal">1555</span>
 <span class="normal">1556</span>
@@ -9808,7 +9848,20 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="normal">1913</span>
 <span class="normal">1914</span>
 <span class="normal">1915</span>
-<span class="normal">1916</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
+<span class="normal">1916</span>
+<span class="normal">1917</span>
+<span class="normal">1918</span>
+<span class="normal">1919</span>
+<span class="normal">1920</span>
+<span class="normal">1921</span>
+<span class="normal">1922</span>
+<span class="normal">1923</span>
+<span class="normal">1924</span>
+<span class="normal">1925</span>
+<span class="normal">1926</span>
+<span class="normal">1927</span>
+<span class="normal">1928</span>
+<span class="normal">1929</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Rainfall-runoff inputs preparation for distributed hydrological models.</span>
 
 <span class="sd">    The Inputs class provides methods to prepare meteorological and parameter</span>
@@ -10248,16 +10301,16 @@ extension (e.g., <code>"data/dem.tif"</code>).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1558</span>
-<span class="normal">1559</span>
-<span class="normal">1560</span>
-<span class="normal">1561</span>
-<span class="normal">1562</span>
-<span class="normal">1563</span>
-<span class="normal">1564</span>
-<span class="normal">1565</span>
-<span class="normal">1566</span>
-<span class="normal">1567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1571</span>
+<span class="normal">1572</span>
+<span class="normal">1573</span>
+<span class="normal">1574</span>
+<span class="normal">1575</span>
+<span class="normal">1576</span>
+<span class="normal">1577</span>
+<span class="normal">1578</span>
+<span class="normal">1579</span>
+<span class="normal">1580</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the Inputs instance with a reference DEM path.</span>
 
 <span class="sd">    Args:</span>
@@ -10525,20 +10578,7 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1788</span>
-<span class="normal">1789</span>
-<span class="normal">1790</span>
-<span class="normal">1791</span>
-<span class="normal">1792</span>
-<span class="normal">1793</span>
-<span class="normal">1794</span>
-<span class="normal">1795</span>
-<span class="normal">1796</span>
-<span class="normal">1797</span>
-<span class="normal">1798</span>
-<span class="normal">1799</span>
-<span class="normal">1800</span>
-<span class="normal">1801</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1801</span>
 <span class="normal">1802</span>
 <span class="normal">1803</span>
 <span class="normal">1804</span>
@@ -10629,7 +10669,20 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 <span class="normal">1889</span>
 <span class="normal">1890</span>
 <span class="normal">1891</span>
-<span class="normal">1892</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1892</span>
+<span class="normal">1893</span>
+<span class="normal">1894</span>
+<span class="normal">1895</span>
+<span class="normal">1896</span>
+<span class="normal">1897</span>
+<span class="normal">1898</span>
+<span class="normal">1899</span>
+<span class="normal">1900</span>
+<span class="normal">1901</span>
+<span class="normal">1902</span>
+<span class="normal">1903</span>
+<span class="normal">1904</span>
+<span class="normal">1905</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">"</span><span class="p">,</span>
@@ -10926,20 +10979,7 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1716</span>
-<span class="normal">1717</span>
-<span class="normal">1718</span>
-<span class="normal">1719</span>
-<span class="normal">1720</span>
-<span class="normal">1721</span>
-<span class="normal">1722</span>
-<span class="normal">1723</span>
-<span class="normal">1724</span>
-<span class="normal">1725</span>
-<span class="normal">1726</span>
-<span class="normal">1727</span>
-<span class="normal">1728</span>
-<span class="normal">1729</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1729</span>
 <span class="normal">1730</span>
 <span class="normal">1731</span>
 <span class="normal">1732</span>
@@ -10996,7 +11036,20 @@ exist.</p>
 <span class="normal">1783</span>
 <span class="normal">1784</span>
 <span class="normal">1785</span>
-<span class="normal">1786</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
+<span class="normal">1786</span>
+<span class="normal">1787</span>
+<span class="normal">1788</span>
+<span class="normal">1789</span>
+<span class="normal">1790</span>
+<span class="normal">1791</span>
+<span class="normal">1792</span>
+<span class="normal">1793</span>
+<span class="normal">1794</span>
+<span class="normal">1795</span>
+<span class="normal">1796</span>
+<span class="normal">1797</span>
+<span class="normal">1798</span>
+<span class="normal">1799</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -11197,20 +11250,7 @@ not set.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1652</span>
-<span class="normal">1653</span>
-<span class="normal">1654</span>
-<span class="normal">1655</span>
-<span class="normal">1656</span>
-<span class="normal">1657</span>
-<span class="normal">1658</span>
-<span class="normal">1659</span>
-<span class="normal">1660</span>
-<span class="normal">1661</span>
-<span class="normal">1662</span>
-<span class="normal">1663</span>
-<span class="normal">1664</span>
-<span class="normal">1665</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1665</span>
 <span class="normal">1666</span>
 <span class="normal">1667</span>
 <span class="normal">1668</span>
@@ -11259,7 +11299,20 @@ not set.</p>
 <span class="normal">1711</span>
 <span class="normal">1712</span>
 <span class="normal">1713</span>
-<span class="normal">1714</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1714</span>
+<span class="normal">1715</span>
+<span class="normal">1716</span>
+<span class="normal">1717</span>
+<span class="normal">1718</span>
+<span class="normal">1719</span>
+<span class="normal">1720</span>
+<span class="normal">1721</span>
+<span class="normal">1722</span>
+<span class="normal">1723</span>
+<span class="normal">1724</span>
+<span class="normal">1725</span>
+<span class="normal">1726</span>
+<span class="normal">1727</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract upper and lower parameter boundaries for a catchment.</span>
 
@@ -11495,20 +11548,7 @@ irrelevant here and the rasters are read unordered.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1569</span>
-<span class="normal">1570</span>
-<span class="normal">1571</span>
-<span class="normal">1572</span>
-<span class="normal">1573</span>
-<span class="normal">1574</span>
-<span class="normal">1575</span>
-<span class="normal">1576</span>
-<span class="normal">1577</span>
-<span class="normal">1578</span>
-<span class="normal">1579</span>
-<span class="normal">1580</span>
-<span class="normal">1581</span>
-<span class="normal">1582</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1582</span>
 <span class="normal">1583</span>
 <span class="normal">1584</span>
 <span class="normal">1585</span>
@@ -11576,7 +11616,20 @@ irrelevant here and the rasters are read unordered.
 <span class="normal">1647</span>
 <span class="normal">1648</span>
 <span class="normal">1649</span>
-<span class="normal">1650</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
+<span class="normal">1650</span>
+<span class="normal">1651</span>
+<span class="normal">1652</span>
+<span class="normal">1653</span>
+<span class="normal">1654</span>
+<span class="normal">1655</span>
+<span class="normal">1656</span>
+<span class="normal">1657</span>
+<span class="normal">1658</span>
+<span class="normal">1659</span>
+<span class="normal">1660</span>
+<span class="normal">1661</span>
+<span class="normal">1662</span>
+<span class="normal">1663</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Align and crop input rasters to match the source DEM.</span>
 
 <span class="sd">    Reads all rasters from `inputs_dir`, aligns them to the source</span>
