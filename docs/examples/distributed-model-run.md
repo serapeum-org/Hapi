@@ -1,4 +1,11 @@
 # Distributed Hydrological Model
+
+!!! tip "Or drive it from a YAML file"
+
+    Everything this page assembles in Python can live in a run configuration instead --
+    one file holding the paths, dates and settings, read by `Catchment.from_yaml`. See
+    [Run configuration](run-configuration.md).
+
 After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment
 
 ```python

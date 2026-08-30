@@ -126,6 +126,7 @@ nav:
       - examples/meteo-inputs.md
       - examples/muskingum.md
       - examples/parameters.md
+      - examples/run-configuration.md
   - Change logs: change-log.md
 
 extra:

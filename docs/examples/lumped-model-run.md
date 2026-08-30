@@ -1,4 +1,11 @@
 # Lumped Model Run
+
+!!! tip "Or drive it from a YAML file"
+
+    Everything this page assembles in Python can live in a run configuration instead --
+    one file holding the paths, dates and settings, read by `Catchment.from_yaml`. See
+    [Run configuration](run-configuration.md).
+
 To run the HBV lumped model inside Hapi you need to prepare the meteorological inputs (rainfall, temperature and potential evapotranspiration), HBV parameters, and the HBV model (you can load Bergström, 1992 version of HBV from Hapi )
 
 - First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
