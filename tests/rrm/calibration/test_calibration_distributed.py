@@ -475,11 +475,16 @@ class TestLumpedCalibration:
             InitialValues=[0.5, 0.5, 0.5],
         )
 
-        with pytest.raises(ValueError, match="one value per parameter") as exc:
-            coello.lumpedCalibration(basic_inputs, _optimization_args())
+        optimization_args = _optimization_args()
 
-        assert "3" in str(exc.value) and "12" in str(exc.value), (
-            f"the error should name both lengths: {exc.value}"
+        with pytest.raises(ValueError, match="one value per parameter") as exc:
+            coello.lumpedCalibration(basic_inputs, optimization_args)
+
+        assert "3" in str(exc.value), (
+            f"the error should name the given length: {exc.value}"
+        )
+        assert "12" in str(exc.value), (
+            f"the error should name the expected length too: {exc.value}"
         )
         assert "n_vars" not in stub_optimizer, (
             "the optimiser must not be reached when the seed does not match the bounds"
