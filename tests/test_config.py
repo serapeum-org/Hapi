@@ -513,6 +513,70 @@ class TestRunConfigCrossFieldRules:
         assert config.gauges is None, "gauges should be absent, not defaulted"
 
 
+class TestRoutingMethodNormalisation:
+    """Tests for the `routing_method` canonicalisation in `Catchment.__init__`."""
+
+    @pytest.mark.parametrize(
+        "given, stored",
+        [
+            ("muskingum", "Muskingum"),
+            ("Muskingum", "Muskingum"),
+            ("MUSKINGUM", "Muskingum"),
+            ("maxbas", "MAXBAS"),
+            ("MAXBAS", "MAXBAS"),
+            ("kinematic", "Kinematic"),
+        ],
+    )
+    def test_any_casing_is_stored_canonically(self, given, stored):
+        """Test that the constructor stores one spelling whatever casing it is handed.
+
+        Args:
+            given: The spelling passed to the constructor.
+            stored: The canonical spelling expected on the model.
+
+        Test scenario:
+            `distrrm.SpatialRouting` compares `routing_method != "Muskingum"` exactly, and its
+            false branch reads `bankfull_depth`, which is None outside the flood model. A
+            lower-case "muskingum" stored verbatim therefore routed every cell down the MAXBAS
+            branch and raised `TypeError: 'NoneType' object is not subscriptable`.
+        """
+        model = Catchment(
+            "coello", "2009-01-01", "2009-01-10", routing_method=given
+        )
+
+        assert model.routing_method == stored, (
+            f"{given!r} should be stored as {stored!r}, got {model.routing_method!r}"
+        )
+
+    def test_kinematic_is_accepted_for_the_flood_model(self):
+        """Test that the flood model's routing method is still a legal value.
+
+        Test scenario:
+            `Run.RunFloodModel` relies on the same `!= "Muskingum"` comparison to skip cells
+            with a real `bankfull_depth`, so "Kinematic" is a working value and must not be
+            rejected by the new validation.
+        """
+        model = Catchment(
+            "coello", "2009-01-01", "2009-01-10", routing_method="Kinematic"
+        )
+
+        assert model.routing_method == "Kinematic"
+
+    def test_an_unknown_routing_method_is_refused(self):
+        """Test that an unrecognised routing method fails at construction.
+
+        Test scenario:
+            Any unknown spelling silently selects the non-Muskingum branch downstream, so it
+            has to be caught here rather than surface as a `TypeError` on `bankfull_depth`.
+        """
+        with pytest.raises(ValueError, match="available routing methods") as exc:
+            Catchment("coello", "2009-01-01", "2009-01-10", routing_method="diffusive")
+
+        assert "diffusive" in str(exc.value), (
+            f"the error should echo the value given: {exc.value}"
+        )
+
+
 class TestCatchmentFromYaml:
     """Tests for `Catchment.from_yaml`, which turns a configuration into a built model."""
 

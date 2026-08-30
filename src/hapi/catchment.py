@@ -68,14 +68,16 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
     "HBV": HBV,
 }
 
-#: `__init__` stores `routing_method` verbatim, with none of the case-folding it applies to
-#: `spatial_resolution` / `temporal_resolution`. `distrrm.SpatialRouting` -- the Muskingum loop
-#: `Run.RunHapi` reaches -- then tests `Model.routing_method != "Muskingum"`, an exact,
-#: case-sensitive match. Any other spelling sends every cell down the MAXBAS branch, which reads
-#: `bankfull_depth`: None outside the flood model, so a `TypeError`. The YAML vocabulary is
-#: lower case, so it is translated here to the literal the internals expect. MAXBAS never
-#: reaches that comparison, so its label is cosmetic.
-_ROUTING_METHOD_LABELS = {"muskingum": "Muskingum", "maxbas": "MAXBAS"}
+#: Accepted routing methods, mapped to the one spelling the internals compare against.
+#: `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` exactly, so the constructor
+#: canonicalises rather than storing what it was handed. `"Kinematic"` belongs here because
+#: that comparison is also how the flood model selects its own path: a non-Muskingum method
+#: with a real `bankfull_depth` skips the cell, which `Run.RunFloodModel` relies on.
+ROUTING_METHODS = {
+    "muskingum": "Muskingum",
+    "maxbas": "MAXBAS",
+    "kinematic": "Kinematic",
+}
 
 
 @contextmanager
@@ -134,14 +136,17 @@ class Catchment:
                 "Distributed". Default is "Lumped".
             temporal_resolution (str, optional): "Hourly" or "Daily".
                 Default is "Daily".
-            routing_method (str, optional): Routing method name.
-                Default is "Muskingum".
+            routing_method (str, optional): "Muskingum", "MAXBAS" or
+                "Kinematic", matched case-insensitively and stored
+                canonicalised. Default is "Muskingum".
 
         Raises:
             ValueError: If `spatial_resolution` is not "lumped" or
                 "distributed".
             ValueError: If `temporal_resolution` is not "daily" or
                 "hourly".
+            ValueError: If `routing_method` is not "Muskingum", "MAXBAS" or
+                "Kinematic".
         """
         self.name = name
         self.start = dt.datetime.strptime(start_data, fmt)
@@ -170,7 +175,17 @@ class Catchment:
             self.conversion_factor = CONVERSION_FACTOR * 1 / 24
             self.date_index = pd.date_range(self.start, self.end, freq="h")
 
-        self.routing_method = routing_method
+        # Canonicalised like the two resolutions above, and for a sharper reason:
+        # `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` case-sensitively, and
+        # the false branch reads `bankfull_depth`, which is None outside the flood model. Left
+        # verbatim, a lower-case "muskingum" therefore routed every cell down the MAXBAS branch
+        # and raised `TypeError: 'NoneType' object is not subscriptable`.
+        if routing_method.lower() not in ROUTING_METHODS:
+            raise ValueError(
+                f"available routing methods are {', '.join(map(repr, ROUTING_METHODS))}, "
+                f"got {routing_method!r}"
+            )
+        self.routing_method = ROUTING_METHODS[routing_method.lower()]
         self.parameters: np.ndarray | list | None = None
         self.data: np.ndarray | None = None
         #: The three meteorological drivers. Assign a :class:`~hapi.inputs.MeteoInputs`
@@ -288,7 +303,7 @@ class Catchment:
             fmt=catchment.fmt,
             spatial_resolution=catchment.spatial_resolution,
             temporal_resolution=catchment.temporal_resolution,
-            routing_method=_ROUTING_METHOD_LABELS[catchment.routing_method],
+            routing_method=catchment.routing_method,
         )
 
         distributed = catchment.spatial_resolution == "distributed"
