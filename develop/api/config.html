@@ -1977,7 +1977,8 @@ a fitted set.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The routing network. Required for distributed, absent for lumped.</p>
+                <p>The routing network. Required for a distributed run and refused for a
+lumped one, which has no grid to put it on.</p>
               </div>
             </td>
           </tr>
@@ -2004,10 +2005,7 @@ a fitted set.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
 <span class="normal">260</span>
@@ -2148,7 +2146,11 @@ a fitted set.</p>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
-<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The full input set for one `Catchment` build.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2159,7 +2161,8 @@ a fitted set.</p>
 <span class="sd">            derives them from the bounds handed to `read_parameters_bound` rather than reading</span>
 <span class="sd">            a fitted set.</span>
 <span class="sd">        gauges: The observed discharge. Omit for a run that is not scored against gauges.</span>
-<span class="sd">        flow_network: The routing network. Required for distributed, absent for lumped.</span>
+<span class="sd">        flow_network: The routing network. Required for a distributed run and refused for a</span>
+<span class="sd">            lumped one, which has no grid to put it on.</span>
 <span class="sd">        outputs: Where to write results.</span>
 <span class="sd">    """</span>
 
@@ -2416,8 +2419,11 @@ and an unquoted YAML date would arrive here already a <code>date</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p><code>"muskingum"</code> or <code>"maxbas"</code>. Assigned onto <code>model.routing_method</code>; which
-<code>Run.*</code> entry point actually routes with it is the caller's choice.</p>
+                <p><code>"muskingum"</code> or <code>"maxbas"</code>. Assigned onto <code>model.routing_method</code>, and
+constrains two other blocks: Muskingum routes along the network so it requires
+<code>flow_network.flow_direction</code>, and the method must agree with
+<code>parameters.maxbas</code>. Which <code>Run.*</code> entry point actually routes with it is still
+the caller's choice.</p>
               </div>
             </td>
           </tr>
@@ -2457,7 +2463,10 @@ and an unquoted YAML date would arrive here already a <code>date</code>.</p>
 <span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
-<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CatchmentConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CatchmentConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The `Catchment` constructor arguments.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2469,8 +2478,11 @@ and an unquoted YAML date would arrive here already a <code>date</code>.</p>
 <span class="sd">        spatial_resolution: `"lumped"` or `"distributed"`. Selects the shape of `meteo` and</span>
 <span class="sd">            `gauges`, and whether `flow_network` is required.</span>
 <span class="sd">        temporal_resolution: `"daily"` or `"hourly"`.</span>
-<span class="sd">        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`; which</span>
-<span class="sd">            `Run.*` entry point actually routes with it is the caller's choice.</span>
+<span class="sd">        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`, and</span>
+<span class="sd">            constrains two other blocks: Muskingum routes along the network so it requires</span>
+<span class="sd">            `flow_network.flow_direction`, and the method must agree with</span>
+<span class="sd">            `parameters.maxbas`. Which `Run.*` entry point actually routes with it is still</span>
+<span class="sd">            the caller's choice.</span>
 <span class="sd">    """</span>
 
     <span class="n">model_config</span> <span class="o">=</span> <span class="n">_STRICT</span>
@@ -2699,10 +2711,7 @@ takes the single variable a file holds, which is an error if it holds several.</
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
@@ -2737,7 +2746,10 @@ takes the single variable a file holds, which is an error if it holds several.</
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
-<span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MeteoConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MeteoConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The meteorological drivers: a distributed grid or a lumped CSV.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2859,10 +2871,7 @@ every cell straight to the outlet and never reads one, so it may be omitted.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
@@ -2871,7 +2880,10 @@ every cell straight to the outlet and never reads one, so it may be omitted.</p>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
-<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FlowNetworkConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FlowNetworkConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The routing network. Distributed runs only.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2981,10 +2993,7 @@ check and then reads the wrong parameter as the routing one.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
 <span class="normal">181</span>
 <span class="normal">182</span>
 <span class="normal">183</span>
@@ -2998,7 +3007,10 @@ check and then reads the wrong parameter as the routing one.</p>
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
-<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ParametersConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ParametersConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Where the conceptual-model parameters live.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3121,10 +3133,7 @@ by the builder, which owns the registry of available models.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
@@ -3139,7 +3148,10 @@ by the builder, which owns the registry of available models.</p>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
-<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConceptualModelConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConceptualModelConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The lumped conceptual model, run per cell (distributed) or per catchment (lumped).</span>
 
 <span class="sd">    Attributes:</span>
@@ -3277,10 +3289,7 @@ filling another.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
@@ -3298,7 +3307,10 @@ filling another.</p>
 <span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
-<span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GaugesConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GaugesConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The observed discharge the run is scored against.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3391,16 +3403,16 @@ filling another.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">OutputsConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">OutputsConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Where to write results after the run.</span>
 
 <span class="sd">    Attributes:</span>
