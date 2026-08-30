@@ -496,7 +496,12 @@ class HBV(BaseConceptualModel):
             >>> print(q_routed.round(4))
             [0.   0.   2.5  4.   2.5  0.5]
         """
-        if maxbas < 1:
+        # `not maxbas >= 1` rather than `maxbas < 1`: both are false for NaN, but
+        # the original assert fired on it. Keeping the negated form means a NaN
+        # maxbas -- which a calibration can produce in a masked cell -- still fails
+        # here, naming the parameter, instead of surfacing as a bare
+        # "cannot convert float NaN to integer" further in.
+        if not maxbas >= 1:
             raise ValueError(f"Maxbas value has to be at least 1, got {maxbas}")
         # Get integer part of maxbas
         #    maxbas = int(maxbas)
