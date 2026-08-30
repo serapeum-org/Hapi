@@ -2240,7 +2240,9 @@ lumped one, which has no grid to put it on.</p>
 <span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
-<span class="normal">676</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The full input set for one `Catchment` build.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2293,7 +2295,9 @@ lumped one, which has no grid to put it on.</p>
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="k">if</span> <span class="s2">"routing_method"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">model_fields_set</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">=</span> <span class="s2">"maxbas"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span> <span class="k">else</span> <span class="s2">"muskingum"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">"maxbas"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span> <span class="k">else</span> <span class="s2">"muskingum"</span>
+            <span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">==</span> <span class="s2">"maxbas"</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
