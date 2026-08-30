@@ -1439,8 +1439,9 @@ class Catchment:
             end (str | dt.datetime, optional): End date for the output
                 period. See `start`. If
                 empty, uses the last index. Default is "".
-            path (str, optional): Path to the output directory
-                (distributed) or file (lumped). Default is "".
+            path (str, optional): Output directory (distributed, created
+                if it does not exist) or the CSV file itself (lumped).
+                Default is "", the working directory.
             prefix (str, optional): Prefix for the output file
                 names. Default is "".
             fmt (str, optional): Date format for parsing `start` and
@@ -1449,8 +1450,17 @@ class Catchment:
         Raises:
             Exception: If `flow_acc_path` is not provided in
                 distributed mode.
+            TypeError: If `path` is not a string. `outputs.results_dir`
+                is optional in a run configuration, so a caller
+                forwarding it can hold None.
             ValueError: If `result` is not a valid option.
         """
+        if not isinstance(path, str):
+            raise TypeError(
+                f"path must be a string naming a directory (distributed) or a file "
+                f"(lumped), got {type(path).__name__}"
+            )
+
         if start == "":
             start = self.date_index[0]
         elif isinstance(start, str):
@@ -1475,12 +1485,16 @@ class Catchment:
             if prefix == "":
                 prefix = "Result_"
 
-            # create a list of names
-            path = path + prefix
-            names = [path + str(i)[:10] for i in self.date_index[start_i:end_i]]
-            # names = [i.replace("-", "_") for i in names]
-            # names = [i.replace(" ", "_") for i in names]
-            names = [i + ".tif" for i in names]
+            # `path` names a directory here, unlike the lumped branch below where it is the
+            # CSV itself. Joined rather than concatenated: the old `path + prefix` wrote
+            # `some/dirResult_2009-01-01.tif` for any directory given without a trailing
+            # separator, which is how a directory is normally written.
+            if path and not os.path.isdir(path):
+                os.makedirs(path, exist_ok=True)
+            names = [
+                os.path.join(path, f"{prefix}{str(i)[:10]}.tif")
+                for i in self.date_index[start_i:end_i]
+            ]
             if result == 1:
                 arr = self.Qtot[:, :, start_i:end_i]
             elif result == 2:
