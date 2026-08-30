@@ -541,6 +541,8 @@
       
         
       
+        
+      
     
     
     
@@ -604,6 +606,34 @@
     
   
     Catchment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="config.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
   
 
     
@@ -1128,6 +1158,8 @@
       
         
       
+        
+      
     
     
     
@@ -1412,6 +1444,34 @@
     
   
     Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/run-configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run Configuration (YAML)
   
 
     
@@ -2418,7 +2478,16 @@ concrete implementations of all required subroutines.</p>
 <span class="normal">798</span>
 <span class="normal">799</span>
 <span class="normal">800</span>
-<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBV</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HBV</span><span class="p">(</span><span class="n">BaseConceptualModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""HBV-96 lumped conceptual rainfall-runoff model.</span>
 
 <span class="sd">    The HBV (Hydrologiska Byrans Vattenbalansavdelning) model is a</span>
@@ -2822,7 +2891,7 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">                length as ``q``.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If ``maxbas`` is less than 1.</span>
+<span class="sd">            ValueError: If ``maxbas`` is less than 1.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; import numpy as np</span>
@@ -2833,7 +2902,13 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            &gt;&gt;&gt; print(q_routed.round(4))</span>
 <span class="sd">            [0.   0.   2.5  4.   2.5  0.5]</span>
 <span class="sd">        """</span>
-        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
+        <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+        <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+        <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+        <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+        <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># Get integer part of maxbas</span>
         <span class="c1">#    maxbas = int(maxbas)</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -2893,7 +2968,7 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">                updated state variables ``[sp, sm, uz, lz, wc]``.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If ``snow=1`` and the parameter vector</span>
+<span class="sd">            ValueError: If ``snow=1`` and the parameter vector</span>
 <span class="sd">                does not have 18 elements.</span>
 
 <span class="sd">        Examples:</span>
@@ -2917,10 +2992,11 @@ concrete implementations of all required subroutines.</p>
         <span class="c1">## Parse of parameters from input vector to model</span>
         <span class="c1"># picipitation function</span>
         <span class="k">if</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">18</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">"current version of HBV (with snow) takes 18 parameter you have entered "</span>
-                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">18</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"current version of HBV (with snow) takes 18 parameter you have "</span>
+                    <span class="sa">f</span><span class="s2">"entered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
             <span class="n">ltt</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">utt</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">rfcf</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -3069,7 +3145,7 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">                  ``(n+1, 5)`` (float32).</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If ``init_st`` does not have 5 elements</span>
+<span class="sd">            ValueError: If ``init_st`` does not have 5 elements</span>
 <span class="sd">                or if ``snow`` is not 0 or 1.</span>
 
 <span class="sd">        Examples:</span>
@@ -3095,15 +3171,17 @@ concrete implementations of all required subroutines.</p>
 <span class="sd">            q_uz length=6, first=0.0727</span>
 <span class="sd">        """</span>
         <span class="c1"># data type</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">"state variables are 5 and the given initial values are "</span>
-            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">))</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"state variables are 5 and the given initial values are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
         <span class="c1"># assert type(p2) == list, " p2 should be of type list"</span>
         <span class="c1"># assert len(p2) == 2, "p2 should contains tfac and catchment area"</span>
-        <span class="k">assert</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">" snow input defines whether to consider snow subroutine or not it has to be 0 or 1"</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">snow</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"snow input defines whether to consider snow subroutine or not it has "</span>
+                <span class="sa">f</span><span class="s2">"to be 0 or 1, got </span><span class="si">{</span><span class="n">snow</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">init_st</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># 0  1  2  3  4  5</span>
             <span class="n">st</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEF_ST</span><span class="p">]</span>  <span class="c1"># [sp,sm,uz,lz,wc,LA]</span>
@@ -3909,7 +3987,7 @@ length as <code>q</code>.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3978,7 +4056,13 @@ length as <code>q</code>.</p>
 <span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
-<span class="normal">514</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge through a triangular transfer function.</span>
 
 <span class="sd">    Applies the triangular transfer function to the discharge time</span>
@@ -3996,7 +4080,7 @@ length as <code>q</code>.</p>
 <span class="sd">            length as ``q``.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If ``maxbas`` is less than 1.</span>
+<span class="sd">        ValueError: If ``maxbas`` is less than 1.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
@@ -4007,7 +4091,13 @@ length as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; print(q_routed.round(4))</span>
 <span class="sd">        [0.   0.   2.5  4.   2.5  0.5]</span>
 <span class="sd">    """</span>
-    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
+    <span class="c1"># `not maxbas &gt;= 1` rather than `maxbas &lt; 1`: both are false for NaN, but</span>
+    <span class="c1"># the original assert fired on it. Keeping the negated form means a NaN</span>
+    <span class="c1"># maxbas -- which a calibration can produce in a masked cell -- still fails</span>
+    <span class="c1"># here, naming the parameter, instead of surfacing as a bare</span>
+    <span class="c1"># "cannot convert float NaN to integer" further in.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="c1"># Get integer part of maxbas</span>
     <span class="c1">#    maxbas = int(maxbas)</span>
     <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -4249,7 +4339,7 @@ skip it. Default is 0.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4287,14 +4377,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">698</span>
 <span class="normal">699</span>
 <span class="normal">700</span>
 <span class="normal">701</span>
@@ -4397,7 +4480,16 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="normal">798</span>
 <span class="normal">799</span>
 <span class="normal">800</span>
-<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="n">ll_temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run the HBV model for the full precipitation time series.</span>
@@ -4441,7 +4533,7 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="sd">              ``(n+1, 5)`` (float32).</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If ``init_st`` does not have 5 elements</span>
+<span class="sd">        ValueError: If ``init_st`` does not have 5 elements</span>
 <span class="sd">            or if ``snow`` is not 0 or 1.</span>
 
 <span class="sd">    Examples:</span>
@@ -4467,15 +4559,17 @@ or if <code>snow</code> is not 0 or 1.</p>
 <span class="sd">        q_uz length=6, first=0.0727</span>
 <span class="sd">    """</span>
     <span class="c1"># data type</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">"state variables are 5 and the given initial values are "</span>
-        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">))</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"state variables are 5 and the given initial values are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">init_st</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
     <span class="c1"># assert type(p2) == list, " p2 should be of type list"</span>
     <span class="c1"># assert len(p2) == 2, "p2 should contains tfac and catchment area"</span>
-    <span class="k">assert</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">" snow input defines whether to consider snow subroutine or not it has to be 0 or 1"</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">snow</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"snow input defines whether to consider snow subroutine or not it has "</span>
+            <span class="sa">f</span><span class="s2">"to be 0 or 1, got </span><span class="si">{</span><span class="n">snow</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">init_st</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># 0  1  2  3  4  5</span>
         <span class="n">st</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEF_ST</span><span class="p">]</span>  <span class="c1"># [sp,sm,uz,lz,wc,LA]</span>
@@ -5559,7 +5653,7 @@ updated state variables <code>[sp, sm, uz, lz, wc]</code>.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5593,13 +5687,7 @@ does not have 18 elements.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/hbv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">522</span>
 <span class="normal">523</span>
 <span class="normal">524</span>
 <span class="normal">525</span>
@@ -5766,7 +5854,14 @@ does not have 18 elements.</p>
 <span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
-<span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step_run</span><span class="p">(</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step_run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">state_variable</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Execute a single time step of the HBV model.</span>
@@ -5809,7 +5904,7 @@ does not have 18 elements.</p>
 <span class="sd">            updated state variables ``[sp, sm, uz, lz, wc]``.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If ``snow=1`` and the parameter vector</span>
+<span class="sd">        ValueError: If ``snow=1`` and the parameter vector</span>
 <span class="sd">            does not have 18 elements.</span>
 
 <span class="sd">    Examples:</span>
@@ -5833,10 +5928,11 @@ does not have 18 elements.</p>
     <span class="c1">## Parse of parameters from input vector to model</span>
     <span class="c1"># picipitation function</span>
     <span class="k">if</span> <span class="n">snow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">18</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">"current version of HBV (with snow) takes 18 parameter you have entered "</span>
-            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">18</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"current version of HBV (with snow) takes 18 parameter you have "</span>
+                <span class="sa">f</span><span class="s2">"entered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
         <span class="n">ltt</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">utt</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">rfcf</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>

@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://serapeum-org.github.io/Hapi/main/examples/meteo-inputs.html">
+        <link rel="canonical" href="https://serapeum-org.github.io/Hapi/main/examples/run-configuration.html">
       
       
-        <link rel="prev" href="lumped-model-run.html">
+        <link rel="prev" href="parameters.html">
       
       
-        <link rel="next" href="muskingum.html">
+        <link rel="next" href="../change-log.html">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Rainfall Runoff Model Inputs - Hapi</title>
+        <title>Run Configuration (YAML) - Hapi</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#rainfall-runoff-model-inputs" class="md-skip">
+        <a href="#run-configuration-yaml" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Rainfall Runoff Model Inputs
+              Run Configuration (YAML)
             
           </span>
         </div>
@@ -1208,19 +1208,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="meteo-inputs.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="meteo-inputs.html" class="md-nav__link">
         
   
   
@@ -1236,7 +1227,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -1302,10 +1292,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="run-configuration.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run Configuration (YAML)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="run-configuration.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1321,6 +1338,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-complete-lumped-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A complete lumped configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-for-a-distributed-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What changes for a distributed run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-are-relative-to-the-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paths are relative to the file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-file-is-checked-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the file is checked for
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-configuration-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the configuration back
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1380,6 +1483,80 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-complete-lumped-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A complete lumped configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-for-a-distributed-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What changes for a distributed run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-are-relative-to-the-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paths are relative to the file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-file-is-checked-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the file is checked for
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-configuration-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the configuration back
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1395,7 +1572,7 @@
 
 
   
-    <a href="https://github.com/serapeum-org/Hapi/edit/master/docs/examples/meteo-inputs.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/serapeum-org/Hapi/edit/master/docs/examples/run-configuration.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1404,182 +1581,170 @@
     
       
     
-    <a href="https://github.com/serapeum-org/Hapi/raw/master/docs/examples/meteo-inputs.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/serapeum-org/Hapi/raw/master/docs/examples/run-configuration.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="rainfall-runoff-model-inputs"><a class="toclink" href="#rainfall-runoff-model-inputs">Rainfall Runoff Model Inputs</a><a class="headerlink" href="#rainfall-runoff-model-inputs" title="Permanent link">#</a></h1>
-<p>The required inputs for the distributed model is divided into Meteorological, GIS inputs and Distributed model parameters</p>
-<p><img alt="process" src="../img/process.png" /></p>
-<h1 id="meteorological-inputs"><a class="toclink" href="#meteorological-inputs">Meteorological Inputs</a><a class="headerlink" href="#meteorological-inputs" title="Permanent link">#</a></h1>
-<p>To be able to run the hydrologic simulation with Hapi the following meteorological inputs are required</p>
-<div class="highlight"><pre><span></span><code>- rainfall
+<h1 id="run-configuration-yaml"><a class="toclink" href="#run-configuration-yaml">Run Configuration (YAML)</a><a class="headerlink" href="#run-configuration-yaml" title="Permanent link">#</a></h1>
+<p>The other example pages assemble a model in Python: construct a <code>Catchment</code>, then call
+<code>read_lumped_inputs</code>, <code>read_parameters</code>, <code>read_lumped_model</code> and the rest in the right order.
+That works, but it puts every path, date and area inside the script, so a script is only ever
+about one catchment — and the call order is something you have to know.</p>
+<p>A run configuration moves all of it into a YAML file that sits beside the data it names.
+<code>Catchment.from_yaml</code> reads the file, validates it, and makes the same <code>read_*</code> calls in the
+same order:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
 
-- evapotranspiration
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"coello-lumped-model-run.yaml"</span><span class="p">)</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">runLumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="n">Routing</span><span class="o">.</span><span class="n">triangular_routing_1</span><span class="p">)</span>
+</code></pre></div>
+<p>The four shipped examples under <code>examples/hydrological-model/coello/run/</code> are each a pair — a
+<code>.py</code> that runs the model and a <code>.yaml</code> beside it holding everything the run needs.</p>
+<h2 id="a-complete-lumped-configuration"><a class="toclink" href="#a-complete-lumped-configuration">A complete lumped configuration</a><a class="headerlink" href="#a-complete-lumped-configuration" title="Permanent link">#</a></h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Paths are relative to this file, so the run works from any working directory.</span>
+<span class="nt">catchment</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Coello</span>
+<span class="w">  </span><span class="nt">start</span><span class="p">:</span><span class="w"> </span><span class="s">"2009-01-01"</span>
+<span class="w">  </span><span class="nt">end</span><span class="p">:</span><span class="w"> </span><span class="s">"2011-12-31"</span>
+<span class="w">  </span><span class="nt">spatial_resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lumped</span>
+<span class="w">  </span><span class="nt">temporal_resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">daily</span>
 
-- Temperature
-</code></pre></div>
-<p>Distributed meteorological data can be obtain from gauge data with some interpolation method or from remote sensing data</p>
-<h1 id="remote-sensing-data"><a class="toclink" href="#remote-sensing-data">Remote Sensing Data</a><a class="headerlink" href="#remote-sensing-data" title="Permanent link">#</a></h1>
-<p>Remote sensing inputs are downloaded with <a href="https://github.com/serapeum-org/earthlens">earthlens</a>, which replaces the
-deprecated <code>earth2observe</code> package:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>earthlens<span class="w">            </span><span class="c1"># CHIRPS and the other keyless backends</span>
-pip<span class="w"> </span>install<span class="w"> </span>earthlens<span class="o">[</span>ecmwf<span class="o">]</span><span class="w">     </span><span class="c1"># adds cdsapi, required for the ERA5 download below</span>
-</code></pre></div>
-<p>Inside this repository the same dependency is the <code>inputs</code> extra, wired to the <code>inputs</code> pixi environment (the <code>dev</code>
-environment on top of <code>earthlens[ecmwf]</code>), so the downloads below run without a separate install:</p>
-<div class="highlight"><pre><span></span><code>pixi<span class="w"> </span>run<span class="w"> </span>-e<span class="w"> </span>inputs<span class="w"> </span>python<span class="w"> </span>examples/hydrological-model/coello/prepare-Input-data/00-coello-data_download.py
-</code></pre></div>
-<p>earthlens exposes a single facade, <code>EarthLens</code>, that routes the request to the backend named by <code>data_source</code>. It
-covers the sources Hapi used to handle, among many others:</p>
-<ul>
-<li><strong>CHIRPS</strong> (<code>data_source="chc"</code>) — the Climate Hazards Group InfraRed Precipitation with Station data, a
-  quasi-global rainfall data set combining satellite imagery with in-situ station data on a 0.05 degree grid, from
-  1981 to near present. Served over anonymous FTP, so it needs no credentials.</li>
-<li><strong>ERA5</strong> (<code>data_source="ecmwf"</code>) — the Copernicus Climate Data Store reanalysis that replaces the retired
-  ERA-Interim archive. It requires a free <a href="https://cds.climate.copernicus.eu/">CDS account</a> and a <code>~/.cdsapirc</code>
-  holding the Personal Access Token (see the <a href="https://cds.climate.copernicus.eu/how-to-api">CDS API instructions</a>).</li>
-</ul>
-<h2 id="rainfall-from-chirps"><a class="toclink" href="#rainfall-from-chirps">Rainfall from CHIRPS</a><a class="headerlink" href="#rainfall-from-chirps" title="Permanent link">#</a></h2>
-<p>Passing <code>variables</code> as a plain list uses the global CHIRPS-2.0 series, and <code>temporal_resolution</code> selects the
-dataset (<code>"daily"</code> → <code>global-daily</code>, <code>"monthly"</code> → <code>global-monthly</code>). The dict shape, e.g.
-<code>variables={"africa-pentad": ["precipitation"]}</code>, reaches the rest of the CHC catalog.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLens</span>
+<span class="c1"># Lumped mode reads one CSV of catchment-average drivers, not a grid: columns are</span>
+<span class="c1"># [date, precipitation, ET, temperature], optionally followed by the long-term average.</span>
+<span class="nt">meteo</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model/meteo_data-MSWEP.csv</span>
 
-<span class="n">EarthLens</span><span class="p">(</span>
-    <span class="n">data_source</span><span class="o">=</span><span class="s2">"chc"</span><span class="p">,</span>
-    <span class="n">temporal_resolution</span><span class="o">=</span><span class="s2">"daily"</span><span class="p">,</span>
-    <span class="n">start</span><span class="o">=</span><span class="s2">"2009-01-01"</span><span class="p">,</span>
-    <span class="n">end</span><span class="o">=</span><span class="s2">"2009-02-01"</span><span class="p">,</span>
-    <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"precipitation"</span><span class="p">],</span>
-    <span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mf">4.190755</span><span class="p">,</span> <span class="mf">4.643963</span><span class="p">],</span>
-    <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">75.649243</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.727286</span><span class="p">],</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">"examples/hydrological-model/data/meteo_data/earthlens/prec"</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">cores</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-</code></pre></div>
-<p>CHIRPS fetches one file per date, so <code>cores</code> runs the retrieval in parallel (without a progress bar). Each date is
-clipped to the bounding box and written as <code>&lt;dataset&gt;_&lt;variable&gt;_%Y.%m.%d.tif</code>, for example
-<code>global-daily_precipitation_2009.01.01.tif</code>.</p>
-<h2 id="temperature-and-evapotranspiration-from-era5"><a class="toclink" href="#temperature-and-evapotranspiration-from-era5">Temperature and evapotranspiration from ERA5</a><a class="headerlink" href="#temperature-and-evapotranspiration-from-era5" title="Permanent link">#</a></h2>
-<p>ERA5 variables are addressed by the <code>(dataset, variable)</code> pair, so <code>variables</code> is a dict keyed by the CDS dataset
-name. Use the catalog to look up the codes:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.ecmwf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
+<span class="nt">parameters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt</span>
+<span class="w">  </span><span class="nt">snow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">maxbas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 
-<span class="n">catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">datasets</span><span class="p">))</span>
-<span class="n">catalog</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"reanalysis-era5-single-levels"</span><span class="p">,</span> <span class="s2">"2m-temperature"</span><span class="p">)</span>
-</code></pre></div>
-<p>Unlike CHIRPS, the ECMWF backend writes <strong>one NetCDF per variable</strong> rather than per-date rasters. Passing
-<code>aggregate=AggregationConfig(...)</code> slices that NetCDF into per-date GeoTIFFs, which is the shape
-<code>Inputs.prepare_inputs</code> expects:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AggregationConfig</span><span class="p">,</span> <span class="n">EarthLens</span>
+<span class="nt">conceptual_model</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">model_class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HBVBergestrom92</span>
+<span class="w">  </span><span class="nt">catchment_area</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1530</span>
+<span class="w">  </span><span class="nt">initial_condition</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">]</span>
 
-<span class="n">root</span> <span class="o">=</span> <span class="s2">"examples/hydrological-model/data/meteo_data/earthlens"</span>
+<span class="c1"># One discharge file, and no gauge table: locating gauges on a grid is a distributed concern.</span>
+<span class="nt">gauges</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">discharge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model/Qout_c.csv</span>
+<span class="w">  </span><span class="nt">fmt</span><span class="p">:</span><span class="w"> </span><span class="s">"%Y-%m-%d"</span>
 
-<span class="n">EarthLens</span><span class="p">(</span>
-    <span class="n">data_source</span><span class="o">=</span><span class="s2">"ecmwf"</span><span class="p">,</span>
-    <span class="n">temporal_resolution</span><span class="o">=</span><span class="s2">"daily"</span><span class="p">,</span>
-    <span class="n">start</span><span class="o">=</span><span class="s2">"2009-01-01"</span><span class="p">,</span>
-    <span class="n">end</span><span class="o">=</span><span class="s2">"2009-02-01"</span><span class="p">,</span>
-    <span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">"reanalysis-era5-single-levels"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"2m-temperature"</span><span class="p">]},</span>
-    <span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mf">4.190755</span><span class="p">,</span> <span class="mf">4.643963</span><span class="p">],</span>
-    <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">75.649243</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.727286</span><span class="p">],</span>
-    <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">/netcdf"</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">aggregate</span><span class="o">=</span><span class="n">AggregationConfig</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="s2">"1D"</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">/temp"</span><span class="p">))</span>
+<span class="nt">outputs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">results_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model</span>
 </code></pre></div>
-<p><code>op="auto"</code> reads the catalog's <code>is_flux</code> flag so each window gets the right reduction: state variables such as
-<code>2m-temperature</code> are averaged, flux variables such as <code>evaporation</code> and <code>total-precipitation</code> are summed. Keeping
-the NetCDF in its own folder leaves the GeoTIFF directory holding nothing else, since <code>prepare_inputs</code> reads a
-whole folder at once.</p>
-<p>ERA5 evapotranspiration is negative by convention — the meteorological convention is that downward vertical fluxes
-are positive — so the values must be flipped before the model reads them. <code>Dataset.apply(np.abs)</code> does that; see
-<code>01-coello-prepare_inputdata.py</code> in the <a href="https://github.com/serapeum-org/Hapi/tree/main/examples/hydrological-model/coello/prepare-Input-data">prepare-Input-data examples</a>.</p>
-<h2 id="matching-the-file-names-when-reading-the-rasters"><a class="toclink" href="#matching-the-file-names-when-reading-the-rasters">Matching the file names when reading the rasters</a><a class="headerlink" href="#matching-the-file-names-when-reading-the-rasters" title="Permanent link">#</a></h2>
-<p><code>MeteoInputs.from_rasters</code> locates the date in each file name with <code>regex_string</code> and parses it with
-<code>file_name_data_fmt</code>, so the two must match the names the backend produced:</p>
+<p><code>catchment</code>, <code>meteo</code> and <code>conceptual_model</code> are required. <code>parameters</code>, <code>gauges</code> and <code>outputs</code>
+are optional: omit <code>parameters</code> for a calibration, which derives them from the bounds given to
+<code>read_parameters_bound</code>, and omit <code>gauges</code> for a run that is not scored against observations.</p>
+<h2 id="what-changes-for-a-distributed-run"><a class="toclink" href="#what-changes-for-a-distributed-run">What changes for a distributed run</a><a class="headerlink" href="#what-changes-for-a-distributed-run" title="Permanent link">#</a></h2>
+<p><code>spatial_resolution: distributed</code> changes the shape of two blocks and requires a third. <code>meteo</code>
+becomes a grid, described by its <code>source</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">catchment</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Coello</span>
+<span class="w">  </span><span class="nt">start</span><span class="p">:</span><span class="w"> </span><span class="s">"2009-01-01"</span>
+<span class="w">  </span><span class="nt">end</span><span class="p">:</span><span class="w"> </span><span class="s">"2009-04-10"</span>
+<span class="w">  </span><span class="nt">spatial_resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">distributed</span>
+<span class="w">  </span><span class="nt">routing_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">maxbas</span>
+
+<span class="nt">meteo</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rasters</span>
+<span class="w">  </span><span class="nt">precipitation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/prec</span>
+<span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/temp</span>
+<span class="w">  </span><span class="nt">evapotranspiration</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/evap</span>
+<span class="w">  </span><span class="nt">file_name_data_fmt</span><span class="p">:</span><span class="w"> </span><span class="s">"%Y.%m.%d"</span>
+
+<span class="c1"># MAXBAS sends every cell straight to the outlet, so no flow-direction raster is read.</span>
+<span class="nt">flow_network</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">flow_accumulation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/GIS/acc4000.tif</span>
+
+<span class="nt">gauges</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">table</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/stations/gauges.csv</span>
+<span class="w">  </span><span class="nt">discharge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/stations/</span>
+</code></pre></div>
+<p><code>meteo.source</code> picks which <code>MeteoInputs</code> loader builds the grid, and what the three driver
+fields mean:</p>
 <table>
 <thead>
 <tr>
-<th>Source</th>
-<th>Example file name</th>
-<th><code>regex_string</code></th>
-<th><code>file_name_data_fmt</code></th>
+<th><code>source</code></th>
+<th>The three driver fields name</th>
+<th>Reads</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>CHIRPS</td>
-<td><code>global-daily_precipitation_2009.01.01.tif</code></td>
-<td><code>r"\d{4}.\d{2}.\d{2}"</code> (the default)</td>
-<td><code>"%Y.%m.%d"</code></td>
+<td><code>rasters</code> (default)</td>
+<td>A folder of dated GeoTIFFs each</td>
+<td><code>MeteoInputs.from_rasters</code></td>
 </tr>
 <tr>
-<td>ERA5 (aggregated)</td>
-<td><code>2m_temperature_1D_20090101.tif</code></td>
-<td><code>r"\d{8}"</code></td>
-<td><code>"%Y%m%d"</code></td>
+<td><code>netcdf_files</code></td>
+<td>One NetCDF each</td>
+<td><code>MeteoInputs.from_netcdf_files</code></td>
+</tr>
+<tr>
+<td><code>netcdf</code></td>
+<td>A variable inside <code>meteo.path</code></td>
+<td><code>MeteoInputs.from_netcdf</code></td>
 </tr>
 </tbody>
 </table>
-<p>The download example above takes rainfall from CHIRPS and the other two from ERA5, so the three folders do not
-share a naming convention — <code>r"\d{4}.\d{2}.\d{2}"</code> finds no date in <code>..._20090101.tif</code>, and <code>r"\d{8}"</code> finds none
-in <code>..._2009.01.01.tif</code>. Pass the differing argument per folder with <code>per_variable</code>, which is merged over the shared
-arguments for that folder only:</p>
-<div class="highlight"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span>
-    <span class="n">prec_path</span><span class="p">,</span>
-    <span class="n">temp_path</span><span class="p">,</span>
-    <span class="n">evap_path</span><span class="p">,</span>
-    <span class="n">per_variable</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">"temperature"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"regex_string"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">},</span>
-        <span class="s2">"evapotranspiration"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"regex_string"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">},</span>
-    <span class="p">},</span>
+<p>The last is the fastest: one file, opened once, with the calendar inside it. See
+<a href="meteo-inputs.html">Meteorological inputs</a> for how to pack a folder of rasters into one.</p>
+<h2 id="paths-are-relative-to-the-file"><a class="toclink" href="#paths-are-relative-to-the-file">Paths are relative to the file</a><a class="headerlink" href="#paths-are-relative-to-the-file" title="Permanent link">#</a></h2>
+<p>A relative path in a configuration is resolved against the configuration's own directory, not
+against whatever directory you happen to run from. That is what makes a configuration portable:
+it travels with the data it names, and the run works from anywhere. Absolute paths are used as
+written.</p>
+<p>The example scripts rely on this — each loads the YAML sitting next to it:</p>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="vm">__file__</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">".py"</span><span class="p">)</span> <span class="o">+</span> <span class="s2">".yaml"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="what-the-file-is-checked-for"><a class="toclink" href="#what-the-file-is-checked-for">What the file is checked for</a><a class="headerlink" href="#what-the-file-is-checked-for" title="Permanent link">#</a></h2>
+<p>The file is validated in full before anything is opened, so a mistake is reported as a mistake
+in the file rather than as a failure deep inside a reader:</p>
+<ul>
+<li><strong>Unknown keys are refused.</strong> A misspelled <code>precipitaton</code> fails at parse time instead of being
+  dropped and reappearing as a missing input.</li>
+<li><strong>So are keys that do not apply.</strong> A <code>flow_network</code> block on a lumped run, <code>glob</code> under
+  <code>source: netcdf</code>, <code>gauges.table</code> on a lumped run — each is a line that would do nothing, and
+  each is named in the error. Only keys you actually wrote count; defaults are never held
+  against you.</li>
+<li><strong>Required blocks are checked per shape.</strong> A distributed run needs <code>flow_network</code> and all
+  three drivers; Muskingum additionally needs <code>flow_network.flow_direction</code>, which MAXBAS never
+  reads. A lumped run needs <code>meteo.path</code>.</li>
+<li><strong><code>routing_method</code> must agree with <code>parameters.maxbas</code>.</strong> The two parameter counts differ by
+  one and <code>maxbas</code> selects which is expected, so a disagreeing pair still counts correctly and
+  then reads the wrong parameter as the routing one. Leave <code>routing_method</code> out and it is
+  derived from the parameter set.</li>
+<li><strong>Every date is parsed against its own <code>fmt</code></strong>, and the period must run forwards — including
+  the meteorological window, whose bounds fall back to the catchment's when unstated.</li>
+<li><strong>Every path is checked for existence</strong> before the first reader runs, and all the missing ones
+  are reported together.</li>
+</ul>
+<p>Dates may be quoted or not: <code>start: 2009-01-01</code> is a date to YAML, and it is written back out in
+the block's <code>fmt</code>.</p>
+<h2 id="reading-the-configuration-back"><a class="toclink" href="#reading-the-configuration-back">Reading the configuration back</a><a class="headerlink" href="#reading-the-configuration-back" title="Permanent link">#</a></h2>
+<p>The parsed configuration stays on the model as <code>model.config</code>, so the blocks the build does not
+itself consume remain reachable — <code>outputs</code> above all:</p>
+<div class="highlight"><pre><span></span><code><span class="n">outputs</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outputs</span>
+<span class="n">save_to</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">results_dir</span> <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+    <span class="n">flow_acc_path</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_accumulation</span><span class="p">,</span>
+    <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><code>file_name_data_fmt</code> is not needed here: it is inferred from the first name <code>regex_string</code> matches, per folder. Pass
-it only for a layout the digits cannot settle, such as a day-first <code>03.02.1990</code>.</p>
-<p>When all three folders do come from one source, the shared arguments are enough:</p>
-<div class="highlight"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">prec_path</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">,</span> <span class="n">evap_path</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="packing-the-rasters-into-netcdf"><a class="toclink" href="#packing-the-rasters-into-netcdf">Packing the rasters into NetCDF</a><a class="headerlink" href="#packing-the-rasters-into-netcdf" title="Permanent link">#</a></h2>
-<p>A folder of per-date GeoTIFFs is the slowest thing the model can be driven from: every run
-re-opens every file. Packing each driver once turns that into a single read, and the calendar
-travels inside the file instead of living in the file names.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeteoInputs</span>
-
-<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">prec_path</span><span class="p">,</span> <span class="s2">"prec.nc"</span><span class="p">)</span>
-<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">)</span>
-<span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span><span class="n">evap_path</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">,</span> <span class="n">regex_string</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\d</span><span class="si">{8}</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_netcdf_files</span><span class="p">(</span><span class="s2">"prec.nc"</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">)</span>
-</code></pre></div>
-<p>It takes the same reader arguments as <code>from_rasters</code>, so <code>start</code> / <code>end</code> convert a window
-rather than the whole folder, and it refuses to write a file whose steps carry no dates —
-a NetCDF with no time axis cannot be checked against the model's date range later.</p>
-<p>On network storage, pass <code>gdal_env</code> to skip GDAL's per-open directory listing:</p>
-<div class="highlight"><pre><span></span><code><span class="n">MeteoInputs</span><span class="o">.</span><span class="n">raster_folder_to_netcdf</span><span class="p">(</span>
-    <span class="n">temp_path</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="n">gdal_env</span><span class="o">=</span><span class="p">{</span><span class="s2">"GDAL_DISABLE_READDIR_ON_OPEN"</span><span class="p">:</span> <span class="s2">"EMPTY_DIR"</span><span class="p">}</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>That listing is a remote round-trip per raster — 369 ms against 18 ms over one 14,823-file
-folder. It is not the default because disabling it also stops GDAL finding <code>.aux.xml</code>, world
-files and <code>.ovr</code> sidecars.</p>
-<h3 id="one-file-for-all-three-drivers"><a class="toclink" href="#one-file-for-all-three-drivers">One file for all three drivers</a><a class="headerlink" href="#one-file-for-all-three-drivers" title="Permanent link">#</a></h3>
-<p>The three single-variable files can then be merged, which names each variable after its
-driver so a reader asks for it by name rather than guessing at whatever the band was called:</p>
-<div class="highlight"><pre><span></span><code><span class="n">MeteoInputs</span><span class="o">.</span><span class="n">combine_netcdf_files</span><span class="p">(</span><span class="s2">"prec.nc"</span><span class="p">,</span> <span class="s2">"temp.nc"</span><span class="p">,</span> <span class="s2">"evap.nc"</span><span class="p">,</span> <span class="s2">"meteo.nc"</span><span class="p">)</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
-    <span class="s2">"meteo.nc"</span><span class="p">,</span>
-    <span class="n">precipitation</span><span class="o">=</span><span class="s2">"precipitation"</span><span class="p">,</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="s2">"temperature"</span><span class="p">,</span>
-    <span class="n">evapotranspiration</span><span class="o">=</span><span class="s2">"evapotranspiration"</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>Once the rasters are downloaded, prepare them for the model with <code>hapi.inputs.Inputs</code>, which aligns every raster to
-the catchment DEM — see <a href="gis-inputs.html">GIS inputs</a> and <a href="parameters.html">Parameters</a>.</p>
+<h2 id="out-of-scope"><a class="toclink" href="#out-of-scope">Out of scope</a><a class="headerlink" href="#out-of-scope" title="Permanent link">#</a></h2>
+<p>The schema describes a <code>Catchment</code> run. It carries no field for a lake record, a river geometry,
+or a flow-path-length raster, so lake-aware runs (<code>Run.RunHapiwithLake</code>), the flood model
+(<code>Run.RunFloodModel</code>) and <code>DistMaxbas2</code> are still assembled in Python.</p>
+<p><code>Calibration.from_yaml</code> works — it takes the same constructor arguments — and gives back a
+<code>Calibration</code> to call the calibration methods on. <code>Run.from_yaml</code> does not: <code>Run</code> holds entry
+points called on a model built elsewhere, so it refuses and says so.</p>
+<p>The full field-by-field reference is on the <a href="../api/config.html">Config API page</a>.</p>
 
 
 
@@ -1615,7 +1780,7 @@ the catchment DEM — see <a href="gis-inputs.html">GIS inputs</a> and <a href="
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="lumped-model-run.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Lumped Model Run">
+          <a href="parameters.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Parameters">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1625,20 +1790,20 @@ the catchment DEM — see <a href="gis-inputs.html">GIS inputs</a> and <a href="
                 Previous
               </span>
               <div class="md-ellipsis">
-                Lumped Model Run
+                Parameters
               </div>
             </div>
           </a>
         
         
           
-          <a href="muskingum.html" class="md-footer__link md-footer__link--next" aria-label="Next: Muskingum">
+          <a href="../change-log.html" class="md-footer__link md-footer__link--next" aria-label="Next: Change logs">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Muskingum
+                Change logs
               </div>
             </div>
             <div class="md-footer__button md-icon">
