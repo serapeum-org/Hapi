@@ -39,6 +39,7 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from pyramids.netcdf import NetCDF
 
+from hapi.config import MeteoConfig
 from hapi.dem import DEM
 
 
@@ -1137,6 +1138,131 @@ class MeteoInputs:
         }
         cubes, calendar = cls._window(cubes, cls._calendar(nc), start, end, fmt)
         return cls(**cubes, time=calendar)
+
+    @classmethod
+    def from_config(
+        cls,
+        config: MeteoConfig,
+        start: str | None = None,
+        end: str | None = None,
+    ) -> MeteoInputs:
+        """Build the drivers with whichever loader the configuration's `source` names.
+
+        The dispatch behind a `meteo` block of a YAML run configuration: `"rasters"` reads three
+        folders, `"netcdf_files"` one file per driver, and `"netcdf"` a single combined file
+        whose variables the block names. `hapi.config.RunConfig` has already checked that the
+        fields the chosen source needs are set, so this calls the loader directly.
+
+        Args:
+            config: The `meteo` block of a distributed configuration.
+            start: Window start used when `config.start` is unset, so the drivers can default to
+                the period the model spans. `None` leaves the lower bound open.
+            end: Window end used when `config.end` is unset. `None` leaves it open.
+
+        Returns:
+            MeteoInputs: The three cubes plus the calendar, windowed to the requested period.
+
+        Raises:
+            AssertionError: A field the chosen source needs is unset. `RunConfig` rejects such a
+                configuration, so this only fires for a `MeteoConfig` built by hand.
+
+        Examples:
+            - Load a combined NetCDF by naming the variable each driver sits in:
+                ```python
+                >>> from hapi.config import MeteoConfig
+                >>> from hapi.inputs import MeteoInputs
+                >>> meteo = MeteoInputs.from_config(
+                ...     MeteoConfig(
+                ...         source="netcdf",
+                ...         path="tests/rrm/data/coello/meteo.nc",
+                ...         precipitation="precipitation",
+                ...         temperature="temperature",
+                ...         evapotranspiration="evapotranspiration",
+                ...     )
+                ... )
+                >>> meteo.shape
+                (13, 14, 10)
+                >>> meteo.time[0].strftime("%Y-%m-%d")
+                '2009-01-01'
+
+                ```
+            - Narrow the same file to part of its record with the fallback window:
+                ```python
+                >>> from hapi.config import MeteoConfig
+                >>> from hapi.inputs import MeteoInputs
+                >>> meteo = MeteoInputs.from_config(
+                ...     MeteoConfig(
+                ...         source="netcdf",
+                ...         path="tests/rrm/data/coello/meteo.nc",
+                ...         precipitation="precipitation",
+                ...         temperature="temperature",
+                ...         evapotranspiration="evapotranspiration",
+                ...     ),
+                ...     start="2009-01-03",
+                ...     end="2009-01-07",
+                ... )
+                >>> meteo.time_steps
+                5
+                >>> meteo.time[-1].strftime("%Y-%m-%d")
+                '2009-01-07'
+
+                ```
+
+        See Also:
+            from_rasters: The loader `source="rasters"` dispatches to.
+            from_netcdf: The loader `source="netcdf"` dispatches to.
+            from_netcdf_files: The loader `source="netcdf_files"` dispatches to.
+        """
+        start = config.start or start
+        end = config.end or end
+
+        # Optional on the model because a lumped configuration sets none of them; every
+        # distributed source needs all three, which `RunConfig` enforces before this runs.
+        assert config.precipitation is not None, "meteo.precipitation is required"
+        assert config.temperature is not None, "meteo.temperature is required"
+        assert config.evapotranspiration is not None, (
+            "meteo.evapotranspiration is required"
+        )
+
+        if config.source == "rasters":
+            extra: dict[str, Any] = {}
+            if config.per_variable is not None:
+                extra["per_variable"] = config.per_variable
+            if config.gdal_env is not None:
+                extra["gdal_env"] = config.gdal_env
+            return cls.from_rasters(
+                config.precipitation,
+                config.temperature,
+                config.evapotranspiration,
+                glob=config.glob,
+                regex_string=config.regex_string,
+                file_name_data_fmt=config.file_name_data_fmt,
+                start=start,
+                end=end,
+                fmt=config.fmt,
+                **extra,
+            )
+
+        if config.source == "netcdf":
+            assert config.path is not None, "meteo.path is required for source 'netcdf'"
+            return cls.from_netcdf(
+                config.path,
+                precipitation=config.precipitation,
+                temperature=config.temperature,
+                evapotranspiration=config.evapotranspiration,
+                start=start,
+                end=end,
+                fmt=config.fmt,
+            )
+
+        return cls.from_netcdf_files(
+            config.precipitation,
+            config.temperature,
+            config.evapotranspiration,
+            start=start,
+            end=end,
+            fmt=config.fmt,
+        )
 
     @staticmethod
     def raster_folder_to_netcdf(

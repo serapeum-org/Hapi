@@ -35,7 +35,7 @@ from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
-from hapi.config import CatchmentConfig, MeteoConfig, RunConfig
+from hapi.config import RunConfig
 from hapi.inputs import (
     FlowNetwork,
     MeteoInputs,
@@ -100,63 +100,6 @@ def _name_the_path(path) -> Iterator[None]:
         yield
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"{exc} (path: {path})") from exc
-
-
-def _meteo_from_config(meteo: MeteoConfig, catchment: CatchmentConfig) -> MeteoInputs:
-    """Build the driver cubes with whichever `MeteoInputs` loader `meteo.source` names.
-
-    `RunConfig` has already checked that the fields this source needs are set, so the loader is
-    called directly rather than re-validating here.
-
-    Args:
-        meteo: The `meteo` block of a distributed configuration.
-        catchment: Supplies the window when `meteo.start` / `meteo.end` are unset, so the
-            drivers default to exactly the period the model spans.
-
-    Returns:
-        MeteoInputs: The three cubes plus the calendar, windowed to the run's dates.
-    """
-    start = meteo.start or catchment.start
-    end = meteo.end or catchment.end
-
-    if meteo.source == "rasters":
-        extra: dict[str, Any] = {}
-        if meteo.per_variable is not None:
-            extra["per_variable"] = meteo.per_variable
-        if meteo.gdal_env is not None:
-            extra["gdal_env"] = meteo.gdal_env
-        return MeteoInputs.from_rasters(
-            meteo.precipitation,
-            meteo.temperature,
-            meteo.evapotranspiration,
-            glob=meteo.glob,
-            regex_string=meteo.regex_string,
-            file_name_data_fmt=meteo.file_name_data_fmt,
-            start=start,
-            end=end,
-            fmt=meteo.fmt,
-            **extra,
-        )
-
-    if meteo.source == "netcdf":
-        return MeteoInputs.from_netcdf(
-            meteo.path,
-            precipitation=meteo.precipitation,
-            temperature=meteo.temperature,
-            evapotranspiration=meteo.evapotranspiration,
-            start=start,
-            end=end,
-            fmt=meteo.fmt,
-        )
-
-    return MeteoInputs.from_netcdf_files(
-        meteo.precipitation,
-        meteo.temperature,
-        meteo.evapotranspiration,
-        start=start,
-        end=end,
-        fmt=meteo.fmt,
-    )
 
 
 class Catchment:
@@ -344,7 +287,9 @@ class Catchment:
 
         distributed = catchment.spatial_resolution == "distributed"
         if distributed:
-            model.meteo = _meteo_from_config(config.meteo, catchment)
+            model.meteo = MeteoInputs.from_config(
+                config.meteo, start=catchment.start, end=catchment.end
+            )
             model.flow_network = FlowNetwork.from_rasters(
                 config.flow_network.flow_accumulation,
                 config.flow_network.flow_direction,
