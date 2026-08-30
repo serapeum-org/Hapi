@@ -102,6 +102,38 @@ class Calibration(Catchment):
         self.OFArgs: list | None = None
         self.OFvalue: float | None = None
 
+    def _declare_the_parameter_variables(
+        self, opt_prob: Optimization, initial_values: list | None = None
+    ) -> None:
+        """Add one continuous optimisation variable per parameter, bounded by LB and UB.
+
+        Every calibration entry point declares the same variables the same way; only the
+        lumped one can also seed them with a starting point.
+
+        Args:
+            opt_prob: The problem being built.
+            initial_values: One starting value per parameter, or None to let the optimiser
+                choose.
+
+        Raises:
+            ValueError: `initial_values` is given and does not hold one value per parameter.
+        """
+        # One starting value per parameter. A shorter list used to index out of range
+        # part-way through building the problem, naming neither argument and leaving
+        # `opt_prob` half-populated.
+        seeded = initial_values is not None and len(initial_values) > 0
+        if seeded and len(initial_values) != len(self.LB):
+            raise ValueError(
+                f"initial_values must hold one value per parameter; the bounds define "
+                f"{len(self.LB)} and {len(initial_values)} were given"
+            )
+
+        for i in range(len(self.LB)):
+            seed = {"value": initial_values[i]} if seeded else {}
+            opt_prob.addVar(
+                f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i], **seed
+            )
+
     def read_objective_function(
         self, objective_function: Callable[..., Any], args: list | None
     ):
@@ -315,8 +347,7 @@ class Calibration(Catchment):
 
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
-        for i in range(len(self.LB)):
-            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
+        self._declare_the_parameter_variables(opt_prob)
 
         opt_prob.addObj("f")
 
@@ -453,8 +484,7 @@ class Calibration(Catchment):
 
         # define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
-        for i in range(len(self.LB)):
-            opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
+        self._declare_the_parameter_variables(opt_prob)
 
         print(opt_prob)
 
@@ -593,26 +623,7 @@ class Calibration(Catchment):
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
 
-        if initial_values != []:
-            # One starting value per parameter. A shorter list used to index out of range
-            # part-way through building the problem, naming neither argument and leaving
-            # `opt_prob` half-populated.
-            if len(initial_values) != len(self.LB):
-                raise ValueError(
-                    f"initial_values must hold one value per parameter; the bounds define "
-                    f"{len(self.LB)} and {len(initial_values)} were given"
-                )
-            for i in range(len(self.LB)):
-                opt_prob.addVar(
-                    f"x{i}",
-                    type="c",
-                    lower=self.LB[i],
-                    upper=self.UB[i],
-                    value=initial_values[i],
-                )
-        else:
-            for i in range(len(self.LB)):
-                opt_prob.addVar(f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i])
+        self._declare_the_parameter_variables(opt_prob, initial_values)
 
         opt_prob.addObj("f")
 

@@ -1526,8 +1526,10 @@ class TestCatchmentFromYaml:
             constructor arity produce a `TypeError` about an unexpected keyword argument --
             an error that says nothing about what to do instead.
         """
+        path = write_yaml(distributed_mapping, tmp_path)
+
         with pytest.raises(TypeError, match="Catchment.from_yaml"):
-            Run.from_yaml(write_yaml(distributed_mapping, tmp_path))
+            Run.from_yaml(path)
 
     def test_a_lumped_configuration_reads_the_averaged_driver_csv(
         self, lumped_mapping, tmp_path
