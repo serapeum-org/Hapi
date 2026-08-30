@@ -3482,8 +3482,8 @@ class to run the model.</p>
 
 <span class="sd">        Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the</span>
 <span class="sd">        same constructor arguments. `Run` does not: it overrides `__init__` to take none, and</span>
-<span class="sd">        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so</span>
-<span class="sd">        `Run.from_yaml` raises `TypeError` rather than silently building the wrong thing.</span>
+<span class="sd">        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so it</span>
+<span class="sd">        overrides this method to refuse the call and say so.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for</span>
@@ -5621,8 +5621,8 @@ Running the model stays the caller's job, through whichever <code>Run.*</code> e
 <code>routing_method</code> and <code>spatial_resolution</code>.</p>
 <p>Builds <code>cls</code>, so <code>Calibration.from_yaml(...)</code> returns a <code>Calibration</code> -- it takes the
 same constructor arguments. <code>Run</code> does not: it overrides <code>__init__</code> to take none, and
-its entry points are called unbound on a catchment (<code>Run.RunHapi(model)</code>), so
-<code>Run.from_yaml</code> raises <code>TypeError</code> rather than silently building the wrong thing.</p>
+its entry points are called unbound on a catchment (<code>Run.RunHapi(model)</code>), so it
+overrides this method to refuse the call and say so.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5945,8 +5945,8 @@ elsewhere.</p>
 
 <span class="sd">    Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the</span>
 <span class="sd">    same constructor arguments. `Run` does not: it overrides `__init__` to take none, and</span>
-<span class="sd">    its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so</span>
-<span class="sd">    `Run.from_yaml` raises `TypeError` rather than silently building the wrong thing.</span>
+<span class="sd">    its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so it</span>
+<span class="sd">    overrides this method to refuse the call and say so.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for</span>
