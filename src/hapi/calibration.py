@@ -70,9 +70,9 @@ class Calibration(Catchment):
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        spatial_resolution: str | None = "Lumped",
-        temporal_resolution: str | None = "Daily",
-        routing_method: str | None = "Muskingum",
+        spatial_resolution: str = "Lumped",
+        temporal_resolution: str = "Daily",
+        routing_method: str = "Muskingum",
     ):
         """Initialize the Calibration object.
 

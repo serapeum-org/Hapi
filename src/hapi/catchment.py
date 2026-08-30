@@ -184,6 +184,8 @@ class Catchment:
                 canonicalised. Default is "Muskingum".
 
         Raises:
+            TypeError: If `spatial_resolution`, `temporal_resolution` or
+                `routing_method` is not a string.
             ValueError: If `spatial_resolution` is not "lumped" or
                 "distributed".
             ValueError: If `temporal_resolution` is not "daily" or
@@ -194,6 +196,19 @@ class Catchment:
         self.name = name
         self.start = dt.datetime.strptime(start_data, fmt)
         self.end = dt.datetime.strptime(end, fmt)
+
+        # All three of the mode arguments are lower-cased below, so a non-string reaches
+        # `.lower()` and raises an `AttributeError` naming neither the argument nor the class.
+        # Checked together, once, rather than three times over.
+        for argument, value in (
+            ("spatial_resolution", spatial_resolution),
+            ("temporal_resolution", temporal_resolution),
+            ("routing_method", routing_method),
+        ):
+            if not isinstance(value, str):
+                raise TypeError(
+                    f"{argument} must be a string, got {type(value).__name__}"
+                )
 
         if spatial_resolution.lower() not in ["lumped", "distributed"]:
             raise ValueError(
