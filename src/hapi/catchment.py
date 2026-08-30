@@ -311,6 +311,16 @@ class Catchment:
             routing_method=catchment.routing_method,
         )
 
+        # Resolved before any reader runs: it needs nothing but the config, and a typo here
+        # would otherwise cost the whole parameter folder read before failing.
+        conceptual_model = config.conceptual_model
+        if conceptual_model.model_class not in CONCEPTUAL_MODELS:
+            raise ValueError(
+                f"conceptual_model.model_class {conceptual_model.model_class!r} is not "
+                f"registered; known models are {sorted(CONCEPTUAL_MODELS)}"
+            )
+        model_class = CONCEPTUAL_MODELS[conceptual_model.model_class]
+
         distributed = catchment.spatial_resolution == "distributed"
         if distributed:
             model.meteo = MeteoInputs.from_config(
@@ -335,14 +345,8 @@ class Catchment:
                 maxbas=config.parameters.maxbas,
             )
 
-        conceptual_model = config.conceptual_model
-        if conceptual_model.model_class not in CONCEPTUAL_MODELS:
-            raise ValueError(
-                f"conceptual_model.model_class {conceptual_model.model_class!r} is not "
-                f"registered; known models are {sorted(CONCEPTUAL_MODELS)}"
-            )
         model.read_lumped_model(
-            CONCEPTUAL_MODELS[conceptual_model.model_class],
+            model_class,
             conceptual_model.catchment_area,
             conceptual_model.initial_condition,
             conceptual_model.q_init,
