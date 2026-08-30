@@ -176,8 +176,11 @@ class ParametersConfig(BaseModel):
     Attributes:
         path: Folder of parameter rasters (distributed) or a single file (lumped).
         snow: Whether the parameter set includes the snow routine (15 parameters against 10).
-        maxbas: Whether the set carries the triangular-routing parameter. Independent of
-            `catchment.routing_method` -- this describes the parameter set, not the run.
+        maxbas: Whether the set carries the triangular-routing parameter. It describes the
+            parameter set rather than the run, but `RunConfig` requires it to agree with
+            `catchment.routing_method`: the two counts differ (11 against 12) and `maxbas`
+            is what selects which is expected, so a disagreeing pair still passes the count
+            check and then reads the wrong parameter as the routing one.
     """
 
     model_config = _STRICT
@@ -314,6 +317,20 @@ class RunConfig(BaseModel):
                 )
             if self.meteo.source == "netcdf" and self.meteo.path is None:
                 raise ValueError("meteo.source is 'netcdf', which needs meteo.path")
+            # The parameter-count check cannot catch a mismatch here: a MAXBAS set holds 11
+            # parameters and a Muskingum set 12, and `parameters.maxbas` is what selects which
+            # count is expected -- so a set that disagrees with the routing method still counts
+            # correctly. The run then completes, reading the Muskingum X as the MAXBAS value
+            # (or K and X out of a MAXBAS set), and produces a hydrograph that is quietly wrong.
+            if self.parameters is not None:
+                wants_maxbas = self.catchment.routing_method == "maxbas"
+                if wants_maxbas != self.parameters.maxbas:
+                    raise ValueError(
+                        f"catchment.routing_method is "
+                        f"{self.catchment.routing_method!r} but parameters.maxbas is "
+                        f"{self.parameters.maxbas}; the parameter set and the routing method "
+                        f"must agree, or the run reads the wrong parameter as the routing one"
+                    )
         elif self.meteo.path is None:
             raise ValueError(
                 "catchment.spatial_resolution is 'lumped', which needs meteo.path -- the CSV "

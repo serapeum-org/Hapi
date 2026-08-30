@@ -422,6 +422,55 @@ class TestRunConfigCrossFieldRules:
             "MAXBAS should be allowed to omit the direction raster"
         )
 
+    @pytest.mark.parametrize(
+        "routing_method, maxbas",
+        [("maxbas", False), ("muskingum", True)],
+        ids=["maxbas-run-muskingum-set", "muskingum-run-maxbas-set"],
+    )
+    def test_the_routing_method_and_the_parameter_set_must_agree(
+        self, distributed_mapping, routing_method, maxbas
+    ):
+        """Test that a routing method mismatched to its parameter set is refused.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            routing_method: The routing method declared on the catchment.
+            maxbas: The flag declared on the parameter set, deliberately disagreeing.
+
+        Test scenario:
+            The parameter-count check cannot catch this: a MAXBAS set holds 11 parameters and
+            a Muskingum set 12, and `parameters.maxbas` selects which count is expected, so a
+            disagreeing pair counts correctly. The run then completes and reads the Muskingum
+            X as the MAXBAS value -- a hydrograph that is quietly wrong, the worst failure
+            mode for a modelling tool.
+        """
+        distributed_mapping["catchment"]["routing_method"] = routing_method
+        distributed_mapping["parameters"]["maxbas"] = maxbas
+        if routing_method == "maxbas":
+            del distributed_mapping["flow_network"]["flow_direction"]
+
+        with pytest.raises(ValidationError, match="must agree"):
+            RunConfig.model_validate(distributed_mapping)
+
+    def test_a_configuration_without_parameters_skips_the_routing_cross_check(
+        self, distributed_mapping
+    ):
+        """Test that the cross-check does not fire when no parameter set is configured.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            A calibration declares no `parameters` block -- its parameters come from the
+            bounds -- so there is nothing to disagree with the routing method, and requiring
+            agreement would reject every calibration configuration.
+        """
+        del distributed_mapping["parameters"]
+
+        config = RunConfig.model_validate(distributed_mapping)
+
+        assert config.parameters is None
+
     def test_distributed_requires_a_gauge_table_when_gauges_are_given(
         self, distributed_mapping
     ):
