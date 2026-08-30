@@ -266,6 +266,10 @@ class Catchment:
                 that is not in `CONCEPTUAL_MODELS`.
 
         Examples:
+            The configurations below ship with the Hapi repository, so these run from a
+            checkout rather than an installed wheel; point at your own file to try them
+            elsewhere.
+
             - Build a lumped model and inspect what the configuration gave it:
                 ```python
                 >>> from hapi.catchment import Catchment

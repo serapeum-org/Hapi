@@ -1184,6 +1184,9 @@ class MeteoInputs:
                 only fires for a `MeteoConfig` built by hand.
 
         Examples:
+            The paths below are fixtures in the Hapi repository, so these run from a checkout
+            rather than an installed wheel; substitute your own file to try them elsewhere.
+
             - Load a combined NetCDF by naming the variable each driver sits in:
                 ```python
                 >>> from hapi.config import MeteoConfig

@@ -104,6 +104,7 @@ nav:
       - dev/Installation.md
   - API Reference:
       - api/catchment.md
+      - api/config.md
       - api/dem.md
       - api/calibration.md
       - api/inputs.md
