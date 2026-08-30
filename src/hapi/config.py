@@ -81,7 +81,7 @@ Examples:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -91,14 +91,48 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 _STRICT = ConfigDict(extra="forbid")
 
 
+def _write_dates_in_the_block_format(values: Any, fields: tuple[str, ...]) -> Any:
+    """Render any date YAML already parsed back into a string in the block's own format.
+
+    An unquoted `start: 2009-01-01` is a `datetime.date` by the time pydantic sees it, and the
+    date fields are strings because the readers downstream parse them with `fmt`. Rejecting the
+    unquoted spelling would be rejecting the one a YAML author writes first, over a difference
+    that carries no information: a parsed date has no format ambiguity left to preserve, so it
+    is simply written back out in `fmt`.
+
+    Args:
+        values: The raw mapping pydantic is about to validate. Anything else is passed through
+            for pydantic to reject with its own message.
+        fields: Names of the date fields in this block.
+
+    Returns:
+        Any: The mapping, with any parsed date in `fields` replaced by its `fmt` rendering.
+    """
+    if not isinstance(values, dict):
+        return values
+
+    fmt = values.get("fmt", "%Y-%m-%d")
+    if not isinstance(fmt, str):
+        return values
+
+    rendered = dict(values)
+    for field in fields:
+        value = rendered.get(field)
+        # `datetime` subclasses `date`, so this covers `2009-01-01 06:00:00` too.
+        if isinstance(value, date):
+            rendered[field] = value.strftime(fmt)
+    return rendered
+
+
 class CatchmentConfig(BaseModel):
     """The `Catchment` constructor arguments.
 
     Attributes:
         name: Catchment name.
-        start: Start date, parsed with `fmt`. Kept a string: the constructor does the parsing,
-            and an unquoted YAML date would arrive here already a `date`.
-        end: End date, parsed with `fmt`.
+        start: Start date, parsed with `fmt`. Held as a string, because the constructor does
+            the parsing; an unquoted YAML date arrives here already a `date` and is written
+            back out in `fmt`, so both spellings work.
+        end: End date, parsed with `fmt`. See `start`.
         fmt: `strptime` format for `start` / `end`.
         spatial_resolution: `"lumped"` or `"distributed"`. Selects the shape of `meteo` and
             `gauges`, and whether `flow_network` is required.
@@ -119,6 +153,19 @@ class CatchmentConfig(BaseModel):
     spatial_resolution: Literal["lumped", "distributed"] = "lumped"
     temporal_resolution: Literal["daily", "hourly"] = "daily"
     routing_method: Literal["muskingum", "maxbas"] = "muskingum"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_a_date_yaml_already_parsed(cls, values: Any) -> Any:
+        """Render an unquoted YAML date back into `fmt` before the string fields see it.
+
+        Args:
+            values: The raw mapping.
+
+        Returns:
+            Any: The mapping, with `start` and `end` as strings.
+        """
+        return _write_dates_in_the_block_format(values, ("start", "end"))
 
 
 class MeteoConfig(BaseModel):
@@ -160,6 +207,19 @@ class MeteoConfig(BaseModel):
     file_name_data_fmt: str | None = None
     per_variable: dict[str, dict[str, Any]] | None = None
     gdal_env: dict[str, str] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_a_date_yaml_already_parsed(cls, values: Any) -> Any:
+        """Render an unquoted YAML date back into `fmt` before the string fields see it.
+
+        Args:
+            values: The raw mapping.
+
+        Returns:
+            Any: The mapping, with `start` and `end` as strings.
+        """
+        return _write_dates_in_the_block_format(values, ("start", "end"))
 
 
 class FlowNetworkConfig(BaseModel):
