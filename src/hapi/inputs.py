@@ -1163,8 +1163,9 @@ class MeteoInputs:
             MeteoInputs: The three cubes plus the calendar, windowed to the requested period.
 
         Raises:
-            AssertionError: A field the chosen source needs is unset. `RunConfig` rejects such a
-                configuration, so this only fires for a `MeteoConfig` built by hand.
+            ValueError: A field the chosen source needs is unset -- one of the three drivers, or
+                `path` for `source="netcdf"`. `RunConfig` rejects such a configuration, so this
+                only fires for a `MeteoConfig` built by hand.
 
         Examples:
             - Load a combined NetCDF by naming the variable each driver sits in:
@@ -1216,13 +1217,21 @@ class MeteoInputs:
         start = config.start or start
         end = config.end or end
 
-        # Optional on the model because a lumped configuration sets none of them; every
-        # distributed source needs all three, which `RunConfig` enforces before this runs.
-        assert config.precipitation is not None, "meteo.precipitation is required"
-        assert config.temperature is not None, "meteo.temperature is required"
-        assert config.evapotranspiration is not None, (
-            "meteo.evapotranspiration is required"
-        )
+        # The three are optional on the model because a lumped configuration sets none of them,
+        # while every distributed source needs all three. `RunConfig` enforces that, so reaching
+        # the raise means a `MeteoConfig` was built by hand. Bound to locals so the check both
+        # reports what is missing and narrows the type for the calls below.
+        precipitation = config.precipitation
+        temperature = config.temperature
+        evapotranspiration = config.evapotranspiration
+        if precipitation is None or temperature is None or evapotranspiration is None:
+            missing = [
+                name for name in METEO_VARIABLES if getattr(config, name) is None
+            ]
+            raise ValueError(
+                f"MeteoInputs needs all three drivers; the configuration leaves "
+                f"{', '.join(missing)} unset"
+            )
 
         if config.source == "rasters":
             extra: dict[str, Any] = {}
@@ -1231,9 +1240,9 @@ class MeteoInputs:
             if config.gdal_env is not None:
                 extra["gdal_env"] = config.gdal_env
             return cls.from_rasters(
-                config.precipitation,
-                config.temperature,
-                config.evapotranspiration,
+                precipitation,
+                temperature,
+                evapotranspiration,
                 glob=config.glob,
                 regex_string=config.regex_string,
                 file_name_data_fmt=config.file_name_data_fmt,
@@ -1244,21 +1253,25 @@ class MeteoInputs:
             )
 
         if config.source == "netcdf":
-            assert config.path is not None, "meteo.path is required for source 'netcdf'"
+            if config.path is None:
+                raise ValueError(
+                    "source 'netcdf' reads the three drivers out of one file, so the "
+                    "configuration must set meteo.path"
+                )
             return cls.from_netcdf(
                 config.path,
-                precipitation=config.precipitation,
-                temperature=config.temperature,
-                evapotranspiration=config.evapotranspiration,
+                precipitation=precipitation,
+                temperature=temperature,
+                evapotranspiration=evapotranspiration,
                 start=start,
                 end=end,
                 fmt=config.fmt,
             )
 
         return cls.from_netcdf_files(
-            config.precipitation,
-            config.temperature,
-            config.evapotranspiration,
+            precipitation,
+            temperature,
+            evapotranspiration,
             start=start,
             end=end,
             fmt=config.fmt,
