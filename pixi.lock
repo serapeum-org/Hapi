@@ -3425,7 +3425,7 @@ packages:
   - cleopatra>=0.32.0
   - matplotlib>=3.11.0
   - pyyaml>=6.0
-  - pydantic>=2.0
+  - pydantic>=2.0,<3
   - earthlens[ecmwf]>=0.12.0 ; extra == 'inputs'
   requires_python: '>=3.11,<4'
 - pypi: https://files.pythonhosted.org/packages/02/03/74fe2a4cb3817d94d86402f2506554130a2f01414e299b5a843e5a8a957f/numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
