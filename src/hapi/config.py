@@ -103,8 +103,11 @@ class CatchmentConfig(BaseModel):
         spatial_resolution: `"lumped"` or `"distributed"`. Selects the shape of `meteo` and
             `gauges`, and whether `flow_network` is required.
         temporal_resolution: `"daily"` or `"hourly"`.
-        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`; which
-            `Run.*` entry point actually routes with it is the caller's choice.
+        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`, and
+            constrains two other blocks: Muskingum routes along the network so it requires
+            `flow_network.flow_direction`, and the method must agree with
+            `parameters.maxbas`. Which `Run.*` entry point actually routes with it is still
+            the caller's choice.
     """
 
     model_config = _STRICT
@@ -262,7 +265,8 @@ class RunConfig(BaseModel):
             derives them from the bounds handed to `read_parameters_bound` rather than reading
             a fitted set.
         gauges: The observed discharge. Omit for a run that is not scored against gauges.
-        flow_network: The routing network. Required for distributed, absent for lumped.
+        flow_network: The routing network. Required for a distributed run and refused for a
+            lumped one, which has no grid to put it on.
         outputs: Where to write results.
     """
 
