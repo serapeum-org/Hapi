@@ -160,7 +160,10 @@ def _check_the_configured_paths_exist(config: RunConfig, distributed: bool) -> N
             ]
         if config.flow_network is not None:
             candidates += [
-                ("flow_network.flow_accumulation", config.flow_network.flow_accumulation),
+                (
+                    "flow_network.flow_accumulation",
+                    config.flow_network.flow_accumulation,
+                ),
                 ("flow_network.flow_direction", config.flow_network.flow_direction),
             ]
     else:

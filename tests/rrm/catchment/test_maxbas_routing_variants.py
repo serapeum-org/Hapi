@@ -333,7 +333,9 @@ class TestCalculateWeightsGuard:
         with pytest.raises(ValueError, match="at least 1"):
             Routing.triangular_routing_1(q, 0.2)
 
-    @pytest.mark.parametrize("maxbas", [1, 4.5, 5], ids=["minimum", "fractional", "whole"])
+    @pytest.mark.parametrize(
+        "maxbas", [1, 4.5, 5], ids=["minimum", "fractional", "whole"]
+    )
     def test_a_valid_maxbas_still_routes(self, maxbas):
         """Test that the guard leaves every accepted MAXBAS working.
 

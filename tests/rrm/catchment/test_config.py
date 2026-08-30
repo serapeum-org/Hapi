@@ -237,7 +237,9 @@ class TestCatchmentConfig:
         ],
         ids=["date", "custom-fmt", "timestamp"],
     )
-    def test_a_date_yaml_already_parsed_is_written_back_in_fmt(self, value, fmt, expected):
+    def test_a_date_yaml_already_parsed_is_written_back_in_fmt(
+        self, value, fmt, expected
+    ):
         """Test that an unquoted YAML date is accepted and rendered in the block's format.
 
         Args:
@@ -275,11 +277,21 @@ class TestCatchmentConfig:
         "values, why",
         [
             ("not-a-mapping", "a scalar block"),
-            ({"name": "Coello", "start": "2009-01-01", "end": "2009-01-10", "fmt": 5}, "a non-string fmt"),
+            (
+                {
+                    "name": "Coello",
+                    "start": "2009-01-01",
+                    "end": "2009-01-10",
+                    "fmt": 5,
+                },
+                "a non-string fmt",
+            ),
         ],
         ids=["scalar", "non-string-fmt"],
     )
-    def test_the_normaliser_defers_to_pydantic_for_what_it_cannot_render(self, values, why):
+    def test_the_normaliser_defers_to_pydantic_for_what_it_cannot_render(
+        self, values, why
+    ):
         """Test that unrenderable input is passed through for pydantic to report.
 
         Args:
@@ -598,7 +610,9 @@ class TestRunConfigCrossFieldRules:
         """
         del distributed_mapping["meteo"][driver]
 
-        with pytest.raises(ValidationError, match="all three meteorological drivers") as exc:
+        with pytest.raises(
+            ValidationError, match="all three meteorological drivers"
+        ) as exc:
             RunConfig.model_validate(distributed_mapping)
 
         assert driver in str(exc.value), (
@@ -773,7 +787,11 @@ class TestRunConfigCrossFieldRules:
         "source, patch, refused",
         [
             ("netcdf", {"path": "m.nc", "glob": "*.tif"}, "meteo.glob"),
-            ("netcdf", {"path": "m.nc", "per_variable": {"p": {}}}, "meteo.per_variable"),
+            (
+                "netcdf",
+                {"path": "m.nc", "per_variable": {"p": {}}},
+                "meteo.per_variable",
+            ),
             ("netcdf", {"path": "m.nc", "variable": "pre"}, "meteo.variable"),
             ("netcdf_files", {"path": "m.nc"}, "meteo.path"),
             ("rasters", {"path": "m.nc"}, "meteo.path"),
@@ -811,7 +829,9 @@ class TestRunConfigCrossFieldRules:
         with pytest.raises(ValidationError, match="read by nothing") as exc:
             RunConfig.model_validate(distributed_mapping)
 
-        assert refused in str(exc.value), f"the error should name {refused}: {exc.value}"
+        assert refused in str(exc.value), (
+            f"the error should name {refused}: {exc.value}"
+        )
 
     def test_a_default_the_author_never_wrote_is_not_refused(self, lumped_mapping):
         """Test that only explicitly written fields count as inapplicable.
@@ -881,7 +901,9 @@ class TestRunConfigCrossFieldRules:
         with pytest.raises(ValidationError, match="must agree"):
             RunConfig.model_validate(lumped_mapping)
 
-    def test_the_derivation_runs_before_the_flow_direction_check(self, distributed_mapping):
+    def test_the_derivation_runs_before_the_flow_direction_check(
+        self, distributed_mapping
+    ):
         """Test that a derived MAXBAS run may omit the flow-direction raster.
 
         Args:
@@ -910,7 +932,11 @@ class TestRunConfigCrossFieldRules:
             {"end": "2008-01-01"},
             {"start": "2010-01-01", "end": "2009-01-01"},
         ],
-        ids=["start-after-catchment-end", "end-before-catchment-start", "both-inverted"],
+        ids=[
+            "start-after-catchment-end",
+            "end-before-catchment-start",
+            "both-inverted",
+        ],
     )
     def test_the_resolved_meteorological_window_must_run_forwards(
         self, distributed_mapping, window
@@ -974,7 +1000,6 @@ class TestRunConfigCrossFieldRules:
             f"{config.gauges.table_fmt}"
         )
         assert config.gauges.fmt == "%d/%m/%Y", "the discharge format should be kept"
-
 
     def test_a_lumped_configuration_may_omit_gauges(self, lumped_mapping):
         """Test that a lumped run with no gauges block validates.
@@ -1131,7 +1156,6 @@ class TestMeteoInputsFromConfig:
                 )
             )
 
-
     def test_the_netcdf_source_reads_the_three_variables_from_one_file(
         self, coello_start_date: str, coello_end_date: str
     ):
@@ -1237,7 +1261,6 @@ class TestRoutingMethodNormalisation:
         assert "diffusive" in str(exc.value), (
             f"the error should echo the value given: {exc.value}"
         )
-
 
     @pytest.mark.parametrize(
         "argument",
@@ -1697,7 +1720,9 @@ class TestCatchmentFromYaml:
         monkeypatch.chdir(tmp_path)
         model = Catchment.from_yaml(str(path))
 
-        assert model.meteo is not None, "the drivers should resolve from the config's own dir"
+        assert model.meteo is not None, (
+            "the drivers should resolve from the config's own dir"
+        )
         assert model.flow_network is not None, "the network should resolve too"
 
     def test_a_netcdf_variable_name_is_not_treated_as_a_path(
@@ -1849,7 +1874,9 @@ class TestCatchmentFromYaml:
         with pytest.raises(ValidationError, match="valid dictionary"):
             Catchment.from_yaml(str(path))
 
-    def test_every_missing_input_path_is_named_at_once(self, distributed_mapping, tmp_path):
+    def test_every_missing_input_path_is_named_at_once(
+        self, distributed_mapping, tmp_path
+    ):
         """Test that the pre-flight check reports all the missing paths together.
 
         Args:
@@ -2012,7 +2039,11 @@ class TestCatchmentFromYaml:
         )
 
     def test_a_missing_driver_folder_is_reported_before_anything_is_read(
-        self, distributed_mapping, coello_temp_path: str, coello_evap_path: str, tmp_path
+        self,
+        distributed_mapping,
+        coello_temp_path: str,
+        coello_evap_path: str,
+        tmp_path,
     ):
         """Test that a raster driver folder is checked for existence like any other path.
 

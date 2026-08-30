@@ -521,7 +521,9 @@ class RunConfig(BaseModel):
             return self
 
         if "routing_method" not in self.catchment.model_fields_set:
-            self.catchment.routing_method = "maxbas" if self.parameters.maxbas else "muskingum"
+            self.catchment.routing_method = (
+                "maxbas" if self.parameters.maxbas else "muskingum"
+            )
             return self
 
         if (self.catchment.routing_method == "maxbas") != self.parameters.maxbas:
