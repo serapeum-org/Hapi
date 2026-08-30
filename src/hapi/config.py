@@ -539,86 +539,110 @@ class RunConfig(BaseModel):
     def _check_blocks_match_the_spatial_resolution(self) -> RunConfig:
         """Enforce the fields each spatial resolution requires.
 
+        The two resolutions share no rule -- one describes a grid and a routing network, the
+        other a pair of CSVs -- so each owns a method and this one only chooses between them.
+
         Returns:
             RunConfig: This config, unchanged.
 
         Raises:
-            ValueError: A block the chosen `spatial_resolution` needs is missing, or one of the
-                three drivers a distributed `meteo.source` needs is unset.
+            ValueError: A block the chosen `spatial_resolution` needs is missing, or one it
+                will never read is present.
         """
         if self.catchment.spatial_resolution == "distributed":
-            if self.flow_network is None:
-                raise ValueError(
-                    "catchment.spatial_resolution is 'distributed', which needs a flow_network "
-                    "block"
-                )
-            # `flow_direction` is optional on the block because MAXBAS sends every cell straight
-            # to the outlet and never reads one. Muskingum routes along the network, so without
-            # it the build succeeds and `Run.RunHapi` dereferences a None array after every
-            # raster has been read.
-            if (
-                self.catchment.routing_method == "muskingum"
-                and self.flow_network.flow_direction is None
-            ):
-                raise ValueError(
-                    "catchment.routing_method is 'muskingum', which routes along the network, "
-                    "so flow_network.flow_direction is required"
-                )
-            # Only when gauges are configured at all: a distributed run that is not scored
-            # against observations omits the block entirely.
-            if self.gauges is not None and self.gauges.table is None:
-                raise ValueError(
-                    "catchment.spatial_resolution is 'distributed', which needs gauges.table "
-                    "to locate the gauges on the grid"
-                )
-            missing = [
-                name for name in METEO_DRIVERS if getattr(self.meteo, name) is None
-            ]
-            if missing:
-                raise ValueError(missing_drivers_message(missing))
-            if self.meteo.source == "netcdf" and self.meteo.path is None:
-                raise ValueError(NETCDF_PATH_MESSAGE)
-            _reject_fields_the_run_will_not_read(
-                self.meteo,
-                _METEO_FIELDS_BY_SOURCE[self.meteo.source],
-                "meteo",
-                f"meteo.source is {self.meteo.source!r}",
-            )
+            self._check_the_distributed_blocks()
         else:
-            if self.meteo.path is None:
-                raise ValueError(
-                    "catchment.spatial_resolution is 'lumped', which needs meteo.path -- the "
-                    "CSV of catchment-average drivers"
-                )
-            # `extra="forbid"` exists so a misspelled key fails rather than being dropped;
-            # accepting a correctly spelled but inapplicable block would be the same silence
-            # by another route. A lumped run has no grid, so neither block can be honoured.
-            if self.flow_network is not None:
-                raise ValueError(
-                    "catchment.spatial_resolution is 'lumped', which has no grid, so a "
-                    "flow_network block cannot be used"
-                )
-            if self.meteo.source != "rasters":
-                raise ValueError(
-                    f"catchment.spatial_resolution is 'lumped', which reads meteo.path as a "
-                    f"CSV of catchment-average drivers; meteo.source "
-                    f"{self.meteo.source!r} does not apply"
-                )
-            lumped = "catchment.spatial_resolution is 'lumped'"
-            _reject_fields_the_run_will_not_read(
-                self.meteo,
-                _LUMPED_METEO_FIELDS,
-                "meteo",
-                f"{lumped}, which reads meteo.path as one CSV of catchment-average drivers",
-            )
-            if self.gauges is not None:
-                _reject_fields_the_run_will_not_read(
-                    self.gauges,
-                    _LUMPED_GAUGES_FIELDS,
-                    "gauges",
-                    f"{lumped}, which reads one discharge file and locates no gauges",
-                )
+            self._check_the_lumped_blocks()
         return self
+
+    def _check_the_distributed_blocks(self) -> None:
+        """Enforce what a distributed run needs and what its `meteo.source` can read.
+
+        Raises:
+            ValueError: The routing network is missing or incomplete, the gauge table is
+                absent while gauges are configured, a driver is unset, `source="netcdf"`
+                names no file, or a field outside the source's own set is present.
+        """
+        if self.flow_network is None:
+            raise ValueError(
+                "catchment.spatial_resolution is 'distributed', which needs a flow_network "
+                "block"
+            )
+        # `flow_direction` is optional on the block because MAXBAS sends every cell straight
+        # to the outlet and never reads one. Muskingum routes along the network, so without
+        # it the build succeeds and `Run.RunHapi` dereferences a None array after every
+        # raster has been read.
+        if (
+            self.catchment.routing_method == "muskingum"
+            and self.flow_network.flow_direction is None
+        ):
+            raise ValueError(
+                "catchment.routing_method is 'muskingum', which routes along the network, "
+                "so flow_network.flow_direction is required"
+            )
+        # Only when gauges are configured at all: a distributed run that is not scored
+        # against observations omits the block entirely.
+        if self.gauges is not None and self.gauges.table is None:
+            raise ValueError(
+                "catchment.spatial_resolution is 'distributed', which needs gauges.table "
+                "to locate the gauges on the grid"
+            )
+
+        missing = [name for name in METEO_DRIVERS if getattr(self.meteo, name) is None]
+        if missing:
+            raise ValueError(missing_drivers_message(missing))
+        if self.meteo.source == "netcdf" and self.meteo.path is None:
+            raise ValueError(NETCDF_PATH_MESSAGE)
+
+        _reject_fields_the_run_will_not_read(
+            self.meteo,
+            _METEO_FIELDS_BY_SOURCE[self.meteo.source],
+            "meteo",
+            f"meteo.source is {self.meteo.source!r}",
+        )
+
+    def _check_the_lumped_blocks(self) -> None:
+        """Enforce what a lumped run needs, and refuse the grid it has no use for.
+
+        `extra="forbid"` exists so a misspelled key fails rather than being dropped;
+        accepting a correctly spelled but inapplicable block would be the same silence by
+        another route. A lumped run has no grid, so nothing that describes one applies.
+
+        Raises:
+            ValueError: `meteo.path` is unset, a routing network or a grid `meteo.source` is
+                present, or a `meteo` / `gauges` field this run will never read is set.
+        """
+        if self.meteo.path is None:
+            raise ValueError(
+                "catchment.spatial_resolution is 'lumped', which needs meteo.path -- the "
+                "CSV of catchment-average drivers"
+            )
+        if self.flow_network is not None:
+            raise ValueError(
+                "catchment.spatial_resolution is 'lumped', which has no grid, so a "
+                "flow_network block cannot be used"
+            )
+        if self.meteo.source != "rasters":
+            raise ValueError(
+                f"catchment.spatial_resolution is 'lumped', which reads meteo.path as a "
+                f"CSV of catchment-average drivers; meteo.source "
+                f"{self.meteo.source!r} does not apply"
+            )
+
+        lumped = "catchment.spatial_resolution is 'lumped'"
+        _reject_fields_the_run_will_not_read(
+            self.meteo,
+            _LUMPED_METEO_FIELDS,
+            "meteo",
+            f"{lumped}, which reads meteo.path as one CSV of catchment-average drivers",
+        )
+        if self.gauges is not None:
+            _reject_fields_the_run_will_not_read(
+                self.gauges,
+                _LUMPED_GAUGES_FIELDS,
+                "gauges",
+                f"{lumped}, which reads one discharge file and locates no gauges",
+            )
 
     @model_validator(mode="after")
     def _check_the_dates_parse_and_are_ordered(self) -> RunConfig:

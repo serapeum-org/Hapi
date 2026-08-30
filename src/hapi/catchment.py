@@ -979,51 +979,11 @@ class Catchment:
             ind = pd.date_range(self.start, self.end, freq="h")
 
         if self.spatial_resolution.lower() == "distributed":
-            # `__init__` sets GaugesTable to None, so the `hasattr` this replaced was always
-            # true and never guarded anything: a caller who skipped `read_gauge_table` got a
-            # `TypeError` on None a few lines down instead.
-            if self.GaugesTable is None:
-                raise ValueError(
-                    "the gauge table has not been read yet; call read_gauge_table before "
-                    "read_discharge_gauges in distributed mode"
-                )
-
-            # The frame is labelled from `column` but every file is named after `id`, so the
-            # two are tracked separately: filling by `int(name)` instead of by the label the
-            # frame was built with left a `column != "id"` table with the requested columns
-            # all-NaN and a second set of id-named ones beside them, silently.
-            labels = self.GaugesTable[column].tolist()
-            self.QGauges = pd.DataFrame(index=ind, columns=labels)
-
-            for i in range(len(self.GaugesTable)):
-                name = self.GaugesTable.loc[i, "id"]
-                if readfrom != "":
-                    f = pd.read_csv(
-                        f"{path}/{name}.csv",
-                        index_col=0,
-                        delimiter=delimiter,
-                        skiprows=readfrom,
-                    )  # ,#delimiter="\t"
-                else:
-                    f = pd.read_csv(
-                        f"{path}/{name}.csv",
-                        header=0,
-                        index_col=0,
-                        delimiter=delimiter,
-                    )
-
-                f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-                self.QGauges[labels[i]] = f.loc[self.start : self.end, f.columns[-1]]
+            self._read_one_discharge_file_per_gauge(
+                path, ind, delimiter, column, fmt, readfrom
+            )
         else:
-            if not os.path.exists(path):
-                raise FileNotFoundError(
-                    f"The file you have entered{path} does not exist"
-                )
-
-            self.QGauges = pd.DataFrame(index=ind)
-            f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
-            f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-            self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
+            self._read_the_single_discharge_file(path, ind, delimiter, fmt)
 
         if split:
             if isinstance(start_date, str):
@@ -1033,6 +993,89 @@ class Catchment:
             self.QGauges = self.QGauges.loc[start_date:end_date]
 
         logger.debug("Gauges data are read successfully")
+
+    def _read_one_discharge_file_per_gauge(
+        self,
+        path: str,
+        index: pd.DatetimeIndex,
+        delimiter: str,
+        column: str,
+        fmt: str,
+        readfrom: str,
+    ) -> None:
+        """Fill `QGauges` from a folder holding one CSV per gauge id.
+
+        Args:
+            path: Folder of per-gauge CSVs, each named after a gauge id.
+            index: The model's date index, which the frame is built on.
+            delimiter: Discharge CSV delimiter.
+            column: Gauge-table column naming the frame's columns.
+            fmt: `strptime` format for each file's date column.
+            readfrom: Rows to skip, or "" to read from the header.
+
+        Raises:
+            ValueError: `read_gauge_table` has not been called yet.
+        """
+        # `__init__` sets GaugesTable to None, so the `hasattr` this replaced was always
+        # true and never guarded anything: a caller who skipped `read_gauge_table` got a
+        # `TypeError` on None a few lines down instead.
+        if self.GaugesTable is None:
+            raise ValueError(
+                "the gauge table has not been read yet; call read_gauge_table before "
+                "read_discharge_gauges in distributed mode"
+            )
+
+        # The frame is labelled from `column` but every file is named after `id`, so the
+        # two are tracked separately: filling by `int(name)` instead of by the label the
+        # frame was built with left a `column != "id"` table with the requested columns
+        # all-NaN and a second set of id-named ones beside them, silently.
+        labels = self.GaugesTable[column].tolist()
+        self.QGauges = pd.DataFrame(index=index, columns=labels)
+
+        for i in range(len(self.GaugesTable)):
+            name = self.GaugesTable.loc[i, "id"]
+            if readfrom != "":
+                f = pd.read_csv(
+                    f"{path}/{name}.csv",
+                    index_col=0,
+                    delimiter=delimiter,
+                    skiprows=readfrom,
+                )
+            else:
+                f = pd.read_csv(
+                    f"{path}/{name}.csv",
+                    header=0,
+                    index_col=0,
+                    delimiter=delimiter,
+                )
+
+            f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
+            self.QGauges[labels[i]] = f.loc[self.start : self.end, f.columns[-1]]
+
+    def _read_the_single_discharge_file(
+        self, path: str, index: pd.DatetimeIndex, delimiter: str, fmt: str
+    ) -> None:
+        """Fill `QGauges` from one CSV, the lumped case.
+
+        A lumped run has no grid to locate gauges on, so there is one hydrograph and no
+        gauge table: the frame takes the file's own first column as its only column.
+
+        Args:
+            path: The discharge CSV.
+            index: The model's date index, which the frame is built on.
+            delimiter: Discharge CSV delimiter.
+            fmt: `strptime` format for the file's date column.
+
+        Raises:
+            FileNotFoundError: `path` does not exist.
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The file you have entered{path} does not exist")
+
+        self.QGauges = pd.DataFrame(index=index)
+        f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
+        f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
+        self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
 
     def read_parameters_bound(
         self,
