@@ -986,6 +986,8 @@
       
         
       
+        
+      
     
     
     
@@ -1388,6 +1390,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="run-configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run Configuration (YAML)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1537,6 +1567,12 @@
 
 
 <h1 id="distributed-hydrological-model"><a class="toclink" href="#distributed-hydrological-model">Distributed Hydrological Model</a><a class="headerlink" href="#distributed-hydrological-model" title="Permanent link">#</a></h1>
+<div class="admonition tip">
+<p class="admonition-title">Or drive it from a YAML file</p>
+<p>Everything this page assembles in Python can live in a run configuration instead --
+one file holding the paths, dates and settings, read by <code>Catchment.from_yaml</code>. See
+<a href="run-configuration.html">Run configuration</a>.</p>
+</div>
 <p>After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>

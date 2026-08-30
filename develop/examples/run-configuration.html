@@ -10,29 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://serapeum-org.github.io/Hapi/develop/index.html">
+        <link rel="canonical" href="https://serapeum-org.github.io/Hapi/develop/examples/run-configuration.html">
       
       
+        <link rel="prev" href="parameters.html">
       
-        <link rel="next" href="dev/Installation.html">
+      
+        <link rel="next" href="../change-log.html">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Hapi</title>
+        <title>Run Configuration (YAML) - Hapi</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#hapi-hydrological-library-for-python" class="md-skip">
+        <a href="#run-configuration-yaml" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +100,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="index.html" title="Hapi" class="md-header__button md-logo" aria-label="Hapi" data-md-component="logo">
+    <a href="../index.html" title="Hapi" class="md-header__button md-logo" aria-label="Hapi" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Run Configuration (YAML)
             
           </span>
         </div>
@@ -233,11 +235,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="index.html" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
         
   
   
@@ -258,7 +258,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="dev/Installation.html" class="md-tabs__link">
+        <a href="../dev/Installation.html" class="md-tabs__link">
           
   
   
@@ -280,7 +280,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="api/catchment.html" class="md-tabs__link">
+        <a href="../api/catchment.html" class="md-tabs__link">
           
   
   
@@ -298,11 +298,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="examples/distributed-model-calib.html" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="distributed-model-calib.html" class="md-tabs__link">
           
   
   
@@ -322,7 +324,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="change-log.html" class="md-tabs__link">
+      <a href="../change-log.html" class="md-tabs__link">
         
   
   
@@ -363,7 +365,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="index.html" title="Hapi" class="md-nav__button md-logo" aria-label="Hapi" data-md-component="logo">
+    <a href="../index.html" title="Hapi" class="md-nav__button md-logo" aria-label="Hapi" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -390,37 +392,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
         
   
   
@@ -436,70 +411,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#main-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Main Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ihe-delft-sessions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        IHE-Delft Sessions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#citation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Citation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -567,7 +478,7 @@
   
   
     <li class="md-nav__item">
-      <a href="dev/Installation.html" class="md-nav__link">
+      <a href="../dev/Installation.html" class="md-nav__link">
         
   
   
@@ -682,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/catchment.html" class="md-nav__link">
+      <a href="../api/catchment.html" class="md-nav__link">
         
   
   
@@ -710,7 +621,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/config.html" class="md-nav__link">
+      <a href="../api/config.html" class="md-nav__link">
         
   
   
@@ -738,7 +649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/dem.html" class="md-nav__link">
+      <a href="../api/dem.html" class="md-nav__link">
         
   
   
@@ -766,7 +677,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/calibration.html" class="md-nav__link">
+      <a href="../api/calibration.html" class="md-nav__link">
         
   
   
@@ -794,7 +705,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/inputs.html" class="md-nav__link">
+      <a href="../api/inputs.html" class="md-nav__link">
         
   
   
@@ -822,7 +733,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/routing.html" class="md-nav__link">
+      <a href="../api/routing.html" class="md-nav__link">
         
   
   
@@ -850,7 +761,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/run.html" class="md-nav__link">
+      <a href="../api/run.html" class="md-nav__link">
         
   
   
@@ -878,7 +789,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/wrapper.html" class="md-nav__link">
+      <a href="../api/wrapper.html" class="md-nav__link">
         
   
   
@@ -906,7 +817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/distrrm.html" class="md-nav__link">
+      <a href="../api/distrrm.html" class="md-nav__link">
         
   
   
@@ -934,7 +845,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/hbv.html" class="md-nav__link">
+      <a href="../api/hbv.html" class="md-nav__link">
         
   
   
@@ -962,7 +873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/hbv-bergestrom92.html" class="md-nav__link">
+      <a href="../api/hbv-bergestrom92.html" class="md-nav__link">
         
   
   
@@ -990,7 +901,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/hbv-lake.html" class="md-nav__link">
+      <a href="../api/hbv-lake.html" class="md-nav__link">
         
   
   
@@ -1018,7 +929,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/rrm-parameters.html" class="md-nav__link">
+      <a href="../api/rrm-parameters.html" class="md-nav__link">
         
   
   
@@ -1050,8 +961,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -1079,19 +992,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -1109,7 +1025,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1127,7 +1043,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/distributed-model-calib.html" class="md-nav__link">
+      <a href="distributed-model-calib.html" class="md-nav__link">
         
   
   
@@ -1155,7 +1071,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/distributed-model-run.html" class="md-nav__link">
+      <a href="distributed-model-run.html" class="md-nav__link">
         
   
   
@@ -1183,7 +1099,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/gis-inputs.html" class="md-nav__link">
+      <a href="gis-inputs.html" class="md-nav__link">
         
   
   
@@ -1211,7 +1127,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/hbv.html" class="md-nav__link">
+      <a href="hbv.html" class="md-nav__link">
         
   
   
@@ -1239,7 +1155,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/lumped-model-calibration.html" class="md-nav__link">
+      <a href="lumped-model-calibration.html" class="md-nav__link">
         
   
   
@@ -1267,7 +1183,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/lumped-model-run.html" class="md-nav__link">
+      <a href="lumped-model-run.html" class="md-nav__link">
         
   
   
@@ -1295,7 +1211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/meteo-inputs.html" class="md-nav__link">
+      <a href="meteo-inputs.html" class="md-nav__link">
         
   
   
@@ -1323,7 +1239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/muskingum.html" class="md-nav__link">
+      <a href="muskingum.html" class="md-nav__link">
         
   
   
@@ -1351,7 +1267,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/parameters.html" class="md-nav__link">
+      <a href="parameters.html" class="md-nav__link">
         
   
   
@@ -1376,10 +1292,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="examples/run-configuration.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run Configuration (YAML)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="run-configuration.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1395,6 +1338,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-complete-lumped-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A complete lumped configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-for-a-distributed-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What changes for a distributed run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-are-relative-to-the-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paths are relative to the file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-file-is-checked-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the file is checked for
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-configuration-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the configuration back
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1414,7 +1443,7 @@
   
   
     <li class="md-nav__item">
-      <a href="change-log.html" class="md-nav__link">
+      <a href="../change-log.html" class="md-nav__link">
         
   
   
@@ -1461,10 +1490,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#main-features" class="md-nav__link">
+  <a href="#a-complete-lumped-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Main Features
+        A complete lumped configuration
       
     </span>
   </a>
@@ -1472,10 +1501,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ihe-delft-sessions" class="md-nav__link">
+  <a href="#what-changes-for-a-distributed-run" class="md-nav__link">
     <span class="md-ellipsis">
       
-        IHE-Delft Sessions
+        What changes for a distributed run
       
     </span>
   </a>
@@ -1483,10 +1512,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#citation" class="md-nav__link">
+  <a href="#paths-are-relative-to-the-file" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Citation
+        Paths are relative to the file
       
     </span>
   </a>
@@ -1494,10 +1523,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
+  <a href="#what-the-file-is-checked-for" class="md-nav__link">
     <span class="md-ellipsis">
       
-        References
+        What the file is checked for
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-configuration-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the configuration back
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of scope
       
     </span>
   </a>
@@ -1521,7 +1572,7 @@
 
 
   
-    <a href="https://github.com/serapeum-org/Hapi/edit/master/docs/index.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/serapeum-org/Hapi/edit/master/docs/examples/run-configuration.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1530,57 +1581,170 @@
     
       
     
-    <a href="https://github.com/serapeum-org/Hapi/raw/master/docs/index.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/serapeum-org/Hapi/raw/master/docs/examples/run-configuration.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="hapi-hydrological-library-for-python"><a class="toclink" href="#hapi-hydrological-library-for-python">Hapi - Hydrological library for Python</a><a class="headerlink" href="#hapi-hydrological-library-for-python" title="Permanent link">#</a></h1>
-<p><a href="https://doi.org/10.5281/zenodo.4686056"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.4686056.svg" /></a>
-<a href="https://pypi.org/project/HAPI-Nile/"><img alt="PyPI" src="https://img.shields.io/pypi/v/Hapi-nile" /></a>
-<a href="https://anaconda.org/conda-forge/hapi"><img alt="Conda" src="https://img.shields.io/conda/v/conda-forge/hapi?label=conda-forge" /></a>
-<a href="https://pypi.org/project/HAPI-Nile/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/hapi-nile" /></a>
-<a href="https://pepy.tech/project/hapi-nile"><img alt="Downloads" src="https://static.pepy.tech/badge/hapi-nile" /></a>
-<a href="https://anaconda.org/conda-forge/hapi"><img alt="Platforms" src="https://anaconda.org/conda-forge/hapi/badges/platforms.svg" /></a></p>
-<p><img alt="Hapi" src="img/Hapi.png" width="400" /></p>
-<p><strong>Hapi</strong> is a Python package providing a fast and flexible way to build hydrological models with
-different spatial representations (lumped, semi-distributed, and conceptual distributed) using HBV96.
-The package allows developers to change the structure of the defined conceptual model or to provide
-their own model. It contains two routing functions: Muskingum-Cunge and MAXBAS triangular function.</p>
-<p><img alt="Model Structure" src="img/Picture1.png" width="400" /></p>
-<h2 id="main-features"><a class="toclink" href="#main-features">Main Features</a><a class="headerlink" href="#main-features" title="Permanent link">#</a></h2>
+<h1 id="run-configuration-yaml"><a class="toclink" href="#run-configuration-yaml">Run Configuration (YAML)</a><a class="headerlink" href="#run-configuration-yaml" title="Permanent link">#</a></h1>
+<p>The other example pages assemble a model in Python: construct a <code>Catchment</code>, then call
+<code>read_lumped_inputs</code>, <code>read_parameters</code>, <code>read_lumped_model</code> and the rest in the right order.
+That works, but it puts every path, date and area inside the script, so a script is only ever
+about one catchment — and the call order is something you have to know.</p>
+<p>A run configuration moves all of it into a YAML file that sits beside the data it names.
+<code>Catchment.from_yaml</code> reads the file, validates it, and makes the same <code>read_*</code> calls in the
+same order:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
+
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"coello-lumped-model-run.yaml"</span><span class="p">)</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">runLumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="n">Routing</span><span class="o">.</span><span class="n">triangular_routing_1</span><span class="p">)</span>
+</code></pre></div>
+<p>The four shipped examples under <code>examples/hydrological-model/coello/run/</code> are each a pair — a
+<code>.py</code> that runs the model and a <code>.yaml</code> beside it holding everything the run needs.</p>
+<h2 id="a-complete-lumped-configuration"><a class="toclink" href="#a-complete-lumped-configuration">A complete lumped configuration</a><a class="headerlink" href="#a-complete-lumped-configuration" title="Permanent link">#</a></h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Paths are relative to this file, so the run works from any working directory.</span>
+<span class="nt">catchment</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Coello</span>
+<span class="w">  </span><span class="nt">start</span><span class="p">:</span><span class="w"> </span><span class="s">"2009-01-01"</span>
+<span class="w">  </span><span class="nt">end</span><span class="p">:</span><span class="w"> </span><span class="s">"2011-12-31"</span>
+<span class="w">  </span><span class="nt">spatial_resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lumped</span>
+<span class="w">  </span><span class="nt">temporal_resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">daily</span>
+
+<span class="c1"># Lumped mode reads one CSV of catchment-average drivers, not a grid: columns are</span>
+<span class="c1"># [date, precipitation, ET, temperature], optionally followed by the long-term average.</span>
+<span class="nt">meteo</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model/meteo_data-MSWEP.csv</span>
+
+<span class="nt">parameters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt</span>
+<span class="w">  </span><span class="nt">snow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">maxbas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="nt">conceptual_model</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">model_class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HBVBergestrom92</span>
+<span class="w">  </span><span class="nt">catchment_area</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1530</span>
+<span class="w">  </span><span class="nt">initial_condition</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">]</span>
+
+<span class="c1"># One discharge file, and no gauge table: locating gauges on a grid is a distributed concern.</span>
+<span class="nt">gauges</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">discharge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model/Qout_c.csv</span>
+<span class="w">  </span><span class="nt">fmt</span><span class="p">:</span><span class="w"> </span><span class="s">"%Y-%m-%d"</span>
+
+<span class="nt">outputs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">results_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/lumped_model</span>
+</code></pre></div>
+<p><code>catchment</code>, <code>meteo</code> and <code>conceptual_model</code> are required. <code>parameters</code>, <code>gauges</code> and <code>outputs</code>
+are optional: omit <code>parameters</code> for a calibration, which derives them from the bounds given to
+<code>read_parameters_bound</code>, and omit <code>gauges</code> for a run that is not scored against observations.</p>
+<h2 id="what-changes-for-a-distributed-run"><a class="toclink" href="#what-changes-for-a-distributed-run">What changes for a distributed run</a><a class="headerlink" href="#what-changes-for-a-distributed-run" title="Permanent link">#</a></h2>
+<p><code>spatial_resolution: distributed</code> changes the shape of two blocks and requires a third. <code>meteo</code>
+becomes a grid, described by its <code>source</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">catchment</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Coello</span>
+<span class="w">  </span><span class="nt">start</span><span class="p">:</span><span class="w"> </span><span class="s">"2009-01-01"</span>
+<span class="w">  </span><span class="nt">end</span><span class="p">:</span><span class="w"> </span><span class="s">"2009-04-10"</span>
+<span class="w">  </span><span class="nt">spatial_resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">distributed</span>
+<span class="w">  </span><span class="nt">routing_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">maxbas</span>
+
+<span class="nt">meteo</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rasters</span>
+<span class="w">  </span><span class="nt">precipitation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/prec</span>
+<span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/temp</span>
+<span class="w">  </span><span class="nt">evapotranspiration</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/evap</span>
+<span class="w">  </span><span class="nt">file_name_data_fmt</span><span class="p">:</span><span class="w"> </span><span class="s">"%Y.%m.%d"</span>
+
+<span class="c1"># MAXBAS sends every cell straight to the outlet, so no flow-direction raster is read.</span>
+<span class="nt">flow_network</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">flow_accumulation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/GIS/acc4000.tif</span>
+
+<span class="nt">gauges</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">table</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/stations/gauges.csv</span>
+<span class="w">  </span><span class="nt">discharge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../data/distributed_model/stations/</span>
+</code></pre></div>
+<p><code>meteo.source</code> picks which <code>MeteoInputs</code> loader builds the grid, and what the three driver
+fields mean:</p>
+<table>
+<thead>
+<tr>
+<th><code>source</code></th>
+<th>The three driver fields name</th>
+<th>Reads</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rasters</code> (default)</td>
+<td>A folder of dated GeoTIFFs each</td>
+<td><code>MeteoInputs.from_rasters</code></td>
+</tr>
+<tr>
+<td><code>netcdf_files</code></td>
+<td>One NetCDF each</td>
+<td><code>MeteoInputs.from_netcdf_files</code></td>
+</tr>
+<tr>
+<td><code>netcdf</code></td>
+<td>A variable inside <code>meteo.path</code></td>
+<td><code>MeteoInputs.from_netcdf</code></td>
+</tr>
+</tbody>
+</table>
+<p>The last is the fastest: one file, opened once, with the calendar inside it. See
+<a href="meteo-inputs.html">Meteorological inputs</a> for how to pack a folder of rasters into one.</p>
+<h2 id="paths-are-relative-to-the-file"><a class="toclink" href="#paths-are-relative-to-the-file">Paths are relative to the file</a><a class="headerlink" href="#paths-are-relative-to-the-file" title="Permanent link">#</a></h2>
+<p>A relative path in a configuration is resolved against the configuration's own directory, not
+against whatever directory you happen to run from. That is what makes a configuration portable:
+it travels with the data it names, and the run works from anywhere. Absolute paths are used as
+written.</p>
+<p>The example scripts rely on this — each loads the YAML sitting next to it:</p>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="vm">__file__</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">".py"</span><span class="p">)</span> <span class="o">+</span> <span class="s2">".yaml"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="what-the-file-is-checked-for"><a class="toclink" href="#what-the-file-is-checked-for">What the file is checked for</a><a class="headerlink" href="#what-the-file-is-checked-for" title="Permanent link">#</a></h2>
+<p>The file is validated in full before anything is opened, so a mistake is reported as a mistake
+in the file rather than as a failure deep inside a reader:</p>
 <ul>
-<li>Modified version of HBV96 hydrological model (Bergstrom, 1992) with 15 parameters when
-  considering snow processes, and 10 parameters without snow, plus 2 Muskingum routing parameters</li>
-<li>GIS modules to prepare meteorological inputs and perform preprocessing (align rasters with the
-  DEM), plus methods to manipulate distributed data (rasters, NetCDF, shapefiles)</li>
-<li>Sensitivity analysis module based on One-At-a-Time (OAT) and Sobol interaction analysis
-  (Rusli et al., 2015)</li>
-<li>Statistical module with interpolation methods, frequency analysis distributions, and Maximum
-  Likelihood parameter estimation</li>
-<li>Visualization module for animating distributed model results and meteorological inputs</li>
-<li>Optimization module for calibrating the model using Harmony Search</li>
+<li><strong>Unknown keys are refused.</strong> A misspelled <code>precipitaton</code> fails at parse time instead of being
+  dropped and reappearing as a missing input.</li>
+<li><strong>So are keys that do not apply.</strong> A <code>flow_network</code> block on a lumped run, <code>glob</code> under
+  <code>source: netcdf</code>, <code>gauges.table</code> on a lumped run — each is a line that would do nothing, and
+  each is named in the error. Only keys you actually wrote count; defaults are never held
+  against you.</li>
+<li><strong>Required blocks are checked per shape.</strong> A distributed run needs <code>flow_network</code> and all
+  three drivers; Muskingum additionally needs <code>flow_network.flow_direction</code>, which MAXBAS never
+  reads. A lumped run needs <code>meteo.path</code>.</li>
+<li><strong><code>routing_method</code> must agree with <code>parameters.maxbas</code>.</strong> The two parameter counts differ by
+  one and <code>maxbas</code> selects which is expected, so a disagreeing pair still counts correctly and
+  then reads the wrong parameter as the routing one. Leave <code>routing_method</code> out and it is
+  derived from the parameter set.</li>
+<li><strong>Every date is parsed against its own <code>fmt</code></strong>, and the period must run forwards — including
+  the meteorological window, whose bounds fall back to the catchment's when unstated.</li>
+<li><strong>Every path is checked for existence</strong> before the first reader runs, and all the missing ones
+  are reported together.</li>
 </ul>
-<p>The recent version integrates global hydrological parameters from Beck et al. (2016) to reduce
-model complexity and parameter uncertainty.</p>
-<h2 id="ihe-delft-sessions"><a class="toclink" href="#ihe-delft-sessions">IHE-Delft Sessions</a><a class="headerlink" href="#ihe-delft-sessions" title="Permanent link">#</a></h2>
-<ul>
-<li>April 14-15: Two-day session for Masters and PhD students at IHE-Delft —
-  <a href="https://youtu.be/HbmUdN9ehSo">Day 1</a>, <a href="https://youtu.be/m7kHdOFQFIY">Day 2</a></li>
-</ul>
-<h2 id="citation"><a class="toclink" href="#citation">Citation</a><a class="headerlink" href="#citation" title="Permanent link">#</a></h2>
-<p>For using Hapi please cite Farrag et al. (2021) and Farrag &amp; Corzo (2021).</p>
-<h2 id="references"><a class="toclink" href="#references">References</a><a class="headerlink" href="#references" title="Permanent link">#</a></h2>
-<p>Farrag, M. &amp; Corzo, G. (2021) MAfarrag/Hapi: Hapi. doi:10.5281/ZENODO.4662170</p>
-<p>Farrag, M., Perez, G. C. &amp; Solomatine, D. (2021) Spatio-Temporal Hydrological Model Structure
-and Parametrization Analysis. J. Mar. Sci. Eng. 9(5), 467. doi:10.3390/jmse9050467</p>
-<p>Beck, H. E. et al. (2016) Global-scale regionalization of hydrologic model parameters.
-doi:10.1002/2015WR018247</p>
-<p>Bergstrom, S. (1992) The HBV model - its structure and applications. SMHI RH 4(4), 35.</p>
-<p>Rusli, S. R., Yudianto, D. &amp; Liu, J. (2015) Effects of temporal variability on HBV model
-calibration. Water Sci. Eng. 8(4), 291-300. doi:10.1016/j.wse.2015.12.002</p>
+<p>Dates may be quoted or not: <code>start: 2009-01-01</code> is a date to YAML, and it is written back out in
+the block's <code>fmt</code>.</p>
+<h2 id="reading-the-configuration-back"><a class="toclink" href="#reading-the-configuration-back">Reading the configuration back</a><a class="headerlink" href="#reading-the-configuration-back" title="Permanent link">#</a></h2>
+<p>The parsed configuration stays on the model as <code>model.config</code>, so the blocks the build does not
+itself consume remain reachable — <code>outputs</code> above all:</p>
+<div class="highlight"><pre><span></span><code><span class="n">outputs</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outputs</span>
+<span class="n">save_to</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">results_dir</span> <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+    <span class="n">flow_acc_path</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_accumulation</span><span class="p">,</span>
+    <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="out-of-scope"><a class="toclink" href="#out-of-scope">Out of scope</a><a class="headerlink" href="#out-of-scope" title="Permanent link">#</a></h2>
+<p>The schema describes a <code>Catchment</code> run. It carries no field for a lake record, a river geometry,
+or a flow-path-length raster, so lake-aware runs (<code>Run.RunHapiwithLake</code>), the flood model
+(<code>Run.RunFloodModel</code>) and <code>DistMaxbas2</code> are still assembled in Python.</p>
+<p><code>Calibration.from_yaml</code> works — it takes the same constructor arguments — and gives back a
+<code>Calibration</code> to call the calibration methods on. <code>Run.from_yaml</code> does not: <code>Run</code> holds entry
+points called on a model built elsewhere, so it refuses and says so.</p>
+<p>The full field-by-field reference is on the <a href="../api/config.html">Config API page</a>.</p>
 
 
 
@@ -1615,15 +1779,31 @@ calibration. Water Sci. Eng. 8(4), 291-300. doi:10.1016/j.wse.2015.12.002</p>
       
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
+          
+          <a href="parameters.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Parameters">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Parameters
+              </div>
+            </div>
+          </a>
+        
         
           
-          <a href="dev/Installation.html" class="md-footer__link md-footer__link--next" aria-label="Next: Installation">
+          <a href="../change-log.html" class="md-footer__link md-footer__link--next" aria-label="Next: Change logs">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Installation
+                Change logs
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1660,12 +1840,12 @@ calibration. Water Sci. Eng. 8(4), 291-300. doi:10.1016/j.wse.2015.12.002</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
-        <script src="javascripts/mathjax.js"></script>
+        <script src="../javascripts/mathjax.js"></script>
       
         <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
