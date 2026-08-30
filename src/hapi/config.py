@@ -129,6 +129,8 @@ class MeteoConfig(BaseModel):
         temperature: As `precipitation`, for temperature.
         evapotranspiration: As `precipitation`, for evapotranspiration.
         path: The combined NetCDF (`source="netcdf"`) or the lumped meteo CSV.
+        variable: Which variable to take from each file, `source="netcdf_files"` only. `None`
+            takes the single variable a file holds, which is an error if it holds several.
         start: Window start; `None` falls back to `catchment.start`. Distributed only.
         end: Window end; `None` falls back to `catchment.end`. Distributed only.
         fmt: `strptime` format for `start` / `end`.
@@ -146,6 +148,7 @@ class MeteoConfig(BaseModel):
     temperature: str | None = None
     evapotranspiration: str | None = None
     path: str | None = None
+    variable: str | None = None
     start: str | None = None
     end: str | None = None
     fmt: str = "%Y-%m-%d"
@@ -204,7 +207,7 @@ class ConceptualModelConfig(BaseModel):
 
     # `model_class` would collide with pydantic's protected `model_` namespace, so the namespace
     # is cleared rather than renaming a field the YAML already uses.
-    model_config = ConfigDict(extra="forbid", protected_namespaces=())
+    model_config = ConfigDict(**_STRICT, protected_namespaces=())
 
     model_class: str
     catchment_area: float = Field(gt=0)
@@ -219,7 +222,10 @@ class GaugesConfig(BaseModel):
         discharge: Folder of one CSV per gauge id (distributed) or a single CSV (lumped).
         table: Gauge locations and properties. Distributed only; a lumped run has no grid to
             locate gauges on.
-        column: Gauge-table column holding the ids the discharge file names match.
+        column: Gauge-table column naming the resulting hydrograph columns. It does not
+            select the discharge file names: `read_discharge_gauges` reads `<id>.csv`
+            regardless, so anything but `"id"` labels the frame with one set of names while
+            filling another.
         delimiter: Discharge CSV delimiter.
         fmt: `strptime` format for the discharge CSV's date column.
     """

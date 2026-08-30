@@ -1298,6 +1298,7 @@ class MeteoInputs:
             precipitation,
             temperature,
             evapotranspiration,
+            variable=config.variable,
             start=window_start,
             end=window_end,
             fmt=config.fmt,
