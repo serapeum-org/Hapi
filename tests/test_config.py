@@ -32,6 +32,7 @@ from hapi.config import (
     ParametersConfig,
     RunConfig,
 )
+from hapi.inputs import MeteoInputs
 from hapi.run import Run
 
 COMBINED_NC = "tests/rrm/data/coello/meteo.nc"
@@ -635,6 +636,140 @@ class TestRunConfigCrossFieldRules:
 
         assert config.parameters is None, "parameters should be absent, not defaulted"
         assert config.gauges is None, "gauges should be absent, not defaulted"
+
+
+class TestMeteoInputsFromConfig:
+    """Tests for the `meteo.source` dispatch in `MeteoInputs.from_config`."""
+
+    def test_the_raster_source_reads_the_three_folders(
+        self,
+        coello_prec_path: str,
+        coello_temp_path: str,
+        coello_evap_path: str,
+        coello_start_date: str,
+        coello_end_date: str,
+    ):
+        """Test that `source: rasters` reads the folders and dates them.
+
+        Args:
+            coello_prec_path: Rainfall raster folder.
+            coello_temp_path: Temperature raster folder.
+            coello_evap_path: Evapotranspiration raster folder.
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+
+        Test scenario:
+            This is the branch the shipped MAXBAS example depends on, and the one with the
+            most argument plumbing -- seven forwarded keywords plus two conditional ones --
+            so a mis-forwarded argument would be invisible until a user's file names stopped
+            parsing.
+        """
+        meteo = MeteoInputs.from_config(
+            MeteoConfig(
+                source="rasters",
+                precipitation=coello_prec_path,
+                temperature=coello_temp_path,
+                evapotranspiration=coello_evap_path,
+                file_name_data_fmt="%Y.%m.%d",
+            ),
+            start=coello_start_date,
+            end=coello_end_date,
+        )
+
+        assert meteo.shape == (13, 14, 10), f"unexpected grid or step count: {meteo.shape}"
+        assert meteo.time is not None, "the calendar should come from the file names"
+        assert meteo.time[0].strftime("%Y-%m-%d") == coello_start_date
+
+    def test_the_raster_source_forwards_the_reader_arguments(
+        self,
+        coello_prec_path: str,
+        coello_temp_path: str,
+        coello_evap_path: str,
+    ):
+        """Test that `glob`, `per_variable` and `gdal_env` reach the loader.
+
+        Args:
+            coello_prec_path: Rainfall raster folder.
+            coello_temp_path: Temperature raster folder.
+            coello_evap_path: Evapotranspiration raster folder.
+
+        Test scenario:
+            The conditional pass-throughs are the easiest to drop silently. A `glob` that
+            matches nothing must surface as a read error, which proves it was forwarded
+            rather than ignored.
+        """
+        config = MeteoConfig(
+            source="rasters",
+            precipitation=coello_prec_path,
+            temperature=coello_temp_path,
+            evapotranspiration=coello_evap_path,
+            file_name_data_fmt="%Y.%m.%d",
+            glob="*.nothing",
+            gdal_env={"GDAL_PAM_ENABLED": "NO"},
+            per_variable={"temperature": {"glob": "*.tif"}},
+        )
+
+        with pytest.raises((FileNotFoundError, ValueError)):
+            MeteoInputs.from_config(config)
+
+    def test_the_netcdf_files_source_reads_one_file_per_driver(
+        self, coello_start_date: str, coello_end_date: str
+    ):
+        """Test that `source: netcdf_files` reads a separate file for each driver.
+
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+
+        Test scenario:
+            The third branch, and the only one whose driver fields are per-driver *paths*
+            rather than folders or variable names -- so a branch that confused them would
+            still find files but read the wrong ones.
+        """
+        meteo = MeteoInputs.from_config(
+            MeteoConfig(
+                source="netcdf_files",
+                precipitation="tests/rrm/data/coello/prec.nc",
+                temperature="tests/rrm/data/coello/temp.nc",
+                evapotranspiration="tests/rrm/data/coello/evap.nc",
+            ),
+            start=coello_start_date,
+            end=coello_end_date,
+        )
+
+        assert meteo.shape == (13, 14, 10), f"unexpected grid or step count: {meteo.shape}"
+
+    def test_a_config_missing_a_driver_is_refused(self):
+        """Test that the defensive guard fires for a hand-built config.
+
+        Test scenario:
+            `RunConfig` rejects such a configuration, so this only fires for a `MeteoConfig`
+            built directly -- which is exactly when the message naming the missing drivers is
+            the only thing the caller has to go on.
+        """
+        with pytest.raises(ValueError, match="all three drivers") as exc:
+            MeteoInputs.from_config(MeteoConfig(source="rasters", precipitation="p"))
+
+        assert "temperature" in str(exc.value), (
+            f"the error should name what is unset: {exc.value}"
+        )
+
+    def test_the_netcdf_source_needs_a_path(self):
+        """Test that `source: netcdf` without a path is refused.
+
+        Test scenario:
+            For this source the driver fields are variable names inside one file, so without
+            the file there is nothing to read them from.
+        """
+        with pytest.raises(ValueError, match="must set meteo.path"):
+            MeteoInputs.from_config(
+                MeteoConfig(
+                    source="netcdf",
+                    precipitation="precipitation",
+                    temperature="temperature",
+                    evapotranspiration="evapotranspiration",
+                )
+            )
 
 
 class TestRoutingMethodNormalisation:
