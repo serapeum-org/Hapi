@@ -15,6 +15,7 @@ are absent, and that it builds `cls` so the subclasses return their own type.
 from __future__ import annotations
 
 import copy
+import datetime as dt
 import os
 from pathlib import Path
 
@@ -226,6 +227,72 @@ class TestCatchmentConfig:
             f"start should be str, got {type(config.start)}"
         )
         assert config.start == "2009-01-01", f"start was altered: {config.start}"
+
+    @pytest.mark.parametrize(
+        "value, fmt, expected",
+        [
+            (dt.date(2009, 1, 1), "%Y-%m-%d", "2009-01-01"),
+            (dt.date(2009, 1, 1), "%d/%m/%Y", "01/01/2009"),
+            (dt.datetime(2009, 1, 1, 6, 0), "%Y-%m-%d", "2009-01-01"),
+        ],
+        ids=["date", "custom-fmt", "timestamp"],
+    )
+    def test_a_date_yaml_already_parsed_is_written_back_in_fmt(self, value, fmt, expected):
+        """Test that an unquoted YAML date is accepted and rendered in the block's format.
+
+        Args:
+            value: What YAML hands pydantic for an unquoted date or timestamp.
+            fmt: The block's date format.
+            expected: The string the field should end up holding.
+
+        Test scenario:
+            `start: 2009-01-01` written without quotes is a `datetime.date` by the time the
+            schema sees it, and the field is a string because the constructor parses it with
+            `fmt`. Rejecting it would reject the spelling a YAML author writes first, over a
+            difference that carries no information.
+        """
+        config = CatchmentConfig(name="Coello", start=value, end=value, fmt=fmt)
+
+        assert config.start == expected, f"expected {expected!r}, got {config.start!r}"
+        assert isinstance(config.start, str), (
+            f"the field must still hold a string, got {type(config.start)}"
+        )
+
+    def test_a_quoted_date_is_left_exactly_as_written(self):
+        """Test that the normaliser does not touch a date that is already text.
+
+        Test scenario:
+            A string may be in any format the author declares, including ones no `date`
+            round-trips through, so it has to pass through untouched.
+        """
+        config = CatchmentConfig(
+            name="Coello", start="01/01/2009", end="31/12/2011", fmt="%d/%m/%Y"
+        )
+
+        assert config.start == "01/01/2009", f"start was rewritten: {config.start}"
+
+    @pytest.mark.parametrize(
+        "values, why",
+        [
+            ("not-a-mapping", "a scalar block"),
+            ({"name": "Coello", "start": "2009-01-01", "end": "2009-01-10", "fmt": 5}, "a non-string fmt"),
+        ],
+        ids=["scalar", "non-string-fmt"],
+    )
+    def test_the_normaliser_defers_to_pydantic_for_what_it_cannot_render(self, values, why):
+        """Test that unrenderable input is passed through for pydantic to report.
+
+        Args:
+            values: Raw input the normaliser cannot act on.
+            why: What is wrong with it, for the failure message.
+
+        Test scenario:
+            The normaliser runs before validation, so it sees raw input. Raising its own
+            error for a malformed block would replace pydantic's precise, field-located
+            message with a vaguer one.
+        """
+        with pytest.raises(ValidationError):
+            CatchmentConfig.model_validate(values)
 
 
 class TestMeteoConfig:
@@ -664,6 +731,268 @@ class TestRunConfigCrossFieldRules:
         assert config.parameters is None, "parameters should be absent, not defaulted"
         assert config.gauges is None, "gauges should be absent, not defaulted"
 
+    @pytest.mark.parametrize(
+        "block, field, value",
+        [
+            ("gauges", "table", "gauges.csv"),
+            ("gauges", "column", "name"),
+            ("meteo", "precipitation", "prec"),
+            ("meteo", "start", "2009-01-01"),
+            ("meteo", "end", "2011-12-31"),
+            ("meteo", "glob", "*.tif"),
+        ],
+        ids=["table", "column", "driver", "window-start", "window-end", "glob"],
+    )
+    def test_a_lumped_configuration_refuses_a_field_it_would_not_read(
+        self, lumped_mapping, block, field, value
+    ):
+        """Test that each field a lumped run never reads is named and refused.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+            block: Which block the field lives in.
+            field: The inapplicable field.
+            value: A plausible value for it.
+
+        Test scenario:
+            A lumped run reads one CSV of catchment-average drivers and locates no gauges,
+            so a grid driver, a reader knob, a window or a gauge table is a line with no
+            effect. Dropping it silently is the failure `extra="forbid"` exists to prevent,
+            arrived at by another route.
+        """
+        lumped_mapping[block][field] = value
+
+        with pytest.raises(ValidationError, match="read by nothing") as exc:
+            RunConfig.model_validate(lumped_mapping)
+
+        assert f"{block}.{field}" in str(exc.value), (
+            f"the error should name the offending field: {exc.value}"
+        )
+
+    @pytest.mark.parametrize(
+        "source, patch, refused",
+        [
+            ("netcdf", {"path": "m.nc", "glob": "*.tif"}, "meteo.glob"),
+            ("netcdf", {"path": "m.nc", "per_variable": {"p": {}}}, "meteo.per_variable"),
+            ("netcdf", {"path": "m.nc", "variable": "pre"}, "meteo.variable"),
+            ("netcdf_files", {"path": "m.nc"}, "meteo.path"),
+            ("rasters", {"path": "m.nc"}, "meteo.path"),
+            ("rasters", {"variable": "pre"}, "meteo.variable"),
+        ],
+        ids=[
+            "netcdf-glob",
+            "netcdf-per-variable",
+            "netcdf-variable",
+            "netcdf-files-path",
+            "rasters-path",
+            "rasters-variable",
+        ],
+    )
+    def test_a_source_refuses_the_fields_its_own_branch_never_reads(
+        self, distributed_mapping, source, patch, refused
+    ):
+        """Test that each `meteo.source` refuses the knobs belonging to the other two.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            source: The source under test.
+            patch: Fields to set on the `meteo` block, including the inapplicable one.
+            refused: The field the error must name.
+
+        Test scenario:
+            The three branches of `MeteoInputs.from_config` read different fields: the
+            raster reader takes `glob` and `per_variable` and no `path`, `netcdf` takes a
+            `path` and no reader knobs, `netcdf_files` takes a `variable`. Setting one
+            outside its source's set says something the run will not do.
+        """
+        distributed_mapping["meteo"]["source"] = source
+        distributed_mapping["meteo"].update(patch)
+
+        with pytest.raises(ValidationError, match="read by nothing") as exc:
+            RunConfig.model_validate(distributed_mapping)
+
+        assert refused in str(exc.value), f"the error should name {refused}: {exc.value}"
+
+    def test_a_default_the_author_never_wrote_is_not_refused(self, lumped_mapping):
+        """Test that only explicitly written fields count as inapplicable.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+
+        Test scenario:
+            Every refused field has a default, so testing the value rather than whether it
+            was set would reject every lumped configuration ever written -- `meteo.glob`
+            alone defaults to `"*.tif"`. The check reads `model_fields_set`.
+        """
+        config = RunConfig.model_validate(lumped_mapping)
+
+        assert config.meteo.glob == "*.tif", (
+            f"the default should still be there, got {config.meteo.glob}"
+        )
+
+    @pytest.mark.parametrize(
+        "maxbas, expected",
+        [(True, "maxbas"), (False, "muskingum")],
+        ids=["maxbas-set", "muskingum-set"],
+    )
+    def test_an_unstated_routing_method_is_derived_from_the_parameter_set(
+        self, lumped_mapping, maxbas, expected
+    ):
+        """Test that `routing_method` follows `parameters.maxbas` when it is not written.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+            maxbas: What the parameter set carries.
+            expected: The routing method that should be derived from it.
+
+        Test scenario:
+            The two describe the same choice from opposite sides. Left at its `muskingum`
+            default, a MAXBAS run carried a `routing_method` contradicting what it does --
+            and that attribute is what `distrrm.SpatialRouting` keys off.
+        """
+        lumped_mapping["parameters"]["maxbas"] = maxbas
+        assert "routing_method" not in lumped_mapping["catchment"], (
+            "this test is about the unstated case"
+        )
+
+        config = RunConfig.model_validate(lumped_mapping)
+
+        assert config.catchment.routing_method == expected, (
+            f"expected {expected!r} derived from maxbas={maxbas}, got "
+            f"{config.catchment.routing_method!r}"
+        )
+
+    def test_a_lumped_routing_method_must_still_agree_with_the_parameter_set(
+        self, lumped_mapping
+    ):
+        """Test that the agreement check is no longer scoped to distributed runs.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+
+        Test scenario:
+            The parameter-count check cannot catch this: the two counts differ by one and
+            `maxbas` is what selects which is expected, so a contradicting pair still counts
+            correctly and then reads the wrong parameter as the routing one.
+        """
+        lumped_mapping["catchment"]["routing_method"] = "muskingum"
+        lumped_mapping["parameters"]["maxbas"] = True
+
+        with pytest.raises(ValidationError, match="must agree"):
+            RunConfig.model_validate(lumped_mapping)
+
+    def test_the_derivation_runs_before_the_flow_direction_check(self, distributed_mapping):
+        """Test that a derived MAXBAS run may omit the flow-direction raster.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            MAXBAS sends every cell straight to the outlet and never reads a flow direction,
+            but that requirement is keyed off `routing_method` -- so if the block checks ran
+            before the derivation, the still-defaulted `muskingum` would demand a raster the
+            run has no use for.
+        """
+        distributed_mapping["parameters"]["maxbas"] = True
+        del distributed_mapping["flow_network"]["flow_direction"]
+        distributed_mapping["catchment"].pop("routing_method", None)
+
+        config = RunConfig.model_validate(distributed_mapping)
+
+        assert config.catchment.routing_method == "maxbas", (
+            f"expected the derived method, got {config.catchment.routing_method!r}"
+        )
+
+    @pytest.mark.parametrize(
+        "window",
+        [
+            {"start": "2012-06-01"},
+            {"end": "2008-01-01"},
+            {"start": "2010-01-01", "end": "2009-01-01"},
+        ],
+        ids=["start-after-catchment-end", "end-before-catchment-start", "both-inverted"],
+    )
+    def test_the_resolved_meteorological_window_must_run_forwards(
+        self, distributed_mapping, window
+    ):
+        """Test that the window the run will use is checked, not the two literal pairs.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            window: A `meteo` window that inverts the effective period.
+
+        Test scenario:
+            `MeteoInputs.from_config` takes each bound from `meteo` when stated and falls
+            back to `catchment` otherwise, so a block stating only one half can invert the
+            effective window while neither pair is inverted on its own.
+        """
+        distributed_mapping["meteo"].update(window)
+
+        with pytest.raises(ValidationError, match="ends before it starts"):
+            RunConfig.model_validate(distributed_mapping)
+
+    def test_a_meteo_window_inside_the_catchment_period_is_accepted(
+        self, distributed_mapping
+    ):
+        """Test that a genuine sub-period is not caught by the window check.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            Narrowing the drivers to part of the catchment's period is the reason the two
+            `meteo` bounds exist, so the stricter check must not cost that.
+        """
+        distributed_mapping["meteo"]["start"] = "2009-01-02"
+        distributed_mapping["meteo"]["end"] = "2009-01-05"
+
+        config = RunConfig.model_validate(distributed_mapping)
+
+        assert config.meteo.start == "2009-01-02", (
+            f"the stated window should survive: {config.meteo}"
+        )
+
+    def test_the_gauge_table_format_falls_back_to_the_discharge_format(
+        self, distributed_mapping
+    ):
+        """Test that `table_fmt` defaults to `fmt` rather than to a format of its own.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            The two parse different files -- the table's validity-period columns and the
+            discharge CSV index -- but one hand usually writes both, so the common case
+            should stay a single field.
+        """
+        distributed_mapping["gauges"]["fmt"] = "%d/%m/%Y"
+
+        config = RunConfig.model_validate(distributed_mapping)
+
+        assert config.gauges.table_fmt is None, (
+            f"table_fmt should stay unset so the builder can fall back: "
+            f"{config.gauges.table_fmt}"
+        )
+        assert config.gauges.fmt == "%d/%m/%Y", "the discharge format should be kept"
+
+
+    def test_a_lumped_configuration_may_omit_gauges(self, lumped_mapping):
+        """Test that a lumped run with no gauges block validates.
+
+        Args:
+            lumped_mapping: A complete lumped configuration.
+
+        Test scenario:
+            The inapplicable-field check for `gauges` only runs when the block is present, so
+            a lumped run that is not scored against observations has to pass through it
+            untouched rather than tripping on a block that is not there.
+        """
+        del lumped_mapping["gauges"]
+
+        config = RunConfig.model_validate(lumped_mapping)
+
+        assert config.gauges is None, "gauges should be absent, not defaulted"
+
 
 class TestMeteoInputsFromConfig:
     """Tests for the `meteo.source` dispatch in `MeteoInputs.from_config`."""
@@ -803,6 +1132,40 @@ class TestMeteoInputsFromConfig:
             )
 
 
+    def test_the_netcdf_source_reads_the_three_variables_from_one_file(
+        self, coello_start_date: str, coello_end_date: str
+    ):
+        """Test that `source="netcdf"` builds a grid from one file's three variables.
+
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+
+        Test scenario:
+            The other two sources have direct success tests; this branch was covered only
+            transitively through `from_yaml`, so a change to how `meteo.path` or the variable
+            names are forwarded would have surfaced only there.
+        """
+        config = MeteoConfig(
+            source="netcdf",
+            path=COMBINED_NC,
+            precipitation="precipitation",
+            temperature="temperature",
+            evapotranspiration="evapotranspiration",
+        )
+
+        meteo = MeteoInputs.from_config(
+            config, start=coello_start_date, end="2009-01-10"
+        )
+
+        assert meteo.precipitation.shape == meteo.temperature.shape, (
+            f"the three cubes must agree: {meteo.shape}"
+        )
+        assert meteo.time_steps == 10, (
+            f"the window should hold ten steps, got {meteo.time_steps}"
+        )
+
+
 class TestRoutingMethodNormalisation:
     """Tests for the `routing_method` canonicalisation in `Catchment.__init__`."""
 
@@ -874,6 +1237,39 @@ class TestRoutingMethodNormalisation:
         assert "diffusive" in str(exc.value), (
             f"the error should echo the value given: {exc.value}"
         )
+
+
+    @pytest.mark.parametrize(
+        "argument",
+        ["spatial_resolution", "temporal_resolution", "routing_method"],
+    )
+    def test_a_mode_argument_that_is_not_a_string_names_itself(self, argument):
+        """Test that each mode argument reports its own name when handed a non-string.
+
+        Args:
+            argument: The constructor argument under test.
+
+        Test scenario:
+            All three are lower-cased, so a non-string used to reach `.lower()` and raise an
+            `AttributeError` naming neither the argument nor the class. `Calibration` made
+            that reachable through its own signature, which declared all three `str | None`.
+        """
+        with pytest.raises(TypeError, match=f"{argument} must be a string") as exc:
+            Catchment("Coello", "2009-01-01", "2009-01-10", **{argument: None})
+
+        assert "NoneType" in str(exc.value), (
+            f"the error should name what it got: {exc.value}"
+        )
+
+    def test_calibration_accepts_the_same_three_arguments(self):
+        """Test that the guard reaches `Calibration`, which passes the arguments down.
+
+        Test scenario:
+            `Calibration.__init__` forwards all three to `Catchment.__init__` unchanged, and
+            its annotations used to advertise a `None` that crashed.
+        """
+        with pytest.raises(TypeError, match="routing_method must be a string"):
+            Calibration("Coello", "2009-01-01", "2009-01-10", routing_method=None)
 
 
 class TestCatchmentFromYaml:
@@ -1404,3 +1800,240 @@ class TestCatchmentFromYaml:
 
         assert Catchment.from_yaml(first).name == "Coello"
         assert Catchment.from_yaml(second).name == "Elsewhere"
+
+    def test_a_missing_file_names_the_path(self, tmp_path):
+        """Test that a configuration path that does not exist raises `FileNotFoundError`.
+
+        Args:
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            Documented in `Raises` but untested. The path is opened directly, so the error
+            comes from `read_text` and carries the name.
+        """
+        missing = tmp_path / "not-here.yaml"
+
+        with pytest.raises(FileNotFoundError):
+            Catchment.from_yaml(str(missing))
+
+    def test_malformed_yaml_is_reported_as_malformed(self, tmp_path):
+        """Test that a file YAML cannot parse raises `yaml.YAMLError`.
+
+        Args:
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            Also documented and untested. An unclosed bracket is a parse error, which has to
+            surface as one rather than as a validation error about a missing block.
+        """
+        path = tmp_path / "broken.yaml"
+        path.write_text("catchment: {name: Coello\n", encoding="utf-8")
+
+        with pytest.raises(yaml.YAMLError):
+            Catchment.from_yaml(str(path))
+
+    def test_a_top_level_scalar_is_refused(self, tmp_path):
+        """Test that a file holding a bare scalar is refused rather than indexed.
+
+        Args:
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            A one-word file parses to a string, not to None, so it bypasses the empty-file
+            message and reaches pydantic. Pins that it fails there rather than raising an
+            `AttributeError` somewhere in the build.
+        """
+        path = tmp_path / "scalar.yaml"
+        path.write_text("hello\n", encoding="utf-8")
+
+        with pytest.raises(ValidationError, match="valid dictionary"):
+            Catchment.from_yaml(str(path))
+
+    def test_every_missing_input_path_is_named_at_once(self, distributed_mapping, tmp_path):
+        """Test that the pre-flight check reports all the missing paths together.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            The readers fail one at a time and in the order the build calls them, so a typo
+            in the gauge table used to be reported only after the whole meteorological cube
+            and the parameter folder had been read. Two typos should now be reported in one
+            message, before anything is opened.
+        """
+        distributed_mapping["parameters"]["path"] = "no/such/parameters"
+        distributed_mapping["gauges"]["table"] = "no/such/gauges.csv"
+
+        with pytest.raises(FileNotFoundError) as exc:
+            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        message = str(exc.value)
+        assert "parameters.path" in message and "gauges.table" in message, (
+            f"both missing paths should be named in one message: {message}"
+        )
+
+    def test_a_netcdf_variable_name_is_not_checked_for_existence(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that the pre-flight check does not treat a variable name as a path.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            Under `source: netcdf` the three driver fields name variables inside
+            `meteo.path`, so checking them as paths would fail every NetCDF configuration.
+            The fixture already uses that source.
+        """
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.meteo is not None, "the build should have reached the readers"
+
+    def test_the_gauge_columns_come_from_the_configured_column(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that `gauges.column` labels the hydrograph frame and every column is filled.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            The frame is labelled from `column` but each file is named after `id`. Filling by
+            `int(name)` instead of by the label left a `column != "id"` table with the
+            requested columns all-NaN and a second, id-named set beside them -- silently, and
+            the metrics were then computed over both.
+        """
+        distributed_mapping["gauges"]["column"] = "name"
+
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        columns = list(model.QGauges.columns)
+        assert all(isinstance(name, str) for name in columns), (
+            f"the frame should carry the table's names, got {columns}"
+        )
+        all_nan = [name for name in columns if model.QGauges[name].isna().all()]
+        assert not all_nan, f"no column should be left unfilled, got {all_nan}"
+
+    def test_the_gauge_table_format_can_differ_from_the_discharge_one(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that `table_fmt` is what reaches `read_gauge_table`.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            One field used to feed both readers, so the two files could not disagree. The
+            Coello table carries no `start` / `end` columns, so an unused `table_fmt` must
+            simply be accepted and forwarded rather than applied to the discharge index.
+        """
+        distributed_mapping["gauges"]["table_fmt"] = "%d/%m/%Y"
+
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.config.gauges.table_fmt == "%d/%m/%Y", (
+            f"the table format should be kept on the config: {model.config.gauges}"
+        )
+        assert not model.QGauges.isna().all().all(), (
+            "the discharge index must still be parsed with gauges.fmt"
+        )
+
+    def test_an_unquoted_date_builds_the_same_model_as_a_quoted_one(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test the unquoted-date path end to end, not only at the schema.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            `start: 2009-01-01` without quotes is what a YAML author writes first, and it
+            reaches pydantic as a `date`. The model built from it must be identical to the
+            one built from the quoted spelling.
+        """
+        quoted = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        unquoted_mapping = copy.deepcopy(distributed_mapping)
+        unquoted_mapping["catchment"]["start"] = dt.date.fromisoformat(
+            distributed_mapping["catchment"]["start"]
+        )
+        other = tmp_path / "unquoted"
+        other.mkdir()
+        unquoted = Catchment.from_yaml(write_yaml(unquoted_mapping, other))
+
+        assert unquoted.start == quoted.start, (
+            f"expected {quoted.start}, got {unquoted.start}"
+        )
+        assert len(unquoted.date_index) == len(quoted.date_index), (
+            "both spellings should span the same period"
+        )
+
+    def test_a_raster_source_configuration_reads_the_three_folders(
+        self,
+        distributed_mapping,
+        coello_prec_path: str,
+        coello_temp_path: str,
+        coello_evap_path: str,
+        tmp_path,
+    ):
+        """Test the raster branch of the build, including its path check.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            coello_prec_path: Folder of precipitation rasters.
+            coello_temp_path: Folder of temperature rasters.
+            coello_evap_path: Folder of evapotranspiration rasters.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            The fixture drives every other `from_yaml` test from one combined NetCDF, where
+            the three driver fields are variable names. Under `rasters` they are folders that
+            the pre-flight check does look for, and `MeteoInputs.from_rasters` is a different
+            loader -- so both are covered only here.
+        """
+        distributed_mapping["meteo"] = {
+            "source": "rasters",
+            "precipitation": str(Path(coello_prec_path).resolve()),
+            "temperature": str(Path(coello_temp_path).resolve()),
+            "evapotranspiration": str(Path(coello_evap_path).resolve()),
+            "file_name_data_fmt": "%Y.%m.%d",
+        }
+
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.meteo.time_steps == len(model.date_index), (
+            f"the drivers must span the model period: {model.meteo.time_steps} against "
+            f"{len(model.date_index)}"
+        )
+
+    def test_a_missing_driver_folder_is_reported_before_anything_is_read(
+        self, distributed_mapping, coello_temp_path: str, coello_evap_path: str, tmp_path
+    ):
+        """Test that a raster driver folder is checked for existence like any other path.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            coello_temp_path: Folder of temperature rasters.
+            coello_evap_path: Folder of evapotranspiration rasters.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            A misspelled folder used to be reported from inside pyramids, after the reader
+            had opened whatever it could. Under a NetCDF source the driver fields are
+            variable names and must not be checked; under this one they are paths and must
+            be.
+        """
+        distributed_mapping["meteo"] = {
+            "source": "rasters",
+            "precipitation": str(tmp_path / "no-such-folder"),
+            "temperature": str(Path(coello_temp_path).resolve()),
+            "evapotranspiration": str(Path(coello_evap_path).resolve()),
+        }
+
+        with pytest.raises(FileNotFoundError, match="meteo.precipitation"):
+            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))

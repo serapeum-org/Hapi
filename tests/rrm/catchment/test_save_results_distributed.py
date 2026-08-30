@@ -128,3 +128,84 @@ def test_save_results_distributed_values_match_the_model_array(
     np.testing.assert_allclose(
         actual, expected, rtol=1e-5, err_msg="the first raster must hold the first step"
     )
+
+
+def test_save_results_joins_a_directory_written_without_a_separator(
+    coello_run: Catchment, coello_acc_path: str, tmp_path
+):
+    """Test that a directory given without a trailing separator still writes inside it.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Parent of the destination directory.
+
+    Test scenario:
+        The names used to be built by concatenation, so `some/dir` produced
+        `some/dirResult_2009-01-01.tif` -- a sibling of the directory rather than a file in
+        it. The other tests in this file all pass a trailing separator, so none of them
+        would notice.
+    """
+    out = tmp_path / "no-separator"
+    out.mkdir()
+
+    coello_run.save_results(
+        flow_acc_path=coello_acc_path,
+        result=4,
+        start="2009-01-01",
+        end="2009-01-02",
+        path=str(out),
+    )
+
+    assert len(sorted(out.glob("*.tif"))) == 2, (
+        f"the rasters must land inside the directory, found {sorted(tmp_path.iterdir())}"
+    )
+
+
+def test_save_results_creates_the_directory_it_is_given(
+    coello_run: Catchment, coello_acc_path: str, tmp_path
+):
+    """Test that a destination directory that does not exist yet is created.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Parent of the destination directory.
+
+    Test scenario:
+        `outputs.results_dir` in a run configuration names where results go, and nothing
+        guarantees it exists before the first run. Covers a nested path, so a single
+        `mkdir` would not be enough.
+    """
+    out = tmp_path / "nested" / "results"
+
+    coello_run.save_results(
+        flow_acc_path=coello_acc_path,
+        result=4,
+        start="2009-01-01",
+        end="2009-01-02",
+        path=str(out),
+    )
+
+    assert len(sorted(out.glob("*.tif"))) == 2, (
+        f"the directory must be created and written into, got {out.exists()}"
+    )
+
+
+def test_save_results_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
+    """Test that a non-string `path` is refused by name rather than by concatenation.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+
+    Test scenario:
+        `outputs.results_dir` is optional in a run configuration, so a caller forwarding it
+        straight through can hold None. That used to surface as a `TypeError` from a string
+        concatenation, naming neither the argument nor what it should be.
+    """
+    with pytest.raises(TypeError, match="path must be a string") as exc:
+        coello_run.save_results(flow_acc_path="unused", result=1, path=None)
+
+    assert "NoneType" in str(exc.value), (
+        f"the error should name what it got: {exc.value}"
+    )
