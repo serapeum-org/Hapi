@@ -156,8 +156,8 @@ def read_rasters(
     regex_string: str = r"\d{4}.\d{2}.\d{2}",
     date: bool = True,
     file_name_data_fmt: str | None = None,
-    start: str | int | None = None,
-    end: str | int | None = None,
+    start: str | int | dt.datetime | None = None,
+    end: str | int | dt.datetime | None = None,
     fmt: str = "%Y-%m-%d",
     gdal_env: dict[str, str] | None = None,
 ) -> Datacube:
@@ -231,6 +231,13 @@ def read_rasters(
         )
 
     if not date:
+        # The numeric ordering bounds by the index in the file name, so a datetime has no
+        # meaning here -- `int()` would fail on it several frames down.
+        if isinstance(start, dt.datetime) or isinstance(end, dt.datetime):
+            raise TypeError(
+                "a datetime bound needs date=True; with date=False the rasters are ordered "
+                "by the number in their name, so start/end are indices"
+            )
         return _read_by_index(path, glob, regex_string, start, end, gdal_env)
 
     return Datacube.from_files(path, glob=glob, gdal_env=gdal_env)
@@ -950,8 +957,8 @@ class MeteoInputs:
         regex_string: str = r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
         file_name_data_fmt: str | None = None,
-        start: str | int | None = None,
-        end: str | int | None = None,
+        start: str | int | dt.datetime | None = None,
+        end: str | int | dt.datetime | None = None,
         fmt: str = "%Y-%m-%d",
         gdal_env: dict[str, str] | None = None,
     ) -> MeteoInputs:
@@ -1145,6 +1152,7 @@ class MeteoInputs:
         config: MeteoConfig,
         start: str | None = None,
         end: str | None = None,
+        fmt: str = "%Y-%m-%d",
     ) -> MeteoInputs:
         """Build the drivers with whichever loader the configuration's `source` names.
 
@@ -1153,11 +1161,19 @@ class MeteoInputs:
         whose variables the block names. `hapi.config.RunConfig` has already checked that the
         fields the chosen source needs are set, so this calls the loader directly.
 
+        Each bound is parsed with the format it was written in -- `config.fmt` for a bound the
+        block states, `fmt` for one inherited from the caller -- and handed on as a `datetime`.
+        The two formats are independent fields, so parsing an inherited bound with the block's
+        format would either fail loudly or, between two mutually parseable layouts such as
+        `"%d-%m-%Y"` and `"%m-%d-%Y"`, silently window the drivers to the wrong period.
+
         Args:
             config: The `meteo` block of a distributed configuration.
             start: Window start used when `config.start` is unset, so the drivers can default to
                 the period the model spans. `None` leaves the lower bound open.
             end: Window end used when `config.end` is unset. `None` leaves it open.
+            fmt: `strptime` format of `start` / `end`, the inherited bounds. Bounds stated by
+                the block are parsed with `config.fmt` instead.
 
         Returns:
             MeteoInputs: The three cubes plus the calendar, windowed to the requested period.
@@ -1214,8 +1230,18 @@ class MeteoInputs:
             from_netcdf: The loader `source="netcdf"` dispatches to.
             from_netcdf_files: The loader `source="netcdf_files"` dispatches to.
         """
-        start = config.start or start
-        end = config.end or end
+        # Resolve each bound with the format it was written in, then pass datetimes on so the
+        # loader's own `fmt` cannot re-parse them.
+        window_start = (
+            _as_datetime(config.start, config.fmt)
+            if config.start is not None
+            else _as_datetime(start, fmt)
+        )
+        window_end = (
+            _as_datetime(config.end, config.fmt)
+            if config.end is not None
+            else _as_datetime(end, fmt)
+        )
 
         # The three are optional on the model because a lumped configuration sets none of them,
         # while every distributed source needs all three. `RunConfig` enforces that, so reaching
@@ -1246,8 +1272,8 @@ class MeteoInputs:
                 glob=config.glob,
                 regex_string=config.regex_string,
                 file_name_data_fmt=config.file_name_data_fmt,
-                start=start,
-                end=end,
+                start=window_start,
+                end=window_end,
                 fmt=config.fmt,
                 **extra,
             )
@@ -1263,8 +1289,8 @@ class MeteoInputs:
                 precipitation=precipitation,
                 temperature=temperature,
                 evapotranspiration=evapotranspiration,
-                start=start,
-                end=end,
+                start=window_start,
+                end=window_end,
                 fmt=config.fmt,
             )
 
@@ -1272,8 +1298,8 @@ class MeteoInputs:
             precipitation,
             temperature,
             evapotranspiration,
-            start=start,
-            end=end,
+            start=window_start,
+            end=window_end,
             fmt=config.fmt,
         )
 
@@ -1286,8 +1312,8 @@ class MeteoInputs:
         regex_string: str = r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
         file_name_data_fmt: str | None = None,
-        start: str | int | None = None,
-        end: str | int | None = None,
+        start: str | int | dt.datetime | None = None,
+        end: str | int | dt.datetime | None = None,
         fmt: str = "%Y-%m-%d",
         gdal_env: dict[str, str] | None = None,
     ) -> Path:

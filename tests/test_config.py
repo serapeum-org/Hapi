@@ -820,6 +820,61 @@ class TestCatchmentFromYaml:
         assert model.QGauges is not None, "the observed discharge was not read"
         assert model.GaugesTable is None, "a lumped run should read no gauge table"
 
+    def test_the_inherited_window_is_parsed_with_the_catchment_format(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that fallback dates are read with `catchment.fmt`, not `meteo.fmt`.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            `catchment.fmt` and `meteo.fmt` are independent fields. When the meteo block
+            states no window it inherits the catchment's dates, which are written in the
+            catchment's format -- so parsing them with the meteo format either fails on a
+            date the user never wrote that way, or, between two mutually parseable layouts,
+            silently windows the drivers to the wrong period.
+        """
+        distributed_mapping["catchment"]["fmt"] = "%d/%m/%Y"
+        distributed_mapping["catchment"]["start"] = "01/01/2009"
+        distributed_mapping["catchment"]["end"] = "10/01/2009"
+
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.meteo.time_steps == len(model.date_index), (
+            f"drivers hold {model.meteo.time_steps} steps, model spans "
+            f"{len(model.date_index)}"
+        )
+        assert model.meteo.time[0] == model.date_index[0], (
+            f"window start {model.meteo.time[0]} does not match the model's "
+            f"{model.date_index[0]}"
+        )
+
+    def test_a_stated_meteo_window_uses_the_meteo_format(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that a window the block states is parsed with the block's own format.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            The other half of the rule: `meteo.fmt` governs `meteo.start` / `meteo.end`, so a
+            block may describe its window in a different layout from the catchment's without
+            either being reinterpreted.
+        """
+        distributed_mapping["meteo"]["fmt"] = "%d/%m/%Y"
+        distributed_mapping["meteo"]["start"] = "03/01/2009"
+        distributed_mapping["meteo"]["end"] = "07/01/2009"
+
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.meteo.time_steps == 5, (
+            f"03 to 07 January inclusive is five steps, got {model.meteo.time_steps}"
+        )
+
     def test_a_non_ascii_name_survives_the_read(self, distributed_mapping, tmp_path):
         """Test that the configuration is decoded as UTF-8 whatever the platform default is.
 

@@ -309,7 +309,10 @@ class Catchment:
         distributed = catchment.spatial_resolution == "distributed"
         if distributed:
             model.meteo = MeteoInputs.from_config(
-                config.meteo, start=catchment.start, end=catchment.end
+                config.meteo,
+                start=catchment.start,
+                end=catchment.end,
+                fmt=catchment.fmt,
             )
             model.flow_network = FlowNetwork.from_rasters(
                 config.flow_network.flow_accumulation,
