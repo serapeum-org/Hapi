@@ -37,7 +37,10 @@ dependencies = [
     "cleopatra >=0.32.0",
     "matplotlib >=3.11.0",
     "pyyaml >=6.0",
-    "pydantic >=2.0"
+    # Capped at the major boundary: `hapi.config` is built on pydantic 2's API -- ConfigDict
+    # spreading, `protected_namespaces=()`, `model_fields_set`, `Field(min_length=...)` on a
+    # list -- none of which a pydantic 3 is obliged to keep.
+    "pydantic >=2.0,<3"
 ]
 
 [project.optional-dependencies]
