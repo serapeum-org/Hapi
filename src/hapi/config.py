@@ -283,6 +283,18 @@ class RunConfig(BaseModel):
                     "catchment.spatial_resolution is 'distributed', which needs a flow_network "
                     "block"
                 )
+            # `flow_direction` is optional on the block because MAXBAS sends every cell straight
+            # to the outlet and never reads one. Muskingum routes along the network, so without
+            # it the build succeeds and `Run.RunHapi` dereferences a None array after every
+            # raster has been read.
+            if (
+                self.catchment.routing_method == "muskingum"
+                and self.flow_network.flow_direction is None
+            ):
+                raise ValueError(
+                    "catchment.routing_method is 'muskingum', which routes along the network, "
+                    "so flow_network.flow_direction is required"
+                )
             # Only when gauges are configured at all: a distributed run that is not scored
             # against observations omits the block entirely.
             if self.gauges is not None and self.gauges.table is None:

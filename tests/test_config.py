@@ -384,6 +384,44 @@ class TestRunConfigCrossFieldRules:
             f"the error should name the resolution that requires it: {exc.value}"
         )
 
+    def test_muskingum_requires_a_flow_direction_raster(self, distributed_mapping):
+        """Test that a Muskingum run without a direction raster is refused at parse time.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            `flow_direction` is optional on the block because MAXBAS never reads one. Muskingum
+            does, and it is the default routing method -- so a config copied from the MAXBAS
+            example builds fine and then dereferences a None array inside the routing loop,
+            after every raster has been read. The rule has to be stated here instead.
+        """
+        del distributed_mapping["flow_network"]["flow_direction"]
+
+        with pytest.raises(ValidationError, match="flow_network.flow_direction is required"):
+            RunConfig.model_validate(distributed_mapping)
+
+    def test_maxbas_does_not_require_a_flow_direction_raster(self, distributed_mapping):
+        """Test that the triangular path still accepts a network without a direction raster.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+
+        Test scenario:
+            The counterpart to the rule above: MAXBAS routes every cell straight to the outlet,
+            so requiring the raster there would reject the configuration the shipped MAXBAS
+            example uses.
+        """
+        distributed_mapping["catchment"]["routing_method"] = "maxbas"
+        distributed_mapping["parameters"]["maxbas"] = True
+        del distributed_mapping["flow_network"]["flow_direction"]
+
+        config = RunConfig.model_validate(distributed_mapping)
+
+        assert config.flow_network.flow_direction is None, (
+            "MAXBAS should be allowed to omit the direction raster"
+        )
+
     def test_distributed_requires_a_gauge_table_when_gauges_are_given(
         self, distributed_mapping
     ):
