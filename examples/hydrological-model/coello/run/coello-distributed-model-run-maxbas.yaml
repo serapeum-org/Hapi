@@ -1,3 +1,4 @@
+# Paths are relative to this file, so the run works from any working directory.
 catchment:
   name: Coello
   start: "2009-01-01"
@@ -8,17 +9,17 @@ catchment:
 
 meteo:
   source: rasters
-  precipitation: examples/hydrological-model/data/distributed_model/prec
-  temperature: examples/hydrological-model/data/distributed_model/temp
-  evapotranspiration: examples/hydrological-model/data/distributed_model/evap
+  precipitation: ../../data/distributed_model/prec
+  temperature: ../../data/distributed_model/temp
+  evapotranspiration: ../../data/distributed_model/evap
   file_name_data_fmt: "%Y.%m.%d"
 
 # MAXBAS sends every cell straight to the outlet, so no flow-direction raster is read.
 flow_network:
-  flow_accumulation: examples/hydrological-model/data/distributed_model/GIS/acc4000.tif
+  flow_accumulation: ../../data/distributed_model/GIS/acc4000.tif
 
 parameters:
-  path: examples/hydrological-model/data/distributed_model/parameters_initial_maxbas
+  path: ../../data/distributed_model/parameters_initial_maxbas
   snow: false
   maxbas: true
 
@@ -28,7 +29,7 @@ conceptual_model:
   initial_condition: [0, 5, 5, 5, 0]
 
 gauges:
-  table: examples/hydrological-model/data/distributed_model/stations/gauges.csv
-  discharge: examples/hydrological-model/data/distributed_model/stations/
+  table: ../../data/distributed_model/stations/gauges.csv
+  discharge: ../../data/distributed_model/stations/
   column: id
   fmt: "%Y-%m-%d"

@@ -37,6 +37,7 @@ from pyramids.feature import FeatureCollection
 
 from hapi.config import RunConfig
 from hapi.inputs import (
+    METEO_VARIABLES,
     FlowNetwork,
     MeteoInputs,
     _warn_if_no_sentinel,
@@ -78,6 +79,48 @@ ROUTING_METHODS = {
     "maxbas": "MAXBAS",
     "kinematic": "Kinematic",
 }
+
+
+def _resolve_config_paths(config: RunConfig, base: Path) -> None:
+    """Rewrite every relative path in a configuration against the file it came from.
+
+    A configuration names its inputs relative to itself, so it runs from any working directory
+    and can be moved with the data it points at. Resolving against the process's working
+    directory instead would make a file valid only from the one place it happened to be written
+    for. An absolute path is left alone.
+
+    `meteo`'s three driver fields are paths only for the folder and per-file sources; under
+    `source="netcdf"` they name variables inside `meteo.path` and must not be touched.
+
+    Args:
+        config: The parsed configuration, rewritten in place.
+        base: Directory of the configuration file.
+    """
+
+    def resolve(value: str | None) -> str | None:
+        if value is None:
+            return value
+        return value if Path(value).is_absolute() else str((base / value).resolve())
+
+    if config.meteo.source != "netcdf":
+        for field in METEO_VARIABLES:
+            setattr(config.meteo, field, resolve(getattr(config.meteo, field)))
+    config.meteo.path = resolve(config.meteo.path)
+
+    if config.flow_network is not None:
+        # `flow_accumulation` and the two below are required fields, so `resolve` cannot
+        # return None for them; the cast keeps that visible rather than widening the model.
+        config.flow_network.flow_accumulation = str(
+            resolve(config.flow_network.flow_accumulation)
+        )
+        config.flow_network.flow_direction = resolve(config.flow_network.flow_direction)
+    if config.parameters is not None:
+        config.parameters.path = str(resolve(config.parameters.path))
+    if config.gauges is not None:
+        config.gauges.table = resolve(config.gauges.table)
+        config.gauges.discharge = str(resolve(config.gauges.discharge))
+    if config.outputs is not None:
+        config.outputs.results_dir = resolve(config.outputs.results_dir)
 
 
 @contextmanager
@@ -311,6 +354,9 @@ class Catchment:
         if mapping is None:
             raise ValueError(f"the run configuration at {path} is empty")
         config = RunConfig.model_validate(mapping)
+        # Relative paths belong to the file, not to whatever directory the process happens to
+        # be in, so a configuration runs from anywhere and travels with the data it names.
+        _resolve_config_paths(config, Path(path).resolve().parent)
         catchment = config.catchment
 
         model = cls(

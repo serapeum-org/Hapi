@@ -20,9 +20,7 @@ from hapi.routing import Routing
 from hapi.run import Run
 
 # %% Load the configuration and build the model
-Coello = Catchment.from_yaml(
-    "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
-)
+Coello = Catchment.from_yaml(__file__.removesuffix(".py") + ".yaml")
 
 # %% Routing
 # RoutingFn = Routing.triangular_routing_2
@@ -54,10 +52,10 @@ gaugei = 0
 fig, ax = Coello.plot_hydrograph(Coello.start, Coello.end, gaugei, title="Lumped Model")
 
 # %% Save Results
-SaveTo = "examples/hydrological-model/data/lumped_model/"
+SaveTo = Coello.config.outputs.results_dir
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
-path = f"{SaveTo}Results-Lumped-Model_{str(dt.datetime.now())[0:10]}.txt"
+path = f"{SaveTo}/Results-Lumped-Model_{str(dt.datetime.now())[0:10]}.txt"
 Coello.save_results(result=5, start=StartDate, end=EndDate, path=path)
 print(f"results written to  : {path}")

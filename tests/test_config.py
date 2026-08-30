@@ -15,6 +15,8 @@ are absent, and that it builds `cls` so the subclasses return their own type.
 from __future__ import annotations
 
 import copy
+import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -116,8 +118,23 @@ def lumped_mapping(
     }
 
 
+PATH_FIELDS = (
+    ("meteo", "path"),
+    ("parameters", "path"),
+    ("gauges", "table"),
+    ("gauges", "discharge"),
+    ("flow_network", "flow_accumulation"),
+    ("flow_network", "flow_direction"),
+)
+
+
 def write_yaml(mapping: dict, tmp_path) -> str:
-    """Dump a mapping to a YAML file.
+    """Dump a mapping to a YAML file, with its input paths made absolute.
+
+    The fixtures name their inputs relative to the repository root, but `from_yaml` resolves a
+    relative path against the configuration's own directory -- and these configurations are
+    written to a temporary one. Absolutising here keeps each test about the field it is
+    exercising; the resolution rule itself is covered by its own test.
 
     Args:
         mapping: The configuration to write.
@@ -126,6 +143,12 @@ def write_yaml(mapping: dict, tmp_path) -> str:
     Returns:
         str: Path to the written file.
     """
+    mapping = copy.deepcopy(mapping)
+    for block, field in PATH_FIELDS:
+        value = mapping.get(block, {}).get(field)
+        if isinstance(value, str) and not Path(value).is_absolute():
+            mapping[block][field] = str(Path(value).resolve())
+
     path = tmp_path / "config.yaml"
     path.write_text(yaml.safe_dump(mapping), encoding="utf-8")
     return str(path)
@@ -1189,12 +1212,8 @@ class TestCatchmentFromYaml:
             and plot titles, and the same risk applies to every path field.
         """
         distributed_mapping["catchment"]["name"] = "Río Coello"
-        path = tmp_path / "config.yaml"
-        path.write_text(
-            yaml.safe_dump(distributed_mapping, allow_unicode=True), encoding="utf-8"
-        )
 
-        model = Catchment.from_yaml(str(path))
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
         assert model.name == "Río Coello", (
             f"the name was corrupted on read: {model.name!r}"
@@ -1220,9 +1239,9 @@ class TestCatchmentFromYaml:
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
         assert model.config is not None, "the configuration should be kept on the model"
-        assert model.config.outputs.results_dir == "somewhere/else/", (
-            f"outputs did not survive: {model.config.outputs}"
-        )
+        assert model.config.outputs.results_dir.replace("\\", "/").endswith(
+            "somewhere/else"
+        ), f"outputs did not survive: {model.config.outputs}"
         assert model.config.flow_network.flow_accumulation is not None, (
             "the flow-accumulation path should stay reachable for save_results"
         )
@@ -1243,6 +1262,66 @@ class TestCatchmentFromYaml:
         model = Catchment("coello", coello_start_date, coello_end_date)
 
         assert model.config is None, f"expected no configuration, got {model.config}"
+
+    def test_relative_paths_resolve_against_the_configuration_file(
+        self, distributed_mapping, tmp_path, monkeypatch
+    ):
+        """Test that a configuration runs from a working directory that is not its own.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+            monkeypatch: Used to move the process out of the repository root.
+
+        Test scenario:
+            Resolving against the process's working directory would make a file valid only
+            from the one place it happened to be written for. Rewriting the paths relative to
+            the config and then running from elsewhere is the case that distinguishes the two.
+        """
+        repo_root = Path.cwd()
+        config_dir = tmp_path / "configs"
+        config_dir.mkdir()
+        for block, field in (
+            ("meteo", "path"),
+            ("parameters", "path"),
+            ("gauges", "table"),
+            ("gauges", "discharge"),
+        ):
+            distributed_mapping[block][field] = os.path.relpath(
+                repo_root / distributed_mapping[block][field], config_dir
+            )
+        for field in ("flow_accumulation", "flow_direction"):
+            distributed_mapping["flow_network"][field] = os.path.relpath(
+                repo_root / distributed_mapping["flow_network"][field], config_dir
+            )
+        path = config_dir / "config.yaml"
+        path.write_text(yaml.safe_dump(distributed_mapping), encoding="utf-8")
+
+        monkeypatch.chdir(tmp_path)
+        model = Catchment.from_yaml(str(path))
+
+        assert model.meteo is not None, "the drivers should resolve from the config's own dir"
+        assert model.flow_network is not None, "the network should resolve too"
+
+    def test_a_netcdf_variable_name_is_not_treated_as_a_path(
+        self, distributed_mapping, tmp_path
+    ):
+        """Test that the driver fields survive path resolution when they name variables.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            Under `source: netcdf` the three driver fields are variable names inside
+            `meteo.path`, not paths. Resolving them would turn `precipitation` into an
+            absolute directory and the read would fail looking for a variable of that name.
+        """
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+
+        assert model.config.meteo.precipitation == "precipitation", (
+            f"the variable name was rewritten as a path: {model.config.meteo.precipitation}"
+        )
 
     def test_a_path_object_is_accepted(self, distributed_mapping, tmp_path):
         """Test that the path may be a `Path`, not only a string.
@@ -1318,8 +1397,9 @@ class TestCatchmentFromYaml:
         first = write_yaml(distributed_mapping, tmp_path)
         renamed = copy.deepcopy(distributed_mapping)
         renamed["catchment"]["name"] = "Elsewhere"
-        second = tmp_path / "other.yaml"
-        second.write_text(yaml.safe_dump(renamed), encoding="utf-8")
+        other_dir = tmp_path / "other"
+        other_dir.mkdir()
+        second = write_yaml(renamed, other_dir)
 
         assert Catchment.from_yaml(first).name == "Coello"
-        assert Catchment.from_yaml(str(second)).name == "Elsewhere"
+        assert Catchment.from_yaml(second).name == "Elsewhere"

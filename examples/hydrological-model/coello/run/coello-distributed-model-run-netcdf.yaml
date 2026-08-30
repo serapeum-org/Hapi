@@ -1,3 +1,4 @@
+# Paths are relative to this file, so the run works from any working directory.
 catchment:
   name: Coello
   start: "2009-01-01"
@@ -6,19 +7,20 @@ catchment:
   temporal_resolution: daily
   routing_method: muskingum
 
+# One file per rainfall product, each holding all three drivers with the calendar inside it.
 meteo:
   source: netcdf
-  path: tests/rrm/data/coello/meteo.nc
+  path: ../../data/distributed_model/meteo.nc
   precipitation: precipitation
   temperature: temperature
   evapotranspiration: evapotranspiration
 
 flow_network:
-  flow_accumulation: tests/rrm/data/coello/gis/acc4000.tif
-  flow_direction: tests/rrm/data/coello/gis/fd4000.tif
+  flow_accumulation: ../../data/distributed_model/GIS/acc4000.tif
+  flow_direction: ../../data/distributed_model/GIS/fd4000.tif
 
 parameters:
-  path: tests/rrm/data/coello/parameters/muskingum
+  path: ../../data/distributed_model/Parameter set-Avg
   snow: false
   maxbas: false
 
@@ -28,11 +30,11 @@ conceptual_model:
   initial_condition: [0, 5, 5, 5, 0]
 
 gauges:
-  table: tests/rrm/data/coello/calibration/gauges.csv
-  discharge: tests/rrm/data/coello/calibration
+  table: ../../data/distributed_model/stations/gauges.csv
+  discharge: ../../data/distributed_model/stations
   column: id
   fmt: "%Y-%m-%d"
 
 # Written beside the other example outputs rather than into the repository root.
 outputs:
-  results_dir: examples/hydrological-model/data/distributed_model/results/
+  results_dir: ../../data/distributed_model/results

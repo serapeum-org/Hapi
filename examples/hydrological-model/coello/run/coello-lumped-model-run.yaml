@@ -1,3 +1,4 @@
+# Paths are relative to this file, so the run works from any working directory.
 catchment:
   name: Coello
   start: "2009-01-01"
@@ -8,11 +9,11 @@ catchment:
 # Lumped mode reads one CSV of catchment-average drivers, not a grid: columns are
 # [date, precipitation, ET, temperature], optionally followed by the long-term average.
 meteo:
-  path: examples/hydrological-model/data/lumped_model/meteo_data-MSWEP.csv
+  path: ../../data/lumped_model/meteo_data-MSWEP.csv
 
 # A single parameter file rather than a folder of rasters.
 parameters:
-  path: examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt
+  path: ../../data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt
   snow: false
   maxbas: false
 
@@ -23,5 +24,9 @@ conceptual_model:
 
 # One discharge file, and no gauge table: locating gauges on a grid is a distributed concern.
 gauges:
-  discharge: examples/hydrological-model/data/lumped_model/Qout_c.csv
+  discharge: ../../data/lumped_model/Qout_c.csv
   fmt: "%Y-%m-%d"
+
+# Written beside the other example outputs rather than into the working directory.
+outputs:
+  results_dir: ../../data/lumped_model
