@@ -815,9 +815,12 @@ class Catchment:
                 Default is "%Y-%m-%d".
             split (bool, optional): True to subset the data between
                 `start_date` and `end_date`. Default is False.
-            start_date (str, optional): Start date for subsetting.
+            start_date (str | dt.datetime, optional): Start date for
+                subsetting. A string is parsed with `fmt`; a datetime is
+                used as it is.
                 Default is "".
-            end_date (str, optional): End date for subsetting.
+            end_date (str | dt.datetime, optional): End date for
+                subsetting. See `start_date`.
                 Default is "".
             readfrom (str, optional): Number of rows to skip when
                 reading the CSV. Default is "".
@@ -1067,8 +1070,10 @@ class Catchment:
         r"""Plot simulated and observed hydrographs for a given gauge.
 
         Args:
-            start_date (str): Starting date for the plot.
-            end_date (str): End date for the plot.
+            start_date (str | dt.datetime): Starting date for the plot. A
+                string is parsed with `fmt`; a datetime is used as it is.
+            end_date (str | dt.datetime): End date for the plot. See
+                `start_date`.
             gauge (int): Index of the gauge in the GaugesTable.
             hapi_color (tuple | str, optional): Color of the
                 simulated hydrograph. Default is "#004c99".
@@ -1354,9 +1359,12 @@ class Catchment:
                 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
                 8 - Water content. For lumped mode, 5 saves all
                 variables. Default is 1.
-            start (str, optional): Start date for the output period.
+            start (str | dt.datetime, optional): Start date for the
+                output period. A string is parsed with `fmt`; a datetime
+                is used as it is.
                 If empty, uses the first index. Default is "".
-            end (str, optional): End date for the output period. If
+            end (str | dt.datetime, optional): End date for the output
+                period. See `start`. If
                 empty, uses the last index. Default is "".
             path (str, optional): Path to the output directory
                 (distributed) or file (lumped). Default is "".
