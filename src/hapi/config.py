@@ -15,7 +15,15 @@ The schema covers lumped and distributed runs, which disagree on the shape of tw
 
 Which fields are required therefore depends on `catchment.spatial_resolution` and, for a
 distributed run, on `meteo.source`. Those cross-field rules are enforced here by model
-validators, so a `RunConfig` that validates is one the builder can consume without re-checking.
+validators, so the builder can consume a validated `RunConfig` without re-deriving them. Two
+things are still left to it: resolving `conceptual_model.model_class` against its registry, and
+every path, which is not touched until a reader opens it.
+
+The same dependency decides which fields are *refused*: a field the chosen shape never reads is
+rejected rather than dropped. `extra="forbid"` already does that for a misspelled key, and a
+correctly spelled but inapplicable one is the same mistake -- a line in the file with no effect
+-- so it fails the same way. Only fields written explicitly count, so defaults are never held
+against an author.
 
 Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.RunFloodModel`) are out of
 scope -- both need inputs this schema does not carry.
@@ -89,6 +97,85 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 #: Rejects unknown keys, so a misspelled field in the YAML fails loudly at parse time rather
 #: than being dropped and surfacing later as a missing input.
 _STRICT = ConfigDict(extra="forbid")
+
+
+#: Which `MeteoConfig` fields each `source` actually reaches, mirroring the three branches of
+#: `MeteoInputs.from_config`. A field outside its source's set is one the reader never looks at,
+#: so setting it says something the run will not do.
+_METEO_FIELDS_BY_SOURCE: dict[str, frozenset[str]] = {
+    "rasters": frozenset(
+        {
+            "source",
+            "precipitation",
+            "temperature",
+            "evapotranspiration",
+            "start",
+            "end",
+            "fmt",
+            "glob",
+            "regex_string",
+            "file_name_data_fmt",
+            "per_variable",
+            "gdal_env",
+        }
+    ),
+    "netcdf": frozenset(
+        {
+            "source",
+            "path",
+            "precipitation",
+            "temperature",
+            "evapotranspiration",
+            "start",
+            "end",
+            "fmt",
+        }
+    ),
+    "netcdf_files": frozenset(
+        {
+            "source",
+            "precipitation",
+            "temperature",
+            "evapotranspiration",
+            "variable",
+            "start",
+            "end",
+            "fmt",
+        }
+    ),
+}
+
+#: A lumped run reads `meteo.path` as one CSV of catchment-average drivers -- no grid, no
+#: window, no reader knobs -- and locates nothing, so the gauge table and the column that names
+#: hydrographs from it have nothing to act on.
+_LUMPED_METEO_FIELDS = frozenset({"source", "path"})
+_LUMPED_GAUGES_FIELDS = frozenset({"discharge", "delimiter", "fmt"})
+
+
+def _reject_fields_the_run_will_not_read(
+    block: BaseModel, applicable: frozenset[str], block_name: str, because: str
+) -> None:
+    """Refuse fields of a block that the chosen run shape never reads.
+
+    `extra="forbid"` catches a misspelled key; this catches a correctly spelled one that does
+    not apply. Both are the same failure from the author's side -- a line in the file that has
+    no effect -- and silently dropping the second is what makes a configuration hard to trust.
+    Only explicitly set fields count, so a default the author never wrote is not held against
+    them.
+
+    Args:
+        block: The block to check.
+        applicable: Names the run shape actually reads.
+        block_name: The block's key in the file, for the message.
+        because: Why the rest do not apply, phrased to follow "which".
+
+    Raises:
+        ValueError: One or more set fields fall outside `applicable`.
+    """
+    inapplicable = sorted(block.model_fields_set - applicable)
+    if inapplicable:
+        named = ", ".join(f"{block_name}.{name}" for name in inapplicable)
+        raise ValueError(f"{because}, so {named} would be read by nothing")
 
 
 def _write_dates_in_the_block_format(values: Any, fields: tuple[str, ...]) -> Any:
@@ -402,6 +489,12 @@ class RunConfig(BaseModel):
                         f"{self.parameters.maxbas}; the parameter set and the routing method "
                         f"must agree, or the run reads the wrong parameter as the routing one"
                     )
+            _reject_fields_the_run_will_not_read(
+                self.meteo,
+                _METEO_FIELDS_BY_SOURCE[self.meteo.source],
+                "meteo",
+                f"meteo.source is {self.meteo.source!r}",
+            )
         else:
             if self.meteo.path is None:
                 raise ValueError(
@@ -421,6 +514,20 @@ class RunConfig(BaseModel):
                     f"catchment.spatial_resolution is 'lumped', which reads meteo.path as a "
                     f"CSV of catchment-average drivers; meteo.source "
                     f"{self.meteo.source!r} does not apply"
+                )
+            lumped = "catchment.spatial_resolution is 'lumped'"
+            _reject_fields_the_run_will_not_read(
+                self.meteo,
+                _LUMPED_METEO_FIELDS,
+                "meteo",
+                f"{lumped}, which reads meteo.path as one CSV of catchment-average drivers",
+            )
+            if self.gauges is not None:
+                _reject_fields_the_run_will_not_read(
+                    self.gauges,
+                    _LUMPED_GAUGES_FIELDS,
+                    "gauges",
+                    f"{lumped}, which reads one discharge file and locates no gauges",
                 )
         return self
 
