@@ -225,10 +225,11 @@ class CatchmentConfig(BaseModel):
             `gauges`, and whether `flow_network` is required.
         temporal_resolution: `"daily"` or `"hourly"`.
         routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`, and
-            constrains two other blocks: Muskingum routes along the network so it requires
-            `flow_network.flow_direction`, and the method must agree with
-            `parameters.maxbas`. Which `Run.*` entry point actually routes with it is still
-            the caller's choice.
+            constrains one other block: Muskingum routes along the network, so a distributed
+            run needs `flow_network.flow_direction`. Left unwritten it is derived from
+            `parameters.maxbas`, which describes the same choice from the parameter set's
+            side; written, it must agree with it. Which `Run.*` entry point actually routes
+            with it is still the caller's choice.
     """
 
     model_config = _STRICT
@@ -428,6 +429,45 @@ class RunConfig(BaseModel):
     outputs: OutputsConfig | None = None
 
     @model_validator(mode="after")
+    def _check_the_routing_method_matches_the_parameter_set(self) -> RunConfig:
+        """Make `routing_method` agree with the parameter set, deriving it where it is unstated.
+
+        The parameter-count check downstream cannot catch a disagreement: a MAXBAS set holds 11
+        parameters and a Muskingum set 12, and `parameters.maxbas` is what selects which count
+        is expected, so a set that contradicts the routing method still counts correctly. The
+        run then completes, reading the Muskingum X as the MAXBAS value (or K and X out of a
+        MAXBAS set), and produces a hydrograph that is quietly wrong.
+
+        A lumped run picks its routing function at the call site rather than from this
+        attribute, so `routing_method` is not load-bearing there -- but it is public, it is what
+        `distrrm.SpatialRouting` keys off, and leaving it saying `Muskingum` on a run using a
+        MAXBAS parameter set would mislead the next reader. An unstated one is therefore
+        derived from the parameter set rather than left at its default.
+
+        Returns:
+            RunConfig: This config, with `catchment.routing_method` filled in where it was
+                unstated and the parameter set says which it is.
+
+        Raises:
+            ValueError: `catchment.routing_method` and `parameters.maxbas` disagree.
+        """
+        if self.parameters is None:
+            return self
+
+        if "routing_method" not in self.catchment.model_fields_set:
+            self.catchment.routing_method = "maxbas" if self.parameters.maxbas else "muskingum"
+            return self
+
+        if (self.catchment.routing_method == "maxbas") != self.parameters.maxbas:
+            raise ValueError(
+                f"catchment.routing_method is {self.catchment.routing_method!r} but "
+                f"parameters.maxbas is {self.parameters.maxbas}; the parameter set and the "
+                f"routing method must agree, or the run reads the wrong parameter as the "
+                f"routing one"
+            )
+        return self
+
+    @model_validator(mode="after")
     def _check_blocks_match_the_spatial_resolution(self) -> RunConfig:
         """Enforce the fields each spatial resolution requires.
 
@@ -475,20 +515,6 @@ class RunConfig(BaseModel):
                 )
             if self.meteo.source == "netcdf" and self.meteo.path is None:
                 raise ValueError("meteo.source is 'netcdf', which needs meteo.path")
-            # The parameter-count check cannot catch a mismatch here: a MAXBAS set holds 11
-            # parameters and a Muskingum set 12, and `parameters.maxbas` is what selects which
-            # count is expected -- so a set that disagrees with the routing method still counts
-            # correctly. The run then completes, reading the Muskingum X as the MAXBAS value
-            # (or K and X out of a MAXBAS set), and produces a hydrograph that is quietly wrong.
-            if self.parameters is not None:
-                wants_maxbas = self.catchment.routing_method == "maxbas"
-                if wants_maxbas != self.parameters.maxbas:
-                    raise ValueError(
-                        f"catchment.routing_method is "
-                        f"{self.catchment.routing_method!r} but parameters.maxbas is "
-                        f"{self.parameters.maxbas}; the parameter set and the routing method "
-                        f"must agree, or the run reads the wrong parameter as the routing one"
-                    )
             _reject_fields_the_run_will_not_read(
                 self.meteo,
                 _METEO_FIELDS_BY_SOURCE[self.meteo.source],
