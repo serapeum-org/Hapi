@@ -274,7 +274,11 @@ class Catchment:
 
                 ```
         """
-        config = RunConfig.model_validate(yaml.safe_load(Path(path).read_text()))
+        # Explicit encoding: without it the file is decoded with the locale codec, so a
+        # non-ASCII catchment name or path mojibakes on a machine whose default is not UTF-8
+        # -- and does so silently, since the corrupted text is still valid YAML.
+        text = Path(path).read_text(encoding="utf-8")
+        config = RunConfig.model_validate(yaml.safe_load(text))
         catchment = config.catchment
 
         model = cls(

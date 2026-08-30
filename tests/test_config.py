@@ -756,6 +756,29 @@ class TestCatchmentFromYaml:
         assert model.QGauges is not None, "the observed discharge was not read"
         assert model.GaugesTable is None, "a lumped run should read no gauge table"
 
+    def test_a_non_ascii_name_survives_the_read(self, distributed_mapping, tmp_path):
+        """Test that the configuration is decoded as UTF-8 whatever the platform default is.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            Without an explicit encoding the file is decoded with the locale codec, so a
+            non-ASCII name mojibakes on a machine that does not default to UTF-8 -- silently,
+            because the corrupted text is still valid YAML. The name reaches result filenames
+            and plot titles, and the same risk applies to every path field.
+        """
+        distributed_mapping["catchment"]["name"] = "Río Coello"
+        path = tmp_path / "config.yaml"
+        path.write_text(
+            yaml.safe_dump(distributed_mapping, allow_unicode=True), encoding="utf-8"
+        )
+
+        model = Catchment.from_yaml(str(path))
+
+        assert model.name == "Río Coello", f"the name was corrupted on read: {model.name!r}"
+
     def test_an_invalid_configuration_fails_before_anything_is_read(
         self, distributed_mapping, tmp_path
     ):
