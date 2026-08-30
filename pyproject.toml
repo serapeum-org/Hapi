@@ -254,6 +254,14 @@ description = "Run the main test suite"
 cmd = "pytest -vvv --cov=src/hapi -sv -m 'not fig_share' --cov-report=xml --cov-report=term-missing"
 description = "Run all test suite"
 
+[tool.pixi.tasks.doctests]
+# Not `src` as a whole: 19 doctests in the hbv / hbv_bergestrom92 / hbv_lake modules fail and
+# are why the pre-commit doctest hook is commented out. These four are green, and their
+# examples assert on concrete values read from real data, so they are worth running rather
+# than leaving as prose that drifts. Add a module here once its examples pass.
+cmd = "pytest --doctest-modules -p no:cacheprovider --no-cov src/hapi/config.py src/hapi/catchment.py src/hapi/inputs.py src/hapi/routing.py"
+description = "Run the doctests of the modules whose examples are executable"
+
 [tool.pixi.tasks.notebooks]
 cmd = "pytest --nbval --nbval-lax --verbose -p no:cacheprovider examples"
 description = "Check notebooks (they still need migration off the pre-rename Hapi package)"

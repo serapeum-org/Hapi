@@ -140,6 +140,18 @@ repos:
         pass_filenames: false
         always_run: true
 
+  # The narrow half of the hook below: the modules whose examples do run. They assert on
+  # concrete values read from real data, so leaving them unexecuted means they drift silently.
+  # Add a module to the `doctests` task in pyproject.toml once its examples pass.
+  - repo: local
+    hooks:
+      - id: doctest-executable-modules
+        name: "[py   - doctest] executable examples"
+        entry: pixi run --frozen -e dev doctests
+        language: system
+        pass_filenames: false
+        always_run: true
+
 #   - repo: local
 #     hooks:
 #       # Disabled until the docstring examples are repaired: 19 doctests in the
