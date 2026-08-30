@@ -414,8 +414,14 @@ class Catchment:
         gauges = config.gauges
         if gauges is not None:
             if distributed:
+                # The table's validity-period columns and the discharge files' index are two
+                # different files' date layouts, so they get two fields -- with the table
+                # falling back to the discharge format, which is right whenever one hand wrote
+                # both.
                 model.read_gauge_table(
-                    gauges.table, config.flow_network.flow_accumulation, fmt=gauges.fmt
+                    gauges.table,
+                    config.flow_network.flow_accumulation,
+                    fmt=gauges.table_fmt or gauges.fmt,
                 )
             model.read_discharge_gauges(
                 gauges.discharge,

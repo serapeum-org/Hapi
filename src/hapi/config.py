@@ -379,6 +379,10 @@ class GaugesConfig(BaseModel):
             names while the files stay named after the ids.
         delimiter: Discharge CSV delimiter.
         fmt: `strptime` format for the discharge CSV's date column.
+        table_fmt: `strptime` format for the gauge table's optional `start` / `end` columns,
+            which bound each gauge's validity period. A separate field because the table is a
+            separate file that a separate hand may have written; `None` falls back to `fmt`,
+            which is right whenever the two were written together.
     """
 
     model_config = _STRICT
@@ -388,6 +392,7 @@ class GaugesConfig(BaseModel):
     column: str = "id"
     delimiter: str = ","
     fmt: str = "%Y-%m-%d"
+    table_fmt: str | None = None
 
 
 class OutputsConfig(BaseModel):
