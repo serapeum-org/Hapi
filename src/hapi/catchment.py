@@ -297,11 +297,14 @@ class Catchment:
         else:
             model.read_lumped_inputs(config.meteo.path)
 
-        model.read_parameters(
-            config.parameters.path,
-            config.parameters.snow,
-            maxbas=config.parameters.maxbas,
-        )
+        # A calibration derives its parameters from the bounds `read_parameters_bound` is
+        # given rather than reading a fitted set, so the block is optional.
+        if config.parameters is not None:
+            model.read_parameters(
+                config.parameters.path,
+                config.parameters.snow,
+                maxbas=config.parameters.maxbas,
+            )
 
         conceptual_model = config.conceptual_model
         if conceptual_model.model_class not in CONCEPTUAL_MODELS:
@@ -316,17 +319,19 @@ class Catchment:
             conceptual_model.q_init,
         )
 
+        # Equally optional: a run that is not scored against observations has no gauges.
         gauges = config.gauges
-        if distributed:
-            model.read_gauge_table(
-                gauges.table, config.flow_network.flow_accumulation, fmt=gauges.fmt
+        if gauges is not None:
+            if distributed:
+                model.read_gauge_table(
+                    gauges.table, config.flow_network.flow_accumulation, fmt=gauges.fmt
+                )
+            model.read_discharge_gauges(
+                gauges.discharge,
+                delimiter=gauges.delimiter,
+                column=gauges.column,
+                fmt=gauges.fmt,
             )
-        model.read_discharge_gauges(
-            gauges.discharge,
-            delimiter=gauges.delimiter,
-            column=gauges.column,
-            fmt=gauges.fmt,
-        )
 
         return model
 

@@ -247,9 +247,11 @@ class RunConfig(BaseModel):
     Attributes:
         catchment: Constructor arguments.
         meteo: The meteorological drivers.
-        parameters: Where the conceptual-model parameters live.
         conceptual_model: The lumped conceptual model.
-        gauges: The observed discharge.
+        parameters: Where the conceptual-model parameters live. Omit for a calibration, which
+            derives them from the bounds handed to `read_parameters_bound` rather than reading
+            a fitted set.
+        gauges: The observed discharge. Omit for a run that is not scored against gauges.
         flow_network: The routing network. Required for distributed, absent for lumped.
         outputs: Where to write results.
     """
@@ -258,9 +260,9 @@ class RunConfig(BaseModel):
 
     catchment: CatchmentConfig
     meteo: MeteoConfig
-    parameters: ParametersConfig
     conceptual_model: ConceptualModelConfig
-    gauges: GaugesConfig
+    parameters: ParametersConfig | None = None
+    gauges: GaugesConfig | None = None
     flow_network: FlowNetworkConfig | None = None
     outputs: OutputsConfig | None = None
 
@@ -281,7 +283,9 @@ class RunConfig(BaseModel):
                     "catchment.spatial_resolution is 'distributed', which needs a flow_network "
                     "block"
                 )
-            if self.gauges.table is None:
+            # Only when gauges are configured at all: a distributed run that is not scored
+            # against observations omits the block entirely.
+            if self.gauges is not None and self.gauges.table is None:
                 raise ValueError(
                     "catchment.spatial_resolution is 'distributed', which needs gauges.table "
                     "to locate the gauges on the grid"
