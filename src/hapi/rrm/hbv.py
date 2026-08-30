@@ -485,7 +485,7 @@ class HBV(BaseConceptualModel):
                 length as ``q``.
 
         Raises:
-            AssertionError: If ``maxbas`` is less than 1.
+            ValueError: If ``maxbas`` is less than 1.
 
         Examples:
             >>> import numpy as np
@@ -496,7 +496,8 @@ class HBV(BaseConceptualModel):
             >>> print(q_routed.round(4))
             [0.   0.   2.5  4.   2.5  0.5]
         """
-        assert maxbas >= 1, "Maxbas value has to be larger than 1"
+        if maxbas < 1:
+            raise ValueError(f"Maxbas value has to be at least 1, got {maxbas}")
         # Get integer part of maxbas
         #    maxbas = int(maxbas)
         maxbas = int(round(maxbas, 0))
@@ -556,7 +557,7 @@ class HBV(BaseConceptualModel):
                 updated state variables ``[sp, sm, uz, lz, wc]``.
 
         Raises:
-            AssertionError: If ``snow=1`` and the parameter vector
+            ValueError: If ``snow=1`` and the parameter vector
                 does not have 18 elements.
 
         Examples:
@@ -580,10 +581,11 @@ class HBV(BaseConceptualModel):
         ## Parse of parameters from input vector to model
         # picipitation function
         if snow == 1:
-            assert len(p) == 18, (
-                "current version of HBV (with snow) takes 18 parameter you have entered "
-                + str(len(p))
-            )
+            if len(p) != 18:
+                raise ValueError(
+                    "current version of HBV (with snow) takes 18 parameter you have "
+                    f"entered {len(p)}"
+                )
             ltt = p[0]
             utt = p[1]
             rfcf = p[2]
@@ -732,7 +734,7 @@ class HBV(BaseConceptualModel):
                   ``(n+1, 5)`` (float32).
 
         Raises:
-            AssertionError: If ``init_st`` does not have 5 elements
+            ValueError: If ``init_st`` does not have 5 elements
                 or if ``snow`` is not 0 or 1.
 
         Examples:
@@ -758,15 +760,17 @@ class HBV(BaseConceptualModel):
             q_uz length=6, first=0.0727
         """
         # data type
-        assert len(init_st) == 5, (
-            "state variables are 5 and the given initial values are "
-            + str(len(init_st))
-        )
+        if len(init_st) != 5:
+            raise ValueError(
+                f"state variables are 5 and the given initial values are {len(init_st)}"
+            )
         # assert type(p2) == list, " p2 should be of type list"
         # assert len(p2) == 2, "p2 should contains tfac and catchment area"
-        assert snow == 0 or snow == 1, (
-            " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
-        )
+        if snow not in (0, 1):
+            raise ValueError(
+                "snow input defines whether to consider snow subroutine or not it has "
+                f"to be 0 or 1, got {snow}"
+            )
 
         if init_st is None:  # 0  1  2  3  4  5
             st = [DEF_ST]  # [sp,sm,uz,lz,wc,LA]

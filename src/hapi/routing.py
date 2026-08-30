@@ -207,7 +207,7 @@ class Routing:
                 length as ``q``.
 
         Raises:
-            AssertionError: If ``maxbas`` is less than 1.
+            ValueError: If ``maxbas`` is less than 1.
 
         Examples:
             >>> import numpy as np
@@ -216,7 +216,8 @@ class Routing:
             >>> q_routed = Routing.triangular_routing_2(q, maxbas=3)
         """
         # input data validation
-        assert maxbas >= 1, "Maxbas value has to be larger than 1"
+        if maxbas < 1:
+            raise ValueError(f"Maxbas value has to be at least 1, got {maxbas}")
 
         # Get integer part of maxbas
         maxbas = int(round(maxbas, 0))

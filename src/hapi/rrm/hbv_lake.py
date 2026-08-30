@@ -483,7 +483,7 @@ class HBVLake(BaseConceptualModel):
                 length as ``q``.
 
         Raises:
-            AssertionError: If ``maxbas`` < 1.
+            ValueError: If ``maxbas`` < 1.
 
         Examples:
             >>> import numpy as np
@@ -493,7 +493,8 @@ class HBVLake(BaseConceptualModel):
             >>> len(q_r) == len(q)
             True
         """
-        assert maxbas >= 1, "Maxbas value has to be larger than 1"
+        if maxbas < 1:
+            raise ValueError(f"Maxbas value has to be at least 1, got {maxbas}")
         # Get integer part of maxbas
         maxbas = int(round(maxbas, 0))
 
