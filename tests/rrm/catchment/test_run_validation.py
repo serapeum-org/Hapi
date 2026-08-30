@@ -137,7 +137,7 @@ class TestRunFloodModel:
         _load_flat_river_geometry(coello_loaded)
         coello_loaded.river_width = coello_loaded.river_width[:-1, :]
 
-        with pytest.raises(AssertionError, match="number of rows"):
+        with pytest.raises(ValueError, match="number of rows"):
             Run.RunFloodModel(coello_loaded)
 
         assert "RRMModel" not in spied_wrapper, (
@@ -205,7 +205,7 @@ class TestRunHapiWithLake:
         """
         lake = _LakeStub(coello_loaded.meteo.time_steps - 1)
 
-        with pytest.raises(AssertionError, match="same length"):
+        with pytest.raises(ValueError, match="same length"):
             Run.runHAPIwithLake(coello_loaded, lake)
 
         assert "RRMWithlake" not in spied_wrapper, (
@@ -223,7 +223,7 @@ class TestRunHapiWithLake:
         """
         lake = _LakeStub(coello_loaded.meteo.time_steps, columns=2)
 
-        with pytest.raises(AssertionError, match="three columns"):
+        with pytest.raises(ValueError, match="three columns"):
             Run.runHAPIwithLake(coello_loaded, lake)
 
     def test_rejects_a_flow_direction_grid_of_the_wrong_shape(
@@ -241,7 +241,7 @@ class TestRunHapiWithLake:
         )
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
-        with pytest.raises(AssertionError, match="rows and columns"):
+        with pytest.raises(ValueError, match="rows and columns"):
             Run.runHAPIwithLake(coello_loaded, lake)
 
 
@@ -279,7 +279,7 @@ class TestRunFW1WithLake:
         coello_loaded.parameters = coello_loaded.parameters[:-1, :, :]
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
-        with pytest.raises(AssertionError, match="as many rows as the catchment grid"):
+        with pytest.raises(ValueError, match="as many rows as the catchment grid"):
             Run.RunFW1withLake(coello_loaded, lake)
 
         assert "FW1Withlake" not in spied_wrapper, (
