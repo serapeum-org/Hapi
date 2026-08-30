@@ -16,8 +16,9 @@ The schema covers lumped and distributed runs, which disagree on the shape of tw
 Which fields are required therefore depends on `catchment.spatial_resolution` and, for a
 distributed run, on `meteo.source`. Those cross-field rules are enforced here by model
 validators, so the builder can consume a validated `RunConfig` without re-deriving them. Two
-things are still left to it: resolving `conceptual_model.model_class` against its registry, and
-every path, which is not touched until a reader opens it.
+things are still left to it, because neither can be settled from the file alone: resolving
+`conceptual_model.model_class` against the registry of model classes, and checking that the
+paths exist. `Catchment.from_yaml` does both before it opens anything.
 
 The same dependency decides which fields are *refused*: a field the chosen shape never reads is
 rejected rather than dropped. `extra="forbid"` already does that for a misspelled key, and a
@@ -25,8 +26,16 @@ correctly spelled but inapplicable one is the same mistake -- a line in the file
 -- so it fails the same way. Only fields written explicitly count, so defaults are never held
 against an author.
 
-Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.RunFloodModel`) are out of
-scope -- both need inputs this schema does not carry.
+Out of scope, each because the schema carries no field that reaches it:
+
+- Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.RunFloodModel`), which need
+  a lake record and a river geometry respectively -- so `read_river_geometry` is unreachable.
+- `read_flow_path_length`, and with it `DistMaxbas2`, which scales each cell's MAXBAS by its
+  distance to the outlet.
+- Reading a driver folder by numeric file order rather than by date. `MeteoConfig` has no
+  `date` field, so `date=False` can only be reached through `per_variable` -- where it now
+  meets the catchment window this schema always passes down, and `read_rasters` refuses the
+  combination.
 
 Examples:
     - Validate a lumped configuration and read back what it holds:

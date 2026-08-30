@@ -435,6 +435,10 @@ class Catchment:
         _resolve_config_paths(config, Path(path).resolve().parent)
         catchment = config.catchment
 
+        # The first three go positionally on purpose: `Catchment.__init__` calls its second
+        # parameter `start_data` and `Calibration.__init__` calls it `start`, so naming them
+        # would break `Calibration.from_yaml` -- which this method is documented to support --
+        # while still working here. Renaming the parameter is the fix, and is breaking.
         model = cls(
             catchment.name,
             catchment.start,
