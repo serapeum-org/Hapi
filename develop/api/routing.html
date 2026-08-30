@@ -2072,7 +2072,24 @@ approaches:</p>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
-<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Routing methods for translating and attenuating discharge hydrographs.</span>
 
 <span class="sd">    This class provides static methods for two families of routing</span>
@@ -2317,12 +2334,25 @@ approaches:</p>
 <span class="sd">                length is ``floor(MAXBAS)`` for integer values, or</span>
 <span class="sd">                ``floor(MAXBAS) + 1`` for non-integer values.</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If ``maxbas`` is less than 1.</span>
+
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; from hapi.routing import Routing</span>
 <span class="sd">            &gt;&gt;&gt; weights = Routing.calculate_weights(5)</span>
 <span class="sd">            &gt;&gt;&gt; print(weights)</span>
 <span class="sd">            [0.08 0.24 0.36 0.24 0.08]</span>
 <span class="sd">        """</span>
+        <span class="c1"># The same guard `triangular_routing_2` and the three conceptual models carry, at the</span>
+        <span class="c1"># one point `triangular_routing_1` -- which the lumped MAXBAS example routes with --</span>
+        <span class="c1"># passes through. Below 1 the triangle has no whole step to spread over: 0.5 produced a</span>
+        <span class="c1"># single weight and an all-zero hydrograph with nothing raised, 0 an `IndexError` about</span>
+        <span class="c1"># axis 1, and NaN "cannot convert float NaN to integer". `not maxbas &gt;= 1` rather than</span>
+        <span class="c1"># `maxbas &lt; 1` because both are false for NaN, and a calibration can produce one in a</span>
+        <span class="c1"># masked cell.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
         <span class="n">yant</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Just to verify how far from the unit is the result</span>
 
@@ -2410,6 +2440,10 @@ approaches:</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            numpy.ndarray: Routed output hydrograph with the same</span>
 <span class="sd">                length as ``Q``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If ``MAXBAS`` is less than 1, raised by</span>
+<span class="sd">                `calculate_weights`.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; import numpy as np</span>
@@ -2590,6 +2624,29 @@ length is <code>floor(MAXBAS)</code> for integer values, or
     </table>
 
 
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>maxbas</code> is less than 1.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">weights</span> <span class="o">=</span> <span class="n">Routing</span><span class="o">.</span><span class="n">calculate_weights</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
@@ -2687,7 +2744,20 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_weights</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate triangular routing weights for a given MAXBAS value.</span>
 
@@ -2706,12 +2776,25 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 <span class="sd">            length is ``floor(MAXBAS)`` for integer values, or</span>
 <span class="sd">            ``floor(MAXBAS) + 1`` for non-integer values.</span>
 
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``maxbas`` is less than 1.</span>
+
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from hapi.routing import Routing</span>
 <span class="sd">        &gt;&gt;&gt; weights = Routing.calculate_weights(5)</span>
 <span class="sd">        &gt;&gt;&gt; print(weights)</span>
 <span class="sd">        [0.08 0.24 0.36 0.24 0.08]</span>
 <span class="sd">    """</span>
+    <span class="c1"># The same guard `triangular_routing_2` and the three conceptual models carry, at the</span>
+    <span class="c1"># one point `triangular_routing_1` -- which the lumped MAXBAS example routes with --</span>
+    <span class="c1"># passes through. Below 1 the triangle has no whole step to spread over: 0.5 produced a</span>
+    <span class="c1"># single weight and an all-zero hydrograph with nothing raised, 0 an `IndexError` about</span>
+    <span class="c1"># axis 1, and NaN "cannot convert float NaN to integer". `not maxbas &gt;= 1` rather than</span>
+    <span class="c1"># `maxbas &lt; 1` because both are false for NaN, and a calibration can produce one in a</span>
+    <span class="c1"># masked cell.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
     <span class="n">yant</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Just to verify how far from the unit is the result</span>
 
@@ -3615,6 +3698,30 @@ length as <code>Q</code>.</p>
     </table>
 
 
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>MAXBAS</code> is less than 1, raised by
+<code>calculate_weights</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
@@ -3625,20 +3732,7 @@ length as <code>Q</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/routing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
@@ -3692,7 +3786,24 @@ length as <code>Q</code>.</p>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
-<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_1</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">MAXBAS</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge using triangular weights (fractional MAXBAS).</span>
 
@@ -3715,6 +3826,10 @@ length as <code>Q</code>.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        numpy.ndarray: Routed output hydrograph with the same</span>
 <span class="sd">            length as ``Q``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``MAXBAS`` is less than 1, raised by</span>
+<span class="sd">            `calculate_weights`.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
