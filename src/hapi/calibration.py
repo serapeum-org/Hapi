@@ -526,7 +526,8 @@ class Calibration(Catchment):
 
         Raises:
             ValueError: If `basic_inputs` is missing required keys
-                `"Route"` or `"RoutingFn"`.
+                `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is
+                given and does not hold one value per parameter.
             TypeError: If either bundle of optimization arguments is not a
                 dict.
         """
@@ -593,6 +594,14 @@ class Calibration(Catchment):
         opt_prob = Optimization("HBV Calibration", opt_fun)
 
         if initial_values != []:
+            # One starting value per parameter. A shorter list used to index out of range
+            # part-way through building the problem, naming neither argument and leaving
+            # `opt_prob` half-populated.
+            if len(initial_values) != len(self.LB):
+                raise ValueError(
+                    f"initial_values must hold one value per parameter; the bounds define "
+                    f"{len(self.LB)} and {len(initial_values)} were given"
+                )
             for i in range(len(self.LB)):
                 opt_prob.addVar(
                     f"x{i}",

@@ -717,6 +717,8 @@ class Catchment:
                 None.
 
         Raises:
+            TypeError: If `initial_condition` is not a list, or if
+                `q_init` is given and is not a float.
             ValueError: If `lumped_model` is not a class or if
                 `initial_condition` does not contain exactly 5
                 values.
@@ -729,6 +731,14 @@ class Catchment:
         self.lumped_model = lumped_model()
         self.area = catchment_area
 
+        # Typed before it is measured. The other order called `len` first, so None reported
+        # "object of type 'NoneType' has no len()" rather than naming the argument, and the
+        # `is not None` the type check then carried could never be false -- `len` would
+        # already have raised.
+        if not isinstance(initial_condition, list):
+            raise TypeError(
+                f"init_st should be of type list, got {type(initial_condition).__name__}"
+            )
         if len(initial_condition) != 5:
             raise ValueError(
                 f"state variables are 5 and the given initial values are {len(initial_condition)}"
@@ -741,11 +751,6 @@ class Catchment:
                 f"q_init should be of type float, got {type(q_init).__name__}"
             )
         self.q_init = q_init
-
-        if self.initial_cond is not None and not isinstance(self.initial_cond, list):
-            raise TypeError(
-                f"init_st should be of type list, got {type(self.initial_cond).__name__}"
-            )
 
         logger.debug("Lumped model is read successfully")
 
