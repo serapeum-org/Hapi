@@ -39,7 +39,11 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from pyramids.netcdf import NetCDF
 
-from hapi.config import MeteoConfig
+from hapi.config import (
+    NETCDF_PATH_MESSAGE,
+    MeteoConfig,
+    missing_drivers_message,
+)
 from hapi.dem import DEM
 
 
@@ -1248,8 +1252,9 @@ class MeteoInputs:
 
         # The three are optional on the model because a lumped configuration sets none of them,
         # while every distributed source needs all three. `RunConfig` enforces that, so reaching
-        # the raise means a `MeteoConfig` was built by hand. Bound to locals so the check both
-        # reports what is missing and narrows the type for the calls below.
+        # the raise means a `MeteoConfig` was built by hand -- and it raises the same sentence,
+        # phrased once in `hapi.config`, because it is the same rule. Bound to locals so the
+        # check both reports what is missing and narrows the type for the calls below.
         precipitation = config.precipitation
         temperature = config.temperature
         evapotranspiration = config.evapotranspiration
@@ -1257,10 +1262,7 @@ class MeteoInputs:
             missing = [
                 name for name in METEO_VARIABLES if getattr(config, name) is None
             ]
-            raise ValueError(
-                f"MeteoInputs needs all three drivers; the configuration leaves "
-                f"{', '.join(missing)} unset"
-            )
+            raise ValueError(missing_drivers_message(missing))
 
         if config.source == "rasters":
             extra: dict[str, Any] = {}
@@ -1283,10 +1285,7 @@ class MeteoInputs:
 
         if config.source == "netcdf":
             if config.path is None:
-                raise ValueError(
-                    "source 'netcdf' reads the three drivers out of one file, so the "
-                    "configuration must set meteo.path"
-                )
+                raise ValueError(NETCDF_PATH_MESSAGE)
             return cls.from_netcdf(
                 config.path,
                 precipitation=precipitation,

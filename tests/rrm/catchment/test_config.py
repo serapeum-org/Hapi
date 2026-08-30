@@ -531,7 +531,7 @@ class TestRunConfigCrossFieldRules:
         """
         del distributed_mapping["meteo"][driver]
 
-        with pytest.raises(ValidationError, match="missing") as exc:
+        with pytest.raises(ValidationError, match="all three meteorological drivers") as exc:
             RunConfig.model_validate(distributed_mapping)
 
         assert driver in str(exc.value), (
@@ -550,7 +550,7 @@ class TestRunConfigCrossFieldRules:
         """
         del distributed_mapping["meteo"]["path"]
 
-        with pytest.raises(ValidationError, match="needs meteo.path"):
+        with pytest.raises(ValidationError, match="meteo.path must be set"):
             RunConfig.model_validate(distributed_mapping)
 
     def test_lumped_requires_the_meteo_csv(self, lumped_mapping):
@@ -778,7 +778,7 @@ class TestMeteoInputsFromConfig:
             built directly -- which is exactly when the message naming the missing drivers is
             the only thing the caller has to go on.
         """
-        with pytest.raises(ValueError, match="all three drivers") as exc:
+        with pytest.raises(ValueError, match="all three meteorological drivers") as exc:
             MeteoInputs.from_config(MeteoConfig(source="rasters", precipitation="p"))
 
         assert "temperature" in str(exc.value), (
@@ -792,7 +792,7 @@ class TestMeteoInputsFromConfig:
             For this source the driver fields are variable names inside one file, so without
             the file there is nothing to read them from.
         """
-        with pytest.raises(ValueError, match="must set meteo.path"):
+        with pytest.raises(ValueError, match="meteo.path must be set"):
             MeteoInputs.from_config(
                 MeteoConfig(
                     source="netcdf",

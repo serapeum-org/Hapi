@@ -98,6 +98,7 @@ Examples:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date, datetime
 from typing import Any, Literal
 
@@ -159,6 +160,35 @@ _METEO_FIELDS_BY_SOURCE: dict[str, frozenset[str]] = {
 #: hydrographs from it have nothing to act on.
 _LUMPED_METEO_FIELDS = frozenset({"source", "path"})
 _LUMPED_GAUGES_FIELDS = frozenset({"discharge", "delimiter", "fmt"})
+
+
+#: The three fields every distributed `meteo.source` needs, in the order they are reported.
+METEO_DRIVERS = ("precipitation", "temperature", "evapotranspiration")
+
+#: What `source="netcdf"` needs beyond the drivers, since it reads all three from one file.
+NETCDF_PATH_MESSAGE = (
+    "meteo.source is 'netcdf', which reads the three drivers out of one file, so meteo.path "
+    "must be set"
+)
+
+
+def missing_drivers_message(missing: Sequence[str]) -> str:
+    """Phrase the "not all three drivers are named" error.
+
+    `RunConfig` raises this for a configuration and `MeteoInputs.from_config` raises it again
+    for a `MeteoConfig` built by hand, which the schema never saw. Two sites, one rule -- so
+    the wording lives here rather than being written out twice and drifting.
+
+    Args:
+        missing: Names of the unset drivers.
+
+    Returns:
+        str: The message.
+    """
+    return (
+        f"a distributed run needs all three meteorological drivers; "
+        f"{', '.join(missing)} {'is' if len(missing) == 1 else 'are'} unset"
+    )
 
 
 def _reject_fields_the_run_will_not_read(
@@ -523,17 +553,12 @@ class RunConfig(BaseModel):
                     "to locate the gauges on the grid"
                 )
             missing = [
-                name
-                for name in ("precipitation", "temperature", "evapotranspiration")
-                if getattr(self.meteo, name) is None
+                name for name in METEO_DRIVERS if getattr(self.meteo, name) is None
             ]
             if missing:
-                raise ValueError(
-                    f"a distributed run needs all three drivers; meteo is missing "
-                    f"{', '.join(missing)}"
-                )
+                raise ValueError(missing_drivers_message(missing))
             if self.meteo.source == "netcdf" and self.meteo.path is None:
-                raise ValueError("meteo.source is 'netcdf', which needs meteo.path")
+                raise ValueError(NETCDF_PATH_MESSAGE)
             _reject_fields_the_run_will_not_read(
                 self.meteo,
                 _METEO_FIELDS_BY_SOURCE[self.meteo.source],
