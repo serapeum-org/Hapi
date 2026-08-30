@@ -20,25 +20,30 @@ import inspect
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Self
 
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
+import yaml
 from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
 from loguru import logger
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
+from hapi.config import CatchmentConfig, MeteoConfig, RunConfig
 from hapi.inputs import (
     FlowNetwork,
     MeteoInputs,
     _warn_if_no_sentinel,
     read_rasters,
 )
+from hapi.rrm.hbv import HBV
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
 if TYPE_CHECKING:
     import matplotlib.animation
@@ -54,6 +59,23 @@ PARAMETER_COUNTS = {
     (True, False): 17,
     (False, False): 12,
 }
+
+#: Conceptual models `conceptual_model.model_class` can name in a YAML configuration.
+#: `read_lumped_model` still takes any `type[BaseConceptualModel]`, so this only bounds what the
+#: YAML shorthand can reach, not what the class accepts.
+CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
+    "HBVBergestrom92": HBVBergestrom92,
+    "HBV": HBV,
+}
+
+#: `__init__` stores `routing_method` verbatim, with none of the case-folding it applies to
+#: `spatial_resolution` / `temporal_resolution`. `distrrm.SpatialRouting` -- the Muskingum loop
+#: `Run.RunHapi` reaches -- then tests `Model.routing_method != "Muskingum"`, an exact,
+#: case-sensitive match. Any other spelling sends every cell down the MAXBAS branch, which reads
+#: `bankfull_depth`: None outside the flood model, so a `TypeError`. The YAML vocabulary is
+#: lower case, so it is translated here to the literal the internals expect. MAXBAS never
+#: reaches that comparison, so its label is cosmetic.
+_ROUTING_METHOD_LABELS = {"muskingum": "Muskingum", "maxbas": "MAXBAS"}
 
 
 @contextmanager
@@ -78,6 +100,63 @@ def _name_the_path(path) -> Iterator[None]:
         yield
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"{exc} (path: {path})") from exc
+
+
+def _meteo_from_config(meteo: MeteoConfig, catchment: CatchmentConfig) -> MeteoInputs:
+    """Build the driver cubes with whichever `MeteoInputs` loader `meteo.source` names.
+
+    `RunConfig` has already checked that the fields this source needs are set, so the loader is
+    called directly rather than re-validating here.
+
+    Args:
+        meteo: The `meteo` block of a distributed configuration.
+        catchment: Supplies the window when `meteo.start` / `meteo.end` are unset, so the
+            drivers default to exactly the period the model spans.
+
+    Returns:
+        MeteoInputs: The three cubes plus the calendar, windowed to the run's dates.
+    """
+    start = meteo.start or catchment.start
+    end = meteo.end or catchment.end
+
+    if meteo.source == "rasters":
+        extra: dict[str, Any] = {}
+        if meteo.per_variable is not None:
+            extra["per_variable"] = meteo.per_variable
+        if meteo.gdal_env is not None:
+            extra["gdal_env"] = meteo.gdal_env
+        return MeteoInputs.from_rasters(
+            meteo.precipitation,
+            meteo.temperature,
+            meteo.evapotranspiration,
+            glob=meteo.glob,
+            regex_string=meteo.regex_string,
+            file_name_data_fmt=meteo.file_name_data_fmt,
+            start=start,
+            end=end,
+            fmt=meteo.fmt,
+            **extra,
+        )
+
+    if meteo.source == "netcdf":
+        return MeteoInputs.from_netcdf(
+            meteo.path,
+            precipitation=meteo.precipitation,
+            temperature=meteo.temperature,
+            evapotranspiration=meteo.evapotranspiration,
+            start=start,
+            end=end,
+            fmt=meteo.fmt,
+        )
+
+    return MeteoInputs.from_netcdf_files(
+        meteo.precipitation,
+        meteo.temperature,
+        meteo.evapotranspiration,
+        start=start,
+        end=end,
+        fmt=meteo.fmt,
+    )
 
 
 class Catchment:
@@ -191,22 +270,120 @@ class Catchment:
         self.metrics: pd.DataFrame | None = None
 
     @classmethod
-    def from_yaml(cls, path: str) -> Catchment:
-        """Read a YAML run configuration and assemble a `Catchment` from it.
+    def from_yaml(cls, path: str) -> Self:
+        """Read a YAML run configuration and assemble a model from it.
 
-        Delegates to `hapi.config.from_yaml`, imported inside this method rather than at
-        module level: `hapi.config` imports `Catchment` itself (to build one), so a top-level
-        import here would be circular.
+        The alternate constructor for the build-then-mutate pattern this class documents: it
+        constructs the model, assigns `meteo` and (distributed only) `flow_network`, then makes
+        the `read_*` calls in the order they depend on each other -- the sequence a hand-written
+        script's block of path assignments used to drive by hand.
+
+        `hapi.config` only parses and validates; every assignment onto the model happens here.
+        Running the model stays the caller's job, through whichever `Run.*` entry point suits
+        `routing_method` and `spatial_resolution`.
+
+        Builds `cls`, so `Run.from_yaml(...)` and `Calibration.from_yaml(...)` return their own
+        type -- both take the same constructor arguments.
 
         Args:
-            path: Path to the YAML file. See `hapi.config` for the schema.
+            path: Path to the YAML file. See :mod:`hapi.config` for the schema.
 
         Returns:
-            Catchment: The model, with every input read, parsed and assigned.
-        """
-        from hapi.config import from_yaml
+            Self: The model, with every input read, parsed and assigned.
 
-        return from_yaml(path)
+        Raises:
+            pydantic.ValidationError: The file is missing a required field, carries an unknown
+                one, or breaks one of the cross-field rules in :class:`hapi.config.RunConfig`.
+            ValueError: `conceptual_model.model_class` names a model that is not in
+                `CONCEPTUAL_MODELS`.
+
+        Examples:
+            - Build a lumped model and inspect what the configuration gave it:
+                ```python
+                >>> from hapi.catchment import Catchment
+                >>> model = Catchment.from_yaml(
+                ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+                ... )
+                >>> model.name
+                'Coello'
+                >>> model.spatial_resolution
+                'lumped'
+                >>> len(model.date_index)
+                1095
+
+                ```
+            - Build a distributed model, whose drivers and routing network come from the
+              `meteo` and `flow_network` blocks:
+                ```python
+                >>> from hapi.catchment import Catchment
+                >>> model = Catchment.from_yaml(
+                ...     "examples/hydrological-model/coello/run/"
+                ...     "coello-distributed-model-run-netcdf.yaml"
+                ... )
+                >>> model.meteo.shape
+                (13, 14, 10)
+                >>> model.flow_network.rows, model.flow_network.cols
+                (13, 14)
+                >>> model.routing_method
+                'Muskingum'
+
+                ```
+        """
+        config = RunConfig.model_validate(yaml.safe_load(Path(path).read_text()))
+        catchment = config.catchment
+
+        model = cls(
+            catchment.name,
+            catchment.start,
+            catchment.end,
+            fmt=catchment.fmt,
+            spatial_resolution=catchment.spatial_resolution,
+            temporal_resolution=catchment.temporal_resolution,
+            routing_method=_ROUTING_METHOD_LABELS[catchment.routing_method],
+        )
+
+        distributed = catchment.spatial_resolution == "distributed"
+        if distributed:
+            model.meteo = _meteo_from_config(config.meteo, catchment)
+            model.flow_network = FlowNetwork.from_rasters(
+                config.flow_network.flow_accumulation,
+                config.flow_network.flow_direction,
+            )
+        else:
+            model.read_lumped_inputs(config.meteo.path)
+
+        model.read_parameters(
+            config.parameters.path,
+            config.parameters.snow,
+            maxbas=config.parameters.maxbas,
+        )
+
+        conceptual_model = config.conceptual_model
+        if conceptual_model.model_class not in CONCEPTUAL_MODELS:
+            raise ValueError(
+                f"conceptual_model.model_class {conceptual_model.model_class!r} is not "
+                f"registered; known models are {sorted(CONCEPTUAL_MODELS)}"
+            )
+        model.read_lumped_model(
+            CONCEPTUAL_MODELS[conceptual_model.model_class],
+            conceptual_model.catchment_area,
+            conceptual_model.initial_condition,
+            conceptual_model.q_init,
+        )
+
+        gauges = config.gauges
+        if distributed:
+            model.read_gauge_table(
+                gauges.table, config.flow_network.flow_accumulation, fmt=gauges.fmt
+            )
+        model.read_discharge_gauges(
+            gauges.discharge,
+            delimiter=gauges.delimiter,
+            column=gauges.column,
+            fmt=gauges.fmt,
+        )
+
+        return model
 
     def read_flow_path_length(self, path: str):
         """Read the flow path length raster.

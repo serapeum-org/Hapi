@@ -1,101 +1,135 @@
-"""Load a run configuration from YAML and assemble a `Catchment` from it.
+"""The schema of a YAML run configuration.
 
-Every example script under `examples/hydrological-model/*/run/` starts with a block of
-path/constant assignments before the `Catchment` is built and its `read_*` methods are called
-in the exact order the build-then-mutate pattern (see the `hapi.catchment` module docstring)
-requires. This module lifts that block into a YAML file plus a loader: `from_yaml` reads it and
-assigns every input onto the `Catchment` object the same way the hand-written block did.
-`load_config` is the parsing step alone, for callers that want the `RunConfig` without building
-a model from it. Running the model is still the caller's job, exactly as in a hand-wired script
--- call `Run.RunHapi(model)`, `Run.runFW1(model)` or `Run.runLumped(model, ...)` yourself,
-whichever `model.routing_method` / `model.spatial_resolution` calls for.
+This module describes data and nothing else: `RunConfig` and the blocks it nests validate a
+parsed YAML mapping and hold the result. It imports nothing from `hapi`, which keeps it a leaf
+of the import graph and lets `hapi.catchment` import it at module level. Reading the file and
+building a model out of it -- the `Catchment` construction, the `MeteoInputs` / `FlowNetwork`
+loaders, the `read_*` call order -- belongs to :meth:`hapi.catchment.Catchment.from_yaml`.
 
-Two spatial resolutions are supported -- lumped and distributed -- selected by
-`catchment.spatial_resolution`. They disagree on the *shape* of two blocks:
+The schema covers lumped and distributed runs, which disagree on the shape of two blocks:
 
-- `meteo`: a grid (`MeteoInputs`, via raster folders or NetCDF) for distributed, a single CSV
-  (`Catchment.read_lumped_inputs`) for lumped.
-- `gauges.discharge`: a folder of one CSV per gauge id for distributed, a single CSV for
-  lumped.
+- `meteo`: a grid for distributed (raster folders or NetCDF, per `source`), and a single CSV of
+  catchment-average drivers for lumped.
+- `gauges`: a gauge table plus a folder of per-gauge discharge files for distributed, and one
+  discharge file with no table for lumped.
+
+Which fields are required therefore depends on `catchment.spatial_resolution` and, for a
+distributed run, on `meteo.source`. Those cross-field rules are enforced here by model
+validators, so a `RunConfig` that validates is one the builder can consume without re-checking.
 
 Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.RunFloodModel`) are out of
-scope for this schema -- both need inputs it does not carry.
+scope -- both need inputs this schema does not carry.
 
 Examples:
-    >>> from hapi.config import from_yaml  # doctest: +SKIP
-    >>> from hapi.run import Run  # doctest: +SKIP
-    >>> model = from_yaml("case-study.yaml")  # doctest: +SKIP
-    >>> Run.RunHapi(model)  # doctest: +SKIP
+    - Validate a lumped configuration and read back what it holds:
+        ```python
+        >>> from hapi.config import RunConfig
+        >>> config = RunConfig.model_validate(
+        ...     {
+        ...         "catchment": {
+        ...             "name": "Coello",
+        ...             "start": "2009-01-01",
+        ...             "end": "2011-12-31",
+        ...         },
+        ...         "meteo": {"path": "meteo_data.csv"},
+        ...         "parameters": {"path": "parameters.txt"},
+        ...         "conceptual_model": {
+        ...             "model_class": "HBVBergestrom92",
+        ...             "catchment_area": 1530,
+        ...             "initial_condition": [0, 10, 10, 10, 0],
+        ...         },
+        ...         "gauges": {"discharge": "Qout_c.csv"},
+        ...     }
+        ... )
+        >>> config.catchment.spatial_resolution
+        'lumped'
+        >>> config.conceptual_model.catchment_area
+        1530.0
+        >>> config.gauges.fmt
+        '%Y-%m-%d'
+
+        ```
+    - A distributed run needs a routing network, so one without it is refused:
+        ```python
+        >>> from pydantic import ValidationError
+        >>> from hapi.config import RunConfig
+        >>> try:
+        ...     RunConfig.model_validate(
+        ...         {
+        ...             "catchment": {
+        ...                 "name": "Coello",
+        ...                 "start": "2009-01-01",
+        ...                 "end": "2011-12-31",
+        ...                 "spatial_resolution": "distributed",
+        ...             },
+        ...             "meteo": {"path": "meteo_data.csv"},
+        ...             "parameters": {"path": "parameters.txt"},
+        ...             "conceptual_model": {
+        ...                 "model_class": "HBVBergestrom92",
+        ...                 "catchment_area": 1530,
+        ...                 "initial_condition": [0, 10, 10, 10, 0],
+        ...             },
+        ...             "gauges": {"discharge": "Qout_c.csv"},
+        ...         }
+        ...     )
+        ... except ValidationError as error:
+        ...     print(error.errors()[0]["msg"])
+        Value error, catchment.spatial_resolution is 'distributed', which needs a flow_network block
+
+        ```
 """
 
 from __future__ import annotations
 
-import dataclasses
-from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
-import yaml
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv import HBV
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
-
-#: Conceptual model classes resolvable by name from `conceptual_model.model_class` in the YAML.
-CONCEPTUAL_MODELS: dict[str, type] = {
-    "HBVBergestrom92": HBVBergestrom92,
-    "HBV": HBV,
-}
-
-#: `Catchment.__init__` stores `routing_method` verbatim, with no case-folding of its own (unlike
-#: `spatial_resolution` / `temporal_resolution`, which it lowercases). `distrrm.SpatialRouting`
-#: -- the Muskingum routing loop `Run.RunHapi` reaches -- then compares it with
-#: `Model.routing_method != "Muskingum"`, an exact, case-sensitive match against that one
-#: literal. Any other spelling, including a differently-cased "muskingum", makes every cell take
-#: the MAXBAS branch instead and read `Model.bankfull_depth`, which is `None` outside the flood
-#: model and raises `TypeError`. MAXBAS itself never calls `SpatialRouting`, so its label is
-#: cosmetic -- but Muskingum's must be this exact string.
-_ROUTING_METHOD_LABELS: dict[str, str] = {"muskingum": "Muskingum", "maxbas": "MAXBAS"}
+#: Rejects unknown keys, so a misspelled field in the YAML fails loudly at parse time rather
+#: than being dropped and surfacing later as a missing input.
+_STRICT = ConfigDict(extra="forbid")
 
 
-@dataclasses.dataclass
-class CatchmentConfig:
+class CatchmentConfig(BaseModel):
     """The `Catchment` constructor arguments.
 
     Attributes:
         name: Catchment name.
-        start: Start date, parsed with `fmt`.
+        start: Start date, parsed with `fmt`. Kept a string: the constructor does the parsing,
+            and an unquoted YAML date would arrive here already a `date`.
         end: End date, parsed with `fmt`.
         fmt: `strptime` format for `start` / `end`.
-        spatial_resolution: `"lumped"` or `"distributed"`.
+        spatial_resolution: `"lumped"` or `"distributed"`. Selects the shape of `meteo` and
+            `gauges`, and whether `flow_network` is required.
         temporal_resolution: `"daily"` or `"hourly"`.
-        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`;
-            which `Run.*` entry point actually routes with it is the caller's choice.
+        routing_method: `"muskingum"` or `"maxbas"`. Assigned onto `model.routing_method`; which
+            `Run.*` entry point actually routes with it is the caller's choice.
     """
+
+    model_config = _STRICT
 
     name: str
     start: str
     end: str
     fmt: str = "%Y-%m-%d"
-    spatial_resolution: str = "lumped"
-    temporal_resolution: str = "daily"
-    routing_method: str = "muskingum"
+    spatial_resolution: Literal["lumped", "distributed"] = "lumped"
+    temporal_resolution: Literal["daily", "hourly"] = "daily"
+    routing_method: Literal["muskingum", "maxbas"] = "muskingum"
 
 
-@dataclasses.dataclass
-class MeteoConfig:
+class MeteoConfig(BaseModel):
     """The meteorological drivers: a distributed grid or a lumped CSV.
 
     Attributes:
-        source: `"rasters"`, `"netcdf"` or `"netcdf_files"` (distributed); ignored for lumped,
-            which always reads `path` as a single CSV.
+        source: Which `MeteoInputs` loader builds the grid. Ignored for a lumped run, which
+            always reads `path` as a single CSV.
         precipitation: Rainfall folder (`"rasters"`), NetCDF path (`"netcdf_files"`), or the
             variable name holding rainfall inside `path` (`"netcdf"`).
         temperature: As `precipitation`, for temperature.
         evapotranspiration: As `precipitation`, for evapotranspiration.
         path: The combined NetCDF (`source="netcdf"`) or the lumped meteo CSV.
-        start: Optional window start; `None` uses `catchment.start`. Distributed only.
-        end: Optional window end; `None` uses `catchment.end`. Distributed only.
+        start: Window start; `None` falls back to `catchment.start`. Distributed only.
+        end: Window end; `None` falls back to `catchment.end`. Distributed only.
         fmt: `strptime` format for `start` / `end`.
         glob: Raster glob, `source="rasters"` only.
         regex_string: Date regex within file names, `source="rasters"` only.
@@ -104,7 +138,9 @@ class MeteoConfig:
         gdal_env: GDAL environment overrides for the raster read, `source="rasters"` only.
     """
 
-    source: str = "rasters"
+    model_config = _STRICT
+
+    source: Literal["rasters", "netcdf", "netcdf_files"] = "rasters"
     precipitation: str | None = None
     temperature: str | None = None
     evapotranspiration: str | None = None
@@ -119,65 +155,72 @@ class MeteoConfig:
     gdal_env: dict[str, str] | None = None
 
 
-@dataclasses.dataclass
-class FlowNetworkConfig:
-    """The routing network. Distributed modes only.
+class FlowNetworkConfig(BaseModel):
+    """The routing network. Distributed runs only.
 
     Attributes:
         flow_accumulation: Path to the flow-accumulation raster.
-        flow_direction: Path to the flow-direction raster. Required for Muskingum, unused (and
-            may be omitted) for MAXBAS.
+        flow_direction: Path to the flow-direction raster. Muskingum needs it; MAXBAS sends
+            every cell straight to the outlet and never reads one, so it may be omitted.
     """
+
+    model_config = _STRICT
 
     flow_accumulation: str
     flow_direction: str | None = None
 
 
-@dataclasses.dataclass
-class ParametersConfig:
+class ParametersConfig(BaseModel):
     """Where the conceptual-model parameters live.
 
     Attributes:
-        path: Folder of parameter rasters (distributed) or a CSV file (lumped).
-        snow: Whether the parameter set includes the snow routine (15 parameters vs 10).
-        maxbas: Whether the parameter set was built for MAXBAS routing. Independent of
-            `catchment.routing_method` -- this describes the parameter *set*, not the run.
+        path: Folder of parameter rasters (distributed) or a single file (lumped).
+        snow: Whether the parameter set includes the snow routine (15 parameters against 10).
+        maxbas: Whether the set carries the triangular-routing parameter. Independent of
+            `catchment.routing_method` -- this describes the parameter set, not the run.
     """
+
+    model_config = _STRICT
 
     path: str
     snow: bool = False
     maxbas: bool = False
 
 
-@dataclasses.dataclass
-class ConceptualModelConfig:
-    """The lumped conceptual model run per cell (distributed) or per catchment (lumped).
+class ConceptualModelConfig(BaseModel):
+    """The lumped conceptual model, run per cell (distributed) or per catchment (lumped).
 
     Attributes:
-        model_class: Name in `CONCEPTUAL_MODELS`, e.g. `"HBVBergestrom92"`.
+        model_class: Name of the conceptual model, e.g. `"HBVBergestrom92"`. Resolved to a class
+            by the builder, which owns the registry of available models.
         catchment_area: Catchment area, km2.
-        initial_condition: `[sp, sm, uz, lz, wc]`, five values.
-        q_init: Optional initial discharge; `None` derives it from the initial condition.
+        initial_condition: `[sp, sm, uz, lz, wc]`, exactly five values.
+        q_init: Initial discharge; `None` derives it from the initial condition.
     """
 
+    # `model_class` would collide with pydantic's protected `model_` namespace, so the namespace
+    # is cleared rather than renaming a field the YAML already uses.
+    model_config = ConfigDict(extra="forbid", protected_namespaces=())
+
     model_class: str
-    catchment_area: float
-    initial_condition: list[float]
+    catchment_area: float = Field(gt=0)
+    initial_condition: list[float] = Field(min_length=5, max_length=5)
     q_init: float | None = None
 
 
-@dataclasses.dataclass
-class GaugesConfig:
-    """The observed discharge used to score the run.
+class GaugesConfig(BaseModel):
+    """The observed discharge the run is scored against.
 
     Attributes:
         discharge: Folder of one CSV per gauge id (distributed) or a single CSV (lumped).
-        table: Gauge locations and properties. Distributed only.
-        column: Gauge table column holding the ids the discharge folder's file names match.
-            Unused for lumped.
+        table: Gauge locations and properties. Distributed only; a lumped run has no grid to
+            locate gauges on.
+        column: Gauge-table column holding the ids the discharge file names match.
         delimiter: Discharge CSV delimiter.
         fmt: `strptime` format for the discharge CSV's date column.
     """
+
+    model_config = _STRICT
 
     discharge: str
     table: str | None = None
@@ -186,19 +229,19 @@ class GaugesConfig:
     fmt: str = "%Y-%m-%d"
 
 
-@dataclasses.dataclass
-class OutputsConfig:
+class OutputsConfig(BaseModel):
     """Where to write results after the run.
 
     Attributes:
         results_dir: Folder `save_results` writes into.
     """
 
+    model_config = _STRICT
+
     results_dir: str | None = None
 
 
-@dataclasses.dataclass
-class RunConfig:
+class RunConfig(BaseModel):
     """The full input set for one `Catchment` build.
 
     Attributes:
@@ -207,9 +250,11 @@ class RunConfig:
         parameters: Where the conceptual-model parameters live.
         conceptual_model: The lumped conceptual model.
         gauges: The observed discharge.
-        flow_network: The routing network. `None` for lumped.
-        outputs: Where to write results. `None` if the run is only scored in memory.
+        flow_network: The routing network. Required for distributed, absent for lumped.
+        outputs: Where to write results.
     """
+
+    model_config = _STRICT
 
     catchment: CatchmentConfig
     meteo: MeteoConfig
@@ -219,199 +264,43 @@ class RunConfig:
     flow_network: FlowNetworkConfig | None = None
     outputs: OutputsConfig | None = None
 
+    @model_validator(mode="after")
+    def _check_blocks_match_the_spatial_resolution(self) -> RunConfig:
+        """Enforce the fields each spatial resolution requires.
 
-def load_config(path: str | Path) -> RunConfig:
-    """Read a run configuration from a YAML file.
+        Returns:
+            RunConfig: This config, unchanged.
 
-    Args:
-        path: Path to the YAML file.
-
-    Returns:
-        RunConfig: The parsed configuration, not yet built into a `Catchment`.
-
-    Raises:
-        ValueError: `catchment.spatial_resolution` is `"distributed"` and the file has no
-            `flow_network` block.
-    """
-    raw = yaml.safe_load(Path(path).read_text())
-
-    catchment = CatchmentConfig(**raw["catchment"])
-    is_distributed = catchment.spatial_resolution.lower() == "distributed"
-
-    flow_network = (
-        FlowNetworkConfig(**raw["flow_network"]) if "flow_network" in raw else None
-    )
-    if is_distributed and flow_network is None:
-        raise ValueError(
-            "catchment.spatial_resolution is 'distributed' but the file has no flow_network "
-            "block"
-        )
-
-    return RunConfig(
-        catchment=catchment,
-        meteo=MeteoConfig(**raw["meteo"]),
-        parameters=ParametersConfig(**raw["parameters"]),
-        conceptual_model=ConceptualModelConfig(**raw["conceptual_model"]),
-        gauges=GaugesConfig(**raw["gauges"]),
-        flow_network=flow_network,
-        outputs=OutputsConfig(**raw["outputs"]) if "outputs" in raw else None,
-    )
-
-
-def _build_meteo(meteo: MeteoConfig, catchment: CatchmentConfig) -> MeteoInputs:
-    """Dispatch to the `MeteoInputs` loader `meteo.source` names.
-
-    Args:
-        meteo: The meteo block. `source` must be `"rasters"`, `"netcdf"` or `"netcdf_files"`.
-        catchment: Supplies the default window when `meteo.start` / `meteo.end` are `None`.
-
-    Returns:
-        MeteoInputs: The three cubes, windowed to the model's dates.
-
-    Raises:
-        ValueError: `meteo.source` is not one of the three recognised loaders.
-        AssertionError: `meteo.source` names a loader whose required fields are `None` --
-            `precipitation` / `temperature` / `evapotranspiration` for every source, plus
-            `path` for `"netcdf"`.
-    """
-    start = meteo.start or catchment.start
-    end = meteo.end or catchment.end
-
-    # precipitation/temperature/evapotranspiration are Optional on the dataclass because a
-    # lumped config never sets them, but every distributed source requires all three.
-    assert meteo.precipitation is not None, (
-        "meteo.precipitation is required for a distributed run"
-    )
-    assert meteo.temperature is not None, (
-        "meteo.temperature is required for a distributed run"
-    )
-    assert meteo.evapotranspiration is not None, (
-        "meteo.evapotranspiration is required for a distributed run"
-    )
-
-    if meteo.source == "rasters":
-        kwargs: dict[str, Any] = dict(
-            glob=meteo.glob,
-            regex_string=meteo.regex_string,
-            file_name_data_fmt=meteo.file_name_data_fmt,
-            start=start,
-            end=end,
-            fmt=meteo.fmt,
-        )
-        if meteo.per_variable is not None:
-            kwargs["per_variable"] = meteo.per_variable
-        if meteo.gdal_env is not None:
-            kwargs["gdal_env"] = meteo.gdal_env
-        return MeteoInputs.from_rasters(
-            meteo.precipitation, meteo.temperature, meteo.evapotranspiration, **kwargs
-        )
-
-    if meteo.source == "netcdf":
-        assert meteo.path is not None, "meteo.path is required for meteo.source: netcdf"
-        return MeteoInputs.from_netcdf(
-            meteo.path,
-            precipitation=meteo.precipitation,
-            temperature=meteo.temperature,
-            evapotranspiration=meteo.evapotranspiration,
-            start=start,
-            end=end,
-            fmt=meteo.fmt,
-        )
-
-    if meteo.source == "netcdf_files":
-        return MeteoInputs.from_netcdf_files(
-            meteo.precipitation,
-            meteo.temperature,
-            meteo.evapotranspiration,
-            start=start,
-            end=end,
-            fmt=meteo.fmt,
-        )
-
-    raise ValueError(
-        f"meteo.source must be 'rasters', 'netcdf' or 'netcdf_files' for a distributed run, "
-        f"got {meteo.source!r}"
-    )
-
-
-def from_yaml(path: str | Path) -> Catchment:
-    """Read a YAML run configuration and assemble a `Catchment` from it in one call.
-
-    Calls `load_config(path)`, then follows the build-then-mutate pattern `hapi.catchment`
-    documents: constructs the model, assigns `meteo` and (distributed only) `flow_network`,
-    then calls the `read_*` methods in the order they depend on each other -- the same
-    sequence a hand-wired script's "Paths" block used to drive by hand. Running the model is
-    left to the caller, via whichever `Run.*` entry point (`RunHapi`, `runFW1`, `runLumped`)
-    fits `model.routing_method` / `model.spatial_resolution`.
-
-    Args:
-        path: Path to the YAML file.
-
-    Returns:
-        Catchment: The model, with every read_* call made -- gauges included.
-
-    Raises:
-        ValueError: `catchment.spatial_resolution` is `"distributed"` and the file has no
-            `flow_network` block, or `conceptual_model.model_class` is not in
-            `CONCEPTUAL_MODELS`.
-    """
-    config = load_config(path)
-    c = config.catchment
-    routing_label = _ROUTING_METHOD_LABELS.get(
-        c.routing_method.lower(), c.routing_method
-    )
-    model = Catchment(
-        c.name,
-        c.start,
-        c.end,
-        fmt=c.fmt,
-        spatial_resolution=c.spatial_resolution,
-        temporal_resolution=c.temporal_resolution,
-        routing_method=routing_label,
-    )
-
-    is_distributed = c.spatial_resolution.lower() == "distributed"
-
-    if is_distributed:
-        model.meteo = _build_meteo(config.meteo, c)
-        fn = config.flow_network
-        assert fn is not None, (
-            "flow_network is required when spatial_resolution is distributed"
-        )
-        model.flow_network = FlowNetwork.from_rasters(
-            fn.flow_accumulation, fn.flow_direction
-        )
-    else:
-        assert config.meteo.path is not None, (
-            "meteo.path is required when spatial_resolution is lumped"
-        )
-        model.read_lumped_inputs(config.meteo.path)
-
-    p = config.parameters
-    model.read_parameters(p.path, p.snow, maxbas=p.maxbas)
-
-    cm = config.conceptual_model
-    model_class = CONCEPTUAL_MODELS.get(cm.model_class)
-    if model_class is None:
-        raise ValueError(
-            f"conceptual_model.model_class {cm.model_class!r} is not registered; known models "
-            f"are {sorted(CONCEPTUAL_MODELS)}"
-        )
-    model.read_lumped_model(
-        model_class, cm.catchment_area, cm.initial_condition, cm.q_init
-    )
-
-    g = config.gauges
-    if is_distributed:
-        assert fn is not None, (
-            "flow_network is required when spatial_resolution is distributed"
-        )
-        assert g.table is not None, (
-            "gauges.table is required when spatial_resolution is distributed"
-        )
-        model.read_gauge_table(g.table, fn.flow_accumulation, fmt=g.fmt)
-    model.read_discharge_gauges(
-        g.discharge, delimiter=g.delimiter, column=g.column, fmt=g.fmt
-    )
-
-    return model
+        Raises:
+            ValueError: A block the chosen `spatial_resolution` needs is missing, or one of the
+                three drivers a distributed `meteo.source` needs is unset.
+        """
+        if self.catchment.spatial_resolution == "distributed":
+            if self.flow_network is None:
+                raise ValueError(
+                    "catchment.spatial_resolution is 'distributed', which needs a flow_network "
+                    "block"
+                )
+            if self.gauges.table is None:
+                raise ValueError(
+                    "catchment.spatial_resolution is 'distributed', which needs gauges.table "
+                    "to locate the gauges on the grid"
+                )
+            missing = [
+                name
+                for name in ("precipitation", "temperature", "evapotranspiration")
+                if getattr(self.meteo, name) is None
+            ]
+            if missing:
+                raise ValueError(
+                    f"a distributed run needs all three drivers; meteo is missing "
+                    f"{', '.join(missing)}"
+                )
+            if self.meteo.source == "netcdf" and self.meteo.path is None:
+                raise ValueError("meteo.source is 'netcdf', which needs meteo.path")
+        elif self.meteo.path is None:
+            raise ValueError(
+                "catchment.spatial_resolution is 'lumped', which needs meteo.path -- the CSV "
+                "of catchment-average drivers"
+            )
+        return self
