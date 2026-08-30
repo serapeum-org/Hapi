@@ -1088,6 +1088,44 @@ class TestCatchmentFromYaml:
 
         assert model.config is None, f"expected no configuration, got {model.config}"
 
+    def test_a_path_object_is_accepted(self, distributed_mapping, tmp_path):
+        """Test that the path may be a `Path`, not only a string.
+
+        Args:
+            distributed_mapping: A complete distributed configuration.
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            The body immediately wraps the argument in `Path`, and the rest of the package
+            annotates such arguments `str | Path`, so a caller holding a `Path` should not
+            have to stringify it.
+        """
+        write_yaml(distributed_mapping, tmp_path)
+
+        model = Catchment.from_yaml(tmp_path / "config.yaml")
+
+        assert model.name == "Coello", f"the config was not read from the Path: {model.name}"
+
+    def test_an_empty_file_names_itself(self, tmp_path):
+        """Test that an empty configuration file is reported as such.
+
+        Args:
+            tmp_path: pytest temporary directory.
+
+        Test scenario:
+            An empty file parses to `None`, which pydantic reports as "Input should be a valid
+            dictionary" without naming the file -- unhelpful when a run names several.
+        """
+        path = tmp_path / "empty.yaml"
+        path.write_text("", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="is empty") as exc:
+            Catchment.from_yaml(str(path))
+
+        assert "empty.yaml" in str(exc.value), (
+            f"the error should name the file: {exc.value}"
+        )
+
     def test_an_invalid_configuration_fails_before_anything_is_read(
         self, distributed_mapping, tmp_path
     ):

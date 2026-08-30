@@ -233,7 +233,7 @@ class Catchment:
         self.config: RunConfig | None = None
 
     @classmethod
-    def from_yaml(cls, path: str) -> Self:
+    def from_yaml(cls, path: str | Path) -> Self:
         """Read a YAML run configuration and assemble a model from it.
 
         The alternate constructor for the build-then-mutate pattern this class documents: it
@@ -251,16 +251,19 @@ class Catchment:
         `Run.from_yaml` raises `TypeError` rather than silently building the wrong thing.
 
         Args:
-            path: Path to the YAML file. See :mod:`hapi.config` for the schema.
+            path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for
+                the schema.
 
         Returns:
             Self: The model, with every input read, parsed and assigned.
 
         Raises:
+            FileNotFoundError: No file at `path`.
+            yaml.YAMLError: The file is not valid YAML.
             pydantic.ValidationError: The file is missing a required field, carries an unknown
                 one, or breaks one of the cross-field rules in :class:`hapi.config.RunConfig`.
-            ValueError: `conceptual_model.model_class` names a model that is not in
-                `CONCEPTUAL_MODELS`.
+            ValueError: The file is empty, or `conceptual_model.model_class` names a model
+                that is not in `CONCEPTUAL_MODELS`.
 
         Examples:
             - Build a lumped model and inspect what the configuration gave it:
@@ -298,7 +301,12 @@ class Catchment:
         # non-ASCII catchment name or path mojibakes on a machine whose default is not UTF-8
         # -- and does so silently, since the corrupted text is still valid YAML.
         text = Path(path).read_text(encoding="utf-8")
-        config = RunConfig.model_validate(yaml.safe_load(text))
+        mapping = yaml.safe_load(text)
+        # An empty file parses to None, which pydantic would report as the opaque
+        # "Input should be a valid dictionary" without saying which file was empty.
+        if mapping is None:
+            raise ValueError(f"the run configuration at {path} is empty")
+        config = RunConfig.model_validate(mapping)
         catchment = config.catchment
 
         model = cls(
