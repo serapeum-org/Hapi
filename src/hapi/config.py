@@ -240,6 +240,11 @@ class CatchmentConfig(BaseModel):
     fmt: str = "%Y-%m-%d"
     spatial_resolution: Literal["lumped", "distributed"] = "lumped"
     temporal_resolution: Literal["daily", "hourly"] = "daily"
+    # Two of the three keys of `hapi.catchment.ROUTING_METHODS`, which is what the constructor
+    # accepts. `kinematic` is left out deliberately: it selects the flood model, whose inputs
+    # (`read_river_geometry`, `bankfull_depth`) this schema does not carry, so a configuration
+    # naming it would validate and then build a model that cannot run. Adding a method there
+    # means deciding here whether the schema can describe a run that uses it.
     routing_method: Literal["muskingum", "maxbas"] = "muskingum"
 
     @model_validator(mode="before")

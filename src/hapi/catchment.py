@@ -74,6 +74,8 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
 #: canonicalises rather than storing what it was handed. `"Kinematic"` belongs here because
 #: that comparison is also how the flood model selects its own path: a non-Muskingum method
 #: with a real `bankfull_depth` skips the cell, which `Run.RunFloodModel` relies on.
+#: `hapi.config.CatchmentConfig.routing_method` exposes the first two to YAML and says why the
+#: third is not; a method added here needs a decision there too.
 ROUTING_METHODS = {
     "muskingum": "Muskingum",
     "maxbas": "MAXBAS",
