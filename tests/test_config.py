@@ -399,7 +399,9 @@ class TestRunConfigCrossFieldRules:
         """
         del distributed_mapping["flow_network"]["flow_direction"]
 
-        with pytest.raises(ValidationError, match="flow_network.flow_direction is required"):
+        with pytest.raises(
+            ValidationError, match="flow_network.flow_direction is required"
+        ):
             RunConfig.model_validate(distributed_mapping)
 
     def test_maxbas_does_not_require_a_flow_direction_raster(self, distributed_mapping):
@@ -603,7 +605,9 @@ class TestRunConfigCrossFieldRules:
         with pytest.raises(ValidationError, match="has no grid"):
             RunConfig.model_validate(lumped_mapping)
 
-    def test_a_lumped_configuration_may_not_name_a_grid_meteo_source(self, lumped_mapping):
+    def test_a_lumped_configuration_may_not_name_a_grid_meteo_source(
+        self, lumped_mapping
+    ):
         """Test that a grid loader on a lumped run is refused.
 
         Args:
@@ -676,7 +680,9 @@ class TestMeteoInputsFromConfig:
             end=coello_end_date,
         )
 
-        assert meteo.shape == (13, 14, 10), f"unexpected grid or step count: {meteo.shape}"
+        assert meteo.shape == (13, 14, 10), (
+            f"unexpected grid or step count: {meteo.shape}"
+        )
         assert meteo.time is not None, "the calendar should come from the file names"
         assert meteo.time[0].strftime("%Y-%m-%d") == coello_start_date
 
@@ -737,7 +743,9 @@ class TestMeteoInputsFromConfig:
             end=coello_end_date,
         )
 
-        assert meteo.shape == (13, 14, 10), f"unexpected grid or step count: {meteo.shape}"
+        assert meteo.shape == (13, 14, 10), (
+            f"unexpected grid or step count: {meteo.shape}"
+        )
 
     def test_a_config_missing_a_driver_is_refused(self):
         """Test that the defensive guard fires for a hand-built config.
@@ -799,9 +807,7 @@ class TestRoutingMethodNormalisation:
             lower-case "muskingum" stored verbatim therefore routed every cell down the MAXBAS
             branch and raised `TypeError: 'NoneType' object is not subscriptable`.
         """
-        model = Catchment(
-            "coello", "2009-01-01", "2009-01-10", routing_method=given
-        )
+        model = Catchment("coello", "2009-01-01", "2009-01-10", routing_method=given)
 
         assert model.routing_method == stored, (
             f"{given!r} should be stored as {stored!r}, got {model.routing_method!r}"
@@ -820,6 +826,17 @@ class TestRoutingMethodNormalisation:
         )
 
         assert model.routing_method == "Kinematic"
+
+    def test_an_unknown_spatial_resolution_is_refused(self):
+        """Test that the sibling enumerated argument is validated the same way.
+
+        Test scenario:
+            `spatial_resolution` selects which half of the build runs, so an unrecognised
+            value has no branch to take and must fail at construction rather than silently
+            choosing the lumped one.
+        """
+        with pytest.raises(ValueError, match="'lumped' and 'distributed'"):
+            Catchment("coello", "2009-01-01", "2009-01-10", spatial_resolution="semi")
 
     def test_an_unknown_routing_method_is_refused(self):
         """Test that an unrecognised routing method fails at construction.
@@ -1179,7 +1196,9 @@ class TestCatchmentFromYaml:
 
         model = Catchment.from_yaml(str(path))
 
-        assert model.name == "Río Coello", f"the name was corrupted on read: {model.name!r}"
+        assert model.name == "Río Coello", (
+            f"the name was corrupted on read: {model.name!r}"
+        )
 
     def test_the_configuration_stays_reachable_on_the_model(
         self, distributed_mapping, tmp_path
@@ -1208,7 +1227,9 @@ class TestCatchmentFromYaml:
             "the flow-accumulation path should stay reachable for save_results"
         )
 
-    def test_a_hand_built_model_has_no_configuration(self, coello_start_date, coello_end_date):
+    def test_a_hand_built_model_has_no_configuration(
+        self, coello_start_date, coello_end_date
+    ):
         """Test that `config` is None on a model that was not built from a file.
 
         Args:
@@ -1239,7 +1260,9 @@ class TestCatchmentFromYaml:
 
         model = Catchment.from_yaml(tmp_path / "config.yaml")
 
-        assert model.name == "Coello", f"the config was not read from the Path: {model.name}"
+        assert model.name == "Coello", (
+            f"the config was not read from the Path: {model.name}"
+        )
 
     def test_an_empty_file_names_itself(self, tmp_path):
         """Test that an empty configuration file is reported as such.
