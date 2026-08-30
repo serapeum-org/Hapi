@@ -41,7 +41,7 @@ from hapi.run import Run
 COMBINED_NC = "tests/rrm/data/coello/meteo.nc"
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def distributed_mapping(
     coello_start_date: str,
     coello_end_date: str,
@@ -86,7 +86,7 @@ def distributed_mapping(
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def lumped_mapping(
     coello_start_date: str,
     coello_end_date: str,
@@ -1132,8 +1132,10 @@ class TestMeteoInputsFromConfig:
             built directly -- which is exactly when the message naming the missing drivers is
             the only thing the caller has to go on.
         """
+        config = MeteoConfig(source="rasters", precipitation="p")
+
         with pytest.raises(ValueError, match="all three meteorological drivers") as exc:
-            MeteoInputs.from_config(MeteoConfig(source="rasters", precipitation="p"))
+            MeteoInputs.from_config(config)
 
         assert "temperature" in str(exc.value), (
             f"the error should name what is unset: {exc.value}"
@@ -1146,15 +1148,15 @@ class TestMeteoInputsFromConfig:
             For this source the driver fields are variable names inside one file, so without
             the file there is nothing to read them from.
         """
+        config = MeteoConfig(
+            source="netcdf",
+            precipitation="precipitation",
+            temperature="temperature",
+            evapotranspiration="evapotranspiration",
+        )
+
         with pytest.raises(ValueError, match="meteo.path must be set"):
-            MeteoInputs.from_config(
-                MeteoConfig(
-                    source="netcdf",
-                    precipitation="precipitation",
-                    temperature="temperature",
-                    evapotranspiration="evapotranspiration",
-                )
-            )
+            MeteoInputs.from_config(config)
 
     def test_the_netcdf_source_reads_the_three_variables_from_one_file(
         self, coello_start_date: str, coello_end_date: str
@@ -1451,8 +1453,10 @@ class TestCatchmentFromYaml:
         """
         distributed_mapping["conceptual_model"]["model_class"] = "HBV97"
 
+        path = write_yaml(distributed_mapping, tmp_path)
+
         with pytest.raises(ValueError, match="not.*registered") as exc:
-            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+            Catchment.from_yaml(path)
 
         assert "HBVBergestrom92" in str(exc.value), (
             f"the error should list the known models: {exc.value}"
@@ -1479,8 +1483,10 @@ class TestCatchmentFromYaml:
         distributed_mapping["flow_network"]["flow_accumulation"] = "no/such/acc.tif"
         distributed_mapping["flow_network"]["flow_direction"] = "no/such/fd.tif"
 
+        path = write_yaml(distributed_mapping, tmp_path)
+
         with pytest.raises(ValueError, match="not.*registered"):
-            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+            Catchment.from_yaml(path)
 
     @pytest.mark.parametrize("cls", [Catchment, Calibration])
     def test_the_builder_returns_the_class_it_was_called_on(
@@ -1800,8 +1806,10 @@ class TestCatchmentFromYaml:
         """
         distributed_mapping["catchment"]["spatial_resolution"] = "semi"
 
+        path = write_yaml(distributed_mapping, tmp_path)
+
         with pytest.raises(ValidationError, match="Input should be"):
-            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+            Catchment.from_yaml(path)
 
     def test_the_configuration_is_read_from_the_given_path(
         self, distributed_mapping, tmp_path
@@ -1892,12 +1900,17 @@ class TestCatchmentFromYaml:
         distributed_mapping["parameters"]["path"] = "no/such/parameters"
         distributed_mapping["gauges"]["table"] = "no/such/gauges.csv"
 
+        path = write_yaml(distributed_mapping, tmp_path)
+
         with pytest.raises(FileNotFoundError) as exc:
-            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+            Catchment.from_yaml(path)
 
         message = str(exc.value)
-        assert "parameters.path" in message and "gauges.table" in message, (
-            f"both missing paths should be named in one message: {message}"
+        assert "parameters.path" in message, (
+            f"the missing parameter folder should be named: {message}"
+        )
+        assert "gauges.table" in message, (
+            f"the missing gauge table should be named in the same message: {message}"
         )
 
     def test_a_netcdf_variable_name_is_not_checked_for_existence(
@@ -2066,5 +2079,7 @@ class TestCatchmentFromYaml:
             "evapotranspiration": str(Path(coello_evap_path).resolve()),
         }
 
+        path = write_yaml(distributed_mapping, tmp_path)
+
         with pytest.raises(FileNotFoundError, match="meteo.precipitation"):
-            Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
+            Catchment.from_yaml(path)

@@ -31,7 +31,7 @@ Route = 1
 Run.runLumped(Coello, Route, RoutingFn)
 
 # %% Calculate performance criteria
-scores = dict()
+scores = {}
 
 Qobs = Coello.QGauges["q"]
 

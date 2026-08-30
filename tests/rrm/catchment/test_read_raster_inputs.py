@@ -605,12 +605,10 @@ class TestDirectoryReaders:
             bounds are indices and a datetime has no meaning -- `int()` would fail on it
             several frames down, in a message naming neither the argument nor the mode.
         """
+        bounds = {bound: dt.datetime(2009, 1, 1)}
+
         with pytest.raises(TypeError, match="needs date=True") as exc:
-            read_rasters(
-                coello_prec_path,
-                date=False,
-                **{bound: dt.datetime(2009, 1, 1)},
-            )
+            read_rasters(coello_prec_path, date=False, **bounds)
 
         assert "indices" in str(exc.value), (
             f"the error should say what the bounds mean in this mode: {exc.value}"
