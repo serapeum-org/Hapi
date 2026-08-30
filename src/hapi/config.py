@@ -592,14 +592,34 @@ class RunConfig(BaseModel):
                     f"{label} {value!r} does not match its format {fmt!r}: {error}"
                 ) from error
 
-        for first, second, fmt, block in (
-            (self.catchment.start, self.catchment.end, self.catchment.fmt, "catchment"),
-            (self.meteo.start, self.meteo.end, self.meteo.fmt, "meteo"),
+        if datetime.strptime(
+            self.catchment.start, self.catchment.fmt
+        ) > datetime.strptime(self.catchment.end, self.catchment.fmt):
+            raise ValueError(
+                f"catchment.start {self.catchment.start!r} is after catchment.end "
+                f"{self.catchment.end!r}"
+            )
+
+        # The window the run actually uses, not the two literal pairs: `MeteoInputs.from_config`
+        # takes each bound from `meteo` when it is stated and falls back to `catchment`
+        # otherwise, so a `meteo` block stating only an end can invert the effective window
+        # while neither pair is inverted on its own.
+        window_start, start_fmt = (
+            (self.meteo.start, self.meteo.fmt)
+            if self.meteo.start is not None
+            else (self.catchment.start, self.catchment.fmt)
+        )
+        window_end, end_fmt = (
+            (self.meteo.end, self.meteo.fmt)
+            if self.meteo.end is not None
+            else (self.catchment.end, self.catchment.fmt)
+        )
+        if datetime.strptime(window_start, start_fmt) > datetime.strptime(
+            window_end, end_fmt
         ):
-            if first is None or second is None:
-                continue
-            if datetime.strptime(first, fmt) > datetime.strptime(second, fmt):
-                raise ValueError(
-                    f"{block}.start {first!r} is after {block}.end {second!r}"
-                )
+            raise ValueError(
+                f"the meteorological window runs from {window_start!r} to {window_end!r}, "
+                f"which ends before it starts; each bound is taken from meteo when stated "
+                f"and from catchment otherwise"
+            )
         return self
