@@ -321,11 +321,12 @@ class TestReadLumpedModelQInit:
 
         Test scenario:
             The value is divided in two inside the conceptual model, so a string or a list
-            fails there rather than here -- far from the call that supplied it.
+            fails there rather than here -- far from the call that supplied it. A `TypeError`
+            rather than an `AssertionError`, so the check survives `python -O`.
         """
         model = Catchment("coello", coello_start_date, coello_end_date)
 
-        with pytest.raises(AssertionError, match="q_init should be of type float"):
+        with pytest.raises(TypeError, match="q_init should be of type float"):
             model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond, q_init=bad)
 
 

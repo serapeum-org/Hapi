@@ -547,12 +547,16 @@ class Catchment:
 
         self.initial_cond = initial_condition
 
-        if q_init is not None:
-            assert isinstance(q_init, float), "q_init should be of type float"
+        if q_init is not None and not isinstance(q_init, float):
+            raise TypeError(
+                f"q_init should be of type float, got {type(q_init).__name__}"
+            )
         self.q_init = q_init
 
-        if self.initial_cond is not None:
-            assert isinstance(self.initial_cond, list), "init_st should be of type list"
+        if self.initial_cond is not None and not isinstance(self.initial_cond, list):
+            raise TypeError(
+                f"init_st should be of type list, got {type(self.initial_cond).__name__}"
+            )
 
         logger.debug("Lumped model is read successfully")
 
@@ -768,7 +772,7 @@ class Catchment:
         Raises:
             FileNotFoundError: If the discharge file does not exist
                 (lumped mode).
-            AssertionError: If the gauge table has not been read yet
+            ValueError: If the gauge table has not been read yet
                 (distributed mode).
         """
         if self.temporal_resolution.lower() == "daily":
@@ -777,7 +781,14 @@ class Catchment:
             ind = pd.date_range(self.start, self.end, freq="h")
 
         if self.spatial_resolution.lower() == "distributed":
-            assert hasattr(self, "GaugesTable"), "please read the gauges' table first"
+            # `__init__` sets GaugesTable to None, so the `hasattr` this replaced was always
+            # true and never guarded anything: a caller who skipped `read_gauge_table` got a
+            # `TypeError` on None a few lines down instead.
+            if self.GaugesTable is None:
+                raise ValueError(
+                    "the gauge table has not been read yet; call read_gauge_table before "
+                    "read_discharge_gauges in distributed mode"
+                )
 
             self.QGauges = pd.DataFrame(
                 index=ind, columns=self.GaugesTable[column].tolist()
@@ -843,13 +854,15 @@ class Catchment:
                 maxbas. Default is False.
 
         Raises:
-            AssertionError: If the lengths of `upper_bound` and
+            ValueError: If the lengths of `upper_bound` and
                 `lower_bound` are not equal.
             ValueError: If `snow` is not a boolean.
         """
-        assert len(upper_bound) == len(lower_bound), (
-            "the length of UB should be the same as LB"
-        )
+        if len(upper_bound) != len(lower_bound):
+            raise ValueError(
+                f"the length of UB should be the same as LB, got {len(upper_bound)} and "
+                f"{len(lower_bound)}"
+            )
         self.UB = np.array(upper_bound)
         self.LB = np.array(lower_bound)
 
@@ -1387,7 +1400,10 @@ class Catchment:
                 data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
-                assert False, "the possible options are from 1 to 5"
+                raise ValueError(
+                    f"in lumped mode the result parameter takes a value between 1 and 5, "
+                    f"given: {result}"
+                )
 
         logger.debug("Data is saved successfully")
 
@@ -1432,7 +1448,10 @@ class Lake:
         elif temporal_resolution.lower() == "hourly":
             self.Index = pd.date_range(start, end, freq="h")
         else:
-            assert False, "Error"
+            raise ValueError(
+                f"available temporal resolutions are 'daily' and 'hourly', got "
+                f"{temporal_resolution!r}"
+            )
 
         self.MeteoData: np.ndarray | None = None
         self.Parameters: list | None = None
@@ -1504,7 +1523,7 @@ class Lake:
 
         Raises:
             ValueError: If `lumped_model` is not a class.
-            AssertionError: If `initial_condition` is not a list.
+            TypeError: If `initial_condition` is not a list.
         """
         if not inspect.isclass(lumped_model):
             raise ValueError(
@@ -1517,8 +1536,10 @@ class Lake:
         self.LakeArea = lake_area
         self.InitialCond = initial_condition
 
-        if self.InitialCond is not None:
-            assert isinstance(self.InitialCond, list), "init_st should be of type list"
+        if self.InitialCond is not None and not isinstance(self.InitialCond, list):
+            raise TypeError(
+                f"init_st should be of type list, got {type(self.InitialCond).__name__}"
+            )
 
         self.Snow = snow
         self.OutflowCell = outflow_cell
