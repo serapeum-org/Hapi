@@ -241,8 +241,9 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            ValueError: If input dimensions are inconsistent or if
-                optimization arguments are not dictionaries.
+            ValueError: If input dimensions are inconsistent.
+            TypeError: If either bundle of optimization arguments is not a
+                dict.
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -388,8 +389,9 @@ class Calibration(Catchment):
                 - res[1]: The optimal parameter set.
 
         Raises:
-            ValueError: If input dimensions are inconsistent or if
-                optimization arguments are not dictionaries.
+            ValueError: If input dimensions are inconsistent.
+            TypeError: If either bundle of optimization arguments is not a
+                dict.
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -524,8 +526,9 @@ class Calibration(Catchment):
 
         Raises:
             ValueError: If `basic_inputs` is missing required keys
-                `"Route"` or `"RoutingFn"`, or if optimization
-                arguments are not dictionaries.
+                `"Route"` or `"RoutingFn"`.
+            TypeError: If either bundle of optimization arguments is not a
+                dict.
         """
         # basic inputs
         # check if all inputs are included

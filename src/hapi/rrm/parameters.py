@@ -87,9 +87,10 @@ class Parameters:
             ValueError: If `function` is not one of the ints 1, 2, 3 or 4. A `bool`,
                 a `float` such as `2.0`, and an unhashable value are all rejected
                 rather than coerced or allowed to raise `TypeError`.
-            TypeError: If `no_parameters` is not an integer, if
-                `no_lumped_par` is not an integer, or if the length of
-                `lumped_par_pos` does not match `no_lumped_par`.
+            TypeError: If `no_parameters` or `no_lumped_par` is not an
+                integer.
+            ValueError: If the length of `lumped_par_pos` does not match
+                `no_lumped_par`.
             ValueError: If `lumped_par_pos` is not a list when
                 `no_lumped_par` >= 1.
 
