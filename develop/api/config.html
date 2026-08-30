@@ -2242,7 +2242,31 @@ lumped one, which has no grid to put it on.</p>
 <span class="normal">675</span>
 <span class="normal">676</span>
 <span class="normal">677</span>
-<span class="normal">678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The full input set for one `Catchment` build.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2313,86 +2337,110 @@ lumped one, which has no grid to put it on.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_blocks_match_the_spatial_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunConfig</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Enforce the fields each spatial resolution requires.</span>
 
+<span class="sd">        The two resolutions share no rule -- one describes a grid and a routing network, the</span>
+<span class="sd">        other a pair of CSVs -- so each owns a method and this one only chooses between them.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            RunConfig: This config, unchanged.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: A block the chosen `spatial_resolution` needs is missing, or one of the</span>
-<span class="sd">                three drivers a distributed `meteo.source` needs is unset.</span>
+<span class="sd">            ValueError: A block the chosen `spatial_resolution` needs is missing, or one it</span>
+<span class="sd">                will never read is present.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">spatial_resolution</span> <span class="o">==</span> <span class="s2">"distributed"</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"catchment.spatial_resolution is 'distributed', which needs a flow_network "</span>
-                    <span class="s2">"block"</span>
-                <span class="p">)</span>
-            <span class="c1"># `flow_direction` is optional on the block because MAXBAS sends every cell straight</span>
-            <span class="c1"># to the outlet and never reads one. Muskingum routes along the network, so without</span>
-            <span class="c1"># it the build succeeds and `Run.RunHapi` dereferences a None array after every</span>
-            <span class="c1"># raster has been read.</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">==</span> <span class="s2">"muskingum"</span>
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_direction</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"catchment.routing_method is 'muskingum', which routes along the network, "</span>
-                    <span class="s2">"so flow_network.flow_direction is required"</span>
-                <span class="p">)</span>
-            <span class="c1"># Only when gauges are configured at all: a distributed run that is not scored</span>
-            <span class="c1"># against observations omits the block entirely.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"catchment.spatial_resolution is 'distributed', which needs gauges.table "</span>
-                    <span class="s2">"to locate the gauges on the grid"</span>
-                <span class="p">)</span>
-            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">METEO_DRIVERS</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="p">]</span>
-            <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">missing_drivers_message</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">NETCDF_PATH_MESSAGE</span><span class="p">)</span>
-            <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span>
-                <span class="n">_METEO_FIELDS_BY_SOURCE</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="p">],</span>
-                <span class="s2">"meteo"</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">"meteo.source is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="si">!r}</span><span class="s2">"</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_the_distributed_blocks</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"catchment.spatial_resolution is 'lumped', which needs meteo.path -- the "</span>
-                    <span class="s2">"CSV of catchment-average drivers"</span>
-                <span class="p">)</span>
-            <span class="c1"># `extra="forbid"` exists so a misspelled key fails rather than being dropped;</span>
-            <span class="c1"># accepting a correctly spelled but inapplicable block would be the same silence</span>
-            <span class="c1"># by another route. A lumped run has no grid, so neither block can be honoured.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"catchment.spatial_resolution is 'lumped', which has no grid, so a "</span>
-                    <span class="s2">"flow_network block cannot be used"</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span> <span class="o">!=</span> <span class="s2">"rasters"</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"catchment.spatial_resolution is 'lumped', which reads meteo.path as a "</span>
-                    <span class="sa">f</span><span class="s2">"CSV of catchment-average drivers; meteo.source "</span>
-                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="si">!r}</span><span class="s2"> does not apply"</span>
-                <span class="p">)</span>
-            <span class="n">lumped</span> <span class="o">=</span> <span class="s2">"catchment.spatial_resolution is 'lumped'"</span>
-            <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span>
-                <span class="n">_LUMPED_METEO_FIELDS</span><span class="p">,</span>
-                <span class="s2">"meteo"</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lumped</span><span class="si">}</span><span class="s2">, which reads meteo.path as one CSV of catchment-average drivers"</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span><span class="p">,</span>
-                    <span class="n">_LUMPED_GAUGES_FIELDS</span><span class="p">,</span>
-                    <span class="s2">"gauges"</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lumped</span><span class="si">}</span><span class="s2">, which reads one discharge file and locates no gauges"</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_the_lumped_blocks</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_the_distributed_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Enforce what a distributed run needs and what its `meteo.source` can read.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: The routing network is missing or incomplete, the gauge table is</span>
+<span class="sd">                absent while gauges are configured, a driver is unset, `source="netcdf"`</span>
+<span class="sd">                names no file, or a field outside the source's own set is present.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"catchment.spatial_resolution is 'distributed', which needs a flow_network "</span>
+                <span class="s2">"block"</span>
+            <span class="p">)</span>
+        <span class="c1"># `flow_direction` is optional on the block because MAXBAS sends every cell straight</span>
+        <span class="c1"># to the outlet and never reads one. Muskingum routes along the network, so without</span>
+        <span class="c1"># it the build succeeds and `Run.RunHapi` dereferences a None array after every</span>
+        <span class="c1"># raster has been read.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">==</span> <span class="s2">"muskingum"</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_direction</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"catchment.routing_method is 'muskingum', which routes along the network, "</span>
+                <span class="s2">"so flow_network.flow_direction is required"</span>
+            <span class="p">)</span>
+        <span class="c1"># Only when gauges are configured at all: a distributed run that is not scored</span>
+        <span class="c1"># against observations omits the block entirely.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"catchment.spatial_resolution is 'distributed', which needs gauges.table "</span>
+                <span class="s2">"to locate the gauges on the grid"</span>
+            <span class="p">)</span>
+
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">METEO_DRIVERS</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">missing_drivers_message</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">NETCDF_PATH_MESSAGE</span><span class="p">)</span>
+
+        <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span>
+            <span class="n">_METEO_FIELDS_BY_SOURCE</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="p">],</span>
+            <span class="s2">"meteo"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"meteo.source is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="si">!r}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_the_lumped_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Enforce what a lumped run needs, and refuse the grid it has no use for.</span>
+
+<span class="sd">        `extra="forbid"` exists so a misspelled key fails rather than being dropped;</span>
+<span class="sd">        accepting a correctly spelled but inapplicable block would be the same silence by</span>
+<span class="sd">        another route. A lumped run has no grid, so nothing that describes one applies.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: `meteo.path` is unset, a routing network or a grid `meteo.source` is</span>
+<span class="sd">                present, or a `meteo` / `gauges` field this run will never read is set.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"catchment.spatial_resolution is 'lumped', which needs meteo.path -- the "</span>
+                <span class="s2">"CSV of catchment-average drivers"</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"catchment.spatial_resolution is 'lumped', which has no grid, so a "</span>
+                <span class="s2">"flow_network block cannot be used"</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span> <span class="o">!=</span> <span class="s2">"rasters"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"catchment.spatial_resolution is 'lumped', which reads meteo.path as a "</span>
+                <span class="sa">f</span><span class="s2">"CSV of catchment-average drivers; meteo.source "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">source</span><span class="si">!r}</span><span class="s2"> does not apply"</span>
+            <span class="p">)</span>
+
+        <span class="n">lumped</span> <span class="o">=</span> <span class="s2">"catchment.spatial_resolution is 'lumped'"</span>
+        <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="p">,</span>
+            <span class="n">_LUMPED_METEO_FIELDS</span><span class="p">,</span>
+            <span class="s2">"meteo"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lumped</span><span class="si">}</span><span class="s2">, which reads meteo.path as one CSV of catchment-average drivers"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_reject_fields_the_run_will_not_read</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gauges</span><span class="p">,</span>
+                <span class="n">_LUMPED_GAUGES_FIELDS</span><span class="p">,</span>
+                <span class="s2">"gauges"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lumped</span><span class="si">}</span><span class="s2">, which reads one discharge file and locates no gauges"</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"after"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_the_dates_parse_and_are_ordered</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunConfig</span><span class="p">:</span>

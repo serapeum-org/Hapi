@@ -2281,7 +2281,16 @@ calibration.</p>
 <span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
-<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calibration class for distributed hydrological model parameter optimization.</span>
 
 <span class="sd">    The Calibration class connects the parameter spatial distribution function</span>
@@ -2757,7 +2766,8 @@ calibration.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If `basic_inputs` is missing required keys</span>
-<span class="sd">                `"Route"` or `"RoutingFn"`.</span>
+<span class="sd">                `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is</span>
+<span class="sd">                given and does not hold one value per parameter.</span>
 <span class="sd">            TypeError: If either bundle of optimization arguments is not a</span>
 <span class="sd">                dict.</span>
 <span class="sd">        """</span>
@@ -2824,6 +2834,14 @@ calibration.</p>
         <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">initial_values</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="c1"># One starting value per parameter. A shorter list used to index out of range</span>
+            <span class="c1"># part-way through building the problem, naming neither argument and leaving</span>
+            <span class="c1"># `opt_prob` half-populated.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">initial_values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"initial_values must hold one value per parameter; the bounds define "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">initial_values</span><span class="p">)</span><span class="si">}</span><span class="s2"> were given"</span>
+                <span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
                 <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
@@ -3912,7 +3930,8 @@ values at each iteration. Default is None.</p>
             <td>
               <div class="doc-md-description">
                 <p>If <code>basic_inputs</code> is missing required keys
-<code>"Route"</code> or <code>"RoutingFn"</code>.</p>
+<code>"Route"</code> or <code>"RoutingFn"</code>, or if <code>"InitialValues"</code> is
+given and does not hold one value per parameter.</p>
               </div>
             </td>
           </tr>
@@ -4090,7 +4109,16 @@ dict.</p>
 <span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
-<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4138,7 +4166,8 @@ dict.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If `basic_inputs` is missing required keys</span>
-<span class="sd">            `"Route"` or `"RoutingFn"`.</span>
+<span class="sd">            `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is</span>
+<span class="sd">            given and does not hold one value per parameter.</span>
 <span class="sd">        TypeError: If either bundle of optimization arguments is not a</span>
 <span class="sd">            dict.</span>
 <span class="sd">    """</span>
@@ -4205,6 +4234,14 @@ dict.</p>
     <span class="n">opt_prob</span> <span class="o">=</span> <span class="n">Optimization</span><span class="p">(</span><span class="s2">"HBV Calibration"</span><span class="p">,</span> <span class="n">opt_fun</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">initial_values</span> <span class="o">!=</span> <span class="p">[]:</span>
+        <span class="c1"># One starting value per parameter. A shorter list used to index out of range</span>
+        <span class="c1"># part-way through building the problem, naming neither argument and leaving</span>
+        <span class="c1"># `opt_prob` half-populated.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">initial_values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"initial_values must hold one value per parameter; the bounds define "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">initial_values</span><span class="p">)</span><span class="si">}</span><span class="s2"> were given"</span>
+            <span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LB</span><span class="p">)):</span>
             <span class="n">opt_prob</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
