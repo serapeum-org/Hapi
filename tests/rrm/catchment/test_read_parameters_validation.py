@@ -330,6 +330,59 @@ class TestReadLumpedModelQInit:
             model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond, q_init=bad)
 
 
+class TestReadLumpedModelInitialCondition:
+    """Tests for the `initial_condition` type guard in `Catchment.read_lumped_model`."""
+
+    def test_a_list_of_five_is_accepted(
+        self, coello_start_date: str, coello_end_date: str, coello_initial_cond: list
+    ):
+        """Test that the documented type and length pass through unchanged.
+
+        Test scenario:
+            The happy path the guard must not disturb: a five-element list is stored as
+            `initial_cond` verbatim.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond)
+
+        assert model.initial_cond == coello_initial_cond, (
+            f"the initial condition must be stored unchanged, got {model.initial_cond}"
+        )
+
+    @pytest.mark.parametrize(
+        "bad",
+        [(0, 10, 10, 10, 0), np.zeros(5), "01010", None],
+        ids=["tuple", "array", "str", "none"],
+    )
+    def test_a_non_list_initial_condition_is_refused(
+        self, coello_start_date: str, coello_end_date: str, bad
+    ):
+        """Test that anything other than a list is rejected before its length is measured.
+
+        Args:
+            coello_start_date: Simulation start date.
+            coello_end_date: Simulation end date.
+            bad: A value of the wrong type, including one with the right effective length.
+
+        Test scenario:
+            The check used to measure `len(initial_condition)` before typing it, so a value
+            `len()` cannot take -- `None` -- reported "object of type 'NoneType' has no
+            len()" rather than naming the argument, and the `is not None` a later type check
+            carried could never be false, because `len` would already have raised. Typing
+            first means every non-list is refused the same way, including a tuple or array
+            that happens to hold five elements.
+        """
+        model = Catchment("coello", coello_start_date, coello_end_date)
+
+        with pytest.raises(TypeError, match="init_st should be of type list") as exc:
+            model.read_lumped_model(HBVLumped, 1530.0, bad)
+
+        assert type(bad).__name__ in str(exc.value), (
+            f"the error should name what it got: {exc.value}"
+        )
+
+
 class TestReadLumpedInputs:
     """Tests for the column handling in `Catchment.read_lumped_inputs`."""
 

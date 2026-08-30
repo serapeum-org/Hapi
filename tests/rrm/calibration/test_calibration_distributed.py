@@ -333,6 +333,54 @@ class TestFW1Calibration:
         )
 
 
+class TestCheckOptimizationArgs:
+    """Tests for `_check_optimization_args`, the guard every entry point runs first."""
+
+    @pytest.mark.parametrize(
+        "args, bad_index, bad_kind",
+        [
+            (["not-a-dict", None, {}], 0, "objective-function"),
+            ([{}, None, "not-a-dict"], 2, "solver"),
+        ],
+        ids=["objective-args", "solver-args"],
+    )
+    def test_a_non_dict_bundle_is_refused_before_the_optimizer_is_built(
+        self,
+        gauged_calibration: Calibration,
+        stub_optimizer: dict,
+        spatial_var_stub,
+        args,
+        bad_index,
+        bad_kind,
+    ):
+        """Test that each of the two argument bundles is checked, naming which one.
+
+        Args:
+            gauged_calibration: A ready-to-run distributed Calibration.
+            stub_optimizer: Records whether the optimiser was reached.
+            spatial_var_stub: Stand-in for the spatial parameter function.
+            args: The `[api_obj_args, pll_type, api_solve_args]` triple, one entry bad.
+            bad_index: Which position in `args` carries the non-dict value.
+            bad_kind: The word the error message should use for that position.
+
+        Test scenario:
+            Both bundles are unpacked with `**` inside Oasis, so anything but a dict fails
+            there instead of at the call that supplied it -- unless this guard catches it
+            first, before `Optimization(...)` and the harmony-search engine are built at all.
+        """
+        coello = gauged_calibration
+        coello.read_objective_function(metrics.rmse, [])
+        coello.LB = np.zeros(12)
+        coello.UB = np.ones(12)
+
+        with pytest.raises(TypeError, match=f"{bad_kind} arguments should be a dict"):
+            coello.run_calibration(spatial_var_stub, args)
+
+        assert "solve_kwargs" not in stub_optimizer, (
+            "the optimiser must not be reached when an argument bundle is malformed"
+        )
+
+
 class TestLumpedCalibration:
     """Tests for `Calibration.lumpedCalibration`."""
 
@@ -396,6 +444,45 @@ class TestLumpedCalibration:
 
         assert stub_optimizer["n_vars"] == 12, (
             f"Expected one variable per bound (12), got {stub_optimizer['n_vars']}"
+        )
+
+    def test_a_mismatched_initial_values_length_is_refused(
+        self,
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        stub_optimizer: dict,
+    ):
+        """Test that `InitialValues` shorter than the bounds is rejected, not indexed out of range.
+
+        Args:
+            coello_rrm_date: [start, end] dates for the lumped fixture.
+            lumped_meteo_data_path: CSV of catchment-average drivers.
+            stub_optimizer: Records whether the optimiser was reached.
+
+        Test scenario:
+            The seeded branch loops `range(len(self.LB))` and indexes `initial_values[i]`, so
+            a shorter list used to run past its end partway through building the problem,
+            leaving `opt_prob` half-populated and raising `IndexError` far from the call that
+            supplied the list. The length is now compared up front.
+        """
+        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        coello.LB = np.zeros(12)
+        coello.UB = np.ones(12)
+        basic_inputs = dict(
+            Route=0,
+            RoutingFn=Routing.triangular_routing_1,
+            InitialValues=[0.5, 0.5, 0.5],
+        )
+
+        with pytest.raises(ValueError, match="one value per parameter") as exc:
+            coello.lumpedCalibration(basic_inputs, _optimization_args())
+
+        assert "3" in str(exc.value) and "12" in str(exc.value), (
+            f"the error should name both lengths: {exc.value}"
+        )
+        assert "n_vars" not in stub_optimizer, (
+            "the optimiser must not be reached when the seed does not match the bounds"
         )
 
 
