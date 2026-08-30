@@ -258,12 +258,25 @@ class Routing:
                 length is ``floor(MAXBAS)`` for integer values, or
                 ``floor(MAXBAS) + 1`` for non-integer values.
 
+        Raises:
+            ValueError: If ``maxbas`` is less than 1.
+
         Examples:
             >>> from hapi.routing import Routing
             >>> weights = Routing.calculate_weights(5)
             >>> print(weights)
             [0.08 0.24 0.36 0.24 0.08]
         """
+        # The same guard `triangular_routing_2` and the three conceptual models carry, at the
+        # one point `triangular_routing_1` -- which the lumped MAXBAS example routes with --
+        # passes through. Below 1 the triangle has no whole step to spread over: 0.5 produced a
+        # single weight and an all-zero hydrograph with nothing raised, 0 an `IndexError` about
+        # axis 1, and NaN "cannot convert float NaN to integer". `not maxbas >= 1` rather than
+        # `maxbas < 1` because both are false for NaN, and a calibration can produce one in a
+        # masked cell.
+        if not maxbas >= 1:
+            raise ValueError(f"Maxbas value has to be at least 1, got {maxbas}")
+
         yant = 0
         total = 0  # Just to verify how far from the unit is the result
 
@@ -351,6 +364,10 @@ class Routing:
         Returns:
             numpy.ndarray: Routed output hydrograph with the same
                 length as ``Q``.
+
+        Raises:
+            ValueError: If ``MAXBAS`` is less than 1, raised by
+                `calculate_weights`.
 
         Examples:
             >>> import numpy as np

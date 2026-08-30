@@ -63,6 +63,7 @@ def _build_coello(
     parameters: str,
     area: int,
     initial_cond: list,
+    maxbas: bool = False,
 ) -> Catchment:
     """Assemble a distributed Coello catchment with no run behind it.
 
@@ -77,6 +78,9 @@ def _build_coello(
         parameters: Folder of distributed parameter rasters.
         area: Catchment area in km2.
         initial_cond: Initial HBV state.
+        maxbas: Whether `parameters` carries the triangular-routing parameter. The two sets
+            differ in their last band -- MAXBAS against the Muskingum X -- and `DistMaxbas1`
+            routes with whatever sits there, so a triangular run needs the MAXBAS set.
 
     Returns:
         Catchment: Model with `meteo`, `flow_network`, parameters, a lumped model and a
@@ -100,7 +104,7 @@ def _build_coello(
         file_name_data_fmt="%Y.%m.%d",
     )
     coello.flow_network = FlowNetwork.from_rasters(acc, fd)
-    coello.read_parameters(parameters, False)
+    coello.read_parameters(parameters, False, maxbas=maxbas)
     coello.read_lumped_model(HBVLumped, area, initial_cond)
     coello.flow_path_length_arr = _flow_path_length_like(coello)
     return coello
@@ -170,6 +174,45 @@ def coello_no_lake(
         coello_dist_parameters_muskingum,
         coello_cat_area,
         coello_initial_cond,
+    )
+
+
+@pytest.fixture
+def coello_with_lake_inputs_maxbas(
+    coello_start_date: str,
+    coello_end_date: str,
+    coello_prec_path: str,
+    coello_temp_path: str,
+    coello_evap_path: str,
+    coello_acc_path: str,
+    coello_fd_path: str,
+    coello_dist_parameters_maxbas: str,
+    coello_cat_area: int,
+    coello_initial_cond: list,
+) -> Catchment:
+    """Provide the same catchment carrying a MAXBAS parameter set.
+
+    `DistMaxbas1` routes each cell with `parameters[..., -1]`, which is MAXBAS in this set and
+    the Muskingum X in the other. Handed the Muskingum set, every cell routed with X = 0.2 --
+    below the one whole step a triangle needs -- and `triangular_routing_1` returned an all-zero
+    hydrograph without raising, so the triangular tests asserted their shapes and flags against
+    output that carried nothing. In-domain MAXBAS here runs 1.4 to 2.4.
+
+    Returns:
+        Catchment: Model ready for a triangular lake-aware run.
+    """
+    return _build_coello(
+        coello_start_date,
+        coello_end_date,
+        coello_prec_path,
+        coello_temp_path,
+        coello_evap_path,
+        coello_acc_path,
+        coello_fd_path,
+        coello_dist_parameters_maxbas,
+        coello_cat_area,
+        coello_initial_cond,
+        maxbas=True,
     )
 
 
@@ -320,7 +363,8 @@ class TestRRMWithLake:
 
     def test_a_muskingum_lake_run_clears_a_flag_a_triangular_run_set(
         self,
-        coello_with_lake_inputs: Catchment,
+        coello_with_lake_inputs_maxbas: Catchment,
+        coello_dist_parameters_muskingum: str,
         coello_start_date: str,
         coello_end_date: str,
     ):
@@ -329,9 +373,12 @@ class TestRRMWithLake:
         Test scenario:
             The flag tells `extract_discharge` that a cell of `Qtot` is a contribution rather
             than a discharge. Setting it by hand would test the assignment against itself, so
-            drive both paths on the same model in the order that makes the flag matter.
+            drive both paths on the same model in the order that makes the flag matter. The
+            two read different parameter layouts -- Muskingum takes bands 10 and 11, the
+            triangular path the last one -- so each leg is given the set it indexes into. The
+            model, and therefore the flag under test, is the same object throughout.
         """
-        model = coello_with_lake_inputs
+        model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=13)
 
         Wrapper.FW1Withlake(model, lake)
@@ -339,6 +386,7 @@ class TestRRMWithLake:
             "the triangular path must mark the model before this test means anything"
         )
 
+        model.read_parameters(coello_dist_parameters_muskingum, False)
         Wrapper.RRMWithlake(model, lake)
 
         assert model._maxbas_routed is False, (
@@ -351,7 +399,7 @@ class TestFW1WithLake:
 
     def test_fills_the_distributed_output_fields(
         self,
-        coello_with_lake_inputs: Catchment,
+        coello_with_lake_inputs_maxbas: Catchment,
         coello_start_date: str,
         coello_end_date: str,
     ):
@@ -363,7 +411,7 @@ class TestFW1WithLake:
             has been through `FW1Withlake` and nothing else -- with a shared instance an
             earlier Muskingum run would have filled them and deleting the fix left this green.
         """
-        model = coello_with_lake_inputs
+        model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=17)
         assert model.Qtot is None, "the fixture must arrive with no run behind it"
 
@@ -380,7 +428,7 @@ class TestFW1WithLake:
 
     def test_the_outlet_series_carries_the_lake_and_drops_the_extra_slot(
         self,
-        coello_with_lake_inputs: Catchment,
+        coello_with_lake_inputs_maxbas: Catchment,
         coello_start_date: str,
         coello_end_date: str,
     ):
@@ -392,7 +440,7 @@ class TestFW1WithLake:
             entry, so the lake series has to be trimmed the same way -- it was not, and the
             two could not be added at all.
         """
-        model = coello_with_lake_inputs
+        model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=19)
 
         Wrapper.FW1Withlake(model, lake)
@@ -417,7 +465,7 @@ class TestFW1WithLake:
 
     def test_marks_the_model_as_maxbas_routed(
         self,
-        coello_with_lake_inputs: Catchment,
+        coello_with_lake_inputs_maxbas: Catchment,
         coello_start_date: str,
         coello_end_date: str,
     ):
@@ -428,7 +476,7 @@ class TestFW1WithLake:
             cell of `Qtot` under-reports. The flag is what makes `extract_discharge` refuse
             rather than return the wrong hydrograph.
         """
-        model = coello_with_lake_inputs
+        model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=23)
         assert model._maxbas_routed is False, "a fresh model must start unflagged"
 
