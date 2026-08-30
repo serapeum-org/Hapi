@@ -2036,7 +2036,8 @@ approaches:</p>
 <span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
-<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
+<span class="normal">392</span>
+<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Routing</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Routing methods for translating and attenuating discharge hydrographs.</span>
 
 <span class="sd">    This class provides static methods for two families of routing</span>
@@ -2230,7 +2231,7 @@ approaches:</p>
 <span class="sd">                length as ``q``.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If ``maxbas`` is less than 1.</span>
+<span class="sd">            ValueError: If ``maxbas`` is less than 1.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; import numpy as np</span>
@@ -2239,7 +2240,8 @@ approaches:</p>
 <span class="sd">            &gt;&gt;&gt; q_routed = Routing.triangular_routing_2(q, maxbas=3)</span>
 <span class="sd">        """</span>
         <span class="c1"># input data validation</span>
-        <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
+        <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Get integer part of maxbas</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -2558,8 +2560,7 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/routing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
-<span class="normal">237</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
@@ -2645,7 +2646,8 @@ length is <code>floor(MAXBAS)</code> for integer values, or
 <span class="normal">320</span>
 <span class="normal">321</span>
 <span class="normal">322</span>
-<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">323</span>
+<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_weights</span><span class="p">(</span><span class="n">maxbas</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate triangular routing weights for a given MAXBAS value.</span>
 
@@ -3583,8 +3585,7 @@ length as <code>Q</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/routing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">325</span>
-<span class="normal">326</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
@@ -3650,7 +3651,8 @@ length as <code>Q</code>.</p>
 <span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
-<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">392</span>
+<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_1</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">MAXBAS</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge using triangular weights (fractional MAXBAS).</span>
 
@@ -3836,7 +3838,7 @@ length as <code>q</code>.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3903,7 +3905,8 @@ length as <code>q</code>.</p>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">234</span>
+<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">triangular_routing_2</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Route discharge using a triangular transfer function (integer MAXBAS).</span>
 
@@ -3924,7 +3927,7 @@ length as <code>q</code>.</p>
 <span class="sd">            length as ``q``.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If ``maxbas`` is less than 1.</span>
+<span class="sd">        ValueError: If ``maxbas`` is less than 1.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
@@ -3933,7 +3936,8 @@ length as <code>q</code>.</p>
 <span class="sd">        &gt;&gt;&gt; q_routed = Routing.triangular_routing_2(q, maxbas=3)</span>
 <span class="sd">    """</span>
     <span class="c1"># input data validation</span>
-    <span class="k">assert</span> <span class="n">maxbas</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Maxbas value has to be larger than 1"</span>
+    <span class="k">if</span> <span class="n">maxbas</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Maxbas value has to be at least 1, got </span><span class="si">{</span><span class="n">maxbas</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Get integer part of maxbas</span>
     <span class="n">maxbas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>

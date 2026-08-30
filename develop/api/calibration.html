@@ -1636,31 +1636,7 @@ calibration.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
-<span class="normal"> 30</span>
-<span class="normal"> 31</span>
-<span class="normal"> 32</span>
-<span class="normal"> 33</span>
-<span class="normal"> 34</span>
-<span class="normal"> 35</span>
-<span class="normal"> 36</span>
-<span class="normal"> 37</span>
-<span class="normal"> 38</span>
-<span class="normal"> 39</span>
-<span class="normal"> 40</span>
-<span class="normal"> 41</span>
-<span class="normal"> 42</span>
-<span class="normal"> 43</span>
-<span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 53</span>
 <span class="normal"> 54</span>
 <span class="normal"> 55</span>
 <span class="normal"> 56</span>
@@ -2219,7 +2195,30 @@ calibration.</p>
 <span class="normal">609</span>
 <span class="normal">610</span>
 <span class="normal">611</span>
-<span class="normal">612</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calibration class for distributed hydrological model parameter optimization.</span>
 
 <span class="sd">    The Calibration class connects the parameter spatial distribution function</span>
@@ -2286,12 +2285,14 @@ calibration.</p>
 <span class="sd">                objective function. If None, defaults to an empty list.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If objective_function is not callable.</span>
+<span class="sd">            TypeError: If objective_function is not callable.</span>
 <span class="sd">        """</span>
         <span class="c1"># check objective_function</span>
-        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">"The Objective function should be a function"</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The Objective function should be a function, got "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">objective_function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span> <span class="o">=</span> <span class="n">objective_function</span>
 
         <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2408,15 +2409,14 @@ calibration.</p>
 <span class="sd">                - res[1]: The optimal parameter set.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If input dimensions are inconsistent or if</span>
+<span class="sd">            ValueError: If input dimensions are inconsistent or if</span>
 <span class="sd">                optimization arguments are not dictionaries.</span>
 <span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
         <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
         <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
-        <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
+        <span class="k">if</span> <span class="n">fd_rows</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">or</span> <span class="n">fd_cols</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">ROWS_MISMATCH_ERROR</span><span class="p">)</span>
 
         <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
         <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
@@ -2436,8 +2436,7 @@ calibration.</p>
         <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="c1"># check optimization arguement</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
+        <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
@@ -2557,7 +2556,7 @@ calibration.</p>
 <span class="sd">                - res[1]: The optimal parameter set.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If input dimensions are inconsistent or if</span>
+<span class="sd">            ValueError: If input dimensions are inconsistent or if</span>
 <span class="sd">                optimization arguments are not dictionaries.</span>
 <span class="sd">        """</span>
         <span class="c1"># input dimensions</span>
@@ -2583,8 +2582,7 @@ calibration.</p>
         <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="c1"># check optimization arguement</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
+        <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
@@ -2693,15 +2691,18 @@ calibration.</p>
 <span class="sd">                - res[1]: The optimal parameter set.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If `basic_inputs` is missing required keys</span>
+<span class="sd">            ValueError: If `basic_inputs` is missing required keys</span>
 <span class="sd">                `"Route"` or `"RoutingFn"`, or if optimization</span>
 <span class="sd">                arguments are not dictionaries.</span>
 <span class="sd">        """</span>
         <span class="c1"># basic inputs</span>
         <span class="c1"># check if all inputs are included</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="s2">"Route"</span><span class="p">,</span> <span class="s2">"RoutingFn"</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">basic_inputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="p">(</span>
-            <span class="s2">"basic_inputs should contain ['p2','init_st','UB','LB'] "</span>
-        <span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"Route"</span><span class="p">,</span> <span class="s2">"RoutingFn"</span><span class="p">)</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"basic_inputs should contain 'Route' and 'RoutingFn'; "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> is missing"</span>
+            <span class="p">)</span>
 
         <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"Route"</span><span class="p">]</span>
         <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"RoutingFn"</span><span class="p">]</span>
@@ -2717,10 +2718,7 @@ calibration.</p>
         <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="c1"># check optimization arguement</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">"store_history should be 0 or 1"</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">"history_fname should be of type string "</span>
-        <span class="p">)</span>
+        <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
@@ -2951,7 +2949,7 @@ at each iteration. Default is None.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2966,31 +2964,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
@@ -3096,7 +3070,30 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">FW1Calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -3139,7 +3136,7 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">            - res[1]: The optimal parameter set.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If input dimensions are inconsistent or if</span>
+<span class="sd">        ValueError: If input dimensions are inconsistent or if</span>
 <span class="sd">            optimization arguments are not dictionaries.</span>
 <span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
@@ -3165,8 +3162,7 @@ optimization arguments are not dictionaries.</p>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="c1"># check optimization arguement</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
+    <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
@@ -3385,43 +3381,43 @@ Default is "Muskingum".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3576,33 +3572,7 @@ compatibility. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
@@ -3629,7 +3599,33 @@ compatibility. Default is False.</p>
 <span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
-<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">frame_work_1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -3833,7 +3829,7 @@ values at each iteration. Default is None.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3849,30 +3845,7 @@ arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span>
 <span class="normal">482</span>
@@ -4005,7 +3978,30 @@ arguments are not dictionaries.</p>
 <span class="normal">609</span>
 <span class="normal">610</span>
 <span class="normal">611</span>
-<span class="normal">612</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lumpedCalibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4052,15 +4048,18 @@ arguments are not dictionaries.</p>
 <span class="sd">            - res[1]: The optimal parameter set.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If `basic_inputs` is missing required keys</span>
+<span class="sd">        ValueError: If `basic_inputs` is missing required keys</span>
 <span class="sd">            `"Route"` or `"RoutingFn"`, or if optimization</span>
 <span class="sd">            arguments are not dictionaries.</span>
 <span class="sd">    """</span>
     <span class="c1"># basic inputs</span>
     <span class="c1"># check if all inputs are included</span>
-    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="s2">"Route"</span><span class="p">,</span> <span class="s2">"RoutingFn"</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">basic_inputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="p">(</span>
-        <span class="s2">"basic_inputs should contain ['p2','init_st','UB','LB'] "</span>
-    <span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"Route"</span><span class="p">,</span> <span class="s2">"RoutingFn"</span><span class="p">)</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"basic_inputs should contain 'Route' and 'RoutingFn'; "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> is missing"</span>
+        <span class="p">)</span>
 
     <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"Route"</span><span class="p">]</span>
     <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"RoutingFn"</span><span class="p">]</span>
@@ -4076,10 +4075,7 @@ arguments are not dictionaries.</p>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="c1"># check optimization arguement</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">"store_history should be 0 or 1"</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="p">(</span>
-        <span class="s2">"history_fname should be of type string "</span>
-    <span class="p">)</span>
+    <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
@@ -4249,7 +4245,7 @@ objective function. If None, defaults to an empty list.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="TypeError">TypeError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4263,35 +4259,37 @@ objective function. If None, defaults to an empty list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
-<span class="normal">109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read and store the objective function and its arguments.</span>
@@ -4306,12 +4304,14 @@ objective function. If None, defaults to an empty list.</p>
 <span class="sd">            objective function. If None, defaults to an empty list.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If objective_function is not callable.</span>
+<span class="sd">        TypeError: If objective_function is not callable.</span>
 <span class="sd">    """</span>
     <span class="c1"># check objective_function</span>
-    <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">),</span> <span class="p">(</span>
-        <span class="s2">"The Objective function should be a function"</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The Objective function should be a function, got "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">objective_function</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span> <span class="o">=</span> <span class="n">objective_function</span>
 
     <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -4470,7 +4470,7 @@ at each iteration. Default is None.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4485,33 +4485,7 @@ optimization arguments are not dictionaries.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
@@ -4636,7 +4610,31 @@ optimization arguments are not dictionaries.</p>
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span>
-<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4683,15 +4681,14 @@ optimization arguments are not dictionaries.</p>
 <span class="sd">            - res[1]: The optimal parameter set.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If input dimensions are inconsistent or if</span>
+<span class="sd">        ValueError: If input dimensions are inconsistent or if</span>
 <span class="sd">            optimization arguments are not dictionaries.</span>
 <span class="sd">    """</span>
     <span class="c1"># input dimensions</span>
     <span class="c1"># [rows,cols] = self.FlowAcc.ReadAsArray().shape</span>
     <span class="p">[</span><span class="n">fd_rows</span><span class="p">,</span> <span class="n">fd_cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_dir_arr</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">fd_rows</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">and</span> <span class="n">fd_cols</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span>
-    <span class="p">),</span> <span class="n">ROWS_MISMATCH_ERROR</span>
+    <span class="k">if</span> <span class="n">fd_rows</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">rows</span> <span class="ow">or</span> <span class="n">fd_cols</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">ROWS_MISMATCH_ERROR</span><span class="p">)</span>
 
     <span class="c1"># The three cubes already agree with each other (checked when MeteoInputs was</span>
     <span class="c1"># built); this is the other half -- that they cover the model's grid.</span>
@@ -4711,8 +4708,7 @@ optimization arguments are not dictionaries.</p>
     <span class="n">pll_type</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">api_solve_args</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="c1"># check optimization arguement</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"store_history should be 0 or 1"</span>
-    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">api_solve_args</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">,</span> <span class="s2">"history_fname should be of type string "</span>
+    <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 

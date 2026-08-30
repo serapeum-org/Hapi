@@ -2115,7 +2115,9 @@ routing.</p>
 <span class="normal">432</span>
 <span class="normal">433</span>
 <span class="normal">434</span>
-<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
@@ -2484,14 +2486,16 @@ routing.</p>
 <span class="sd">                discharge hydrograph. Must be callable.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: If `RoutingFn` is not callable when</span>
+<span class="sd">            TypeError: If `RoutingFn` is not callable when</span>
 <span class="sd">                routing is enabled.</span>
 <span class="sd">        """</span>
         <span class="c1">### input data validation</span>
         <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">),</span> <span class="p">(</span>
-                <span class="s2">"routing function should be of type callable (function that takes arguments)"</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="s2">"routing function should be of type callable (function that takes "</span>
+                    <span class="sa">f</span><span class="s2">"arguments), got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
 
         <span class="c1"># data</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -3160,7 +3164,7 @@ discharge hydrograph. Must be callable.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="AssertionError">AssertionError</span></code>
+                  <code><span title="TypeError">TypeError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3260,7 +3264,9 @@ routing is enabled.</p>
 <span class="normal">432</span>
 <span class="normal">433</span>
 <span class="normal">434</span>
-<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">Lumped</span><span class="p">(</span><span class="n">Model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Run a lumped conceptual model with optional routing.</span>
 
@@ -3303,14 +3309,16 @@ routing is enabled.</p>
 <span class="sd">            discharge hydrograph. Must be callable.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: If `RoutingFn` is not callable when</span>
+<span class="sd">        TypeError: If `RoutingFn` is not callable when</span>
 <span class="sd">            routing is enabled.</span>
 <span class="sd">    """</span>
     <span class="c1">### input data validation</span>
     <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">"routing function should be of type callable (function that takes arguments)"</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">"routing function should be of type callable (function that takes "</span>
+                <span class="sa">f</span><span class="s2">"arguments), got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">RoutingFn</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
 
     <span class="c1"># data</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
