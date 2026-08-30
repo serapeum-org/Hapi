@@ -2512,11 +2512,7 @@ cross-checking against the model's own date index; the run itself is positional.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 678</span>
-<span class="normal"> 679</span>
-<span class="normal"> 680</span>
-<span class="normal"> 681</span>
-<span class="normal"> 682</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 682</span>
 <span class="normal"> 683</span>
 <span class="normal"> 684</span>
 <span class="normal"> 685</span>
@@ -3391,8 +3387,7 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="normal">1554</span>
 <span class="normal">1555</span>
 <span class="normal">1556</span>
-<span class="normal">1557</span>
-<span class="normal">1558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">1557</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MeteoInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.</span>
 
@@ -3965,8 +3960,9 @@ cross-checking against the model's own date index; the run itself is positional.
 
         <span class="c1"># The three are optional on the model because a lumped configuration sets none of them,</span>
         <span class="c1"># while every distributed source needs all three. `RunConfig` enforces that, so reaching</span>
-        <span class="c1"># the raise means a `MeteoConfig` was built by hand. Bound to locals so the check both</span>
-        <span class="c1"># reports what is missing and narrows the type for the calls below.</span>
+        <span class="c1"># the raise means a `MeteoConfig` was built by hand -- and it raises the same sentence,</span>
+        <span class="c1"># phrased once in `hapi.config`, because it is the same rule. Bound to locals so the</span>
+        <span class="c1"># check both reports what is missing and narrows the type for the calls below.</span>
         <span class="n">precipitation</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span>
         <span class="n">temperature</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">temperature</span>
         <span class="n">evapotranspiration</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span>
@@ -3974,10 +3970,7 @@ cross-checking against the model's own date index; the run itself is positional.
             <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">METEO_VARIABLES</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="p">]</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"MeteoInputs needs all three drivers; the configuration leaves "</span>
-                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> unset"</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">missing_drivers_message</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"rasters"</span><span class="p">:</span>
             <span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -4000,10 +3993,7 @@ cross-checking against the model's own date index; the run itself is positional.
 
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"source 'netcdf' reads the three drivers out of one file, so the "</span>
-                    <span class="s2">"configuration must set meteo.path"</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">NETCDF_PATH_MESSAGE</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
                 <span class="n">config</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
                 <span class="n">precipitation</span><span class="o">=</span><span class="n">precipitation</span><span class="p">,</span>
@@ -4326,11 +4316,7 @@ not have one entry per timestep.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">733</span>
 <span class="normal">734</span>
 <span class="normal">735</span>
 <span class="normal">736</span>
@@ -4351,7 +4337,11 @@ not have one entry per timestep.</p>
 <span class="normal">751</span>
 <span class="normal">752</span>
 <span class="normal">753</span>
-<span class="normal">754</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Check the three cubes are 3D and share a shape.</span>
 
 <span class="sd">    Raises:</span>
@@ -4481,11 +4471,7 @@ wrong grid. Re-check on assignment instead.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">756</span>
-<span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">760</span>
 <span class="normal">761</span>
 <span class="normal">762</span>
 <span class="normal">763</span>
@@ -4504,7 +4490,11 @@ wrong grid. Re-check on assignment instead.</p>
 <span class="normal">776</span>
 <span class="normal">777</span>
 <span class="normal">778</span>
-<span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Set an attribute, keeping the three cubes in agreement.</span>
 
 <span class="sd">    The class promises the cubes share a shape, and `__post_init__` alone cannot hold</span>
@@ -4732,7 +4722,8 @@ contributes would be a guess.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1401</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1400</span>
+<span class="normal">1401</span>
 <span class="normal">1402</span>
 <span class="normal">1403</span>
 <span class="normal">1404</span>
@@ -4798,8 +4789,7 @@ contributes would be a guess.</p>
 <span class="normal">1464</span>
 <span class="normal">1465</span>
 <span class="normal">1466</span>
-<span class="normal">1467</span>
-<span class="normal">1468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1467</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_netcdf_files</span><span class="p">(</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -5091,11 +5081,7 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1149</span>
-<span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1153</span>
 <span class="normal">1154</span>
 <span class="normal">1155</span>
 <span class="normal">1156</span>
@@ -5249,8 +5235,7 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 <span class="normal">1304</span>
 <span class="normal">1305</span>
 <span class="normal">1306</span>
-<span class="normal">1307</span>
-<span class="normal">1308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_config</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">MeteoConfig</span><span class="p">,</span>
@@ -5352,8 +5337,9 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 
     <span class="c1"># The three are optional on the model because a lumped configuration sets none of them,</span>
     <span class="c1"># while every distributed source needs all three. `RunConfig` enforces that, so reaching</span>
-    <span class="c1"># the raise means a `MeteoConfig` was built by hand. Bound to locals so the check both</span>
-    <span class="c1"># reports what is missing and narrows the type for the calls below.</span>
+    <span class="c1"># the raise means a `MeteoConfig` was built by hand -- and it raises the same sentence,</span>
+    <span class="c1"># phrased once in `hapi.config`, because it is the same rule. Bound to locals so the</span>
+    <span class="c1"># check both reports what is missing and narrows the type for the calls below.</span>
     <span class="n">precipitation</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">precipitation</span>
     <span class="n">temperature</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">temperature</span>
     <span class="n">evapotranspiration</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">evapotranspiration</span>
@@ -5361,10 +5347,7 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
         <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">METEO_VARIABLES</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
         <span class="p">]</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"MeteoInputs needs all three drivers; the configuration leaves "</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> unset"</span>
-        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">missing_drivers_message</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"rasters"</span><span class="p">:</span>
         <span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -5387,10 +5370,7 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"netcdf"</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"source 'netcdf' reads the three drivers out of one file, so the "</span>
-                <span class="s2">"configuration must set meteo.path"</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">NETCDF_PATH_MESSAGE</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span>
             <span class="n">config</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
             <span class="n">precipitation</span><span class="o">=</span><span class="n">precipitation</span><span class="p">,</span>
@@ -5632,11 +5612,7 @@ a long file usable for a short run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1107</span>
-<span class="normal">1108</span>
-<span class="normal">1109</span>
-<span class="normal">1110</span>
-<span class="normal">1111</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1111</span>
 <span class="normal">1112</span>
 <span class="normal">1113</span>
 <span class="normal">1114</span>
@@ -5672,7 +5648,11 @@ a long file usable for a short run.</p>
 <span class="normal">1144</span>
 <span class="normal">1145</span>
 <span class="normal">1146</span>
-<span class="normal">1147</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1147</span>
+<span class="normal">1148</span>
+<span class="normal">1149</span>
+<span class="normal">1150</span>
+<span class="normal">1151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -5936,11 +5916,7 @@ three files do not yield the same shape.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1057</span>
 <span class="normal">1058</span>
 <span class="normal">1059</span>
 <span class="normal">1060</span>
@@ -5988,7 +5964,11 @@ three files do not yield the same shape.</p>
 <span class="normal">1102</span>
 <span class="normal">1103</span>
 <span class="normal">1104</span>
-<span class="normal">1105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1105</span>
+<span class="normal">1106</span>
+<span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf_files</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -6379,11 +6359,7 @@ one, otherwise the first source that does, and None when none do.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 948</span>
-<span class="normal"> 949</span>
-<span class="normal"> 950</span>
-<span class="normal"> 951</span>
-<span class="normal"> 952</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 952</span>
 <span class="normal"> 953</span>
 <span class="normal"> 954</span>
 <span class="normal"> 955</span>
@@ -6482,7 +6458,11 @@ one, otherwise the first source that does, and None when none do.</p>
 <span class="normal">1048</span>
 <span class="normal">1049</span>
 <span class="normal">1050</span>
-<span class="normal">1051</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_rasters</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -6925,7 +6905,8 @@ time axis to write.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1310</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1309</span>
+<span class="normal">1310</span>
 <span class="normal">1311</span>
 <span class="normal">1312</span>
 <span class="normal">1313</span>
@@ -7013,8 +6994,7 @@ time axis to write.</p>
 <span class="normal">1395</span>
 <span class="normal">1396</span>
 <span class="normal">1397</span>
-<span class="normal">1398</span>
-<span class="normal">1399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">raster_folder_to_netcdf</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">out_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -7355,11 +7335,7 @@ its own does.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">892</span>
-<span class="normal">893</span>
-<span class="normal">894</span>
-<span class="normal">895</span>
-<span class="normal">896</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">896</span>
 <span class="normal">897</span>
 <span class="normal">898</span>
 <span class="normal">899</span>
@@ -7409,7 +7385,11 @@ its own does.</p>
 <span class="normal">943</span>
 <span class="normal">944</span>
 <span class="normal">945</span>
-<span class="normal">946</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_against</span><span class="p">(</span>
+<span class="normal">946</span>
+<span class="normal">947</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_against</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">date_index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Check the cubes cover the model's grid, and optionally its calendar.</span>
@@ -7643,11 +7623,7 @@ is slated to move to <code>digital-rivers</code>, so it is left as it is and doc
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
 <span class="normal">373</span>
@@ -7925,7 +7901,11 @@ is slated to move to <code>digital-rivers</code>, so it is left as it is and doc
 <span class="normal">645</span>
 <span class="normal">646</span>
 <span class="normal">647</span>
-<span class="normal">648</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlowNetwork</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The catchment's routing network and the grid it defines.</span>
 
@@ -8261,11 +8241,7 @@ a cell index would mean a different place in each.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">437</span>
 <span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
@@ -8276,7 +8252,11 @@ a cell index would mean a different place in each.</p>
 <span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
-<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Check the two rasters describe the same grid.</span>
 
 <span class="sd">    Raises:</span>
@@ -8366,16 +8346,16 @@ a cell index would mean a different place in each.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span>
-<span class="normal">489</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">489</span>
 <span class="normal">490</span>
 <span class="normal">491</span>
 <span class="normal">492</span>
 <span class="normal">493</span>
-<span class="normal">494</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Drop the cached `acc_val` when the array it is derived from is replaced.</span>
 
 <span class="sd">    Args:</span>
@@ -8634,11 +8614,7 @@ inside the catchment.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">581</span>
 <span class="normal">582</span>
 <span class="normal">583</span>
 <span class="normal">584</span>
@@ -8705,7 +8681,11 @@ inside the catchment.</p>
 <span class="normal">645</span>
 <span class="normal">646</span>
 <span class="normal">647</span>
-<span class="normal">648</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_rasters</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span> <span class="n">flow_acc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">flow_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlowNetwork</span><span class="p">:</span>
@@ -8927,11 +8907,7 @@ sends every cell straight to the outlet and does not.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">534</span>
-<span class="normal">535</span>
-<span class="normal">536</span>
-<span class="normal">537</span>
-<span class="normal">538</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
 <span class="normal">541</span>
@@ -8948,7 +8924,11 @@ sends every cell straight to the outlet and does not.</p>
 <span class="normal">552</span>
 <span class="normal">553</span>
 <span class="normal">554</span>
-<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Report whether the network covers a given grid.</span>
 
 <span class="sd">    Args:</span>
@@ -9393,11 +9373,7 @@ excluded every file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
@@ -9484,7 +9460,11 @@ excluded every file.</p>
 <span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
-<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rasters</span><span class="p">(</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_rasters</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">glob</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"*.tif"</span><span class="p">,</span>
@@ -9645,7 +9625,8 @@ alignment (coordinate system, rows, columns, resolution).</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1583</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1582</span>
+<span class="normal">1583</span>
 <span class="normal">1584</span>
 <span class="normal">1585</span>
 <span class="normal">1586</span>
@@ -10020,8 +10001,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="normal">1955</span>
 <span class="normal">1956</span>
 <span class="normal">1957</span>
-<span class="normal">1958</span>
-<span class="normal">1959</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
+<span class="normal">1958</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Rainfall-runoff inputs preparation for distributed hydrological models.</span>
 
 <span class="sd">    The Inputs class provides methods to prepare meteorological and parameter</span>
@@ -10461,7 +10441,8 @@ extension (e.g., <code>"data/dem.tif"</code>).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1601</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1600</span>
+<span class="normal">1601</span>
 <span class="normal">1602</span>
 <span class="normal">1603</span>
 <span class="normal">1604</span>
@@ -10469,8 +10450,7 @@ extension (e.g., <code>"data/dem.tif"</code>).</p>
 <span class="normal">1606</span>
 <span class="normal">1607</span>
 <span class="normal">1608</span>
-<span class="normal">1609</span>
-<span class="normal">1610</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">1609</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the Inputs instance with a reference DEM path.</span>
 
 <span class="sd">    Args:</span>
@@ -10738,7 +10718,8 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1831</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1830</span>
+<span class="normal">1831</span>
 <span class="normal">1832</span>
 <span class="normal">1833</span>
 <span class="normal">1834</span>
@@ -10841,8 +10822,7 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 <span class="normal">1931</span>
 <span class="normal">1932</span>
 <span class="normal">1933</span>
-<span class="normal">1934</span>
-<span class="normal">1935</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1934</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">"</span><span class="p">,</span>
@@ -11139,7 +11119,8 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1759</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1758</span>
+<span class="normal">1759</span>
 <span class="normal">1760</span>
 <span class="normal">1761</span>
 <span class="normal">1762</span>
@@ -11208,8 +11189,7 @@ exist.</p>
 <span class="normal">1825</span>
 <span class="normal">1826</span>
 <span class="normal">1827</span>
-<span class="normal">1828</span>
-<span class="normal">1829</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
+<span class="normal">1828</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -11410,7 +11390,8 @@ not set.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1695</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1694</span>
+<span class="normal">1695</span>
 <span class="normal">1696</span>
 <span class="normal">1697</span>
 <span class="normal">1698</span>
@@ -11471,8 +11452,7 @@ not set.</p>
 <span class="normal">1753</span>
 <span class="normal">1754</span>
 <span class="normal">1755</span>
-<span class="normal">1756</span>
-<span class="normal">1757</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract upper and lower parameter boundaries for a catchment.</span>
 
@@ -11708,7 +11688,8 @@ irrelevant here and the rasters are read unordered.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1612</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1611</span>
+<span class="normal">1612</span>
 <span class="normal">1613</span>
 <span class="normal">1614</span>
 <span class="normal">1615</span>
@@ -11788,8 +11769,7 @@ irrelevant here and the rasters are read unordered.
 <span class="normal">1689</span>
 <span class="normal">1690</span>
 <span class="normal">1691</span>
-<span class="normal">1692</span>
-<span class="normal">1693</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
+<span class="normal">1692</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Align and crop input rasters to match the source DEM.</span>
 
 <span class="sd">    Reads all rasters from `inputs_dir`, aligns them to the source</span>

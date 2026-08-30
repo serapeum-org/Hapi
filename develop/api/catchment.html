@@ -3324,7 +3324,11 @@ class to run the model.</p>
 <span class="normal">1613</span>
 <span class="normal">1614</span>
 <span class="normal">1615</span>
-<span class="normal">1616</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1616</span>
+<span class="normal">1617</span>
+<span class="normal">1618</span>
+<span class="normal">1619</span>
+<span class="normal">1620</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3551,6 +3555,10 @@ class to run the model.</p>
         <span class="n">_resolve_config_paths</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
         <span class="n">catchment</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">catchment</span>
 
+        <span class="c1"># The first three go positionally on purpose: `Catchment.__init__` calls its second</span>
+        <span class="c1"># parameter `start_data` and `Calibration.__init__` calls it `start`, so naming them</span>
+        <span class="c1"># would break `Calibration.from_yaml` -- which this method is documented to support --</span>
+        <span class="c1"># while still working here. Renaming the parameter is the fix, and is breaking.</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">catchment</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">catchment</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
@@ -5352,11 +5360,7 @@ signature; pass <code>frame_work_1=True</code> for the basin-wide sum. Default i
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1067</span>
-<span class="normal">1068</span>
-<span class="normal">1069</span>
-<span class="normal">1070</span>
-<span class="normal">1071</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1071</span>
 <span class="normal">1072</span>
 <span class="normal">1073</span>
 <span class="normal">1074</span>
@@ -5468,7 +5472,11 @@ signature; pass <code>frame_work_1=True</code> for the basin-wide sum. Default i
 <span class="normal">1180</span>
 <span class="normal">1181</span>
 <span class="normal">1182</span>
-<span class="normal">1183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">1183</span>
+<span class="normal">1184</span>
+<span class="normal">1185</span>
+<span class="normal">1186</span>
+<span class="normal">1187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frame_work_1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">only_outlet</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract and sum discharge at gauge locations.</span>
@@ -5930,7 +5938,11 @@ elsewhere.</p>
 <span class="normal">510</span>
 <span class="normal">511</span>
 <span class="normal">512</span>
-<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Read a YAML run configuration and assemble a model from it.</span>
 
@@ -6014,6 +6026,10 @@ elsewhere.</p>
     <span class="n">_resolve_config_paths</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
     <span class="n">catchment</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">catchment</span>
 
+    <span class="c1"># The first three go positionally on purpose: `Catchment.__init__` calls its second</span>
+    <span class="c1"># parameter `start_data` and `Calibration.__init__` calls it `start`, so naming them</span>
+    <span class="c1"># would break `Calibration.from_yaml` -- which this method is documented to support --</span>
+    <span class="c1"># while still working here. Renaming the parameter is the fix, and is breaking.</span>
     <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
         <span class="n">catchment</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="n">catchment</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
@@ -6306,11 +6322,7 @@ for the full list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1321</span>
-<span class="normal">1322</span>
-<span class="normal">1323</span>
-<span class="normal">1324</span>
-<span class="normal">1325</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1325</span>
 <span class="normal">1326</span>
 <span class="normal">1327</span>
 <span class="normal">1328</span>
@@ -6430,7 +6442,11 @@ for the full list.</p>
 <span class="normal">1442</span>
 <span class="normal">1443</span>
 <span class="normal">1444</span>
-<span class="normal">1445</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
+<span class="normal">1445</span>
+<span class="normal">1446</span>
+<span class="normal">1447</span>
+<span class="normal">1448</span>
+<span class="normal">1449</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -6874,11 +6890,7 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1185</span>
-<span class="normal">1186</span>
-<span class="normal">1187</span>
-<span class="normal">1188</span>
-<span class="normal">1189</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1189</span>
 <span class="normal">1190</span>
 <span class="normal">1191</span>
 <span class="normal">1192</span>
@@ -7008,7 +7020,11 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1316</span>
 <span class="normal">1317</span>
 <span class="normal">1318</span>
-<span class="normal">1319</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1319</span>
+<span class="normal">1320</span>
+<span class="normal">1321</span>
+<span class="normal">1322</span>
+<span class="normal">1323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -7364,11 +7380,7 @@ reading the CSV. Default is "".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 918</span>
-<span class="normal"> 919</span>
-<span class="normal"> 920</span>
-<span class="normal"> 921</span>
-<span class="normal"> 922</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 922</span>
 <span class="normal"> 923</span>
 <span class="normal"> 924</span>
 <span class="normal"> 925</span>
@@ -7469,7 +7481,11 @@ reading the CSV. Default is "".</p>
 <span class="normal">1020</span>
 <span class="normal">1021</span>
 <span class="normal">1022</span>
-<span class="normal">1023</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_discharge_gauges</span><span class="p">(</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_discharge_gauges</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">","</span><span class="p">,</span>
@@ -7728,11 +7744,7 @@ GDAL can open is accepted, not only GeoTIFF.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">519</span>
 <span class="normal">520</span>
 <span class="normal">521</span>
 <span class="normal">522</span>
@@ -7804,7 +7816,11 @@ GDAL can open is accepted, not only GeoTIFF.</p>
 <span class="normal">588</span>
 <span class="normal">589</span>
 <span class="normal">590</span>
-<span class="normal">591</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read the flow path length raster.</span>
 
 <span class="sd">    Reads the flow path length raster into `flow_path_length_arr`. The grid it sits</span>
@@ -8072,11 +8088,7 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">789</span>
 <span class="normal">790</span>
 <span class="normal">791</span>
 <span class="normal">792</span>
@@ -8203,7 +8215,11 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 <span class="normal">913</span>
 <span class="normal">914</span>
 <span class="normal">915</span>
-<span class="normal">916</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_gauge_table</span><span class="p">(</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_gauge_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flow_acc_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read the gauge table listing gauge locations and properties.</span>
@@ -8426,11 +8442,7 @@ columns (excluding the date index).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
 <span class="normal">752</span>
@@ -8464,7 +8476,11 @@ columns (excluding the date index).</p>
 <span class="normal">780</span>
 <span class="normal">781</span>
 <span class="normal">782</span>
-<span class="normal">783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span>
+<span class="normal">787</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read meteorological inputs for lumped mode.</span>
 
 <span class="sd">    The lumped counterpart of :class:`~hapi.inputs.MeteoInputs`, which carries the</span>
@@ -8640,11 +8656,7 @@ values.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">695</span>
 <span class="normal">696</span>
 <span class="normal">697</span>
 <span class="normal">698</span>
@@ -8692,7 +8704,11 @@ values.</p>
 <span class="normal">740</span>
 <span class="normal">741</span>
 <span class="normal">742</span>
-<span class="normal">743</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">lumped_model</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseConceptualModel</span><span class="p">],</span>
     <span class="n">catchment_area</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
@@ -8877,11 +8893,7 @@ the given snow/maxbas configuration.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">632</span>
 <span class="normal">633</span>
 <span class="normal">634</span>
 <span class="normal">635</span>
@@ -8938,7 +8950,11 @@ the given snow/maxbas configuration.</p>
 <span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
-<span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read model parameter rasters or a CSV parameter file.</span>
 
 <span class="sd">    For distributed mode, reads parameter rasters from a folder.</span>
@@ -9145,11 +9161,7 @@ maxbas. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1025</span>
-<span class="normal">1026</span>
-<span class="normal">1027</span>
-<span class="normal">1028</span>
-<span class="normal">1029</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1029</span>
 <span class="normal">1030</span>
 <span class="normal">1031</span>
 <span class="normal">1032</span>
@@ -9185,7 +9197,11 @@ maxbas. Default is False.</p>
 <span class="normal">1062</span>
 <span class="normal">1063</span>
 <span class="normal">1064</span>
-<span class="normal">1065</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters_bound</span><span class="p">(</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters_bound</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -9355,11 +9371,7 @@ roughness raster file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">597</span>
 <span class="normal">598</span>
 <span class="normal">599</span>
 <span class="normal">600</span>
@@ -9388,7 +9400,11 @@ roughness raster file.</p>
 <span class="normal">623</span>
 <span class="normal">624</span>
 <span class="normal">625</span>
-<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dem_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bankfull_depth_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -9534,11 +9550,7 @@ is not installed.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1447</span>
-<span class="normal">1448</span>
-<span class="normal">1449</span>
-<span class="normal">1450</span>
-<span class="normal">1451</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1451</span>
 <span class="normal">1452</span>
 <span class="normal">1453</span>
 <span class="normal">1454</span>
@@ -9555,7 +9567,11 @@ is not installed.</p>
 <span class="normal">1465</span>
 <span class="normal">1466</span>
 <span class="normal">1467</span>
-<span class="normal">1468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+<span class="normal">1468</span>
+<span class="normal">1469</span>
+<span class="normal">1470</span>
+<span class="normal">1471</span>
+<span class="normal">1472</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Save the animation created by `plot_distributed_results`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses</span>
@@ -9795,11 +9811,7 @@ forwarding it can hold None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1470</span>
-<span class="normal">1471</span>
-<span class="normal">1472</span>
-<span class="normal">1473</span>
-<span class="normal">1474</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1474</span>
 <span class="normal">1475</span>
 <span class="normal">1476</span>
 <span class="normal">1477</span>
@@ -9941,7 +9953,11 @@ forwarding it can hold None.</p>
 <span class="normal">1613</span>
 <span class="normal">1614</span>
 <span class="normal">1615</span>
-<span class="normal">1616</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
+<span class="normal">1616</span>
+<span class="normal">1617</span>
+<span class="normal">1618</span>
+<span class="normal">1619</span>
+<span class="normal">1620</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
