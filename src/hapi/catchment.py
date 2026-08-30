@@ -225,8 +225,10 @@ class Catchment:
         Running the model stays the caller's job, through whichever `Run.*` entry point suits
         `routing_method` and `spatial_resolution`.
 
-        Builds `cls`, so `Run.from_yaml(...)` and `Calibration.from_yaml(...)` return their own
-        type -- both take the same constructor arguments.
+        Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the
+        same constructor arguments. `Run` does not: it overrides `__init__` to take none, and
+        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so
+        `Run.from_yaml` raises `TypeError` rather than silently building the wrong thing.
 
         Args:
             path: Path to the YAML file. See :mod:`hapi.config` for the schema.
