@@ -184,6 +184,23 @@ def missing_drivers_message(missing: Sequence[str]) -> str:
 
     Returns:
         str: The message.
+
+    Examples:
+        - One driver missing reads as a singular:
+            ```python
+            >>> from hapi.config import missing_drivers_message
+            >>> missing_drivers_message(["temperature"])
+            'a distributed run needs all three meteorological drivers; temperature is unset'
+
+            ```
+        - Several are listed in the order they are given:
+            ```python
+            >>> from hapi.config import missing_drivers_message
+            >>> message = missing_drivers_message(["temperature", "evapotranspiration"])
+            >>> message.split("; ")[1]
+            'temperature, evapotranspiration are unset'
+
+            ```
     """
     return (
         f"a distributed run needs all three meteorological drivers; "

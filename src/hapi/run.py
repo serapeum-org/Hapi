@@ -101,6 +101,34 @@ class Run(Catchment):
 
         Raises:
             TypeError: Always.
+
+        Examples:
+            - The refusal names the pattern to use instead:
+                ```python
+                >>> from hapi.run import Run
+                >>> try:
+                ...     Run.from_yaml("coello-lumped-model-run.yaml")
+                ... except TypeError as error:
+                ...     print(str(error).split(";")[0])
+                Run cannot be built from a configuration
+
+                ```
+            - Build the model with `Catchment.from_yaml` and hand it to the entry point:
+                ```python
+                >>> from hapi.catchment import Catchment
+                >>> from hapi.routing import Routing
+                >>> from hapi.run import Run
+                >>> model = Catchment.from_yaml(
+                ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+                ... )
+                >>> Run.runLumped(model, 1, Routing.muskingum_v)
+                >>> len(model.Qsim)
+                1095
+
+                ```
+
+        See Also:
+            hapi.catchment.Catchment.from_yaml: The classmethod that does build a model.
         """
         raise TypeError(
             "Run cannot be built from a configuration; it holds the entry points that run a "
