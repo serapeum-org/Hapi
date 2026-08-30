@@ -855,8 +855,9 @@ class Catchment:
                 (distributed) or file (lumped).
             delimiter (str, optional): Delimiter between the date and
                 the discharge column. Default is ",".
-            column (str, optional): Name of the column in the gauge
-                table containing the file names. Default is "id".
+            column (str, optional): Gauge-table column naming the columns of the
+                resulting `QGauges` frame. It does not select the file names --
+                those always come from the "id" column. Default is "id".
             fmt (str, optional): Date format in the discharge files.
                 Default is "%Y-%m-%d".
             split (bool, optional): True to subset the data between
@@ -892,9 +893,12 @@ class Catchment:
                     "read_discharge_gauges in distributed mode"
                 )
 
-            self.QGauges = pd.DataFrame(
-                index=ind, columns=self.GaugesTable[column].tolist()
-            )
+            # The frame is labelled from `column` but every file is named after `id`, so the
+            # two are tracked separately: filling by `int(name)` instead of by the label the
+            # frame was built with left a `column != "id"` table with the requested columns
+            # all-NaN and a second set of id-named ones beside them, silently.
+            labels = self.GaugesTable[column].tolist()
+            self.QGauges = pd.DataFrame(index=ind, columns=labels)
 
             for i in range(len(self.GaugesTable)):
                 name = self.GaugesTable.loc[i, "id"]
@@ -914,7 +918,7 @@ class Catchment:
                     )
 
                 f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-                self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
+                self.QGauges[labels[i]] = f.loc[self.start : self.end, f.columns[-1]]
         else:
             if not os.path.exists(path):
                 raise FileNotFoundError(

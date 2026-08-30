@@ -225,10 +225,10 @@ class GaugesConfig(BaseModel):
         discharge: Folder of one CSV per gauge id (distributed) or a single CSV (lumped).
         table: Gauge locations and properties. Distributed only; a lumped run has no grid to
             locate gauges on.
-        column: Gauge-table column naming the resulting hydrograph columns. It does not
-            select the discharge file names: `read_discharge_gauges` reads `<id>.csv`
-            regardless, so anything but `"id"` labels the frame with one set of names while
-            filling another.
+        column: Gauge-table column naming the columns of the resulting hydrograph frame. It
+            does not select the discharge file names -- `read_discharge_gauges` reads
+            `<id>.csv` regardless -- so a table can label its hydrographs with human-readable
+            names while the files stay named after the ids.
         delimiter: Discharge CSV delimiter.
         fmt: `strptime` format for the discharge CSV's date column.
     """
