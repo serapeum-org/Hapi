@@ -7,6 +7,9 @@ a run-time choice rather than an input, so it is picked below and handed to `Run
 
 Lumped mode reads one CSV of catchment-average drivers instead of a grid, and one discharge file
 instead of a gauge table plus a folder -- see the config for both.
+
+The path is written from the repo root, so run this script from there:
+`python examples/hydrological-model/coello/run/coello-lumped-model-run.py`.
 """
 
 from __future__ import annotations
@@ -20,7 +23,9 @@ from hapi.routing import Routing
 from hapi.run import Run
 
 # %% Load the configuration and build the model
-Coello = Catchment.from_yaml("coello-lumped-model-run.yaml")
+Coello = Catchment.from_yaml(
+    "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+)
 
 # %% Routing
 # RoutingFn = Routing.triangular_routing_2

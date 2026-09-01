@@ -11,6 +11,9 @@ replaces the three raster-folder reads, so the model touches no meteorological r
 Everything that used to be a "Paths" block of hardcoded assignments now lives in
 `coello-distributed-model-run-netcdf.yaml`, next to this script -- `Catchment.from_yaml` reads
 it and assembles the `Catchment` the same way `_build` did in the e2e test.
+
+The path is written from the repo root, so run this script from there:
+`python examples/hydrological-model/coello/run/coello-distributed-model-run-netcdf.py`.
 """
 
 from __future__ import annotations
@@ -21,7 +24,9 @@ from hapi.catchment import Catchment
 from hapi.run import Run
 
 # %% Load the configuration and build the model
-Coello = Catchment.from_yaml("coello-distributed-model-run-netcdf.yaml")
+Coello = Catchment.from_yaml(
+    "examples/hydrological-model/coello/run/coello-distributed-model-run-netcdf.yaml"
+)
 
 # %% Check the drivers actually came from the file and cover the model
 print(f"meteo grid + steps : {Coello.meteo.shape}")
