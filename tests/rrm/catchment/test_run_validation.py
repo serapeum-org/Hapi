@@ -8,6 +8,8 @@ pin the validation and the dispatch without running a lake or a hydraulic model.
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -358,4 +360,64 @@ class TestFloodModelHonoursKinematic:
 
         assert seen["skip"] is True, (
             "an explicit argument must win over the declaration"
+        )
+
+    def test_a_derived_kinematic_skip_warns_that_the_river_cells_go_unrouted(
+        self, coello_loaded: Catchment, monkeypatch
+    ):
+        """Test that inferring the skip from `routing_method` says what it costs.
+
+        Test scenario:
+            Skipping the river cells is the handoff the flood model was built around -- a 1D
+            hydraulic model routes them instead -- but that model left this package for
+            Serapis, so nothing here picks them up and their discharge is simply absent.
+            Someone who set `routing_method="Kinematic"` without a downstream model gets a
+            number that is not a hydrograph, so the derived case has to say so.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = "Kinematic"
+        monkeypatch.setattr(
+            run_module.Wrapper, "run_muskingum", staticmethod(lambda *a, **k: None)
+        )
+
+        with pytest.warns(UserWarning, match="unrouted") as record:
+            Run.run_flood(coello_loaded)
+
+        message = str(record[0].message)
+        assert "skip_hydraulic_cells=True" in message, (
+            f"the warning should name the way to silence it, got: {message}"
+        )
+        # The geometry helper marks every cell as a river cell, and the Coello grid has 89
+        # inside the flow-accumulation mask -- so the count must be the domain, not rows x
+        # cols, which is what counting the raster alone reported.
+        inside = int(
+            np.count_nonzero(~np.isnan(coello_loaded.flow_network.flow_acc_arr))
+        )
+        assert f"{inside} river cells of {inside}" in message, (
+            f"the counts must be taken inside the catchment, got: {message}"
+        )
+
+    def test_an_explicit_skip_does_not_warn(
+        self, coello_loaded: Catchment, monkeypatch
+    ):
+        """Test that asking for the skip outright is left quiet.
+
+        Test scenario:
+            `skip_hydraulic_cells=True` is a statement that something downstream takes the
+            river cells. That is the supported workflow, so it must not nag every run; the
+            warning exists for the case nobody chose.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = "Kinematic"
+        monkeypatch.setattr(
+            run_module.Wrapper, "run_muskingum", staticmethod(lambda *a, **k: None)
+        )
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            Run.run_flood(coello_loaded, skip_hydraulic_cells=True)
+
+        unrouted = [w for w in caught if "unrouted" in str(w.message)]
+        assert not unrouted, (
+            f"an explicit skip must not warn, got: {[str(w.message) for w in unrouted]}"
         )

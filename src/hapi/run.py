@@ -14,6 +14,7 @@ it at runtime and anything else carrying the same attributes runs too.
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -88,6 +89,42 @@ def _check_lake_meteo(model: DistributedModel, lake: LakeType) -> None:
         raise ValueError(
             "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
         )
+
+
+def _warn_about_the_unrouted_river_cells(model: FloodModel) -> None:
+    """Warn that the river cells will be left unrouted, and by how much.
+
+    Skipping them is the handoff the flood model was designed around: a 1D hydraulic model
+    (`SaintVenant.KinematicRaster`) routes them instead. That half left this package in
+    commit `733957be` and now lives in Serapis, so nothing here picks those cells up -- on
+    the Coello example that is 21 of the 89 catchment cells, carrying 92% of the discharge
+    because the river cells are the high-accumulation ones. A caller who has
+    Serapis downstream wants exactly this; a caller who set `routing_method="Kinematic"`
+    without one gets a number that is not a hydrograph, and nothing used to say so.
+
+    Only the *derived* case warns. Passing `skip_hydraulic_cells=True` is an explicit
+    statement that something downstream takes the river cells, and is left quiet.
+
+    Args:
+        model: The model about to run, whose `bankfull_depth` marks the river cells.
+    """
+    # Only cells inside the catchment are ever routed, so only those can be skipped. The
+    # bankfull-depth raster carries values outside the domain too, and counting those made
+    # the message claim more river cells than the catchment has.
+    inside = ~np.isnan(model.flow_network.flow_acc_arr)
+    river_cells = int(
+        np.count_nonzero((np.nan_to_num(model.bankfull_depth) > 0) & inside)
+    )
+    domain = int(np.count_nonzero(inside))
+    warnings.warn(
+        f"routing_method='Kinematic' leaves the {river_cells} river cells of {domain} "
+        "unrouted, for a 1D hydraulic model to route instead -- but that model is not part "
+        "of Hapi, so their discharge is simply absent from the results. Pass "
+        "skip_hydraulic_cells=True to say a downstream model takes them and silence this, "
+        "or use routing_method='Muskingum' to route every cell here.",
+        UserWarning,
+        stacklevel=3,
+    )
 
 
 def _validate_distributed(model: DistributedModel, check_flow_direction: bool) -> None:
@@ -213,10 +250,14 @@ class Run:
             skip_hydraulic_cells: Leave river cells (a positive `bankfull_depth`) unrouted
                 by the Muskingum pass, because the kinematic-wave model routes them instead.
                 `None`, the default, derives it from the catchment's own
-                `routing_method` -- `"Kinematic"` means yes, anything else no. Pass a bool to
-                override. The derivation used to live inside the routing loop as
-                `routing_method != "Muskingum"`, which ran for every distributed model and so
-                crashed `run_distributed` on a `bankfull_depth` of None.
+                `routing_method` -- `"Kinematic"` means yes, anything else no -- and warns,
+                because the hydraulic model that was supposed to take those cells is not part
+                of Hapi. Pass `True` to state that something downstream takes them and
+                silence the warning, or `False` to route every cell here.
+
+        Warns:
+            UserWarning: The skip was derived from `routing_method="Kinematic"`, so the river
+                cells are left unrouted and their discharge is absent from the results.
 
         Raises:
             ValueError: If meteorological input arrays, parameter
@@ -247,13 +288,16 @@ class Run:
         if any(np.shape(arr)[1] != model.flow_network.cols for arr in geometry):
             raise ValueError("all input data should have the same number of columns")
 
-        if skip_hydraulic_cells is None:
-            skip_hydraulic_cells = model.routing_method == "Kinematic"
+        derived = skip_hydraulic_cells is None
+        skip = (
+            model.routing_method == "Kinematic" if derived else bool(skip_hydraulic_cells)
+        )
+
+        if skip and derived:
+            _warn_about_the_unrouted_river_cells(model)
 
         # run the model
-        results = Wrapper.run_muskingum(
-            model, skip_hydraulic_cells=skip_hydraulic_cells
-        )
+        results = Wrapper.run_muskingum(model, skip_hydraulic_cells=skip)
         logger.info("RRM has finished")
         # SV = SaintVenant()
         # SV.KinematicRaster(model)
