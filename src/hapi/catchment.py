@@ -43,6 +43,7 @@ from hapi.inputs import (
     _warn_if_no_sentinel,
     read_rasters,
 )
+from hapi.results import SimulationResults
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
@@ -332,20 +333,13 @@ class Catchment:
         self.river_width: np.ndarray | None = None
         self.river_roughness: np.ndarray | None = None
         self.flood_plain_roughness: np.ndarray | None = None
-        self.qout: np.ndarray | None = None
-        self.Qtot: np.ndarray | None = None
-        self.quz_routed: np.ndarray | None = None
-        self.qlz_translated: np.ndarray | None = None
-        # True once a triangular (MAXBAS) run has filled the output fields. The
-        # MAXBAS routing sends every cell straight to the outlet, so a single cell of
-        # `Qtot` is that cell's contribution, not the discharge at it — which makes
-        # the outlet-cell shortcut in `extract_discharge` invalid. See its guard.
-        self._maxbas_routed: bool = False
-        self.state_variables: np.ndarray | None = None
+        #: Everything one run produced, replaced wholesale by the next run. The seven
+        #: result arrays below are read-only properties forwarding to it, so `model.Qtot`
+        #: still reads as it always did while the run layer owns the arrays. `None` until
+        #: a `Run.*` entry point has been called.
+        self.results: SimulationResults | None = None
         self.anim: matplotlib.animation.FuncAnimation | None = None
         self._animation_glyph: ArrayGlyph | None = None
-        self.quz: np.ndarray | None = None
-        self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
         #: The configuration this model was built from, when it came from
@@ -353,6 +347,69 @@ class Catchment:
         #: build itself does not consume, such as `outputs`, so a caller need not restate a
         #: path the file already gives.
         self.config: RunConfig | None = None
+
+    # ------------------------------------------------------------------
+    # Result accessors
+    #
+    # The run layer owns these arrays -- it builds a `SimulationResults` and assigns it to
+    # `results`. They are exposed here, read-only, under the names they have always had, so
+    # `Run.RunHapi(model); model.Qtot` reads exactly as before. Read-only on purpose: they
+    # are outputs, and a run that could be half-overwritten by hand is what the results
+    # object exists to prevent. To stage a post-run state (a test, say), build a
+    # `SimulationResults` and assign `model.results`.
+    # ------------------------------------------------------------------
+
+    @property
+    def quz(self) -> np.ndarray | None:
+        """np.ndarray | None: Upper-zone discharge, or None before a run."""
+        return None if self.results is None else self.results.quz
+
+    @property
+    def qlz(self) -> np.ndarray | None:
+        """np.ndarray | None: Lower-zone discharge, or None before a run."""
+        return None if self.results is None else self.results.qlz
+
+    @property
+    def state_variables(self) -> np.ndarray | None:
+        """np.ndarray | None: State array `[sp, sm, uz, lz, wc]`, or None before a run."""
+        return None if self.results is None else self.results.state_variables
+
+    @property
+    def quz_routed(self) -> np.ndarray | None:
+        """np.ndarray | None: Routed upper-zone discharge, or None before routing."""
+        return None if self.results is None else self.results.quz_routed
+
+    @property
+    def qlz_translated(self) -> np.ndarray | None:
+        """np.ndarray | None: Translated lower-zone discharge, or None before routing."""
+        return None if self.results is None else self.results.qlz_translated
+
+    @property
+    def Qtot(self) -> np.ndarray | None:
+        """np.ndarray | None: Total routed discharge, or None before routing.
+
+        How a single cell reads depends on the routing scheme -- see
+        :attr:`~hapi.results.SimulationResults.outlet_shortcut_valid`.
+        """
+        return None if self.results is None else self.results.Qtot
+
+    @property
+    def qout(self) -> np.ndarray | None:
+        """np.ndarray | None: The outlet hydrograph, or None before a run computes one.
+
+        The MAXBAS paths set this during the run; the Muskingum paths leave it for
+        :meth:`extract_discharge`, which needs the gauge table to find the outlet.
+        """
+        return None if self.results is None else self.results.qout
+
+    @property
+    def _maxbas_routed(self) -> bool:
+        """bool: Whether the results came from triangular (MAXBAS) routing.
+
+        Derived from the results rather than tracked as a flag, so it cannot survive into
+        a later run of a different scheme.
+        """
+        return self.results is not None and not self.results.outlet_shortcut_valid
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> Self:
@@ -1148,6 +1205,11 @@ class Catchment:
         """
         if self.GaugesTable is None:
             raise ValueError("please read the gauges' table first.")
+        if self.results is None:
+            raise ValueError(
+                "there are no results to extract; run the model first, e.g. "
+                "Run.RunHapi(model)"
+            )
 
         if not frame_work_1:
             if self._maxbas_routed:
@@ -1169,9 +1231,10 @@ class Catchment:
             outlet_x = self.flow_network.outlet[0][0]
             outlet_y = self.flow_network.outlet[1][0]
 
-            # self.qout = self.qlz_translated[outlet_x,outlet_y,:] + self.quz_routed[outlet_x,outlet_y,:]
-            # self.Qtot = self.qlz_translated + self.quz_routed
-            self.qout = self.Qtot[outlet_x, outlet_y, :]
+            # Muskingum accumulates downstream, so the outlet cell of `Qtot` is the
+            # outlet hydrograph. The engine cannot set this itself: finding the outlet
+            # needs the gauge table, which is an analysis input, not a run input.
+            self.results.qout = self.Qtot[outlet_x, outlet_y, :]
 
             for i in range(len(self.GaugesTable)):
                 x_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])

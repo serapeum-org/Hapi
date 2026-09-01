@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
 
 
@@ -71,40 +72,30 @@ class DistributedRRM:
                 - `conversion_factor` (float): Unit conversion
                   factor (`tfac * 3.6`).
         """
-        Model.state_variables = np.zeros(
-            [
-                Model.flow_network.rows,
-                Model.flow_network.cols,
-                Model.meteo.simulation_steps,
-                5,
-            ],
-            dtype=np.float32,
+        grid = (
+            Model.flow_network.rows,
+            Model.flow_network.cols,
+            Model.meteo.simulation_steps,
         )
-        Model.quz = np.zeros(
-            [
-                Model.flow_network.rows,
-                Model.flow_network.cols,
-                Model.meteo.simulation_steps,
-            ],
-            dtype=np.float32,
+        # A fresh results object per run, rather than nine attributes overwritten one at a
+        # time: a half-finished run is then distinguishable from a finished one, and the
+        # routed fields of a *previous* run cannot survive into this one.
+        results = SimulationResults(
+            routing=RoutingKind.UNROUTED,
+            quz=np.zeros(grid, dtype=np.float32),
+            qlz=np.zeros(grid, dtype=np.float32),
+            state_variables=np.zeros((*grid, 5), dtype=np.float32),
         )
-        Model.qlz = np.zeros(
-            [
-                Model.flow_network.rows,
-                Model.flow_network.cols,
-                Model.meteo.simulation_steps,
-            ],
-            dtype=np.float32,
-        )
+        Model.results = results
 
         for x in range(Model.flow_network.rows):
             for y in range(Model.flow_network.cols):
                 # only for cells in the domain
                 if not np.isnan(Model.flow_network.flow_acc_arr[x, y]):
                     (
-                        Model.quz[x, y, :],
-                        Model.qlz[x, y, :],
-                        Model.state_variables[x, y, :, :],
+                        results.quz[x, y, :],
+                        results.qlz[x, y, :],
+                        results.state_variables[x, y, :, :],
                     ) = Model.lumped_model.simulate(
                         prec=Model.meteo.precipitation[x, y, :],
                         temp=Model.meteo.temperature[x, y, :],
@@ -117,14 +108,10 @@ class DistributedRRM:
                     )
 
         area_coef = Model.area / Model.flow_network.px_tot_area
-        # convert quz from mm/time step to m3/sec
-        Model.quz = (
-            Model.quz * Model.flow_network.px_area * area_coef / Model.conversion_factor
-        )  # Timef*3.6
-        # convert Qlz to m3/sec
-        Model.qlz = (
-            Model.qlz * Model.flow_network.px_area * area_coef / Model.conversion_factor
-        )  # Timef*3.6
+        factor = Model.flow_network.px_area * area_coef / Model.conversion_factor
+        # convert quz and qlz from mm/time step to m3/sec  # Timef*3.6
+        results.quz = results.quz * factor
+        results.qlz = results.qlz * factor
 
     @staticmethod
     def SpatialRouting(Model):
@@ -172,15 +159,15 @@ class DistributedRRM:
         #    #new
         #    quz[lakecell[0],lakecell[1],:]=quz[lakecell[0],lakecell[1],:]+q_lake
 
+        results = Model.results
         # cells at the divider
-        Model.quz_routed = np.zeros_like(Model.quz)
+        results.quz_routed = np.zeros_like(results.quz)
 
         # lower zone discharge is going to be just translated without any attenuation
         # in order to be able to calculate total discharge (uz+lz) at internal points
         # in the catchment
 
-        Model.qlz_translated = np.zeros_like(Model.quz)
-        # Model.Qtot = np.zeros_like(Model.quz)
+        results.qlz_translated = np.zeros_like(results.quz)
         # for all cells with 0 flow acc put the quz
         for x in range(Model.flow_network.rows):  # no of rows
             for y in range(Model.flow_network.cols):  # no of columns
@@ -188,8 +175,8 @@ class DistributedRRM:
                     not np.isnan(Model.flow_network.flow_acc_arr[x, y])
                     and Model.flow_network.flow_acc_arr[x, y] == 0
                 ):
-                    Model.quz_routed[x, y, :] = Model.quz[x, y, :]
-                    Model.qlz_translated[x, y, :] = Model.qlz[x, y, :]
+                    results.quz_routed[x, y, :] = results.quz[x, y, :]
+                    results.qlz_translated[x, y, :] = results.qlz[x, y, :]
 
         # remaining cells
         # Read once: this is the routing inner loop, and `acc_val` scans the whole grid.
@@ -228,19 +215,22 @@ class DistributedRRM:
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
                                 q_uzi = q_uzi + routing.muskingum_v(
-                                    Model.quz_routed[x_ind, y_ind, :],
-                                    Model.quz_routed[x_ind, y_ind, 0],
+                                    results.quz_routed[x_ind, y_ind, :],
+                                    results.quz_routed[x_ind, y_ind, 0],
                                     Model.parameters[x_ind, y_ind, 10],
                                     Model.parameters[x_ind, y_ind, 11],
                                     Model.dt,
                                 )
 
-                                qlzi = qlzi + Model.qlz_translated[x_ind, y_ind, :]
+                                qlzi = qlzi + results.qlz_translated[x_ind, y_ind, :]
 
                             # add the routed upstream flows to the current Quz in the cell
-                            Model.quz_routed[x, y, :] = Model.quz[x, y, :] + q_uzi
-                            Model.qlz_translated[x, y, :] = Model.qlz[x, y, :] + qlzi
-        Model.Qtot = Model.qlz_translated + Model.quz_routed
+                            results.quz_routed[x, y, :] = results.quz[x, y, :] + q_uzi
+                            results.qlz_translated[x, y, :] = results.qlz[x, y, :] + qlzi
+        results.Qtot = results.qlz_translated + results.quz_routed
+        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
+        # cell and the outlet-cell shortcut in `extract_discharge` is valid.
+        results.routing = RoutingKind.MUSKINGUM
 
     @staticmethod
     def DistMaxbas1(Model):
@@ -251,7 +241,7 @@ class DistributedRRM:
         is read from the last column of the spatially distributed
         parameter array.
 
-        The `Model.quz` array is modified in place.
+        The `Model.results.quz` array is modified in place.
 
         Args:
             Model (Catchment): A catchment model object carrying the following
@@ -267,12 +257,13 @@ class DistributedRRM:
                   array `(rows, cols, TS)` in m3/s.
         """
         Maxbas = Model.parameters[:, :, -1]
+        quz = Model.results.quz
 
         for x in range(Model.flow_network.rows):
             for y in range(Model.flow_network.cols):
                 if not np.isnan(Model.flow_network.flow_acc_arr[x, y]):
-                    Model.quz[x, y, :] = routing.triangular_routing_1(
-                        Model.quz[x, y, :], Maxbas[x, y]
+                    quz[x, y, :] = routing.triangular_routing_1(
+                        quz[x, y, :], Maxbas[x, y]
                     )
 
     @staticmethod
@@ -283,7 +274,7 @@ class DistributedRRM:
         cell is rescaled proportionally to its flow path length so that
         cells farther from the outlet receive more attenuation.
 
-        The `Model.quz` array is modified in place.
+        The `Model.results.quz` array is modified in place.
 
         Args:
             Model (Catchment): A catchment model object carrying the following
@@ -316,12 +307,13 @@ class DistributedRRM:
         )
 
         NormalizedFPL = resize_fun(Model.flow_path_length_arr)
+        quz = Model.results.quz
 
         for x in range(Model.flow_network.rows):
             for y in range(Model.flow_network.cols):
                 if not np.isnan(Model.flow_path_length_arr[x, y]):
-                    Model.quz[x, y, :] = routing.triangular_routing_2(
-                        Model.quz[x, y, :], NormalizedFPL[x, y]
+                    quz[x, y, :] = routing.triangular_routing_2(
+                        quz[x, y, :], NormalizedFPL[x, y]
                     )
 
     @staticmethod

@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
 from hapi.rrm.distrrm import DistributedRRM as distrrm
 from hapi.rrm.hbv_lake import HBVLake
@@ -81,15 +82,10 @@ class Wrapper:
         # run the rainfall runoff model separately
         distrrm.run_lumped_model(Model)
 
-        # run the GIS part to rout from cell to another
+        # run the GIS part to rout from cell to another. It records
+        # `RoutingKind.MUSKINGUM` on the results, which is what makes the outlet-cell
+        # shortcut in `extract_discharge` valid for them.
         distrrm.SpatialRouting(Model)
-
-        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
-        # cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear
-        # the flag a previous MAXBAS run on this same model may have left set.
-        Model._maxbas_routed = False
-
-        # Model.qout = Model.qout[:-1]
 
     @staticmethod
     def RRMWithlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
@@ -169,19 +165,14 @@ class Wrapper:
         # step here made it one longer than the array it is added to, which raised for every
         # input and left this entry point unrunnable.
         # both lake & Quz are in m3/s
-        Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
-            Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
+        quz = Model.results.quz
+        quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
+            quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
         )
 
-        # run the GIS part to rout from cell to another
+        # run the GIS part to rout from cell to another. It records
+        # `RoutingKind.MUSKINGUM` on the results.
         distrrm.SpatialRouting(Model)
-
-        # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
-        # cell and the outlet-cell shortcut in `extract_discharge` is valid again. Clear
-        # the flag a previous MAXBAS run on this same model may have left set.
-        Model._maxbas_routed = False
-
-        # Model.qout = Model.qout[:-1]
 
     @staticmethod
     def _set_maxbas_output_fields(Model: Catchment):
@@ -210,11 +201,13 @@ class Wrapper:
             Model: Catchment whose `quz` / `qlz` have been routed by
                 :meth:`DistRRM.DistMaxbas1`.
         """
-        Model.quz_routed = Model.quz
-        Model.qlz_translated = Model.qlz
-        Model.Qtot = Model.qlz + Model.quz
-        # Flags the outlet-cell shortcut in `extract_discharge` as invalid here.
-        Model._maxbas_routed = True
+        results = Model.results
+        results.quz_routed = results.quz
+        results.qlz_translated = results.qlz
+        results.Qtot = results.qlz + results.quz
+        # Marks the outlet-cell shortcut in `extract_discharge` as invalid for these
+        # results, via `SimulationResults.outlet_shortcut_valid`.
+        results.routing = RoutingKind.MAXBAS
 
     @staticmethod
     def FW1(Model: Catchment, ll_temp=None, q_0=None):
@@ -248,16 +241,16 @@ class Wrapper:
 
         Wrapper._set_maxbas_output_fields(Model)
 
+        results = Model.results
+        steps = Model.meteo.simulation_steps
         qlz1 = np.array(
-            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
+            [np.nansum(results.qlz[:, :, i]) for i in range(steps)]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
-            [np.nansum(Model.quz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
+            [np.nansum(results.quz[:, :, i]) for i in range(steps)]
         )  # average of all cells (routed mm/timestep)
 
-        Model.qout = qlz1 + quz1
-
-        Model.qout = Model.qout[:-1]
+        results.qout = (qlz1 + quz1)[:-1]
 
     @staticmethod
     def FW1Withlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
@@ -331,11 +324,13 @@ class Wrapper:
         # extent, so it enters `qout` below but never `Qtot`.
         Wrapper._set_maxbas_output_fields(Model)
 
+        results = Model.results
+        steps = Model.meteo.simulation_steps
         qlz1 = np.array(
-            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
+            [np.nansum(results.qlz[:, :, i]) for i in range(steps)]
         )  # average of all cells (not routed mm/timestep)
         quz1 = np.array(
-            [np.nansum(Model.quz[:, :, i]) for i in range(Model.meteo.simulation_steps)]
+            [np.nansum(results.quz[:, :, i]) for i in range(steps)]
         )  # average of all cells (routed mm/timestep)
 
         qout = qlz1 + quz1
@@ -345,7 +340,7 @@ class Wrapper:
         # Both series run over `simulation_steps`, and the non-lake FW1 path returns
         # `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The
         # lake series has to be trimmed the same way or the two cannot be added at all.
-        Model.qout = qout[:-1] + Lake.QlakeR[:-1]
+        results.qout = qout[:-1] + Lake.QlakeR[:-1]
 
     @staticmethod
     def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: Callable | None = None):
@@ -408,7 +403,7 @@ class Wrapper:
         tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.state_variables = Model.lumped_model.simulate(
+        quz, qlz, state_variables = Model.lumped_model.simulate(
             p,
             t,
             et,
@@ -420,10 +415,17 @@ class Wrapper:
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        Model.quz = Model.quz * Model.area / Model.conversion_factor
-        Model.qlz = Model.qlz * Model.area / Model.conversion_factor
+        factor = Model.area / Model.conversion_factor
+        # A lumped run has no spatial routing at all, so the routed fields stay None and
+        # the routing kind says why -- rather than a MAXBAS flag left over from elsewhere.
+        Model.results = SimulationResults(
+            routing=RoutingKind.LUMPED,
+            quz=quz * factor,
+            qlz=qlz * factor,
+            state_variables=state_variables,
+        )
 
-        Model.Qsim = Model.quz + Model.qlz
+        Model.Qsim = Model.results.quz + Model.results.qlz
 
         if Routing != 0 and Model.maxbas:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.parameters[-1])

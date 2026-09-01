@@ -15,6 +15,7 @@ from pandas import DataFrame
 from hapi import calibration as calibration_module
 from hapi.calibration import Calibration
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
@@ -99,7 +100,16 @@ def gauged_calibration(
     rows, cols = coello.flow_network.rows, coello.flow_network.cols
     steps = coello.meteo.time_steps
     rng = np.random.default_rng(1337)
-    coello.Qtot = rng.random((rows, cols, steps + 1))
+    # Stage the post-run state the way the run layer builds it. `Qtot` and the rest are
+    # read-only views onto `results`, so a finished Muskingum run is described rather than
+    # poked in field by field.
+    coello.results = SimulationResults(
+        routing=RoutingKind.MUSKINGUM,
+        quz=np.zeros((rows, cols, steps + 1)),
+        qlz=np.zeros((rows, cols, steps + 1)),
+        state_variables=np.zeros((rows, cols, steps + 1, 5)),
+        Qtot=rng.random((rows, cols, steps + 1)),
+    )
     coello.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
     return coello
 
@@ -171,7 +181,7 @@ class TestExtractDischarge:
             it would fit the wrong signal, so the guard must refuse rather than return numbers.
         """
         coello = gauged_calibration
-        coello._maxbas_routed = True
+        coello.results.routing = RoutingKind.MAXBAS
 
         with pytest.raises(ValueError, match="MAXBAS") as exc_info:
             coello.extract_discharge()
