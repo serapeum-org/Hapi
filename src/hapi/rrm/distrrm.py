@@ -119,7 +119,7 @@ class DistributedRRM:
         return results
 
     @staticmethod
-    def route_muskingum(Model):
+    def route_muskingum(Model, skip_hydraulic_cells: bool = False):
         """Route discharge between cells following the flow direction.
 
         Accumulates and routes upper-zone discharge (`quz`) using
@@ -152,10 +152,12 @@ class DistributedRRM:
                 - `Parameters` (numpy.ndarray): 3-D parameter array
                   where indices 10 and 11 are Muskingum K and X.
                 - `dt` (float): Time-step factor (`tfac`).
-                - `routing_method` (str): Routing method name (e.g.,
-                  `"Muskingum"`).
-                - `bankfull_depth` (numpy.ndarray): 2-D bankfull
-                  depth array used for non-Muskingum methods.
+                - `bankfull_depth` (numpy.ndarray): 2-D bankfull depth array. Read only
+                  when `skip_hydraulic_cells` is True.
+
+            skip_hydraulic_cells: Skip cells with a positive `bankfull_depth`, because a
+                1D hydraulic model routes them instead. The flood model's path; a plain
+                distributed run leaves it False and routes every cell.
         """
         #    # routing lake discharge with DS cell k & x and adding to cell Q
         #    q_lake=Routing.muskingum_v(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
@@ -196,10 +198,13 @@ class DistributedRRM:
                         not np.isnan(Model.flow_network.flow_acc_arr[x, y])
                         and Model.flow_network.flow_acc_arr[x, y] == acc_val[j]
                     ):
-                        if (
-                            Model.routing_method != "Muskingum"
-                            and Model.bankfull_depth[x, y] > 0
-                        ):
+                        if skip_hydraulic_cells and Model.bankfull_depth[x, y] > 0:
+                            # A river cell a 1D hydraulic model will route instead. The
+                            # caller says so explicitly; this used to be inferred from
+                            # `routing_method != "Muskingum"`, which meant any catchment
+                            # built with a non-Muskingum method dereferenced
+                            # `bankfull_depth` -- None outside the flood model -- and
+                            # crashed here.
                             continue
                         else:
                             # for UZ

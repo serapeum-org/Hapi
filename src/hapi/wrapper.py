@@ -46,7 +46,10 @@ class Wrapper:
 
     @staticmethod
     def run_muskingum(
-        Model: DistributedModel, ll_temp=None, q_0=None
+        Model: DistributedModel,
+        ll_temp=None,
+        q_0=None,
+        skip_hydraulic_cells: bool = False,
     ) -> SimulationResults:
         """Run the distributed rainfall-runoff model with spatial routing.
 
@@ -81,6 +84,12 @@ class Wrapper:
                 average temperature data. Defaults to None.
             q_0 (float, optional): Initial discharge in m3/s.
                 Defaults to None.
+            skip_hydraulic_cells (bool, optional): Leave cells with a positive
+                `bankfull_depth` unrouted, because a 1D hydraulic model routes them.
+                The flood model's path. Defaults to False.
+
+        Returns:
+            SimulationResults: The run's output, also assigned to `Model.results`.
         """
         # run the rainfall runoff model separately
         results = distrrm.run_lumped_model(Model)
@@ -88,7 +97,7 @@ class Wrapper:
         # run the GIS part to rout from cell to another. It records
         # `RoutingKind.MUSKINGUM` on the results, which is what makes the outlet-cell
         # shortcut in `extract_discharge` valid for them.
-        distrrm.route_muskingum(Model)
+        distrrm.route_muskingum(Model, skip_hydraulic_cells=skip_hydraulic_cells)
         return results
 
     @staticmethod

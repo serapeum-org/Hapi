@@ -383,3 +383,62 @@ class TestValidationNamesWhatIsMissing:
         assert "bankfull_depth" in str(exc_info.value), (
             f"the error should name the missing rasters, got: {exc_info.value}"
         )
+
+
+class TestRoutingIsChosenByTheEntryPoint:
+    """`routing_method` records intent; the entry point is what routes."""
+
+    @pytest.mark.parametrize("declared", ["Muskingum", "MAXBAS"])
+    def test_run_distributed_routes_with_muskingum_whatever_the_field_says(
+        self,
+        coello_fixtures: dict,
+        coello_dist_parameters_muskingum: str,
+        declared: str,
+    ):
+        """Test that `routing_method` does not change what `run_distributed` does.
+
+        Test scenario:
+            The field used to be compared inside the routing loop, so a catchment built with
+            anything but `"Muskingum"` reached `bankfull_depth[x, y]` -- None outside the
+            flood model -- and died with `TypeError: 'NoneType' object is not subscriptable`
+            partway through routing. Skipping river cells is now an explicit argument to the
+            flood entry point, so the declared method cannot reach the loop at all.
+
+        Args:
+            declared: The routing method the catchment is built with.
+        """
+        model = _build("coello", coello_dist_parameters_muskingum, **coello_fixtures)
+        model.routing_method = declared
+
+        results = Run.run_distributed(model)
+
+        assert results.routing is RoutingKind.MUSKINGUM, (
+            f"run_distributed must route with Muskingum whatever routing_method says; "
+            f"declared {declared!r}, got {results.routing}"
+        )
+        assert results.q_total is not None, "every cell must have been routed"
+
+    def test_a_kinematic_catchment_still_runs_distributed_without_crashing(
+        self, coello_fixtures: dict, coello_dist_parameters_muskingum: str
+    ):
+        """Test that declaring Kinematic no longer breaks a plain distributed run.
+
+        Test scenario:
+            `"Kinematic"` is a real routing method -- the wave model the flood path applies
+            to river cells -- and stays accepted. But the routing loop used to compare
+            against it directly, so a catchment declaring it and calling `run_distributed`
+            reached `bankfull_depth[x, y]`, which is None outside the flood model, and died
+            with `TypeError: 'NoneType' object is not subscriptable` partway through routing.
+            The skip is read by `run_flood` now, so `run_distributed` routes every cell.
+        """
+        model = _build("coello", coello_dist_parameters_muskingum, **coello_fixtures)
+        model.routing_method = "Kinematic"
+
+        results = Run.run_distributed(model)
+
+        assert results.routing is RoutingKind.MUSKINGUM, (
+            "run_distributed routes with Muskingum regardless of the declared method"
+        )
+        assert results.q_total is not None, (
+            "every cell must be routed; the flood skip belongs to run_flood"
+        )

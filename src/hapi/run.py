@@ -199,7 +199,9 @@ class Run:
         return results
 
     @staticmethod
-    def run_flood(model: FloodModel) -> SimulationResults:
+    def run_flood(
+        model: FloodModel, skip_hydraulic_cells: bool | None = None
+    ) -> SimulationResults:
         """Run the flood model.
 
         Runs the conceptual distributed hydrological model with
@@ -208,9 +210,13 @@ class Run:
 
         Args:
             model: The model to run. See :class:`FloodModel` for what it must carry.
-
-        Returns:
-            SimulationResults: The run's output, also assigned to `model.results`.
+            skip_hydraulic_cells: Leave river cells (a positive `bankfull_depth`) unrouted
+                by the Muskingum pass, because the kinematic-wave model routes them instead.
+                `None`, the default, derives it from the catchment's own
+                `routing_method` -- `"Kinematic"` means yes, anything else no. Pass a bool to
+                override. The derivation used to live inside the routing loop as
+                `routing_method != "Muskingum"`, which ran for every distributed model and so
+                crashed `run_distributed` on a `bankfull_depth` of None.
 
         Raises:
             ValueError: If meteorological input arrays, parameter
@@ -241,8 +247,13 @@ class Run:
         if any(np.shape(arr)[1] != model.flow_network.cols for arr in geometry):
             raise ValueError("all input data should have the same number of columns")
 
+        if skip_hydraulic_cells is None:
+            skip_hydraulic_cells = model.routing_method == "Kinematic"
+
         # run the model
-        results = Wrapper.run_muskingum(model)
+        results = Wrapper.run_muskingum(
+            model, skip_hydraulic_cells=skip_hydraulic_cells
+        )
         logger.info("RRM has finished")
         # SV = SaintVenant()
         # SV.KinematicRaster(model)

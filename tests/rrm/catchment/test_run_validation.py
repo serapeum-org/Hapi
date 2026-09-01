@@ -38,7 +38,7 @@ def spied_wrapper(monkeypatch) -> dict:
     calls: dict = {}
 
     def _make(name: str):
-        def _spy(*args):
+        def _spy(*args, **kwargs):
             calls[name] = args
 
         return _spy
@@ -295,4 +295,67 @@ class TestRunFW1WithLake:
 
         assert "run_maxbas_with_lake" not in spied_wrapper, (
             "the wrapper must not run on mis-shaped parameters"
+        )
+
+
+class TestFloodModelHonoursKinematic:
+    """`run_flood` reads `routing_method` to decide whether Muskingum skips the river cells."""
+
+    @pytest.mark.parametrize(
+        "declared, expected_skip",
+        [("Kinematic", True), ("Muskingum", False)],
+    )
+    def test_the_skip_is_derived_from_the_declared_routing(
+        self, coello_loaded: Catchment, monkeypatch, declared: str, expected_skip: bool
+    ):
+        """Test that the kinematic-wave declaration reaches the routing as a real argument.
+
+        Test scenario:
+            `"Kinematic"` means the wave model routes the river cells, so the Muskingum pass
+            must leave them alone. That used to be a `routing_method != "Muskingum"` compare
+            *inside* the routing loop, which is why it also fired on plain distributed runs.
+            It is now read once, by this entry point, and passed down explicitly.
+
+        Args:
+            declared: The routing method the catchment declares.
+            expected_skip: Whether the wrapper should be told to skip hydraulic cells.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = declared
+        seen: dict = {}
+
+        def _spy(model, ll_temp=None, q_0=None, skip_hydraulic_cells=False):
+            seen["skip"] = skip_hydraulic_cells
+
+        monkeypatch.setattr(run_module.Wrapper, "run_muskingum", staticmethod(_spy))
+
+        Run.run_flood(coello_loaded)
+
+        assert seen["skip"] is expected_skip, (
+            f"routing_method={declared!r} should give skip_hydraulic_cells="
+            f"{expected_skip}, got {seen['skip']}"
+        )
+
+    def test_an_explicit_argument_overrides_the_declaration(
+        self, coello_loaded: Catchment, monkeypatch
+    ):
+        """Test that a caller can ask for the skip without declaring Kinematic.
+
+        Test scenario:
+            Deriving from `routing_method` keeps the historical spelling working, but the
+            request is a run-time choice, so it stays expressible directly.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = "Muskingum"
+        seen: dict = {}
+
+        def _spy(model, ll_temp=None, q_0=None, skip_hydraulic_cells=False):
+            seen["skip"] = skip_hydraulic_cells
+
+        monkeypatch.setattr(run_module.Wrapper, "run_muskingum", staticmethod(_spy))
+
+        Run.run_flood(coello_loaded, skip_hydraulic_cells=True)
+
+        assert seen["skip"] is True, (
+            "an explicit argument must win over the declaration"
         )

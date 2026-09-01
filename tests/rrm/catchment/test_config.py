@@ -1226,12 +1226,14 @@ class TestRoutingMethodNormalisation:
         )
 
     def test_kinematic_is_accepted_for_the_flood_model(self):
-        """Test that the flood model's routing method is still a legal value.
+        """Test that the kinematic-wave routing method stays a legal value.
 
         Test scenario:
-            `Run.run_flood` relies on the same `!= "Muskingum"` comparison to skip cells
-            with a real `bankfull_depth`, so "Kinematic" is a working value and must not be
-            rejected by the new validation.
+            "Kinematic" names the routing the flood model applies to river cells. It is read
+            by `Run.run_flood`, which uses it to decide whether the Muskingum pass leaves
+            those cells to the hydraulic model -- so it carries meaning and must be accepted.
+            What changed is only where it is read: no longer inside the routing loop, where
+            it ran for every distributed model.
         """
         model = Catchment(
             "coello", "2009-01-01", "2009-01-10", routing_method="Kinematic"

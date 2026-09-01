@@ -72,13 +72,21 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
     "HBV": HBV,
 }
 
-#: Accepted routing methods, mapped to the one spelling the internals compare against.
-#: `distrrm.route_muskingum` tests `routing_method != "Muskingum"` exactly, so the constructor
-#: canonicalises rather than storing what it was handed. `"Kinematic"` belongs here because
-#: that comparison is also how the flood model selects its own path: a non-Muskingum method
-#: with a real `bankfull_depth` skips the cell, which `Run.run_flood` relies on.
-#: `hapi.config.CatchmentConfig.routing_method` exposes the first two to YAML and says why the
-#: third is not; a method added here needs a decision there too.
+#: Accepted routing methods, canonicalised to one spelling.
+#:
+#: This records *which routing the parameter set was calibrated for*. It does not select the
+#: routing -- the `Run.*` entry point does that -- but it is not decoration either:
+#: `hapi.config` cross-checks it against `parameters.maxbas`, and that check is load-bearing.
+#: A MAXBAS set holds 11 parameters and a Muskingum set 12, and `maxbas` is what decides which
+#: count is expected, so a set contradicting the routing still passes the count check and the
+#: run then reads the Muskingum X as the MAXBAS value -- a quietly wrong hydrograph.
+#:
+#: `"Kinematic"` is the kinematic-wave routing the flood model applies to river cells (see
+#: `SaintVenant.KinematicRaster`, and the roadmap item in README). `Run.run_flood` reads it to
+#: decide whether the Muskingum pass should leave those cells alone. It is *read by the entry
+#: point*, not compared inside the routing loop -- that comparison used to run on every
+#: distributed model, so a catchment declaring Kinematic and calling `run_distributed`
+#: dereferenced a `bankfull_depth` of None and crashed partway through routing.
 ROUTING_METHODS = {
     "muskingum": "Muskingum",
     "maxbas": "MAXBAS",
@@ -290,9 +298,8 @@ class Catchment:
             start_data, end, fmt=fmt, temporal_resolution=temporal_resolution
         )
 
-        # Canonicalised like the two resolutions above, and for a sharper reason:
-        # `distrrm.route_muskingum` tests `routing_method != "Muskingum"` case-sensitively, and
-        # the false branch reads `bankfull_depth`, which is None outside the flood model. Left
+        # Canonicalised so the config cross-check against `parameters.maxbas` compares one
+        # spelling. The routing loop no longer compares against it at all. Left
         # verbatim, a lower-case "muskingum" therefore routed every cell down the MAXBAS branch
         # and raised `TypeError: 'NoneType' object is not subscriptable`.
         if routing_method.lower() not in ROUTING_METHODS:

@@ -56,15 +56,10 @@ class DistributedModel(ConceptualModelInputs, Protocol):
     Attributes:
         meteo: The three driver cubes and the calendar they cover.
         flow_network: The routing network and the grid it defines.
-        routing_method: Canonicalised routing method. `route_muskingum` compares this against
-            `"Muskingum"` exactly to decide whether a cell is routed or skipped.
-        bankfull_depth: Read only when `routing_method` is not `"Muskingum"`; None otherwise.
     """
 
     meteo: MeteoInputs
     flow_network: FlowNetwork
-    routing_method: str
-    bankfull_depth: np.ndarray | None
 
 
 class LumpedModelInputs(ConceptualModelInputs, Protocol):
@@ -84,11 +79,17 @@ class FloodModel(DistributedModel, Protocol):
     """A distributed model that also carries the river geometry the flood model reads.
 
     Attributes:
+        routing_method: `"Kinematic"` when the kinematic-wave model routes the river cells,
+            which is what `run_flood` reads to decide whether the Muskingum pass skips them.
+        bankfull_depth: `(rows, cols)` bankfull depth. A positive value marks a river cell,
+            which the flood model can leave for a 1D hydraulic model to route.
         river_width: `(rows, cols)` channel width.
         river_roughness: `(rows, cols)` channel roughness.
         flood_plain_roughness: `(rows, cols)` floodplain roughness.
     """
 
+    routing_method: str
+    bankfull_depth: np.ndarray
     river_width: np.ndarray
     river_roughness: np.ndarray
     flood_plain_roughness: np.ndarray

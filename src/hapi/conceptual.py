@@ -255,6 +255,7 @@ class ConceptualModelSetup:
         validate_initial_cond(self.initial_cond)
         validate_q_init(self.q_init)
 
+
 @dataclass(frozen=True)
 class ParameterBounds:
     """The search space a calibration explores, and the configuration it explores it under.
