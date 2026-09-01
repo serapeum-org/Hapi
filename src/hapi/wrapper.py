@@ -160,8 +160,8 @@ class Wrapper:
         qlake = routing.muskingum_v(
             Lake.QlakeR,
             Lake.QlakeR[0],
-            Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
-            Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
+            Model.parameters.values[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
+            Model.parameters.values[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
             Model.period.conversion_factor,
         )
 
@@ -416,19 +416,19 @@ class Wrapper:
         tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        quz, qlz, state_variables = Model.lumped_model.simulate(
+        quz, qlz, state_variables = Model.model_setup.model.simulate(
             p,
             t,
             et,
             tm,
-            Model.parameters,
-            init_st=Model.initial_cond,
-            q_init=Model.q_init,
-            snow=Model.snow,
+            Model.parameters.values,
+            init_st=Model.model_setup.initial_cond,
+            q_init=Model.model_setup.q_init,
+            snow=Model.parameters.snow,
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        factor = Model.area / Model.period.conversion_factor
+        factor = Model.model_setup.area / Model.period.conversion_factor
         # A lumped run has no spatial routing at all, so the routed fields stay None and
         # the routing kind says why -- rather than a MAXBAS flag left over from elsewhere.
         results = SimulationResults(
@@ -441,14 +441,16 @@ class Wrapper:
 
         Model.Qsim = results.quz + results.qlz
 
-        if Routing != 0 and Model.maxbas:
-            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.parameters[-1])
+        if Routing != 0 and Model.parameters.maxbas:
+            Model.Qsim = RoutingFn(
+                np.array(Model.Qsim[:-1]), Model.parameters.values[-1]
+            )
         elif Routing != 0:
             Model.Qsim = RoutingFn(
                 np.array(Model.Qsim[:-1]),
                 Model.Qsim[0],
-                Model.parameters[-2],
-                Model.parameters[-1],
+                Model.parameters.values[-2],
+                Model.parameters.values[-1],
                 Model.period.dt,
             )
         return results

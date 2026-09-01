@@ -182,13 +182,15 @@ class TestReadParametersDistributed:
 
         distributed.read_parameters(path, snow, maxbas=maxbas)
 
-        assert distributed.parameters.shape[2] == expected_bands, (
+        assert distributed.parameters.values.shape[2] == expected_bands, (
             f"Expected {expected_bands} parameter bands, "
-            f"got {distributed.parameters.shape[2]}"
+            f"got {distributed.parameters.values.shape[2]}"
         )
-        assert distributed.snow is snow, f"snow flag not stored: {distributed.snow}"
-        assert distributed.maxbas is maxbas, (
-            f"maxbas flag not stored: {distributed.maxbas}"
+        assert distributed.parameters.snow is snow, (
+            f"snow flag not stored: {distributed.parameters.snow}"
+        )
+        assert distributed.parameters.maxbas is maxbas, (
+            f"maxbas flag not stored: {distributed.parameters.maxbas}"
         )
 
     def test_missing_directory_names_the_path_it_could_not_read(
@@ -285,8 +287,8 @@ class TestReadLumpedModelQInit:
 
         model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond, q_init=5.0)
 
-        assert model.q_init == pytest.approx(5.0), (
-            f"the initial discharge must be stored, got {model.q_init}"
+        assert model.model_setup.q_init == pytest.approx(5.0), (
+            f"the initial discharge must be stored, got {model.model_setup.q_init}"
         )
 
     def test_omitting_the_initial_discharge_leaves_it_unset(
@@ -302,8 +304,8 @@ class TestReadLumpedModelQInit:
 
         model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond)
 
-        assert model.q_init is None, (
-            f"expected no initial discharge, got {model.q_init}"
+        assert model.model_setup.q_init is None, (
+            f"expected no initial discharge, got {model.model_setup.q_init}"
         )
 
     @pytest.mark.parametrize("bad", [5, "5.0", [5.0]], ids=["int", "str", "list"])
@@ -349,8 +351,8 @@ class TestReadLumpedModelInitialCondition:
 
         model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond)
 
-        assert model.initial_cond == coello_initial_cond, (
-            f"the initial condition must be stored unchanged, got {model.initial_cond}"
+        assert model.model_setup.initial_cond == coello_initial_cond, (
+            f"the initial condition must be stored unchanged, got {model.model_setup.initial_cond}"
         )
 
     @pytest.mark.parametrize(

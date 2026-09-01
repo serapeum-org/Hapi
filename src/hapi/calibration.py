@@ -16,6 +16,7 @@ from Oasis.harmonysearch import HSapi
 from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
+from hapi.conceptual import ParameterSet
 from hapi.wrapper import Wrapper
 
 ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
@@ -107,6 +108,13 @@ class Calibration(Catchment):
         self.objective_function: Callable[..., Any] | None = None
         self.OFArgs: list | None = None
         self.OFvalue: float | None = None
+        #: The optimiser's answer -- the flat vector it searched over, as returned in
+        #: `res[1]`. Deliberately *not* the model's runnable parameter set: for a distributed
+        #: calibration the winning vector still has to go through the spatial-distribution
+        #: function to become the `(rows, cols, n)` array a run reads, so the two are
+        #: different shapes describing different things. The runnable set lives on
+        #: `self.parameters.values`.
+        self.best_parameters: np.ndarray | list | None = None
 
     def _declare_the_parameter_variables(
         self, opt_prob: Optimization, initial_values: list | None = None
@@ -128,17 +136,44 @@ class Calibration(Catchment):
         # part-way through building the problem, naming neither argument and leaving
         # `opt_prob` half-populated.
         seeded = initial_values is not None and len(initial_values) > 0
-        if seeded and len(initial_values) != len(self.LB):
+        if seeded and len(initial_values) != len(self.bounds):
             raise ValueError(
                 f"initial_values must hold one value per parameter; the bounds define "
-                f"{len(self.LB)} and {len(initial_values)} were given"
+                f"{len(self.bounds)} and {len(initial_values)} were given"
             )
 
-        for i in range(len(self.LB)):
+        for i in range(len(self.bounds)):
             seed = {"value": initial_values[i]} if seeded else {}
             opt_prob.addVar(
-                f"x{i}", type="c", lower=self.LB[i], upper=self.UB[i], **seed
+                f"x{i}",
+                type="c",
+                lower=self.bounds.lower[i],
+                upper=self.bounds.upper[i],
+                **seed,
             )
+
+    def _parameter_set(self, values) -> ParameterSet:
+        """Wrap a trial vector as a checked `ParameterSet`.
+
+        The width rule needs the `(snow, maxbas)` pair, which a calibration supplies through
+        `read_parameters_bound` rather than by reading a parameter file. Either source works;
+        this picks whichever ran.
+
+        Args:
+            values: The trial parameter array or vector.
+
+        Returns:
+            ParameterSet: The set, its width checked against the configuration.
+
+        Raises:
+            ValueError: The trial set is not the width the configuration requires.
+        """
+        if self.parameters is not None:
+            return self.parameters.with_values(values)
+        bounds = self.bounds
+        snow = bounds.snow if bounds is not None else False
+        maxbas = bounds.maxbas if bounds is not None else False
+        return ParameterSet(values, snow=snow, maxbas=maxbas)
 
     def read_objective_function(
         self, objective_function: Callable[..., Any], args: list | None
@@ -317,7 +352,10 @@ class Calibration(Catchment):
                 spatial_var_fun.Function(
                     par
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
-                self.parameters = spatial_var_fun.Par3d
+                # Re-checked per trial: `with_parameters` re-runs the (snow, maxbas) count
+                # rule, so a distribution function producing the wrong width fails here
+                # rather than as an index error inside the per-cell loop.
+                self.parameters = self._parameter_set(spatial_var_fun.Par3d)
                 # run the model
                 Wrapper.run_muskingum(self)
                 # calculate performance of the model
@@ -377,7 +415,7 @@ class Calibration(Catchment):
             hot_start=hot_start,
         )
 
-        self.parameters = res[1]
+        self.best_parameters = res[1]
         self.OFvalue = res[0]
 
         return res
@@ -463,7 +501,8 @@ class Calibration(Catchment):
                 spatial_var_fun.Function(
                     par
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum
-                self.parameters = spatial_var_fun.Par3d
+                # Re-checked per trial -- see run_calibration.
+                self.parameters = self._parameter_set(spatial_var_fun.Par3d)
                 # run the model
                 Wrapper.run_maxbas(self)
                 # calculate performance of the model
@@ -508,7 +547,7 @@ class Calibration(Catchment):
             hot_start=hot_start,
         )
 
-        self.parameters = res[1]
+        self.best_parameters = res[1]
         self.OFvalue = res[0]
 
         return res
@@ -596,8 +635,8 @@ class Calibration(Catchment):
         ### calculate the objective function
         def opt_fun(par):
             try:
-                # parameters
-                self.parameters = par
+                # parameters. Checked against (snow, maxbas) as it arrives.
+                self.parameters = self._parameter_set(par)
                 # run the model
                 Wrapper.run_lumped(self, route, routing_fn)
                 # calculate performance of the model
@@ -658,6 +697,6 @@ class Calibration(Catchment):
         )
 
         self.OFvalue = res[0]
-        self.parameters = res[1]
+        self.best_parameters = res[1]
 
         return res

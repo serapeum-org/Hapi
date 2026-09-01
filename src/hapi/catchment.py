@@ -35,6 +35,7 @@ from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
+from hapi.conceptual import ConceptualModelSetup, ParameterBounds, ParameterSet
 from hapi.config import RunConfig
 from hapi.inputs import (
     METEO_VARIABLES,
@@ -300,21 +301,22 @@ class Catchment:
                 f"got {routing_method!r}"
             )
         self.routing_method = ROUTING_METHODS[routing_method.lower()]
-        self.parameters: np.ndarray | list | None = None
+        #: The parameters and the `(snow, maxbas)` pair that fixes their width, as
+        #: `read_parameters` produces them. Its constructor enforces the count rule, so every
+        #: route to a parameter set is checked -- including the per-trial replacements a
+        #: calibration makes. `None` until read.
+        self.parameters: ParameterSet | None = None
+        #: The conceptual model and the state it starts from, as `read_lumped_model`
+        #: produces them. `None` until read.
+        self.model_setup: ConceptualModelSetup | None = None
         self.data: np.ndarray | None = None
         #: The three meteorological drivers. Assign a :class:`~hapi.inputs.MeteoInputs`
         #: built by one of its loaders; everything meteorological hangs off it.
         self.meteo: MeteoInputs | None = None
         self.QGauges: pd.DataFrame | None = None
-        self.snow: int | None = None
-        self.maxbas: bool | None = None
-        self.lumped_model: BaseConceptualModel | None = None
-        self.area: float | int | None = None
-        self.initial_cond: list | None = None
-        self.q_init: float | None = None
         self.GaugesTable: FeatureCollection | pd.DataFrame | None = None
-        self.UB: np.ndarray | None = None
-        self.LB: np.ndarray | None = None
+        #: The search space a calibration explores, once read. `None` otherwise.
+        self.bounds: ParameterBounds | None = None
         #: The routing network and the grid it defines. Assign a
         #: :class:`~hapi.inputs.FlowNetwork` built by its loader.
         self.flow_network: FlowNetwork | None = None
@@ -645,37 +647,23 @@ class Catchment:
             # offending directory, so _name_the_path re-raises with it.
             with _name_the_path(path):
                 cube = read_rasters(path, regex_string=r"\d+", date=False)
-            self.parameters = np.moveaxis(cube.values, 0, -1)
+            parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
                 raise FileNotFoundError(
                     "The parameter file you have entered does not exist"
                 )
 
-            self.parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
+            parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
 
         if not (not snow or snow):
             raise ValueError(
                 "snow input defines whether to consider snow subroutine or not it has to be True or False"
             )
 
-        self.snow = snow
-        self.maxbas = maxbas
-
-        # (snow, maxbas) -> the parameter count that combination requires. A table rather
-        # than eight near-identical branches: the counts are the only thing that varied, and
-        # two of the branches spelled the comparison `not len(...) == N`.
-        expected = PARAMETER_COUNTS[(bool(snow), bool(maxbas))]
-        actual = (
-            self.parameters.shape[2]
-            if self.spatial_resolution == "distributed"
-            else len(self.parameters)
-        )
-        if actual != expected:
-            raise ValueError(
-                f"current version of HBV (with snow) takes {expected} parameters you have "
-                f"entered {actual}"
-            )
+        # The count check lives in `ParameterSet.__post_init__`, so it runs on every route
+        # to a parameter set rather than only on this one.
+        self.parameters = ParameterSet(parameters, snow=snow, maxbas=maxbas)
 
         logger.debug("Parameters are read successfully")
 
@@ -712,29 +700,11 @@ class Catchment:
                 "ConceptualModel should be a module or a python file contains functions "
             )
 
-        self.lumped_model = lumped_model()
-        self.area = catchment_area
-
-        # Typed before it is measured. The other order called `len` first, so None reported
-        # "object of type 'NoneType' has no len()" rather than naming the argument, and the
-        # `is not None` the type check then carried could never be false -- `len` would
-        # already have raised.
-        if not isinstance(initial_condition, list):
-            raise TypeError(
-                f"init_st should be of type list, got {type(initial_condition).__name__}"
-            )
-        if len(initial_condition) != 5:
-            raise ValueError(
-                f"state variables are 5 and the given initial values are {len(initial_condition)}"
-            )
-
-        self.initial_cond = initial_condition
-
-        if q_init is not None and not isinstance(q_init, float):
-            raise TypeError(
-                f"q_init should be of type float, got {type(q_init).__name__}"
-            )
-        self.q_init = q_init
+        # The checks on `initial_condition` and `q_init` live in
+        # `ConceptualModelSetup.__post_init__` now.
+        self.model_setup = ConceptualModelSetup(
+            lumped_model(), catchment_area, initial_condition, q_init
+        )
 
         logger.debug("Lumped model is read successfully")
 
@@ -1090,20 +1060,15 @@ class Catchment:
                 `lower_bound` are not equal.
             ValueError: If `snow` is not a boolean.
         """
-        if len(upper_bound) != len(lower_bound):
-            raise ValueError(
-                f"the length of UB should be the same as LB, got {len(upper_bound)} and "
-                f"{len(lower_bound)}"
-            )
-        self.UB = np.array(upper_bound)
-        self.LB = np.array(lower_bound)
-
         if not isinstance(snow, bool):
             raise ValueError(
                 " snow input defines whether to consider snow subroutine or not it has to be True or False"
             )
-        self.snow = snow
-        self.maxbas = maxbas
+        # A calibration reads no parameter file, so the bounds are where `(snow, maxbas)`
+        # enters -- carried here so every trial vector can be checked against it.
+        self.bounds = ParameterBounds(
+            lower_bound, upper_bound, snow=snow, maxbas=maxbas
+        )
 
         logger.debug("Parameters' bounds are read successfully")
 

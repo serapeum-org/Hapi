@@ -95,7 +95,7 @@ print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% run the model
-Coello.parameters = cal_parameters[1]
+Coello.parameters.values = cal_parameters[1]
 Run.run_lumped(Coello, Route, routing_fn)
 # %% calculate performance criteria
 scores = dict()

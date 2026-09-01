@@ -100,18 +100,18 @@ class DistributedRRM:
                         results.quz[x, y, :],
                         results.qlz[x, y, :],
                         results.state_variables[x, y, :, :],
-                    ) = Model.lumped_model.simulate(
+                    ) = Model.model_setup.model.simulate(
                         prec=Model.meteo.precipitation[x, y, :],
                         temp=Model.meteo.temperature[x, y, :],
                         et=Model.meteo.evapotranspiration[x, y, :],
                         ll_temp=Model.meteo.ll_temp[x, y, :],
-                        par=Model.parameters[x, y, :],
-                        init_st=Model.initial_cond,
-                        q_init=Model.q_init,
-                        snow=Model.snow,
+                        par=Model.parameters.values[x, y, :],
+                        init_st=Model.model_setup.initial_cond,
+                        q_init=Model.model_setup.q_init,
+                        snow=Model.parameters.snow,
                     )
 
-        area_coef = Model.area / Model.flow_network.px_tot_area
+        area_coef = Model.model_setup.area / Model.flow_network.px_tot_area
         factor = Model.flow_network.px_area * area_coef / Model.period.conversion_factor
         # convert quz and qlz from mm/time step to m3/sec  # Timef*3.6
         results.quz = results.quz * factor
@@ -222,8 +222,8 @@ class DistributedRRM:
                                 q_uzi = q_uzi + routing.muskingum_v(
                                     results.quz_routed[x_ind, y_ind, :],
                                     results.quz_routed[x_ind, y_ind, 0],
-                                    Model.parameters[x_ind, y_ind, 10],
-                                    Model.parameters[x_ind, y_ind, 11],
+                                    Model.parameters.values[x_ind, y_ind, 10],
+                                    Model.parameters.values[x_ind, y_ind, 11],
                                     Model.period.dt,
                                 )
 
@@ -263,7 +263,7 @@ class DistributedRRM:
                 - `quz` (numpy.ndarray): 3-D upper-zone discharge
                   array `(rows, cols, TS)` in m3/s.
         """
-        Maxbas = Model.parameters[:, :, -1]
+        Maxbas = Model.parameters.values[:, :, -1]
         quz = Model.results.quz
 
         for x in range(Model.flow_network.rows):
@@ -300,7 +300,7 @@ class DistributedRRM:
                 - `quz` (numpy.ndarray): 3-D upper-zone discharge
                   array `(rows, cols, TS)` in m3/s.
         """
-        MAXBAS = np.nanmax(Model.parameters[:, :, -1])
+        MAXBAS = np.nanmax(Model.parameters.values[:, :, -1])
         # `read_flow_path_length` already masks this raster's own no-data cells to NaN via
         # pyramids, so no sentinel comparison is needed here -- and the one that used to sit
         # here compared against the *accumulation* raster's sentinel, which is a different

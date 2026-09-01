@@ -165,8 +165,10 @@ class SimulationPeriod:
     @property
     def conversion_factor(self) -> float:
         """float: Depth-to-discharge factor -- mm over the catchment to m3/s at this step."""
-        return CONVERSION_FACTOR if self.temporal_resolution == "daily" else (
-            CONVERSION_FACTOR / 24
+        return (
+            CONVERSION_FACTOR
+            if self.temporal_resolution == "daily"
+            else (CONVERSION_FACTOR / 24)
         )
 
     @property

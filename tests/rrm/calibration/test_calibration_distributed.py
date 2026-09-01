@@ -14,6 +14,7 @@ from pandas import DataFrame
 
 from hapi import calibration as calibration_module
 from hapi.calibration import Calibration
+from hapi.conceptual import ParameterBounds
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing
@@ -206,8 +207,7 @@ class TestRunCalibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         res = coello.run_calibration(spatial_var_stub, _optimization_args())
 
@@ -216,9 +216,12 @@ class TestRunCalibration:
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
     def test_rejects_meteo_that_does_not_cover_the_grid(
@@ -232,8 +235,7 @@ class TestRunCalibration:
             grids would burn a full optimisation before failing.
         """
         coello = gauged_calibration
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         # Built in one go: replacing the cubes one at a time is now refused, because a
         # half-applied crop is exactly the inconsistency MeteoInputs guarantees against.
         coello.meteo = MeteoInputs(
@@ -274,14 +276,13 @@ class TestRunCalibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(_pairwise_objective, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         ran_with: list[np.ndarray] = []
         original = calibration_module.Wrapper.run_muskingum
 
         def spy(model, *args, **kwargs):
-            ran_with.append(np.asarray(model.parameters, dtype=float).copy())
+            ran_with.append(np.asarray(model.parameters.values, dtype=float).copy())
             return original(model, *args, **kwargs)
 
         monkeypatch.setattr(
@@ -329,8 +330,7 @@ class TestFW1Calibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         res = coello.calibrate_maxbas(spatial_var_stub, _optimization_args())
 
@@ -339,9 +339,12 @@ class TestFW1Calibration:
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
 
@@ -382,8 +385,7 @@ class TestCheckOptimizationArgs:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         with pytest.raises(TypeError, match=f"{bad_kind} arguments should be a dict"):
             coello.run_calibration(spatial_var_stub, args)
@@ -411,8 +413,7 @@ class TestLumpedCalibration:
         """
         coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0, RoutingFn=Routing.triangular_routing_1, InitialValues=[]
         )
@@ -424,9 +425,12 @@ class TestLumpedCalibration:
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
     def test_initial_values_are_seeded_into_the_problem(
@@ -444,8 +448,7 @@ class TestLumpedCalibration:
         """
         coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
             RoutingFn=Routing.triangular_routing_1,
@@ -472,15 +475,14 @@ class TestLumpedCalibration:
             stub_optimizer: Records whether the optimiser was reached.
 
         Test scenario:
-            The seeded branch loops `range(len(self.LB))` and indexes `initial_values[i]`, so
+            The seeded branch loops `range(len(self.bounds.lower))` and indexes `initial_values[i]`, so
             a shorter list used to run past its end partway through building the problem,
             leaving `opt_prob` half-populated and raising `IndexError` far from the call that
             supplied the list. The length is now compared up front.
         """
         coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
             RoutingFn=Routing.triangular_routing_1,

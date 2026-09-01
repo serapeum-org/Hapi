@@ -314,8 +314,8 @@ class TestRRMWithLake:
         expected = Routing.muskingum_v(
             lake.QlakeR,
             lake.QlakeR[0],
-            model.parameters[row, col, 10],
-            model.parameters[row, col, 11],
+            model.parameters.values[row, col, 10],
+            model.parameters.values[row, col, 11],
             model.period.conversion_factor,
         )
         np.testing.assert_allclose(

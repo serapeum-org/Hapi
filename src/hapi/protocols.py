@@ -17,16 +17,14 @@ that from being a cycle.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import Any, Protocol
 
 import numpy as np
 
+from hapi.conceptual import ConceptualModelSetup, ParameterSet
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.period import SimulationPeriod
 from hapi.results import SimulationResults
-
-if TYPE_CHECKING:
-    from hapi.rrm.base_model import BaseConceptualModel
 
 
 class ConceptualModelInputs(Protocol):
@@ -36,13 +34,10 @@ class ConceptualModelInputs(Protocol):
     :class:`LumpedModel` does not advertise a need for a flow network it never touches.
 
     Attributes:
-        parameters: The conceptual model's parameters. A 3D `(rows, cols, n)` array for a
-            distributed run; a flat sequence for a lumped one.
-        lumped_model: The conceptual model instance whose `simulate` is called per cell.
-        initial_cond: Initial state values `[sp, sm, uz, lz, wc]`.
-        q_init: Initial discharge in m3/s, or None to let the model choose.
-        snow: 1 to run the snow routine, 0 otherwise.
-        area: Catchment area in km2.
+        parameters: The parameter array together with the `(snow, maxbas)` pair that fixes
+            its width -- one object, so the width rule is checked on every route to a set.
+        model_setup: The conceptual model instance, the catchment area and the state the
+            run starts from.
         period: The span the run covers, and the calendar, `dt` and `conversion_factor`
             it implies. One object rather than six loose fields, so a derived value can
             never describe a different span from the one the model is set to.
@@ -50,12 +45,8 @@ class ConceptualModelInputs(Protocol):
     """
 
     period: SimulationPeriod
-    parameters: np.ndarray | list
-    lumped_model: BaseConceptualModel
-    initial_cond: list
-    q_init: float | None
-    snow: int
-    area: float | int
+    parameters: ParameterSet
+    model_setup: ConceptualModelSetup
     results: SimulationResults | None
 
 
@@ -81,13 +72,11 @@ class LumpedModelInputs(ConceptualModelInputs, Protocol):
 
     Attributes:
         data: `(time, 4)` array of precipitation, ET, temperature and the long-term average.
-        maxbas: Whether the parameter vector carries a MAXBAS value, which changes how the
-            routing function is called.
-        Qsim: Where the routed hydrograph lands.
+        Qsim: Where the routed hydrograph lands. Whether MAXBAS routing applies is read off
+            `parameters.maxbas`, since that is what fixes the vector's width too.
     """
 
     data: np.ndarray
-    maxbas: bool
     Qsim: Any
 
 

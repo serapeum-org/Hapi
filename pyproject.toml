@@ -261,7 +261,8 @@ description = "Run all test suite"
 cmd = [
     "pytest", "--doctest-modules", "-p", "no:cacheprovider", "--no-cov",
     "src/hapi/config.py", "src/hapi/catchment.py",
-    "src/hapi/inputs.py", "src/hapi/period.py", "src/hapi/results.py",
+    "src/hapi/conceptual.py", "src/hapi/inputs.py", "src/hapi/period.py",
+    "src/hapi/results.py",
     "src/hapi/routing.py",
     "src/hapi/run.py",
 ]

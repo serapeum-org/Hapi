@@ -1322,13 +1322,15 @@ class TestCatchmentFromYaml:
         assert model.spatial_resolution == "distributed"
         assert model.meteo is not None, "meteo was not assigned"
         assert model.flow_network is not None, "flow_network was not assigned"
-        assert model.parameters is not None, "parameters were not read"
-        assert model.lumped_model is not None, "the conceptual model was not read"
+        assert model.parameters.values is not None, "parameters were not read"
+        assert model.model_setup.model is not None, "the conceptual model was not read"
         assert model.GaugesTable is not None, "the gauge table was not read"
         assert model.QGauges is not None, "the discharge was not read"
-        assert model.area == coello_cat_area, f"area not set: {model.area}"
-        assert model.initial_cond == coello_initial_cond, (
-            f"initial condition not set: {model.initial_cond}"
+        assert model.model_setup.area == coello_cat_area, (
+            f"area not set: {model.model_setup.area}"
+        )
+        assert model.model_setup.initial_cond == coello_initial_cond, (
+            f"initial condition not set: {model.model_setup.initial_cond}"
         )
 
     def test_the_drivers_cover_the_model_period(self, distributed_mapping, tmp_path):
@@ -1393,7 +1395,7 @@ class TestCatchmentFromYaml:
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
         assert model.parameters is None, (
-            f"parameters should be unread, got {type(model.parameters)}"
+            f"parameters should be unread, got {type(model.parameters.values)}"
         )
         assert model.meteo is not None, "the rest of the build should still have run"
 
@@ -1544,7 +1546,9 @@ class TestCatchmentFromYaml:
         assert model.data is not None, "the averaged drivers were not read"
         assert model.meteo is None, "a lumped run should build no driver grid"
         assert model.flow_network is None, "a lumped run should build no flow network"
-        assert model.parameters is not None, "the lumped parameter file was not read"
+        assert model.parameters.values is not None, (
+            "the lumped parameter file was not read"
+        )
 
     def test_a_lumped_run_reads_discharge_without_a_gauge_table(
         self, lumped_mapping, tmp_path

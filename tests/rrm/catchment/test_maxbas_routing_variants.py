@@ -245,7 +245,7 @@ class TestLumpedRouting:
 
         Run.run_lumped(routed, Route=1, routing_fn=Routing.triangular_routing_1)
 
-        maxbas = routed.parameters[-1]
+        maxbas = routed.parameters.values[-1]
         expected = Routing.triangular_routing_1(
             np.array(np.asarray(unrouted.Qsim)[:-1]), maxbas
         )

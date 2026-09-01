@@ -282,7 +282,12 @@ class TestRunFW1WithLake:
             The parameter rasters are read independently of the GIS inputs, so they can
             disagree with the grid. A parameter cube one row short must raise.
         """
-        coello_loaded.parameters = coello_loaded.parameters[:-1, :, :]
+        # Trimming a row keeps the parameter *width*, so `ParameterSet` still accepts it --
+        # its rule is the count per cell. Covering the grid is the flow network's business,
+        # which is what `_check_parameters_cover_grid` is for.
+        coello_loaded.parameters = coello_loaded.parameters.with_values(
+            coello_loaded.parameters.values[:-1, :, :]
+        )
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
         with pytest.raises(ValueError, match="as many rows as the catchment grid"):

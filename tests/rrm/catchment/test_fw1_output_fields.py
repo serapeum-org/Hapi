@@ -141,7 +141,7 @@ def test_fw1_qtot_matches_an_independent_triangular_convolution(
         wrong one.
     """
     expected_quz = coello_unrouted.results.quz.copy()
-    maxbas = coello_fw1.parameters[:, :, -1]
+    maxbas = coello_fw1.parameters.values[:, :, -1]
     acc = coello_fw1.flow_network.flow_acc_arr
     for x in range(coello_fw1.flow_network.rows):
         for y in range(coello_fw1.flow_network.cols):

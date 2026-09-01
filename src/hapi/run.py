@@ -54,7 +54,7 @@ def _check_parameters_cover_grid(model: DistributedModel) -> None:
     Raises:
         ValueError: The parameter array has the wrong number of rows or columns.
     """
-    shape = np.asarray(model.parameters).shape
+    shape = np.asarray(model.parameters.values).shape
     if shape[0] != model.flow_network.rows:
         raise ValueError(ROWS_MISMATCH_ERROR)
     if shape[1] != model.flow_network.cols:

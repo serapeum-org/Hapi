@@ -38,9 +38,9 @@ class TestLumped:
     ):
         coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        assert isinstance(coello.lumped_model, HBVLumped)
-        assert isinstance(coello.area, float)
-        assert isinstance(coello.initial_cond, list)
+        assert isinstance(coello.model_setup.model, HBVLumped)
+        assert isinstance(coello.model_setup.area, float)
+        assert isinstance(coello.model_setup.initial_cond, list)
 
     def test_read_lumped_read_parameters(
         self,
@@ -50,8 +50,8 @@ class TestLumped:
     ):
         coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_parameters(lumped_parameters_path, coello_Snow)
-        assert isinstance(coello.parameters, list)
-        assert coello.snow == coello_Snow
+        assert isinstance(coello.parameters.values, list)
+        assert coello.parameters.snow == coello_Snow
 
     def test_read_discharge_gauges(
         self,
@@ -223,9 +223,9 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        assert isinstance(coello.lumped_model, HBVLumped)
-        assert coello.area == coello_cat_area
-        assert coello.initial_cond == coello_initial_cond
+        assert isinstance(coello.model_setup.model, HBVLumped)
+        assert coello.model_setup.area == coello_cat_area
+        assert coello.model_setup.initial_cond == coello_initial_cond
 
     def test_read_parameters_bound(
         self,
@@ -245,10 +245,10 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.read_parameters_bound(UB, LB, Snow)
-        assert all(coello.LB == LB)
-        assert all(coello.UB == UB)
-        assert coello.snow == Snow
-        assert coello.maxbas == False
+        assert all(coello.bounds.lower == LB)
+        assert all(coello.bounds.upper == UB)
+        assert coello.bounds.snow == Snow
+        assert coello.bounds.maxbas is False
 
     def test_read_gauge_table(
         self,
@@ -312,13 +312,13 @@ class TestDistributed:
         )
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
-        assert coello.parameters.shape == (
+        assert coello.parameters.values.shape == (
             coello_rows,
             coello_cols,
             coello_no_parameters - 1,
         )
-        assert coello.snow == Snow
-        assert coello.maxbas is True
+        assert coello.parameters.snow == Snow
+        assert coello.parameters.maxbas is True
 
 
 class TestFW1:
