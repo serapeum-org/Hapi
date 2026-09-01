@@ -136,7 +136,7 @@ class Wrapper:
             t,
             et,
             Lake.Parameters,
-            [Model.conversion_factor, Lake.CatArea, Lake.LakeArea],
+            [Model.period.conversion_factor, Lake.CatArea, Lake.LakeArea],
             Lake.StageDischargeCurve,
             0,
             init_st=Lake.InitialCond,
@@ -150,7 +150,7 @@ class Wrapper:
             Lake.Qlake[0],
             Lake.Parameters[11],
             Lake.Parameters[12],
-            Model.conversion_factor,
+            Model.period.conversion_factor,
         )
 
         # subcatchment
@@ -162,7 +162,7 @@ class Wrapper:
             Lake.QlakeR[0],
             Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
             Model.parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
-            Model.conversion_factor,
+            Model.period.conversion_factor,
         )
 
         # No padding: `HBVLake.simulate` already prepends the initial-state slot, exactly as
@@ -308,7 +308,7 @@ class Wrapper:
             t,
             et,
             Lake.Parameters,
-            [Model.conversion_factor, Lake.CatArea, Lake.LakeArea],
+            [Model.period.conversion_factor, Lake.CatArea, Lake.LakeArea],
             Lake.StageDischargeCurve,
             0,
             init_st=Lake.InitialCond,
@@ -323,7 +323,7 @@ class Wrapper:
             Lake.Qlake[0],
             Lake.Parameters[11],
             Lake.Parameters[12],
-            Model.conversion_factor,
+            Model.period.conversion_factor,
         )
 
         # subcatchment
@@ -345,7 +345,7 @@ class Wrapper:
 
         qout = qlz1 + quz1
 
-        # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)
+        # qout = (qlz1 + quz1) * Model.CatArea / (Model.period.conversion_factor* 3.6)
 
         # Both series run over `simulation_steps`, and the non-lake FW1 path returns
         # `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The
@@ -428,7 +428,7 @@ class Wrapper:
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        factor = Model.area / Model.conversion_factor
+        factor = Model.area / Model.period.conversion_factor
         # A lumped run has no spatial routing at all, so the routed fields stay None and
         # the routing kind says why -- rather than a MAXBAS flag left over from elsewhere.
         results = SimulationResults(
@@ -449,7 +449,7 @@ class Wrapper:
                 Model.Qsim[0],
                 Model.parameters[-2],
                 Model.parameters[-1],
-                Model.dt,
+                Model.period.dt,
             )
         return results
 

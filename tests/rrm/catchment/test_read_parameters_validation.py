@@ -61,17 +61,17 @@ class TestTemporalResolution:
             "coello", "2009-01-01", "2010-01-01", temporal_resolution=resolution
         )
 
-        assert len(model.date_index) == expected_steps, (
-            f"Expected {expected_steps} steps, got {len(model.date_index)}"
+        assert len(model.period.date_index) == expected_steps, (
+            f"Expected {expected_steps} steps, got {len(model.period.date_index)}"
         )
-        assert model.date_index.freqstr.lower() == expected_freq.lower(), (
-            f"Expected frequency {expected_freq}, got {model.date_index.freqstr}"
+        assert model.period.date_index.freqstr.lower() == expected_freq.lower(), (
+            f"Expected frequency {expected_freq}, got {model.period.date_index.freqstr}"
         )
         # `dt` is hard-coded to 1 in both branches, so it carries no resolution information;
         # what distinguishes them is the conversion factor, asserted below.
-        assert model.dt == 1, f"Expected dt of 1, got {model.dt}"
-        assert model.temporal_resolution == resolution.lower(), (
-            f"the resolution must be stored lowercased, got {model.temporal_resolution}"
+        assert model.period.dt == 1, f"Expected dt of 1, got {model.period.dt}"
+        assert model.period.temporal_resolution == resolution.lower(), (
+            f"the resolution must be stored lowercased, got {model.period.temporal_resolution}"
         )
 
     def test_unknown_resolution_is_rejected_at_construction(self):
@@ -82,7 +82,7 @@ class TestTemporalResolution:
             positionally, so a resolution the constructor cannot build an index for has to
             fail at construction rather than leave the model half-built.
         """
-        with pytest.raises(ValueError, match="'daily' and 'hourly'"):
+        with pytest.raises(ValueError, match="temporal resolutions"):
             Catchment("coello", "2009-01-01", "2009-01-10", temporal_resolution="15min")
 
     def test_hourly_resolution_scales_the_conversion_factor(self):
@@ -98,9 +98,12 @@ class TestTemporalResolution:
             "coello", "2009-01-01", "2009-01-10", temporal_resolution="Hourly"
         )
 
-        assert hourly.conversion_factor == pytest.approx(
-            daily.conversion_factor / 24
-        ), f"Expected {daily.conversion_factor / 24}, got {hourly.conversion_factor}"
+        assert hourly.period.conversion_factor == pytest.approx(
+            daily.period.conversion_factor / 24
+        ), (
+            f"Expected {daily.period.conversion_factor / 24}, got "
+            f"{hourly.period.conversion_factor}"
+        )
 
 
 class TestReadParametersDistributed:

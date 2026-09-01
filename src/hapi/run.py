@@ -118,7 +118,7 @@ def _validate_distributed(model: DistributedModel, check_flow_direction: bool) -
     # The three cubes already agree with each other (checked when MeteoInputs was
     # built); this is the other half -- that they cover the model's grid.
     model.meteo.validate_against(
-        model.flow_network.rows, model.flow_network.cols, model.date_index
+        model.flow_network.rows, model.flow_network.cols, model.period.date_index
     )
     _check_parameters_cover_grid(model)
 
@@ -382,10 +382,9 @@ class Run:
         """
         if routing_fn is None and Route != 0:
             raise ValueError("routing_fn must be a callable when Route != 0")
-        if model.temporal_resolution.lower() == "daily":
-            ind = pd.date_range(model.start, model.end, freq="D")
-        else:
-            ind = pd.date_range(model.start, model.end, freq="h")
+        # The calendar belongs to the period, which derives it from the span and the
+        # resolution -- this branch used to be written out here for the fourth time.
+        ind = model.period.date_index
 
         Qsim = pd.DataFrame(index=ind)
 

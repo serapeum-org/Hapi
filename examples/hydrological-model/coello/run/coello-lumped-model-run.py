@@ -54,7 +54,9 @@ print("WB= " + str(round(scores["WB"], 2)))
 
 # %% Plot Hydrograph
 gaugei = 0
-fig, ax = Coello.plot_hydrograph(Coello.start, Coello.end, gaugei, title="Lumped Model")
+fig, ax = Coello.plot_hydrograph(
+    Coello.period.start, Coello.period.end, gaugei, title="Lumped Model"
+)
 
 # %% Save Results
 SaveTo = Coello.config.outputs.results_dir

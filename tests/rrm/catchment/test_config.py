@@ -1345,12 +1345,12 @@ class TestCatchmentFromYaml:
         """
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"drivers hold {model.meteo.time_steps} steps, model spans "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
-        assert model.meteo.time[0] == model.date_index[0], (
-            f"drivers start at {model.meteo.time[0]}, model at {model.date_index[0]}"
+        assert model.meteo.time[0] == model.period.date_index[0], (
+            f"drivers start at {model.meteo.time[0]}, model at {model.period.date_index[0]}"
         )
 
     def test_an_explicit_meteo_window_overrides_the_catchment_dates(
@@ -1586,13 +1586,13 @@ class TestCatchmentFromYaml:
 
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"drivers hold {model.meteo.time_steps} steps, model spans "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
-        assert model.meteo.time[0] == model.date_index[0], (
+        assert model.meteo.time[0] == model.period.date_index[0], (
             f"window start {model.meteo.time[0]} does not match the model's "
-            f"{model.date_index[0]}"
+            f"{model.period.date_index[0]}"
         )
 
     def test_a_stated_meteo_window_uses_the_meteo_format(
@@ -2001,10 +2001,10 @@ class TestCatchmentFromYaml:
         other.mkdir()
         unquoted = Catchment.from_yaml(write_yaml(unquoted_mapping, other))
 
-        assert unquoted.start == quoted.start, (
-            f"expected {quoted.start}, got {unquoted.start}"
+        assert unquoted.period.start == quoted.period.start, (
+            f"expected {quoted.period.start}, got {unquoted.period.start}"
         )
-        assert len(unquoted.date_index) == len(quoted.date_index), (
+        assert len(unquoted.period.date_index) == len(quoted.period.date_index), (
             "both spellings should span the same period"
         )
 
@@ -2041,9 +2041,9 @@ class TestCatchmentFromYaml:
 
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"the drivers must span the model period: {model.meteo.time_steps} against "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
 
     def test_a_missing_driver_folder_is_reported_before_anything_is_read(

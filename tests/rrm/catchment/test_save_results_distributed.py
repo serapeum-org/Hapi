@@ -121,7 +121,9 @@ def test_save_results_distributed_values_match_the_model_array(
     )
 
     written = sorted(out.glob("*.tif"))
-    start_i = np.where(coello_run.date_index == np.datetime64("2009-01-01"))[0][0]
+    start_i = np.where(coello_run.period.date_index == np.datetime64("2009-01-01"))[0][
+        0
+    ]
     expected = coello_run.results.state_variables[:, :, start_i, 0]
     actual = Dataset.read_file(str(written[0])).read_array(band=0)
 

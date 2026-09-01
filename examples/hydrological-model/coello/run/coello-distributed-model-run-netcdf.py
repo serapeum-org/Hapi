@@ -30,14 +30,16 @@ Coello = Catchment.from_yaml(
 
 # %% Check the drivers actually came from the file and cover the model
 print(f"meteo grid + steps : {Coello.meteo.shape}")
-print(f"model steps        : {len(Coello.date_index)}")
+print(f"model steps        : {len(Coello.period.date_index)}")
 print(f"meteo period       : {Coello.meteo.time[0]} -> {Coello.meteo.time[-1]}")
-print(f"model period       : {Coello.date_index[0]} -> {Coello.date_index[-1]}")
-if Coello.meteo.time_steps != len(Coello.date_index):
+print(
+    f"model period       : {Coello.period.date_index[0]} -> {Coello.period.date_index[-1]}"
+)
+if Coello.meteo.time_steps != len(Coello.period.date_index):
     raise ValueError("the drivers must hold exactly as many steps as the model spans")
-if Coello.meteo.time[0] != Coello.date_index[0]:
+if Coello.meteo.time[0] != Coello.period.date_index[0]:
     raise ValueError("the drivers must start where the model does")
-if Coello.meteo.time[-1] != Coello.date_index[-1]:
+if Coello.meteo.time[-1] != Coello.period.date_index[-1]:
     raise ValueError("the drivers must end where the model does")
 
 # %% Run the model
@@ -97,4 +99,6 @@ Coello.save_results(
 print(f"rasters written to  : {save_to}")
 
 # %% Plot the hydrograph at the outlet gauge (row position, not the gauge id)
-Coello.plot_hydrograph(Coello.start, Coello.end, Coello.GaugesTable.index[-1])
+Coello.plot_hydrograph(
+    Coello.period.start, Coello.period.end, Coello.GaugesTable.index[-1]
+)

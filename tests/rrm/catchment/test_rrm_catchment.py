@@ -15,8 +15,8 @@ from hapi.run import Run
 
 def test_create_catchment_instance(coello_rrm_date: list):
     coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    assert coello.dt == 1
-    assert isinstance(coello.date_index, DatetimeIndex)
+    assert coello.period.dt == 1
+    assert isinstance(coello.period.date_index, DatetimeIndex)
     assert isinstance(coello.routing_method, str)
 
 
@@ -149,7 +149,7 @@ class TestDistributed:
         )
         assert coello.spatial_resolution == "distributed"
         assert coello.routing_method == "Muskingum"
-        assert isinstance(coello.start, dt.datetime)
+        assert isinstance(coello.period.start, dt.datetime)
 
     def test_read_meteo_inputs(
         self,

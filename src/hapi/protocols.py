@@ -17,13 +17,12 @@ that from being a cycle.
 
 from __future__ import annotations
 
-import datetime as dt
 from typing import TYPE_CHECKING, Any, Protocol
 
 import numpy as np
-import pandas as pd
 
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.period import SimulationPeriod
 from hapi.results import SimulationResults
 
 if TYPE_CHECKING:
@@ -44,19 +43,19 @@ class ConceptualModelInputs(Protocol):
         q_init: Initial discharge in m3/s, or None to let the model choose.
         snow: 1 to run the snow routine, 0 otherwise.
         area: Catchment area in km2.
-        conversion_factor: Depth-to-discharge factor for the temporal resolution.
-        dt: Time-step factor used by the Muskingum routing.
+        period: The span the run covers, and the calendar, `dt` and `conversion_factor`
+            it implies. One object rather than six loose fields, so a derived value can
+            never describe a different span from the one the model is set to.
         results: Where the run writes its output. None before the first run.
     """
 
+    period: SimulationPeriod
     parameters: np.ndarray | list
     lumped_model: BaseConceptualModel
     initial_cond: list
     q_init: float | None
     snow: int
     area: float | int
-    conversion_factor: float
-    dt: float
     results: SimulationResults | None
 
 
@@ -66,7 +65,6 @@ class DistributedModel(ConceptualModelInputs, Protocol):
     Attributes:
         meteo: The three driver cubes and the calendar they cover.
         flow_network: The routing network and the grid it defines.
-        date_index: The model's own calendar, which the drivers are checked against.
         routing_method: Canonicalised routing method. `route_muskingum` compares this against
             `"Muskingum"` exactly to decide whether a cell is routed or skipped.
         bankfull_depth: Read only when `routing_method` is not `"Muskingum"`; None otherwise.
@@ -74,7 +72,6 @@ class DistributedModel(ConceptualModelInputs, Protocol):
 
     meteo: MeteoInputs
     flow_network: FlowNetwork
-    date_index: pd.DatetimeIndex
     routing_method: str
     bankfull_depth: np.ndarray | None
 
@@ -86,17 +83,11 @@ class LumpedModelInputs(ConceptualModelInputs, Protocol):
         data: `(time, 4)` array of precipitation, ET, temperature and the long-term average.
         maxbas: Whether the parameter vector carries a MAXBAS value, which changes how the
             routing function is called.
-        temporal_resolution: `"daily"` or `"hourly"`.
-        start: First step of the simulation period.
-        end: Last step of the simulation period.
         Qsim: Where the routed hydrograph lands.
     """
 
     data: np.ndarray
     maxbas: bool
-    temporal_resolution: str
-    start: dt.datetime
-    end: dt.datetime
     Qsim: Any
 
 

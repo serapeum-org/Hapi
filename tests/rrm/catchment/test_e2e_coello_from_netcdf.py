@@ -199,16 +199,16 @@ class TestMuskingumPipeline:
         assert model.meteo.shape == (13, 14, 10), (
             f"expected a 13x14 grid over 10 steps, got {model.meteo.shape}"
         )
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"the drivers hold {model.meteo.time_steps} steps but the model spans "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
         assert model.meteo.time is not None, "the calendar must come out of the file"
-        assert model.meteo.time[0] == model.date_index[0], (
-            f"the drivers start at {model.meteo.time[0]}, the model at {model.date_index[0]}"
+        assert model.meteo.time[0] == model.period.date_index[0], (
+            f"the drivers start at {model.meteo.time[0]}, the model at {model.period.date_index[0]}"
         )
-        assert model.meteo.time[-1] == model.date_index[-1], (
-            f"the drivers end at {model.meteo.time[-1]}, the model at {model.date_index[-1]}"
+        assert model.meteo.time[-1] == model.period.date_index[-1], (
+            f"the drivers end at {model.meteo.time[-1]}, the model at {model.period.date_index[-1]}"
         )
 
     def test_routing_fills_the_distributed_fields(self, muskingum_run: Catchment):
@@ -259,7 +259,7 @@ class TestMuskingumPipeline:
         assert np.isfinite(model.metrics.to_numpy(dtype=float)).all(), (
             "every metric must be finite"
         )
-        assert model.Qsim.shape == (len(model.date_index), n_gauges), (
+        assert model.Qsim.shape == (len(model.period.date_index), n_gauges), (
             f"Qsim shape mismatch: {model.Qsim.shape}"
         )
         assert np.isfinite(model.Qsim.to_numpy(dtype=float)).all(), (
@@ -285,8 +285,8 @@ class TestMuskingumPipeline:
 
         written = sorted(out.glob("*.tif"))
         assert written, "save_results must write at least one raster"
-        assert len(written) == len(model.date_index), (
-            f"expected one raster per step ({len(model.date_index)}), got {len(written)}"
+        assert len(written) == len(model.period.date_index), (
+            f"expected one raster per step ({len(model.period.date_index)}), got {len(written)}"
         )
 
         first = Dataset.read_file(str(written[0])).read_array()

@@ -83,7 +83,7 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
     assert np.isfinite(coello.metrics.to_numpy(dtype=float)).all(), (
         "All metric values should be finite"
     )
-    assert coello.Qsim.shape == (len(coello.date_index), n_gauges), (
+    assert coello.Qsim.shape == (len(coello.period.date_index), n_gauges), (
         f"Qsim shape mismatch: {coello.Qsim.shape}"
     )
 

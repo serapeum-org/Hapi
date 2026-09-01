@@ -316,7 +316,7 @@ class TestRRMWithLake:
             lake.QlakeR[0],
             model.parameters[row, col, 10],
             model.parameters[row, col, 11],
-            model.conversion_factor,
+            model.period.conversion_factor,
         )
         np.testing.assert_allclose(
             with_lake - without,

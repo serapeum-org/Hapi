@@ -98,7 +98,7 @@ class TestDistributed:
         )
         assert coello.spatial_resolution == "distributed"
         assert coello.routing_method == "Muskingum"
-        assert isinstance(coello.start, dt.datetime)
+        assert isinstance(coello.period.start, dt.datetime)
 
     def test_read_objective_fn(self, coello_start_date: str, coello_end_date: str):
         coello = Calibration(

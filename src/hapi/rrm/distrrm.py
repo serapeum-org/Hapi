@@ -112,7 +112,7 @@ class DistributedRRM:
                     )
 
         area_coef = Model.area / Model.flow_network.px_tot_area
-        factor = Model.flow_network.px_area * area_coef / Model.conversion_factor
+        factor = Model.flow_network.px_area * area_coef / Model.period.conversion_factor
         # convert quz and qlz from mm/time step to m3/sec  # Timef*3.6
         results.quz = results.quz * factor
         results.qlz = results.qlz * factor
@@ -224,7 +224,7 @@ class DistributedRRM:
                                     results.quz_routed[x_ind, y_ind, 0],
                                     Model.parameters[x_ind, y_ind, 10],
                                     Model.parameters[x_ind, y_ind, 11],
-                                    Model.dt,
+                                    Model.period.dt,
                                 )
 
                                 qlzi = qlzi + results.qlz_translated[x_ind, y_ind, :]

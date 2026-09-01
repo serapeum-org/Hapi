@@ -291,7 +291,7 @@ class Calibration(Catchment):
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
+            self.flow_network.rows, self.flow_network.cols, self.period.date_index
         )
 
         # basic inputs
@@ -330,8 +330,8 @@ class Calibration(Catchment):
                     for i in range(len(f)):
                         k = par[f[i]]
                         x = par[f[i] + 1]
-                        g.append(2 * k * x / self.dt)
-                        g.append((2 * k * (1 - x)) / self.dt)
+                        g.append(2 * k * x / self.period.dt)
+                        g.append((2 * k * (1 - x)) / self.period.dt)
 
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
@@ -437,7 +437,7 @@ class Calibration(Catchment):
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
         self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
+            self.flow_network.rows, self.flow_network.cols, self.period.date_index
         )
 
         # basic inputs
@@ -606,8 +606,8 @@ class Calibration(Catchment):
                         self.QGauges[self.QGauges.columns[-1]], self.Qsim, *self.OFArgs
                     )
                     g = [
-                        2 * par[-2] * par[-1] / self.dt,
-                        (2 * par[-2] * (1 - par[-1])) / self.dt,
+                        2 * par[-2] * par[-1] / self.period.dt,
+                        (2 * par[-2] * (1 - par[-1])) / self.period.dt,
                     ]
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs

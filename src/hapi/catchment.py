@@ -43,6 +43,7 @@ from hapi.inputs import (
     _warn_if_no_sentinel,
     read_rasters,
 )
+from hapi.period import SimulationPeriod
 from hapi.results import SimulationResults
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
@@ -263,15 +264,9 @@ class Catchment:
                 "Kinematic".
         """
         self.name = name
-        self.start = dt.datetime.strptime(start_data, fmt)
-        self.end = dt.datetime.strptime(end, fmt)
 
-        # All three of the mode arguments are lower-cased below, so a non-string reaches
-        # `.lower()` and raises an `AttributeError` naming neither the argument nor the class.
-        # Checked together, once, rather than three times over.
         for argument, value in (
             ("spatial_resolution", spatial_resolution),
-            ("temporal_resolution", temporal_resolution),
             ("routing_method", routing_method),
         ):
             if not isinstance(value, str):
@@ -285,22 +280,14 @@ class Catchment:
             )
         self.spatial_resolution = spatial_resolution.lower()
 
-        if temporal_resolution.lower() not in ["daily", "hourly"]:
-            raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
-        self.temporal_resolution = temporal_resolution.lower()
-        # assuming the default dt is 1 day
-        # Only the two resolutions the check above admits: an `else` here would be
-        # unreachable, and the one that used to sit here set a conversion factor but no
-        # `date_index`, which reads as support for sub-daily steps that does not exist.
-        # Adding one (q mm, area km2: 1/(3.6*f)) means widening the check above too.
-        if self.temporal_resolution == "daily":
-            self.dt = 1  # 24
-            self.conversion_factor = CONVERSION_FACTOR * 1
-            self.date_index = pd.date_range(self.start, self.end, freq="D")
-        else:
-            self.dt = 1  # 24
-            self.conversion_factor = CONVERSION_FACTOR * 1 / 24
-            self.date_index = pd.date_range(self.start, self.end, freq="h")
+        #: The span this model runs over. One object rather than six attributes: `start`,
+        #: `end` and `temporal_resolution` are the inputs, and `date_index`, `dt` and
+        #: `conversion_factor` are derived from them on read, so they cannot describe a
+        #: different span from the one the model is set to. It validates the resolution and
+        #: rejects a backwards span.
+        self.period = SimulationPeriod.parse(
+            start_data, end, fmt=fmt, temporal_resolution=temporal_resolution
+        )
 
         # Canonicalised like the two resolutions above, and for a sharper reason:
         # `distrrm.route_muskingum` tests `routing_method != "Muskingum"` case-sensitively, and
@@ -399,7 +386,7 @@ class Catchment:
                 'Coello'
                 >>> model.spatial_resolution
                 'lumped'
-                >>> len(model.date_index)
+                >>> len(model.period.date_index)
                 1095
 
                 ```
@@ -970,10 +957,10 @@ class Catchment:
             ValueError: If the gauge table has not been read yet
                 (distributed mode).
         """
-        if self.temporal_resolution.lower() == "daily":
-            ind = pd.date_range(self.start, self.end, freq="D")
+        if self.period.temporal_resolution.lower() == "daily":
+            ind = pd.date_range(self.period.start, self.period.end, freq="D")
         else:
-            ind = pd.date_range(self.start, self.end, freq="h")
+            ind = pd.date_range(self.period.start, self.period.end, freq="h")
 
         if self.spatial_resolution.lower() == "distributed":
             self._read_one_discharge_file_per_gauge(
@@ -1047,7 +1034,9 @@ class Catchment:
                 )
 
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-            self.QGauges[labels[i]] = f.loc[self.start : self.end, f.columns[-1]]
+            self.QGauges[labels[i]] = f.loc[
+                self.period.start : self.period.end, f.columns[-1]
+            ]
 
     def _read_the_single_discharge_file(
         self, path: str, index: pd.DatetimeIndex, delimiter: str, fmt: str
@@ -1072,7 +1061,9 @@ class Catchment:
         self.QGauges = pd.DataFrame(index=index)
         f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
         f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-        self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
+        self.QGauges[f.columns[0]] = f.loc[
+            self.period.start : self.period.end, f.columns[0]
+        ]
 
     def read_parameters_bound(
         self,
@@ -1153,7 +1144,7 @@ class Catchment:
 
         if self.results.outlet_shortcut_valid:
             self.Qsim = pd.DataFrame(
-                index=self.date_index, columns=self.QGauges.columns
+                index=self.period.date_index, columns=self.QGauges.columns
             )
             if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
@@ -1210,7 +1201,7 @@ class Catchment:
         else:
             # MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the
             # basin-wide sum the run already put in `qout`.
-            self.Qsim = pd.DataFrame(index=self.date_index)
+            self.Qsim = pd.DataFrame(index=self.period.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
             q_sim = np.reshape(self.results.qout, self.meteo.time_steps)
             self.Qsim.loc[:, gauge_id] = q_sim
@@ -1432,8 +1423,8 @@ class Catchment:
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.nonzero(self.date_index == start)[0][0]
-        end_i = np.nonzero(self.date_index == end)[0][0]
+        start_i = np.nonzero(self.period.date_index == start)[0][0]
+        end_i = np.nonzero(self.period.date_index == end)[0][0]
 
         if option == 1:
             arr = self.results.q_total[:, :, start_i:end_i]
@@ -1476,7 +1467,7 @@ class Catchment:
         arr = arr.copy()
         arr[np.isnan(self.flow_network.flow_acc_arr), :] = np.nan
 
-        time = self.date_index[start_i:end_i]
+        time = self.period.date_index[start_i:end_i]
 
         if gauges:
             # animate expects a 3-column array: [value to display, cell row, cell column].
@@ -1575,17 +1566,17 @@ class Catchment:
             )
 
         if start == "":
-            start = self.date_index[0]
+            start = self.period.date_index[0]
         elif isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
 
         if end == "":
-            end = self.date_index[-1]
+            end = self.period.date_index[-1]
         elif isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.nonzero(self.date_index == start)[0][0]
-        end_i = np.nonzero(self.date_index == end)[0][0] + 1
+        start_i = np.nonzero(self.period.date_index == start)[0][0]
+        end_i = np.nonzero(self.period.date_index == end)[0][0] + 1
 
         if self.spatial_resolution == "distributed":
             if flow_acc_path == "":
@@ -1606,7 +1597,7 @@ class Catchment:
                 os.makedirs(path, exist_ok=True)
             names = [
                 os.path.join(path, f"{prefix}{str(i)[:10]}.tif")
-                for i in self.date_index[start_i:end_i]
+                for i in self.period.date_index[start_i:end_i]
             ]
             if result == 1:
                 arr = self.results.q_total[:, :, start_i:end_i]

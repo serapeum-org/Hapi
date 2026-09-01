@@ -239,7 +239,9 @@ def test_save_results_distributed_discharge_after_fw1(
     written = sorted(out.glob("*.tif"))
     assert len(written) == 4, f"expected one raster per date, got {len(written)}"
 
-    start_i = np.where(coello_fw1.date_index == np.datetime64("2009-01-01"))[0][0]
+    start_i = np.where(coello_fw1.period.date_index == np.datetime64("2009-01-01"))[0][
+        0
+    ]
     np.testing.assert_allclose(
         Dataset.read_file(str(written[0])).read_array(band=0),
         coello_fw1.results.q_total[:, :, start_i],

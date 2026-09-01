@@ -56,4 +56,6 @@ print("KGE= " + str(round(Coello.metrics.loc["KGE", gaugeid], 2)))
 print("WB= " + str(round(Coello.metrics.loc["WB", gaugeid], 2)))
 
 # %% plot the hydrograph at the outlet gauge (row position, not the gauge id)
-Coello.plot_hydrograph(Coello.start, Coello.end, Coello.GaugesTable.index[-1])
+Coello.plot_hydrograph(
+    Coello.period.start, Coello.period.end, Coello.GaugesTable.index[-1]
+)
