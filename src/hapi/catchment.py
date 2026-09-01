@@ -217,9 +217,13 @@ class Catchment:
 
     The Catchment class includes methods to read the meteorological and
     spatial inputs of the distributed hydrological model. It also reads the
-    data of the gauges. It is a superclass that has the Run subclass, so you
-    need to build the Catchment object and hand it as an input to the Run
-    class to run the model.
+    data of the gauges. Build the catchment, then hand it to whichever
+    :class:`hapi.run.Run` entry point suits it -- `Run.RunHapi(model)`. `Run` states what it
+    needs as a protocol, which this class satisfies structurally; neither class inherits
+    from the other.
+
+    A run assigns its output to :attr:`results`. The result arrays are also readable under
+    their historical names (`Qtot`, `quz`, ...) as read-only properties forwarding to it.
     """
 
     def __init__(
@@ -425,9 +429,8 @@ class Catchment:
         `routing_method` and `spatial_resolution`.
 
         Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the
-        same constructor arguments. `Run` does not: it overrides `__init__` to take none, and
-        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so it
-        overrides this method to refuse the call and say so.
+        same constructor arguments. `Run` is not a catchment at all and has nothing to build;
+        `Run.from_yaml` exists only to say so and point here.
 
         Args:
             path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for

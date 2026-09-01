@@ -187,7 +187,6 @@ exclude = [
 [[tool.mypy.overrides]]
 module = [
     "hapi.catchment",
-    "hapi.run",
     "hapi.calibration",
     "hapi.wrapper",
 ]

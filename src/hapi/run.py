@@ -4,30 +4,45 @@ The run module connects the parameter spatial distribution function with
 both components of the spatial representation of the hydrological process
 (conceptual model and spatial routing) to calculate the predicted runoff
 at known locations based on a given performance function.
+
+`Run` is a namespace of static entry points, not a class to instantiate. Each one takes the
+model it should run, validates it, and hands it to :class:`~hapi.wrapper.Wrapper`. What each
+entry point requires is stated by the protocols below rather than by naming a concrete class:
+:class:`~hapi.catchment.Catchment` satisfies them structurally, so this module does not import
+it at runtime and anything else carrying the same attributes runs too.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
-from hapi.catchment import Catchment
-from hapi.catchment import Lake as LakeType
+from hapi.protocols import (
+    DistributedModel,
+    FloodModel,
+    LumpedModelInputs,
+)
+from hapi.results import SimulationResults
 
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
 
+if TYPE_CHECKING:
+    from hapi.catchment import Lake as LakeType
+
 ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
 COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
-GRID_MISMATCH_ERROR = "all input data should have the same number of rows"
+#: The flow-direction check tests both axes, so it says both. The entry points used to
+#: carry three different wordings for this one check; the widest is the accurate one.
+GRID_MISMATCH_ERROR = "all input data should have the same number of rows and columns"
 
 
-def _check_parameters_cover_grid(model: Catchment) -> None:
+def _check_parameters_cover_grid(model: DistributedModel) -> None:
     """Check the parameter array spans the catchment grid.
 
     The same two checks every distributed entry point makes before handing the model to the
@@ -40,13 +55,14 @@ def _check_parameters_cover_grid(model: Catchment) -> None:
     Raises:
         ValueError: The parameter array has the wrong number of rows or columns.
     """
-    if np.shape(model.parameters)[0] != model.flow_network.rows:
+    shape = np.asarray(model.parameters).shape
+    if shape[0] != model.flow_network.rows:
         raise ValueError(ROWS_MISMATCH_ERROR)
-    if np.shape(model.parameters)[1] != model.flow_network.cols:
+    if shape[1] != model.flow_network.cols:
         raise ValueError(COLS_MISMATCH_ERROR)
 
 
-def _check_lake_meteo(model: Catchment, lake: LakeType) -> None:
+def _check_lake_meteo(model: DistributedModel, lake: LakeType) -> None:
     """Check the lake's record lines up with the distributed drivers.
 
     Args:
@@ -54,26 +70,68 @@ def _check_lake_meteo(model: Catchment, lake: LakeType) -> None:
         lake: The lake whose `MeteoData` is checked.
 
     Raises:
-        ValueError: The lake record is a different length from the distributed drivers, or
-            carries fewer than the three columns the lake model reads.
+        ValueError: The lake has no meteorological record, the record is a different length
+            from the distributed drivers, or it carries fewer than the three columns the
+            lake model reads.
     """
-    if np.shape(lake.MeteoData)[0] != model.meteo.time_steps:
+    meteo_data = lake.MeteoData
+    if meteo_data is None:
+        raise ValueError(
+            "the lake has no meteorological data; call lake.read_meteo_data before "
+            "running a lake-aware entry point"
+        )
+    if np.shape(meteo_data)[0] != model.meteo.time_steps:
         raise ValueError(
             "Lake meteorological data has to have the same length as the distributed "
             "raster data"
         )
-    if np.shape(lake.MeteoData)[1] < 3:
+    if np.shape(meteo_data)[1] < 3:
         raise ValueError(
             "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
         )
 
 
-class Run(Catchment):
+def _validate_distributed(model: DistributedModel, check_flow_direction: bool) -> None:
+    """Run the checks every distributed entry point makes before the wrapper.
+
+    Args:
+        model: The model about to run.
+        check_flow_direction: Whether to compare the flow-direction raster against the grid.
+            The MAXBAS paths never read that raster, so they do not require it.
+
+    Raises:
+        ValueError: The grid, the drivers and the parameters do not agree.
+    """
+    if check_flow_direction:
+        flow_dir_arr = model.flow_network.flow_dir_arr
+        # `FlowNetwork` takes the direction raster as optional because MAXBAS never reads
+        # it. The paths that route cell to cell do, so say which raster is missing rather
+        # than failing on None inside the routing loop.
+        if flow_dir_arr is None:
+            raise ValueError(
+                "this run routes cell to cell and needs a flow-direction raster, but the "
+                "flow network was built without one; pass it to FlowNetwork.from_rasters"
+            )
+        fd_rows, fd_cols = flow_dir_arr.shape
+        if fd_rows != model.flow_network.rows or fd_cols != model.flow_network.cols:
+            raise ValueError(GRID_MISMATCH_ERROR)
+
+    # The three cubes already agree with each other (checked when MeteoInputs was
+    # built); this is the other half -- that they cover the model's grid.
+    model.meteo.validate_against(
+        model.flow_network.rows, model.flow_network.cols, model.date_index
+    )
+    _check_parameters_cover_grid(model)
+
+
+class Run:
     """Run the catchment model.
 
-    The Run sub-class validates the spatial data and hands it to the
-    Wrapper class. It is a sub-class of the Catchment class, so you
-    need to create the Catchment object first to run the model.
+    A namespace of static entry points, not a class to instantiate. Each one validates the
+    model it is given and hands it to :class:`~hapi.wrapper.Wrapper`, returning the
+    :class:`~hapi.results.SimulationResults` the run produced. The same object is also
+    assigned to the model's `results`, so the result arrays stay readable off the model
+    afterwards.
 
     Methods:
         RunHapi: Run the distributed hydrological model.
@@ -81,23 +139,39 @@ class Run(Catchment):
         runFW1: Run the FW1 distributed model.
         RunFW1withLake: Run the FW1 model with a lake component.
         runLumped: Run the lumped conceptual model.
+        RunFloodModel: Run the flood model.
+
+    Examples:
+        - Build a model and run it; the results come back and stay on the model:
+            ```python
+            >>> from hapi.catchment import Catchment
+            >>> from hapi.routing import Routing
+            >>> from hapi.run import Run
+            >>> model = Catchment.from_yaml(
+            ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+            ... )
+            >>> results = Run.runLumped(model, 1, Routing.muskingum_v)
+            >>> results.routing.value
+            'lumped'
+            >>> results is model.results
+            True
+
+            ```
+
+    See Also:
+        hapi.catchment.Catchment.from_yaml: Builds a model from a run configuration.
     """
 
-    def __init__(self):
-        """Initialize the Run class."""
-        self.Qsim: np.ndarray | pd.DataFrame | None = None
-
-    @classmethod
-    def from_yaml(cls, path: str | Path) -> NoReturn:
+    @staticmethod
+    def from_yaml(path: str | Path) -> NoReturn:
         """Refuse to build a `Run`, explaining the pattern instead.
 
-        `Run` subclasses `Catchment` to hold its entry points, not to be a catchment: its
-        `__init__` takes no arguments, so the inherited `Catchment.from_yaml` could only fail
-        with a `TypeError` about constructor arity -- an error saying nothing about what to do
-        instead. The methods here are called on a model built elsewhere.
+        `Run` is a namespace of entry points, not a model: there is nothing for a
+        configuration to build. Kept as an explicit refusal because the message it gives is
+        more useful than the `AttributeError` that would replace it.
 
         Args:
-            path: Ignored; present so the signature matches the one it overrides.
+            path: Ignored; present so the call a caller is likely to try is answered.
 
         Raises:
             TypeError: Always.
@@ -113,19 +187,6 @@ class Run(Catchment):
                 Run cannot be built from a configuration
 
                 ```
-            - Build the model with `Catchment.from_yaml` and hand it to the entry point:
-                ```python
-                >>> from hapi.catchment import Catchment
-                >>> from hapi.routing import Routing
-                >>> from hapi.run import Run
-                >>> model = Catchment.from_yaml(
-                ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
-                ... )
-                >>> Run.runLumped(model, 1, Routing.muskingum_v)
-                >>> len(model.Qsim)
-                1095
-
-                ```
 
         See Also:
             hapi.catchment.Catchment.from_yaml: The classmethod that does build a model.
@@ -136,7 +197,8 @@ class Run(Catchment):
             "it in, e.g. Run.RunHapi(model)."
         )
 
-    def RunHapi(self):
+    @staticmethod
+    def RunHapi(model: DistributedModel) -> SimulationResults:
         """Run the distributed hydrological model.
 
         Validates that all input arrays (precipitation, evapotranspiration,
@@ -144,93 +206,87 @@ class Run(Catchment):
         dimensions, then executes the rainfall-runoff model via the
         Wrapper.
 
-        The following instance attributes are set after execution:
+        Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
 
-        - `state_variables`: 4D array (rows, cols, time, states) where
-          states are [sp, wc, sm, uz, lv].
-        - `qlz`: 3D array of the lower zone discharge.
-        - `quz`: 3D array of the upper zone discharge.
-        - `qout`: 1D timeseries of discharge at the catchment outlet
-          in m3/sec.
-        - `quz_routed`: 3D array of the upper zone discharge
-          accumulated and routed at each time step.
-        - `qlz_translated`: 3D array of the lower zone discharge
-          translated at each time step.
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`:
+
+            - `state_variables`: 4D array (rows, cols, time, states) where
+              states are [sp, wc, sm, uz, lv].
+            - `qlz`: 3D array of the lower zone discharge.
+            - `quz`: 3D array of the upper zone discharge.
+            - `quz_routed`: 3D array of the upper zone discharge
+              accumulated and routed at each time step.
+            - `qlz_translated`: 3D array of the lower zone discharge
+              translated at each time step.
+            - `Qtot`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet
+              cell carries the outlet hydrograph; `extract_discharge` fills `qout` from it.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        # input dimensions
-        fd_rows, fd_cols = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
-            raise ValueError(GRID_MISMATCH_ERROR)
-
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
+        _validate_distributed(model, check_flow_direction=True)
         # run the model
-        Wrapper.RRMModel(self)
+        results = Wrapper.RRMModel(model)
 
-        print("Model Run has finished")
+        logger.info("Model Run has finished")
+        return results
 
-    def RunFloodModel(self):
+    @staticmethod
+    def RunFloodModel(model: FloodModel) -> SimulationResults:
         """Run the flood model.
 
         Runs the conceptual distributed hydrological model with
         additional validation for river geometry inputs (bankfull depth,
         river width, river roughness, and flood plain roughness).
 
+        Args:
+            model: The model to run. See :class:`FloodModel` for what it must carry.
+
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`.
+
         Raises:
             ValueError: If meteorological input arrays, parameter
                 arrays, or river geometry arrays have inconsistent
                 dimensions.
         """
-        # input dimensions
-        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
-            raise ValueError(GRID_MISMATCH_ERROR)
+        _validate_distributed(model, check_flow_direction=True)
 
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        if any(
-            np.shape(arr)[0] != self.flow_network.rows
-            for arr in (
-                self.bankfull_depth,
-                self.river_width,
-                self.river_roughness,
-                self.flood_plain_roughness,
+        named_geometry = {
+            "bankfull_depth": model.bankfull_depth,
+            "river_width": model.river_width,
+            "river_roughness": model.river_roughness,
+            "flood_plain_roughness": model.flood_plain_roughness,
+        }
+        # `read_river_geometry` sets all four together, so a missing one means it was never
+        # called. Naming them beats `np.shape(None)` raising from inside the comparison.
+        missing = [name for name, arr in named_geometry.items() if arr is None]
+        if missing:
+            raise ValueError(
+                f"the flood model needs the river geometry, but {', '.join(missing)} "
+                "is not set; call read_river_geometry first"
             )
-        ):
+        # Rebuilt from the non-None values rather than `.values()` directly: the guard above
+        # has already ruled None out, but only a comprehension carries that into the type.
+        geometry = [arr for arr in named_geometry.values() if arr is not None]
+        if any(np.shape(arr)[0] != model.flow_network.rows for arr in geometry):
             raise ValueError(GRID_MISMATCH_ERROR)
-        if any(
-            np.shape(arr)[1] != self.flow_network.cols
-            for arr in (
-                self.bankfull_depth,
-                self.river_width,
-                self.river_roughness,
-                self.flood_plain_roughness,
-            )
-        ):
+        if any(np.shape(arr)[1] != model.flow_network.cols for arr in geometry):
             raise ValueError("all input data should have the same number of columns")
 
         # run the model
-        Wrapper.RRMModel(self)
-        print("RRM has finished")
+        results = Wrapper.RRMModel(model)
+        logger.info("RRM has finished")
         # SV = SaintVenant()
-        # SV.KinematicRaster(self)
+        # SV.KinematicRaster(model)
         # print("1D model Run has finished")
+        return results
 
-    def runHAPIwithLake(self, lake: LakeType):
+    @staticmethod
+    def runHAPIwithLake(model: DistributedModel, lake: LakeType) -> SimulationResults:
         """Run the distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -239,72 +295,67 @@ class Run(Catchment):
         the Wrapper.
 
         Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
             lake: Lake object containing lake configuration and
                 meteorological data. Must have a `MeteoData` attribute
                 with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
+
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
-        # input dimensions
-        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
-            raise ValueError(
-                "all input data should have the same number of rows and columns"
-            )
-
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        _check_lake_meteo(self, lake)
+        _validate_distributed(model, check_flow_direction=True)
+        _check_lake_meteo(model, lake)
         # run the model
-        Wrapper.RRMWithlake(self, lake)
+        results = Wrapper.RRMWithlake(model, lake)
 
-        print("Model Run has finished")
+        logger.info("Model Run has finished")
+        return results
 
-    def runFW1(self):
+    @staticmethod
+    def runFW1(model: DistributedModel) -> SimulationResults:
         """Run the FW1 distributed hydrological model.
 
         Validates that all input arrays have consistent dimensions,
-        then executes the FW1 model via the Wrapper.
+        then executes the FW1 model via the Wrapper. The flow-direction
+        raster is not checked here because MAXBAS never reads it.
 
-        The following instance attributes are set after execution:
+        Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
 
-        - `st`: 4D array of state variables.
-        - `q_out`: 1D array of calculated discharge at the catchment
-          outlet, summed over every cell.
-        - `q_uz`: 3D array of distributed discharge for each cell.
-        - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields
-          read by `save_results` and `plot_distributed_results`. MAXBAS
-          routes each cell straight to the outlet, so a cell of `Qtot` is
-          that cell's *contribution* to the outlet — `np.nansum` over the
-          domain reproduces `q_out`. Use
-          `extract_discharge(frame_work_1=True)`; the default outlet-cell
-          shortcut is invalid for this path and raises.
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`:
+
+            - `state_variables`: 4D array of state variables.
+            - `qout`: 1D array of calculated discharge at the catchment
+              outlet, summed over every cell.
+            - `quz`: 3D array of distributed discharge for each cell.
+            - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields
+              read by `save_results` and `plot_distributed_results`. MAXBAS
+              routes each cell straight to the outlet, so a cell of `Qtot` is
+              that cell's *contribution* to the outlet — `np.nansum` over the
+              domain reproduces `qout`. Use
+              `extract_discharge(frame_work_1=True)`; the default outlet-cell
+              shortcut is invalid for this path and raises.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
+        _validate_distributed(model, check_flow_direction=False)
         # run the model
-        Wrapper.FW1(self)
+        results = Wrapper.FW1(model)
 
-        print("Model Run has finished")
+        logger.info("Model Run has finished")
+        return results
 
-    def RunFW1withLake(self, lake: LakeType):
+    @staticmethod
+    def RunFW1withLake(model: DistributedModel, lake: LakeType) -> SimulationResults:
         """Run the FW1 distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -312,98 +363,69 @@ class Run(Catchment):
         then executes the FW1 model with lake routing via the Wrapper.
 
         Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
             lake: Lake object containing lake configuration and
                 meteorological data. Must have a `MeteoData` attribute
                 with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
 
-        Note:
-            The following catchment attributes should be set before
-            calling this method:
-
-            - `prec_path`: Path to the folder containing precipitation
-              rasters.
-            - `evap_path`: Path to the folder containing
-              evapotranspiration rasters.
-            - `temp_path`: Path to the folder containing temperature
-              rasters.
-            - `flow_acc_path`: Path to the flow accumulation raster.
-            - `flow_direction_path`: Path to the flow direction raster.
-            - `ParPath`: Path to the folder containing parameter
-              rasters.
-            - `p2`: List of unoptimized parameters where `p2[0]`
-              is tfac and `p2[1]` is catchment area in km2.
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
-        # input data validation
-
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        _check_lake_meteo(self, lake)
+        _validate_distributed(model, check_flow_direction=False)
+        _check_lake_meteo(model, lake)
 
         # run the model
-        Wrapper.FW1Withlake(self, lake)
+        return Wrapper.FW1Withlake(model, lake)
 
+    @staticmethod
     def runLumped(
-        self,
+        model: LumpedModelInputs,
         Route: int = 0,
         routing_fn: Callable[..., Any] | None = None,
-    ):
+    ) -> SimulationResults:
         """Run the lumped conceptual model.
 
         Executes a lumped conceptual hydrological model, optionally
         routing the generated discharge hydrograph. The simulated
-        discharge is stored in `self.Qsim` as a pandas DataFrame
+        discharge is stored in `model.Qsim` as a pandas DataFrame
         indexed by the simulation date range.
 
         Args:
+            model: The model to run. See :class:`LumpedModelInputs` for what it must carry.
             Route: Flag to decide whether to route the generated
                 discharge hydrograph. Use 0 for no routing or 1 to
                 enable routing. Defaults to 0.
             routing_fn: Function to route the discharge hydrograph.
-                If None, an empty list is used. Defaults to None.
+                Required when `Route` is not 0.
 
-        Note:
-            The following attributes should be defined before calling
-            this method:
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`. A lumped
+            run applies no spatial routing, so the routed fields stay None and
+            `routing` is `RoutingKind.LUMPED`.
 
-            - `LumpedModel`: Conceptual model containing a
-              `simulate` method.
-            - `data`: Numpy array of meteorological data with
-              columns for precipitation, evapotranspiration,
-              temperature, and long-term average temperature.
-            - `Parameters`: Numpy array of conceptual model
-              parameters.
-            - `CatArea`: Catchment area in km2.
-            - `conversion_factor`: Time conversion factor
-              (e.g., 24 for daily).
-            - `InitialCond`: List of initial state variable
-              values [sp, sm, uz, lz, wc].
-            - `Snow`: Whether to use the snow subroutine (0 or 1).
-            - `q_init`: Initial discharge value.
+        Raises:
+            ValueError: `Route` is not 0 and no routing function was given.
         """
         if routing_fn is None and Route != 0:
             raise ValueError("routing_fn must be a callable when Route != 0")
-        if self.temporal_resolution.lower() == "daily":
-            ind = pd.date_range(self.start, self.end, freq="D")
+        if model.temporal_resolution.lower() == "daily":
+            ind = pd.date_range(model.start, model.end, freq="D")
         else:
-            ind = pd.date_range(self.start, self.end, freq="h")
+            ind = pd.date_range(model.start, model.end, freq="h")
 
         Qsim = pd.DataFrame(index=ind)
 
-        Wrapper.Lumped(self, Route, routing_fn)
-        Qsim["q"] = self.Qsim
-        self.Qsim = Qsim[:]
+        results = Wrapper.Lumped(model, Route, routing_fn)
+        Qsim["q"] = model.Qsim
+        model.Qsim = Qsim[:]
         logger.info("Lumped model run has finished successfully")
+        return results
 
 
 if __name__ == "__main__":

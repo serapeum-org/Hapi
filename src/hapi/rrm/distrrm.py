@@ -33,15 +33,19 @@ class DistributedRRM:
         pass
 
     @staticmethod
-    def run_lumped_model(Model):
+    def run_lumped_model(Model) -> SimulationResults:
         """Run lumped rainfall-runoff model for every grid cell.
 
         Executes the lumped conceptual model (e.g., HBV) independently
         for each non-NaN cell in the catchment grid and converts the
         resulting discharge from mm/time-step to m3/s.
 
-        After execution the following attributes are set on *Model*:
-        `state_variables`, `quz`, and `qlz`.
+        Builds `Model.results` and returns it, so a caller that needs the arrays does
+        not have to read them back off the model and re-narrow them from `| None`.
+
+        Returns:
+            SimulationResults: The results object, carrying `state_variables`, `quz` and
+            `qlz`, with `routing` still `RoutingKind.UNROUTED`.
 
         Args:
             Model (Catchment): A catchment model object carrying the following
@@ -112,6 +116,7 @@ class DistributedRRM:
         # convert quz and qlz from mm/time step to m3/sec  # Timef*3.6
         results.quz = results.quz * factor
         results.qlz = results.qlz * factor
+        return results
 
     @staticmethod
     def SpatialRouting(Model):
@@ -226,7 +231,9 @@ class DistributedRRM:
 
                             # add the routed upstream flows to the current Quz in the cell
                             results.quz_routed[x, y, :] = results.quz[x, y, :] + q_uzi
-                            results.qlz_translated[x, y, :] = results.qlz[x, y, :] + qlzi
+                            results.qlz_translated[x, y, :] = (
+                                results.qlz[x, y, :] + qlzi
+                            )
         results.Qtot = results.qlz_translated + results.quz_routed
         # Muskingum accumulates downstream, so a cell of `Qtot` is the discharge at that
         # cell and the outlet-cell shortcut in `extract_discharge` is valid.

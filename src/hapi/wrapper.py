@@ -13,13 +13,14 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from hapi.protocols import ConceptualModelInputs, DistributedModel, LumpedModelInputs
 from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
 from hapi.rrm.distrrm import DistributedRRM as distrrm
 from hapi.rrm.hbv_lake import HBVLake
 
 if TYPE_CHECKING:
-    from hapi.catchment import Catchment, Lake
+    from hapi.catchment import Lake
 
 
 class Wrapper:
@@ -44,7 +45,7 @@ class Wrapper:
         pass
 
     @staticmethod
-    def RRMModel(Model: Catchment, ll_temp=None, q_0=None):
+    def RRMModel(Model: DistributedModel, ll_temp=None, q_0=None) -> SimulationResults:
         """Run the distributed rainfall-runoff model with spatial routing.
 
         Connects two modules:
@@ -80,15 +81,18 @@ class Wrapper:
                 Defaults to None.
         """
         # run the rainfall runoff model separately
-        distrrm.run_lumped_model(Model)
+        results = distrrm.run_lumped_model(Model)
 
         # run the GIS part to rout from cell to another. It records
         # `RoutingKind.MUSKINGUM` on the results, which is what makes the outlet-cell
         # shortcut in `extract_discharge` valid for them.
         distrrm.SpatialRouting(Model)
+        return results
 
     @staticmethod
-    def RRMWithlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
+    def RRMWithlake(
+        Model: DistributedModel, Lake: Lake, ll_temp=None, q_0=None
+    ) -> SimulationResults:
         """Run the distributed RRM with lake simulation and routing.
 
         Connects three modules: the lake module, the distributed
@@ -148,7 +152,7 @@ class Wrapper:
         )
 
         # subcatchment
-        distrrm.run_lumped_model(Model)
+        results = distrrm.run_lumped_model(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
         qlake = routing.muskingum_v(
@@ -165,7 +169,7 @@ class Wrapper:
         # step here made it one longer than the array it is added to, which raised for every
         # input and left this entry point unrunnable.
         # both lake & Quz are in m3/s
-        quz = Model.results.quz
+        quz = results.quz
         quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
             quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
         )
@@ -173,9 +177,10 @@ class Wrapper:
         # run the GIS part to rout from cell to another. It records
         # `RoutingKind.MUSKINGUM` on the results.
         distrrm.SpatialRouting(Model)
+        return results
 
     @staticmethod
-    def _set_maxbas_output_fields(Model: Catchment):
+    def _set_maxbas_output_fields(Model: ConceptualModelInputs) -> None:
         """Fill the distributed output fields after a triangular (MAXBAS) run.
 
         `save_results` and `plot_distributed_results` read `Qtot`,
@@ -210,7 +215,7 @@ class Wrapper:
         results.routing = RoutingKind.MAXBAS
 
     @staticmethod
-    def FW1(Model: Catchment, ll_temp=None, q_0=None):
+    def FW1(Model: DistributedModel, ll_temp=None, q_0=None) -> SimulationResults:
         """Run the distributed RRM with triangular function-1 routing.
 
         Connects two modules:
@@ -235,13 +240,12 @@ class Wrapper:
                 Defaults to None.
         """
         # subcatchment
-        distrrm.run_lumped_model(Model)
+        results = distrrm.run_lumped_model(Model)
 
         distrrm.DistMaxbas1(Model)
 
         Wrapper._set_maxbas_output_fields(Model)
 
-        results = Model.results
         steps = Model.meteo.simulation_steps
         qlz1 = np.array(
             [np.nansum(results.qlz[:, :, i]) for i in range(steps)]
@@ -251,9 +255,12 @@ class Wrapper:
         )  # average of all cells (routed mm/timestep)
 
         results.qout = (qlz1 + quz1)[:-1]
+        return results
 
     @staticmethod
-    def FW1Withlake(Model: Catchment, Lake: Lake, ll_temp=None, q_0=None):
+    def FW1Withlake(
+        Model: DistributedModel, Lake: Lake, ll_temp=None, q_0=None
+    ) -> SimulationResults:
         """Run the distributed RRM with lake and triangular routing.
 
         Connects three modules:
@@ -316,7 +323,7 @@ class Wrapper:
         )
 
         # subcatchment
-        distrrm.run_lumped_model(Model)
+        results = distrrm.run_lumped_model(Model)
 
         distrrm.DistMaxbas1(Model)
 
@@ -324,7 +331,6 @@ class Wrapper:
         # extent, so it enters `qout` below but never `Qtot`.
         Wrapper._set_maxbas_output_fields(Model)
 
-        results = Model.results
         steps = Model.meteo.simulation_steps
         qlz1 = np.array(
             [np.nansum(results.qlz[:, :, i]) for i in range(steps)]
@@ -341,9 +347,12 @@ class Wrapper:
         # `qout[:-1]` -- dropping the trailing slot, not the leading initial-state one. The
         # lake series has to be trimmed the same way or the two cannot be added at all.
         results.qout = qout[:-1] + Lake.QlakeR[:-1]
+        return results
 
     @staticmethod
-    def Lumped(Model: Catchment, Routing: int = 0, RoutingFn: Callable | None = None):
+    def Lumped(
+        Model: LumpedModelInputs, Routing: int = 0, RoutingFn: Callable | None = None
+    ) -> SimulationResults:
         """Run a lumped conceptual model with optional routing.
 
         Executes a lumped rainfall-runoff model (e.g., HBV) to
@@ -418,14 +427,15 @@ class Wrapper:
         factor = Model.area / Model.conversion_factor
         # A lumped run has no spatial routing at all, so the routed fields stay None and
         # the routing kind says why -- rather than a MAXBAS flag left over from elsewhere.
-        Model.results = SimulationResults(
+        results = SimulationResults(
             routing=RoutingKind.LUMPED,
             quz=quz * factor,
             qlz=qlz * factor,
             state_variables=state_variables,
         )
+        Model.results = results
 
-        Model.Qsim = Model.results.quz + Model.results.qlz
+        Model.Qsim = results.quz + results.qlz
 
         if Routing != 0 and Model.maxbas:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.parameters[-1])
@@ -437,6 +447,7 @@ class Wrapper:
                 Model.parameters[-1],
                 Model.dt,
             )
+        return results
 
 
 if __name__ == "__main__":
