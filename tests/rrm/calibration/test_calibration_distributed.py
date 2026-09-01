@@ -69,7 +69,7 @@ def gauged_calibration(
 
     Returns:
         Calibration: Instance carrying `meteo`, `flow_network`, `GaugesTable` and a
-            synthetic `Qtot` field, with no model run behind it.
+            synthetic `q_total` field, with no model run behind it.
     """
     coello = Calibration(
         "coello",
@@ -100,7 +100,7 @@ def gauged_calibration(
     rows, cols = coello.flow_network.rows, coello.flow_network.cols
     steps = coello.meteo.time_steps
     rng = np.random.default_rng(1337)
-    # Stage the post-run state the way the run layer builds it. `Qtot` and the rest are
+    # Stage the post-run state the way the run layer builds it. `q_total` and the rest are
     # read-only views onto `results`, so a finished Muskingum run is described rather than
     # poked in field by field.
     coello.results = SimulationResults(
@@ -108,7 +108,7 @@ def gauged_calibration(
         quz=np.zeros((rows, cols, steps + 1)),
         qlz=np.zeros((rows, cols, steps + 1)),
         state_variables=np.zeros((rows, cols, steps + 1, 5)),
-        Qtot=rng.random((rows, cols, steps + 1)),
+        q_total=rng.random((rows, cols, steps + 1)),
     )
     coello.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
     return coello
@@ -120,10 +120,10 @@ class TestExtractDischarge:
     def test_fills_qsim_from_qtot_at_each_gauge_cell(
         self, gauged_calibration: Calibration
     ):
-        """Test that every gauge column is read from its own cell of `Qtot`.
+        """Test that every gauge column is read from its own cell of `q_total`.
 
         Test scenario:
-            The override reads `Qtot[row, col, :-1]` per gauge and sizes the result from
+            The override reads `q_total[row, col, :-1]` per gauge and sizes the result from
             `meteo.time_steps` — the count that moved onto MeteoInputs. Both columns must
             match the cells the gauge table names, and the trailing step must be dropped.
         """
@@ -137,13 +137,13 @@ class TestExtractDischarge:
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 0],
-            coello.Qtot[2, 3, :-1],
-            err_msg="gauge 1 must come from cell (2, 3) of Qtot",
+            coello.results.q_total[2, 3, :-1],
+            err_msg="gauge 1 must come from cell (2, 3) of q_total",
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 1],
-            coello.Qtot[5, 6, :-1],
-            err_msg="gauge 2 must come from cell (5, 6) of Qtot",
+            coello.results.q_total[5, 6, :-1],
+            err_msg="gauge 2 must come from cell (5, 6) of q_total",
         )
 
     def test_factor_scales_each_gauge_independently(
@@ -161,12 +161,12 @@ class TestExtractDischarge:
 
         np.testing.assert_allclose(
             coello.Qsim[:, 0],
-            coello.Qtot[2, 3, :-1] * 2.0,
+            coello.results.q_total[2, 3, :-1] * 2.0,
             err_msg="gauge 1 must be scaled by its own factor",
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 1],
-            coello.Qtot[5, 6, :-1] * 10.0,
+            coello.results.q_total[5, 6, :-1] * 10.0,
             err_msg="gauge 2 must be scaled by its own factor",
         )
 
@@ -176,7 +176,7 @@ class TestExtractDischarge:
         """Test that reading gauge cells after a MAXBAS run raises instead of under-reporting.
 
         Test scenario:
-            Triangular routing sends every cell straight to the outlet, so a cell of `Qtot`
+            Triangular routing sends every cell straight to the outlet, so a cell of `q_total`
             is that cell's contribution rather than the discharge at it. Calibrating against
             it would fit the wrong signal, so the guard must refuse rather than return numbers.
         """
@@ -278,13 +278,15 @@ class TestRunCalibration:
         coello.UB = np.ones(12)
 
         ran_with: list[np.ndarray] = []
-        original = calibration_module.Wrapper.RRMModel
+        original = calibration_module.Wrapper.run_muskingum
 
         def spy(model, *args, **kwargs):
             ran_with.append(np.asarray(model.parameters, dtype=float).copy())
             return original(model, *args, **kwargs)
 
-        monkeypatch.setattr(calibration_module.Wrapper, "RRMModel", staticmethod(spy))
+        monkeypatch.setattr(
+            calibration_module.Wrapper, "run_muskingum", staticmethod(spy)
+        )
 
         coello.run_calibration(spatial_var_stub, _optimization_args())
 
@@ -314,7 +316,7 @@ class TestRunCalibration:
 
 
 class TestFW1Calibration:
-    """Tests for `Calibration.FW1Calibration` (triangular routing)."""
+    """Tests for `Calibration.calibrate_maxbas` (triangular routing)."""
 
     def test_stores_the_optimizer_result_on_the_instance(
         self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
@@ -330,7 +332,7 @@ class TestFW1Calibration:
         coello.LB = np.zeros(12)
         coello.UB = np.ones(12)
 
-        res = coello.FW1Calibration(spatial_var_stub, _optimization_args())
+        res = coello.calibrate_maxbas(spatial_var_stub, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
         assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
@@ -392,7 +394,7 @@ class TestCheckOptimizationArgs:
 
 
 class TestLumpedCalibration:
-    """Tests for `Calibration.lumpedCalibration`."""
+    """Tests for `Calibration.calibrate_lumped`."""
 
     def test_stores_the_optimizer_result_on_the_instance(
         self,
@@ -415,7 +417,7 @@ class TestLumpedCalibration:
             Route=0, RoutingFn=Routing.triangular_routing_1, InitialValues=[]
         )
 
-        res = coello.lumpedCalibration(basic_inputs, _optimization_args())
+        res = coello.calibrate_lumped(basic_inputs, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
         assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
@@ -450,7 +452,7 @@ class TestLumpedCalibration:
             InitialValues=list(np.full(12, 0.5)),
         )
 
-        coello.lumpedCalibration(basic_inputs, _optimization_args())
+        coello.calibrate_lumped(basic_inputs, _optimization_args())
 
         assert stub_optimizer["n_vars"] == 12, (
             f"Expected one variable per bound (12), got {stub_optimizer['n_vars']}"
@@ -488,7 +490,7 @@ class TestLumpedCalibration:
         optimization_args = _optimization_args()
 
         with pytest.raises(ValueError, match="one value per parameter") as exc:
-            coello.lumpedCalibration(basic_inputs, optimization_args)
+            coello.calibrate_lumped(basic_inputs, optimization_args)
 
         assert "3" in str(exc.value), (
             f"the error should name the given length: {exc.value}"

@@ -1,6 +1,6 @@
 """Tests for the input validation `Run`'s lake and flood entry points perform.
 
-These three entry points (`RunFloodModel`, `runHAPIwithLake`, `RunFW1withLake`) each open with a
+These three entry points (`run_flood`, `run_distributed_with_lake`, `run_maxbas_with_lake`) each open with a
 block of dimension checks that now read through `flow_network` and `meteo` rather than through
 attributes on the catchment. The wrapper each one dispatches to is replaced by a spy, so the tests
 pin the validation and the dispatch without running a lake or a hydraulic model.
@@ -43,7 +43,7 @@ def spied_wrapper(monkeypatch) -> dict:
 
         return _spy
 
-    for name in ("RRMModel", "RRMWithlake", "FW1Withlake"):
+    for name in ("run_muskingum", "run_muskingum_with_lake", "run_maxbas_with_lake"):
         monkeypatch.setattr(run_module.Wrapper, name, staticmethod(_make(name)))
     return calls
 
@@ -103,7 +103,7 @@ def _load_flat_river_geometry(model: Catchment) -> None:
 
 
 class TestRunFloodModel:
-    """Tests for `Run.RunFloodModel`."""
+    """Tests for `Run.run_flood`."""
 
     def test_dispatches_once_every_input_lines_up(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -113,14 +113,16 @@ class TestRunFloodModel:
         Test scenario:
             The flood entry point checks the flow-direction grid, the meteo cubes, the
             parameter array and the four river-geometry rasters before dispatching. With all
-            of them on the catchment grid it must call `Wrapper.RRMModel` with the model.
+            of them on the catchment grid it must call `Wrapper.run_muskingum` with the model.
         """
         _load_flat_river_geometry(coello_loaded)
 
-        Run.RunFloodModel(coello_loaded)
+        Run.run_flood(coello_loaded)
 
-        assert "RRMModel" in spied_wrapper, "RRMModel should have been dispatched"
-        assert spied_wrapper["RRMModel"][0] is coello_loaded, (
+        assert "run_muskingum" in spied_wrapper, (
+            "run_muskingum should have been dispatched"
+        )
+        assert spied_wrapper["run_muskingum"][0] is coello_loaded, (
             "the wrapper must receive the model itself"
         )
 
@@ -138,9 +140,9 @@ class TestRunFloodModel:
         coello_loaded.river_width = coello_loaded.river_width[:-1, :]
 
         with pytest.raises(ValueError, match="number of rows"):
-            Run.RunFloodModel(coello_loaded)
+            Run.run_flood(coello_loaded)
 
-        assert "RRMModel" not in spied_wrapper, (
+        assert "run_muskingum" not in spied_wrapper, (
             "the wrapper must not run on inconsistent geometry"
         )
 
@@ -163,15 +165,15 @@ class TestRunFloodModel:
         )
 
         with pytest.raises(ValueError, match="must share the catchment's grid"):
-            Run.RunFloodModel(coello_loaded)
+            Run.run_flood(coello_loaded)
 
-        assert "RRMModel" not in spied_wrapper, (
+        assert "run_muskingum" not in spied_wrapper, (
             "the wrapper must not run on inconsistent meteo inputs"
         )
 
 
 class TestRunHapiWithLake:
-    """Tests for `Run.runHAPIwithLake`."""
+    """Tests for `Run.run_distributed_with_lake`."""
 
     def test_dispatches_once_the_lake_record_matches_the_simulation(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -181,14 +183,16 @@ class TestRunHapiWithLake:
         Test scenario:
             The lake is a lumped inflow whose own meteorological record must run step for
             step with the distributed cubes. A matching record must dispatch to
-            `Wrapper.RRMWithlake` with both the model and the lake.
+            `Wrapper.run_muskingum_with_lake` with both the model and the lake.
         """
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
-        Run.runHAPIwithLake(coello_loaded, lake)
+        Run.run_distributed_with_lake(coello_loaded, lake)
 
-        assert "RRMWithlake" in spied_wrapper, "RRMWithlake should have been dispatched"
-        assert spied_wrapper["RRMWithlake"] == (coello_loaded, lake), (
+        assert "run_muskingum_with_lake" in spied_wrapper, (
+            "run_muskingum_with_lake should have been dispatched"
+        )
+        assert spied_wrapper["run_muskingum_with_lake"] == (coello_loaded, lake), (
             "the wrapper must receive the model and the lake"
         )
 
@@ -206,9 +210,9 @@ class TestRunHapiWithLake:
         lake = _LakeStub(coello_loaded.meteo.time_steps - 1)
 
         with pytest.raises(ValueError, match="same length"):
-            Run.runHAPIwithLake(coello_loaded, lake)
+            Run.run_distributed_with_lake(coello_loaded, lake)
 
-        assert "RRMWithlake" not in spied_wrapper, (
+        assert "run_muskingum_with_lake" not in spied_wrapper, (
             "the wrapper must not run against a mismatched lake record"
         )
 
@@ -224,7 +228,7 @@ class TestRunHapiWithLake:
         lake = _LakeStub(coello_loaded.meteo.time_steps, columns=2)
 
         with pytest.raises(ValueError, match="three columns"):
-            Run.runHAPIwithLake(coello_loaded, lake)
+            Run.run_distributed_with_lake(coello_loaded, lake)
 
     def test_rejects_a_flow_direction_grid_of_the_wrong_shape(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -242,11 +246,11 @@ class TestRunHapiWithLake:
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
         with pytest.raises(ValueError, match="rows and columns"):
-            Run.runHAPIwithLake(coello_loaded, lake)
+            Run.run_distributed_with_lake(coello_loaded, lake)
 
 
 class TestRunFW1WithLake:
-    """Tests for `Run.RunFW1withLake`."""
+    """Tests for `Run.run_maxbas_with_lake`."""
 
     def test_dispatches_once_the_lake_record_matches_the_simulation(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -256,14 +260,16 @@ class TestRunFW1WithLake:
         Test scenario:
             The FW1 lake path skips the flow-direction check — triangular routing needs no
             direction grid — but keeps the meteo, parameter and lake checks. A consistent
-            model must reach `Wrapper.FW1Withlake`.
+            model must reach `Wrapper.run_maxbas_with_lake`.
         """
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
-        Run.RunFW1withLake(coello_loaded, lake)
+        Run.run_maxbas_with_lake(coello_loaded, lake)
 
-        assert "FW1Withlake" in spied_wrapper, "FW1Withlake should have been dispatched"
-        assert spied_wrapper["FW1Withlake"] == (coello_loaded, lake), (
+        assert "run_maxbas_with_lake" in spied_wrapper, (
+            "run_maxbas_with_lake should have been dispatched"
+        )
+        assert spied_wrapper["run_maxbas_with_lake"] == (coello_loaded, lake), (
             "the wrapper must receive the model and the lake"
         )
 
@@ -280,8 +286,8 @@ class TestRunFW1WithLake:
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
         with pytest.raises(ValueError, match="as many rows as the catchment grid"):
-            Run.RunFW1withLake(coello_loaded, lake)
+            Run.run_maxbas_with_lake(coello_loaded, lake)
 
-        assert "FW1Withlake" not in spied_wrapper, (
+        assert "run_maxbas_with_lake" not in spied_wrapper, (
             "the wrapper must not run on mis-shaped parameters"
         )

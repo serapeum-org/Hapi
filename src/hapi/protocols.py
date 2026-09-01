@@ -67,7 +67,7 @@ class DistributedModel(ConceptualModelInputs, Protocol):
         meteo: The three driver cubes and the calendar they cover.
         flow_network: The routing network and the grid it defines.
         date_index: The model's own calendar, which the drivers are checked against.
-        routing_method: Canonicalised routing method. `SpatialRouting` compares this against
+        routing_method: Canonicalised routing method. `route_muskingum` compares this against
             `"Muskingum"` exactly to decide whether a cell is routed or skipped.
         bankfull_depth: Read only when `routing_method` is not `"Muskingum"`; None otherwise.
     """
@@ -112,5 +112,3 @@ class FloodModel(DistributedModel, Protocol):
     river_width: np.ndarray
     river_roughness: np.ndarray
     flood_plain_roughness: np.ndarray
-
-

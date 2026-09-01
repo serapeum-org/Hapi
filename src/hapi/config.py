@@ -28,9 +28,9 @@ against an author.
 
 Out of scope, each because the schema carries no field that reaches it:
 
-- Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.RunFloodModel`), which need
+- Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.run_flood`), which need
   a lake record and a river geometry respectively -- so `read_river_geometry` is unreachable.
-- `read_flow_path_length`, and with it `DistMaxbas2`, which scales each cell's MAXBAS by its
+- `read_flow_path_length`, and with it `route_maxbas_by_path_length`, which scales each cell's MAXBAS by its
   distance to the outlet.
 - Reading a driver folder by numeric file order rather than by date. `MeteoConfig` has no
   `date` field, so `date=False` can only be reached through `per_variable` -- where it now
@@ -506,7 +506,7 @@ class RunConfig(BaseModel):
 
         A lumped run picks its routing function at the call site rather than from this
         attribute, so `routing_method` is not load-bearing there -- but it is public, it is what
-        `distrrm.SpatialRouting` keys off, and leaving it saying `Muskingum` on a run using a
+        `distrrm.route_muskingum` keys off, and leaving it saying `Muskingum` on a run using a
         MAXBAS parameter set would mislead the next reader. An unstated one is therefore
         derived from the parameter set rather than left at its default.
 
@@ -570,7 +570,7 @@ class RunConfig(BaseModel):
             )
         # `flow_direction` is optional on the block because MAXBAS sends every cell straight
         # to the outlet and never reads one. Muskingum routes along the network, so without
-        # it the build succeeds and `Run.RunHapi` dereferences a None array after every
+        # it the build succeeds and `Run.run_distributed` dereferences a None array after every
         # raster has been read.
         if (
             self.catchment.routing_method == "muskingum"

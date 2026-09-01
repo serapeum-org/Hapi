@@ -3,7 +3,7 @@
 Everything that used to be a "Paths" block of hardcoded assignments now lives in
 `coello-lumped-model-run.yaml`, next to this script -- `Catchment.from_yaml` reads it and
 assembles the model. Running it stays here, as in any hand-wired script: the routing function is
-a run-time choice rather than an input, so it is picked below and handed to `Run.runLumped`.
+a run-time choice rather than an input, so it is picked below and handed to `Run.run_lumped`.
 
 Lumped mode reads one CSV of catchment-average drivers instead of a grid, and one discharge file
 instead of a gauge table plus a folder -- see the config for both.
@@ -33,7 +33,7 @@ RoutingFn = Routing.muskingum_v
 Route = 1
 
 # %% Run the model
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 
 # %% Calculate performance criteria
 scores = {}

@@ -90,7 +90,7 @@ def _run(model_name: str, inputs: MeteoInputs, fixtures: dict) -> Catchment:
     coello.read_lumped_model(HBVLumped, fixtures["area"], fixtures["initial"])
     coello.read_gauge_table(fixtures["gauges_table"], fixtures["acc"])
     coello.read_discharge_gauges(fixtures["gauges"], column="id", fmt="%Y-%m-%d")
-    Run.RunHapi(coello)
+    Run.run_distributed(coello)
     return coello
 
 
@@ -1023,15 +1023,15 @@ class TestRunEquivalence:
 
         Test scenario:
             The end-to-end claim: swapping folders of rasters for NetCDFs must not move the
-            hydrograph by a single cell. Compares the routed `Qtot` field and the per-gauge
+            hydrograph by a single cell. Compares the routed `q_total` field and the per-gauge
             `Qsim` extracted from it.
         """
         raster_run = _run("coello-rasters", from_rasters, fixtures)
         netcdf_run = _run("coello-netcdf", from_netcdf_files, fixtures)
 
         np.testing.assert_allclose(
-            netcdf_run.Qtot,
-            raster_run.Qtot,
+            netcdf_run.results.q_total,
+            raster_run.results.q_total,
             rtol=1e-9,
             err_msg="the routed discharge field differs between the two sources",
         )
@@ -1055,7 +1055,7 @@ def coello_muskingum_from_netcdf(
     raster reader calls replaced by a single `MeteoInputs.from_netcdf` load of `meteo.nc`.
 
     Returns:
-        Catchment: Model with `Qtot` populated by the spatial routing.
+        Catchment: Model with `q_total` populated by the spatial routing.
     """
     return _run("coello-combined-netcdf", from_combined_netcdf, fixtures)
 
@@ -1112,15 +1112,15 @@ class TestMuskingumFromCombinedNetcdf:
 
         Test scenario:
             Packing all three drivers into one file, with the caller naming which variable is
-            which, must not move the hydrograph. Compares the routed `Qtot` field and the
+            which, must not move the hydrograph. Compares the routed `q_total` field and the
             per-gauge `Qsim` against a run fed from the raster folders.
         """
         raster_run = _run("coello-rasters-vs-combined", from_rasters, fixtures)
         combined = coello_muskingum_from_netcdf
 
         np.testing.assert_allclose(
-            combined.Qtot,
-            raster_run.Qtot,
+            combined.results.q_total,
+            raster_run.results.q_total,
             rtol=1e-9,
             err_msg="the routed discharge field differs from the raster-driven run",
         )

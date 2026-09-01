@@ -97,7 +97,7 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 
 # %% Run Calibration
 
-cal_parameters = Coello.lumpedCalibration(
+cal_parameters = Coello.calibrate_lumped(
     Basic_inputs, OptimizationArgs, print_error=None
 )
 
@@ -107,7 +107,7 @@ print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% Run the Model
 
 Coello.parameters = cal_parameters[1]
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 

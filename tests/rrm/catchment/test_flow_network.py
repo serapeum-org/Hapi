@@ -308,7 +308,7 @@ class TestAccValCaching:
         """Test that `acc_val` is computed once rather than on every read.
 
         Test scenario:
-            `SpatialRouting` reads this once per (accumulation level, row, column), so a
+            `route_muskingum` reads this once per (accumulation level, row, column), so a
             property that reruns `np.unique` over the whole grid turns the routing loop into
             `(n_acc - 1) x rows x cols` full-grid scans. On the 13x14 test catchment that is
             invisible; on a 100x100 catchment it dominates the run. Identity across reads is

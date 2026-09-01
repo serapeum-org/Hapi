@@ -93,7 +93,7 @@ Coello.OFArgs = []
 def objfn(individual):
     # Coello.read_parameters(Parameterpath, Snow)
     Coello.parameters = individual
-    Run.runLumped(Coello, Route, RoutingFn)
+    Run.run_lumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     error = PC.NSEHF(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
     return (error,)
@@ -148,7 +148,7 @@ Coello.parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 

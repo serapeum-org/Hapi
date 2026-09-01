@@ -59,11 +59,11 @@ Outputs:
     6-qlz_translated: [numpy attribute]
         3D array of the lower zone discharge translated at each time step
 """
-Run.RunHapi(Coello)
+Run.run_distributed(Coello)
 
 # %% Routed fields cover the grid, finite inside the catchment
 inside = ~np.isnan(Coello.flow_network.flow_acc_arr)
-for field_name in ("Qtot", "quz_routed", "qlz_translated"):
+for field_name in ("q_total", "quz_routed", "qlz_translated"):
     field = getattr(Coello, field_name)
     print(
         f"{field_name:15s} shape {field.shape}, finite inside: {np.isfinite(field[inside]).all()}"

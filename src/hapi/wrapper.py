@@ -31,11 +31,11 @@ class Wrapper:
     for Hapi and for FW1 (triangular routing).
 
     Methods:
-        RRMModel: Run distributed RRM with Muskingum spatial routing.
-        RRMWithlake: Run distributed RRM with lake and Muskingum
+        run_muskingum: Run distributed RRM with Muskingum spatial routing.
+        run_muskingum_with_lake: Run distributed RRM with lake and Muskingum
             spatial routing.
         FW1: Run distributed RRM with triangular routing.
-        FW1Withlake: Run distributed RRM with lake and triangular
+        run_maxbas_with_lake: Run distributed RRM with lake and triangular
             routing.
         Lumped: Run a lumped conceptual model with optional routing.
     """
@@ -45,7 +45,9 @@ class Wrapper:
         pass
 
     @staticmethod
-    def RRMModel(Model: DistributedModel, ll_temp=None, q_0=None) -> SimulationResults:
+    def run_muskingum(
+        Model: DistributedModel, ll_temp=None, q_0=None
+    ) -> SimulationResults:
         """Run the distributed rainfall-runoff model with spatial routing.
 
         Connects two modules:
@@ -86,11 +88,11 @@ class Wrapper:
         # run the GIS part to rout from cell to another. It records
         # `RoutingKind.MUSKINGUM` on the results, which is what makes the outlet-cell
         # shortcut in `extract_discharge` valid for them.
-        distrrm.SpatialRouting(Model)
+        distrrm.route_muskingum(Model)
         return results
 
     @staticmethod
-    def RRMWithlake(
+    def run_muskingum_with_lake(
         Model: DistributedModel, Lake: Lake, ll_temp=None, q_0=None
     ) -> SimulationResults:
         """Run the distributed RRM with lake simulation and routing.
@@ -176,16 +178,16 @@ class Wrapper:
 
         # run the GIS part to rout from cell to another. It records
         # `RoutingKind.MUSKINGUM` on the results.
-        distrrm.SpatialRouting(Model)
+        distrrm.route_muskingum(Model)
         return results
 
     @staticmethod
     def _set_maxbas_output_fields(Model: ConceptualModelInputs) -> None:
         """Fill the distributed output fields after a triangular (MAXBAS) run.
 
-        `save_results` and `plot_distributed_results` read `Qtot`,
+        `save_results` and `plot_distributed_results` read `q_total`,
         `quz_routed` and `qlz_translated` for their discharge options. Only
-        :meth:`DistRRM.SpatialRouting` (the Muskingum path) used to set them, so
+        :meth:`DistRRM.route_muskingum` (the Muskingum path) used to set them, so
         after a MAXBAS run they stayed `None` and every discharge option raised
         `TypeError: 'NoneType' object is not subscriptable`.
 
@@ -193,9 +195,9 @@ class Wrapper:
         cell's own `maxbas`, in place, and applies no cell-to-cell translation
         to the lower zone. So the routed/translated fields *are* the per-cell
         arrays, and their sum is the per-cell contribution to the outlet
-        hydrograph — `np.nansum(Qtot[:, :, i])` reproduces `qout[i]`. That
+        hydrograph — `np.nansum(q_total[:, :, i])` reproduces `qout[i]`. That
         differs from the Muskingum path, where the fields accumulate downstream
-        and `Qtot` at the outlet cell *is* the outlet discharge.
+        and `q_total` at the outlet cell *is* the outlet discharge.
 
         `quz_routed` / `qlz_translated` alias `quz` / `qlz` rather than
         copying them: they hold the same data, and a copy would double the memory
@@ -204,18 +206,20 @@ class Wrapper:
 
         Args:
             Model: Catchment whose `quz` / `qlz` have been routed by
-                :meth:`DistRRM.DistMaxbas1`.
+                :meth:`DistRRM.route_maxbas`.
         """
         results = Model.results
         results.quz_routed = results.quz
         results.qlz_translated = results.qlz
-        results.Qtot = results.qlz + results.quz
+        results.q_total = results.qlz + results.quz
         # Marks the outlet-cell shortcut in `extract_discharge` as invalid for these
         # results, via `SimulationResults.outlet_shortcut_valid`.
         results.routing = RoutingKind.MAXBAS
 
     @staticmethod
-    def FW1(Model: DistributedModel, ll_temp=None, q_0=None) -> SimulationResults:
+    def run_maxbas(
+        Model: DistributedModel, ll_temp=None, q_0=None
+    ) -> SimulationResults:
         """Run the distributed RRM with triangular function-1 routing.
 
         Connects two modules:
@@ -226,7 +230,7 @@ class Wrapper:
         The output discharge is computed as the sum of routed upper
         zone and unrouted lower zone discharge across all cells.
 
-        Also fills the per-cell output fields (`Qtot`, `quz_routed`,
+        Also fills the per-cell output fields (`q_total`, `quz_routed`,
         `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the
         discharge options of `save_results` / `plot_distributed_results`
         work on this path; see that method for the MAXBAS semantics.
@@ -242,7 +246,7 @@ class Wrapper:
         # subcatchment
         results = distrrm.run_lumped_model(Model)
 
-        distrrm.DistMaxbas1(Model)
+        distrrm.route_maxbas(Model)
 
         Wrapper._set_maxbas_output_fields(Model)
 
@@ -258,7 +262,7 @@ class Wrapper:
         return results
 
     @staticmethod
-    def FW1Withlake(
+    def run_maxbas_with_lake(
         Model: DistributedModel, Lake: Lake, ll_temp=None, q_0=None
     ) -> SimulationResults:
         """Run the distributed RRM with lake and triangular routing.
@@ -325,10 +329,10 @@ class Wrapper:
         # subcatchment
         results = distrrm.run_lumped_model(Model)
 
-        distrrm.DistMaxbas1(Model)
+        distrrm.route_maxbas(Model)
 
         # Subcatchment fields only: the lake is a lumped inflow with no spatial
-        # extent, so it enters `qout` below but never `Qtot`.
+        # extent, so it enters `qout` below but never `q_total`.
         Wrapper._set_maxbas_output_fields(Model)
 
         steps = Model.meteo.simulation_steps
@@ -350,7 +354,7 @@ class Wrapper:
         return results
 
     @staticmethod
-    def Lumped(
+    def run_lumped(
         Model: LumpedModelInputs, Routing: int = 0, RoutingFn: Callable | None = None
     ) -> SimulationResults:
         """Run a lumped conceptual model with optional routing.

@@ -152,7 +152,7 @@ def muskingum_run(meteo_from_one_file: MeteoInputs, setup: dict) -> Catchment:
         maxbas=False,
         with_flow_direction=True,
     )
-    Run.RunHapi(model)
+    Run.run_distributed(model)
     return model
 
 
@@ -175,7 +175,7 @@ def maxbas_run(
         maxbas=True,
         with_flow_direction=False,
     )
-    Run.runFW1(model)
+    Run.run_maxbas(model)
     return model
 
 
@@ -215,7 +215,7 @@ class TestMuskingumPipeline:
         """Test that the run populates the per-cell output fields at grid size.
 
         Test scenario:
-            `Qtot`, `quz_routed` and `qlz_translated` back every downstream reader --
+            `q_total`, `quz_routed` and `qlz_translated` back every downstream reader --
             `extract_discharge`, `save_results`, the animations. All three must come back at
             `(rows, cols, simulation_steps)` and finite inside the catchment.
         """
@@ -224,8 +224,8 @@ class TestMuskingumPipeline:
         steps = model.meteo.simulation_steps
         inside = ~np.isnan(model.flow_network.flow_acc_arr)
 
-        for name in ("Qtot", "quz_routed", "qlz_translated"):
-            field = getattr(model, name)
+        for name in ("q_total", "quz_routed", "qlz_translated"):
+            field = getattr(model.results, name)
             assert field is not None, f"{name} must be set by the run"
             assert field.shape == (rows, cols, steps), (
                 f"{name} should be {(rows, cols, steps)}, got {field.shape}"
@@ -239,7 +239,7 @@ class TestMuskingumPipeline:
 
         Test scenario:
             The end of the chain a modeller actually reads. `extract_discharge` walks the
-            gauge table, pulls each gauge's cell out of `Qtot`, and scores it against the
+            gauge table, pulls each gauge's cell out of `q_total`, and scores it against the
             observations -- so this is where a driver that never reached the model, or
             reached it shifted in time, would finally show up as a non-finite score.
         """
@@ -269,12 +269,12 @@ class TestMuskingumPipeline:
     def test_saved_rasters_carry_the_routed_discharge(
         self, muskingum_run: Catchment, coello_acc_path: str, tmp_path
     ):
-        """Test that the results reach disk as readable rasters holding `Qtot`.
+        """Test that the results reach disk as readable rasters holding `q_total`.
 
         Test scenario:
             The last link, and the one nothing else exercises for the NetCDF-driven path:
             `save_results` writes one raster per step, georeferenced from the flow
-            accumulation grid. Reading the first one back and comparing it to `Qtot`'s first
+            accumulation grid. Reading the first one back and comparing it to `q_total`'s first
             slice proves the file holds the run's own numbers rather than an empty grid.
         """
         model = muskingum_run
@@ -290,7 +290,7 @@ class TestMuskingumPipeline:
         )
 
         first = Dataset.read_file(str(written[0])).read_array()
-        expected = model.Qtot[:, :, 0]
+        expected = model.results.q_total[:, :, 0]
         inside = ~np.isnan(model.flow_network.flow_acc_arr)
         np.testing.assert_allclose(
             np.asarray(first)[inside],
@@ -318,8 +318,8 @@ class TestMaxbasPipeline:
         assert model.flow_network.has_flow_direction is False, (
             "the fixture must load accumulation only, or this proves nothing"
         )
-        assert model.Qtot is not None, "the triangular run must fill Qtot"
-        assert model._maxbas_routed is True, (
+        assert model.results.q_total is not None, "the triangular run must fill q_total"
+        assert not model.results.outlet_shortcut_valid, (
             "the triangular path must mark the model, so extract_discharge refuses the "
             "outlet-cell shortcut"
         )
@@ -328,17 +328,14 @@ class TestMaxbasPipeline:
         """Test that the MAXBAS run scores against the gauges via the basin-wide sum.
 
         Test scenario:
-            Triangular routing makes a cell of `Qtot` a contribution rather than a discharge,
-            so the per-gauge shortcut is refused and `frame_work_1=True` selects the
+            Triangular routing makes a cell of `q_total` a contribution rather than a discharge,
+            so the per-gauge shortcut is skipped and the routing kind selects the
             basin-wide sum instead. That is the only way to score this path, and it has to
             produce the same seven finite metrics.
         """
         model = maxbas_run
 
-        with pytest.raises(ValueError, match="MAXBAS"):
-            model.extract_discharge(calculate_metrics=False)
-
-        model.extract_discharge(calculate_metrics=True, frame_work_1=True)
+        model.extract_discharge(calculate_metrics=True)
 
         assert isinstance(model.metrics, DataFrame), (
             f"metrics should be a DataFrame, got {type(model.metrics)}"
@@ -374,7 +371,7 @@ class TestBothPathsAgreeWithTheRasterRun:
             maxbas=False,
             with_flow_direction=True,
         )
-        Run.RunHapi(raster_model)
+        Run.run_distributed(raster_model)
 
         for name in METEO_VARIABLES:
             np.testing.assert_array_equal(
@@ -383,8 +380,8 @@ class TestBothPathsAgreeWithTheRasterRun:
                 err_msg=f"{name} differs before the run even starts",
             )
         np.testing.assert_allclose(
-            muskingum_run.Qtot,
-            raster_model.Qtot,
+            muskingum_run.results.q_total,
+            raster_model.results.q_total,
             rtol=1e-9,
             err_msg="the routed discharge field differs between the two sources",
         )

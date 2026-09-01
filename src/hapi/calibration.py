@@ -62,6 +62,12 @@ class Calibration(Catchment):
     The Calibration class is a subclass of the Catchment superclass, so you
     need to create the Catchment object first to be able to run the
     calibration.
+
+    Note:
+        Results live on `self.results` (a :class:`~hapi.results.SimulationResults`), so the
+        objective functions read `self.results.q_total` rather than an attribute on the
+        catchment. Unlike `Run`, this class is still a `Catchment` subclass; converting it
+        to composition is tracked separately.
     """
 
     def __init__(
@@ -169,35 +175,32 @@ class Calibration(Catchment):
     def extract_discharge(
         self,
         calculate_metrics: bool = True,
-        frame_work_1: bool = False,
         factor: list | None = None,
-        only_outlet: bool = False,
     ):
         """Extract the simulated discharge hydrograph at gauge locations.
 
         Extracts discharge values from the total routed discharge array
-        (`self.Qtot`) at each gauge location and stores them in
+        (`self.results.q_total`) at each gauge location and stores them in
         `self.Qsim`. Optionally applies a multiplication factor per
         gauge.
 
         Args:
             calculate_metrics (bool, optional): Whether to calculate
                 performance metrics. Not used in this override but
-                kept for signature compatibility. Default is True.
-            frame_work_1 (bool, optional): True if the routing
-                function is Maxbas. Not used in this override but
-                kept for signature compatibility. Default is False.
+                kept so the signature matches the one it overrides.
+                Default is True.
             factor (list, optional): List of multiplication factors for
                 the simulated discharge, one per gauge. If None, no
                 scaling is applied. Default is None.
-            only_outlet (bool, optional): Not used in this override, and inert on the base
-                class too -- see `Catchment.extract_discharge`. Kept for signature
-                compatibility. Default is False.
+
+        Raises:
+            ValueError: The results came from MAXBAS routing, whose per-cell values are
+                contributions rather than discharges.
         """
-        if self._maxbas_routed:
+        if not self.results.outlet_shortcut_valid:
             raise ValueError(
                 "this catchment was run with triangular (MAXBAS) routing, which sends "
-                "every cell straight to the outlet: a single cell of Qtot is that cell's "
+                "every cell straight to the outlet: a single cell of q_total is that cell's "
                 "contribution, not the discharge at it, so reading the gauge cells would "
                 "under-report every hydrograph and the objective function would be "
                 "calibrated against the wrong signal."
@@ -210,11 +213,13 @@ class Calibration(Catchment):
             Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
             # gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
 
-            # Quz = self.quz_routed[Xind,Yind,:-1]
-            # Qlz = self.qlz_translated[Xind,Yind,:-1]
+            # Quz = self.results.quz_routed[Xind,Yind,:-1]
+            # Qlz = self.results.qlz_translated[Xind,Yind,:-1]
             # self.Qsim[:,i] = Quz + Qlz
 
-            Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.meteo.time_steps)
+            Qsim = np.reshape(
+                self.results.q_total[Xind, Yind, :-1], self.meteo.time_steps
+            )
 
             if factor is not None:
                 self.Qsim[:, i] = Qsim * factor[i]
@@ -237,7 +242,7 @@ class Calibration(Catchment):
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the conceptual distributed hydrological model.
         The method distributes parameters spatially using `spatial_var_fun`,
-        runs the RRM model via `Wrapper.RRMModel`, and evaluates
+        runs the RRM model via `Wrapper.run_muskingum`, and evaluates
         performance using the stored objective function.
 
         The following attributes must be set on the instance before calling
@@ -314,12 +319,12 @@ class Calibration(Catchment):
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
                 self.parameters = spatial_var_fun.Par3d
                 # run the model
-                Wrapper.RRMModel(self)
+                Wrapper.run_muskingum(self)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
                         self.QGauges, *[self.GaugesTable]
-                    )  # self.qout, self.quz_routed, self.qlz_translated,
+                    )  # self.results.qout, self.results.quz_routed, self.results.qlz_translated,
                     f = list(range(9, len(par), spatial_var_fun.no_parameters))
                     g = list()
                     for i in range(len(f)):
@@ -377,7 +382,7 @@ class Calibration(Catchment):
 
         return res
 
-    def FW1Calibration(
+    def calibrate_maxbas(
         self,
         spatial_var_fun: Callable[..., Any],
         optimization_args: list,
@@ -387,7 +392,7 @@ class Calibration(Catchment):
 
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the conceptual distributed hydrological model using
-        the FW1 routing approach via `Wrapper.FW1`.
+        the FW1 routing approach via `Wrapper.run_maxbas`.
 
         The following attributes must be set on the instance before calling
         this method:
@@ -460,11 +465,11 @@ class Calibration(Catchment):
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum
                 self.parameters = spatial_var_fun.Par3d
                 # run the model
-                Wrapper.FW1(self)
+                Wrapper.run_maxbas(self)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
-                        self.QGauges, self.qout, *[self.GaugesTable]
+                        self.QGauges, self.results.qout, *[self.GaugesTable]
                     )
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
@@ -508,7 +513,7 @@ class Calibration(Catchment):
 
         return res
 
-    def lumpedCalibration(
+    def calibrate_lumped(
         self,
         basic_inputs: dict,
         optimization_args: list,
@@ -518,7 +523,7 @@ class Calibration(Catchment):
 
         Executes the Harmony Search optimization algorithm to calibrate
         parameters for the lumped conceptual hydrological model. The
-        method runs the model via `Wrapper.Lumped` and evaluates
+        method runs the model via `Wrapper.run_lumped` and evaluates
         performance using the stored objective function. Muskingum
         routing constraints are enforced as inequality constraints.
 
@@ -594,7 +599,7 @@ class Calibration(Catchment):
                 # parameters
                 self.parameters = par
                 # run the model
-                Wrapper.Lumped(self, route, routing_fn)
+                Wrapper.run_lumped(self, route, routing_fn)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(

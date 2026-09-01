@@ -79,7 +79,7 @@ def test_lumped_calibration(
 
     optimization_args = [ApiObjArgs, pll_type, ApiSolveArgs]
 
-    # cal_parameters = Coello.lumpedCalibration(basic_inputs, optimization_args, print_error=None)
+    # cal_parameters = Coello.calibrate_lumped(basic_inputs, optimization_args, print_error=None)
 
     # assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']
 

@@ -53,7 +53,7 @@ Route = 1
 routing_fn = Routing.muskingum
 # %%
 ### run the model
-Run.runLumped(Coello, Route, routing_fn)
+Run.run_lumped(Coello, Route, routing_fn)
 # %%
 scores = dict()
 
@@ -87,7 +87,7 @@ the Sensitivity class takes 4 main arguments:
     the following defined function contains two inner functions that calculate discharge
     for the lumped HBV model and the RMSE of the calculated discharge.
 
-    the first function "Run.runLumped" takes some arguments we need to pass through
+    the first function "Run.run_lumped" takes some arguments we need to pass through
     the one_at_a_time method [ConceptualModel,data,p2,init_st,snow,Routing, routing_fn]
     with the same order in the defined function "wrapper"
 
@@ -113,7 +113,7 @@ Each parameter has a dictionary with two keys 0: list of parameters with relativ
 def WrapperType1(Randpar, Route, routing_fn, Qobs):
     Coello.parameters = Randpar
 
-    Run.runLumped(Coello, Route, routing_fn)
+    Run.run_lumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse
 
@@ -122,7 +122,7 @@ def WrapperType1(Randpar, Route, routing_fn, Qobs):
 def WrapperType2(Randpar, Route, routing_fn, Qobs):
     Coello.parameters = Randpar
 
-    Run.runLumped(Coello, Route, routing_fn)
+    Run.run_lumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse, Coello.Qsim["q"]
 

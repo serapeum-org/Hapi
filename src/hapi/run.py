@@ -15,8 +15,7 @@ it at runtime and anything else carrying the same attributes runs too.
 from __future__ import annotations
 
 from collections.abc import Callable
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -134,12 +133,12 @@ class Run:
     afterwards.
 
     Methods:
-        RunHapi: Run the distributed hydrological model.
-        runHAPIwithLake: Run the distributed model with a lake component.
-        runFW1: Run the FW1 distributed model.
-        RunFW1withLake: Run the FW1 model with a lake component.
-        runLumped: Run the lumped conceptual model.
-        RunFloodModel: Run the flood model.
+        run_distributed: Run the distributed hydrological model.
+        run_distributed_with_lake: Run the distributed model with a lake component.
+        run_maxbas: Run the FW1 distributed model.
+        run_maxbas_with_lake: Run the FW1 model with a lake component.
+        run_lumped: Run the lumped conceptual model.
+        run_flood: Run the flood model.
 
     Examples:
         - Build a model and run it; the results come back and stay on the model:
@@ -150,7 +149,7 @@ class Run:
             >>> model = Catchment.from_yaml(
             ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
             ... )
-            >>> results = Run.runLumped(model, 1, Routing.muskingum_v)
+            >>> results = Run.run_lumped(model, 1, Routing.muskingum_v)
             >>> results.routing.value
             'lumped'
             >>> results is model.results
@@ -163,42 +162,7 @@ class Run:
     """
 
     @staticmethod
-    def from_yaml(path: str | Path) -> NoReturn:
-        """Refuse to build a `Run`, explaining the pattern instead.
-
-        `Run` is a namespace of entry points, not a model: there is nothing for a
-        configuration to build. Kept as an explicit refusal because the message it gives is
-        more useful than the `AttributeError` that would replace it.
-
-        Args:
-            path: Ignored; present so the call a caller is likely to try is answered.
-
-        Raises:
-            TypeError: Always.
-
-        Examples:
-            - The refusal names the pattern to use instead:
-                ```python
-                >>> from hapi.run import Run
-                >>> try:
-                ...     Run.from_yaml("coello-lumped-model-run.yaml")
-                ... except TypeError as error:
-                ...     print(str(error).split(";")[0])
-                Run cannot be built from a configuration
-
-                ```
-
-        See Also:
-            hapi.catchment.Catchment.from_yaml: The classmethod that does build a model.
-        """
-        raise TypeError(
-            "Run cannot be built from a configuration; it holds the entry points that run a "
-            "model built elsewhere. Build the model with Catchment.from_yaml(path) and pass "
-            "it in, e.g. Run.RunHapi(model)."
-        )
-
-    @staticmethod
-    def RunHapi(model: DistributedModel) -> SimulationResults:
+    def run_distributed(model: DistributedModel) -> SimulationResults:
         """Run the distributed hydrological model.
 
         Validates that all input arrays (precipitation, evapotranspiration,
@@ -220,7 +184,7 @@ class Run:
               accumulated and routed at each time step.
             - `qlz_translated`: 3D array of the lower zone discharge
               translated at each time step.
-            - `Qtot`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet
+            - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet
               cell carries the outlet hydrograph; `extract_discharge` fills `qout` from it.
 
         Raises:
@@ -229,13 +193,13 @@ class Run:
         """
         _validate_distributed(model, check_flow_direction=True)
         # run the model
-        results = Wrapper.RRMModel(model)
+        results = Wrapper.run_muskingum(model)
 
         logger.info("Model Run has finished")
         return results
 
     @staticmethod
-    def RunFloodModel(model: FloodModel) -> SimulationResults:
+    def run_flood(model: FloodModel) -> SimulationResults:
         """Run the flood model.
 
         Runs the conceptual distributed hydrological model with
@@ -278,7 +242,7 @@ class Run:
             raise ValueError("all input data should have the same number of columns")
 
         # run the model
-        results = Wrapper.RRMModel(model)
+        results = Wrapper.run_muskingum(model)
         logger.info("RRM has finished")
         # SV = SaintVenant()
         # SV.KinematicRaster(model)
@@ -286,7 +250,9 @@ class Run:
         return results
 
     @staticmethod
-    def runHAPIwithLake(model: DistributedModel, lake: LakeType) -> SimulationResults:
+    def run_distributed_with_lake(
+        model: DistributedModel, lake: LakeType
+    ) -> SimulationResults:
         """Run the distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -312,13 +278,13 @@ class Run:
         _validate_distributed(model, check_flow_direction=True)
         _check_lake_meteo(model, lake)
         # run the model
-        results = Wrapper.RRMWithlake(model, lake)
+        results = Wrapper.run_muskingum_with_lake(model, lake)
 
         logger.info("Model Run has finished")
         return results
 
     @staticmethod
-    def runFW1(model: DistributedModel) -> SimulationResults:
+    def run_maxbas(model: DistributedModel) -> SimulationResults:
         """Run the FW1 distributed hydrological model.
 
         Validates that all input arrays have consistent dimensions,
@@ -335,13 +301,13 @@ class Run:
             - `qout`: 1D array of calculated discharge at the catchment
               outlet, summed over every cell.
             - `quz`: 3D array of distributed discharge for each cell.
-            - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields
+            - `q_total`, `quz_routed`, `qlz_translated`: 3D per-cell fields
               read by `save_results` and `plot_distributed_results`. MAXBAS
-              routes each cell straight to the outlet, so a cell of `Qtot` is
+              routes each cell straight to the outlet, so a cell of `q_total` is
               that cell's *contribution* to the outlet — `np.nansum` over the
               domain reproduces `qout`. Use
-              `extract_discharge(frame_work_1=True)`; the default outlet-cell
-              shortcut is invalid for this path and raises.
+              `extract_discharge` reads the routing off the results and takes the
+              basin-wide sum on this path automatically.
 
         Raises:
             ValueError: If input data arrays have inconsistent
@@ -349,13 +315,15 @@ class Run:
         """
         _validate_distributed(model, check_flow_direction=False)
         # run the model
-        results = Wrapper.FW1(model)
+        results = Wrapper.run_maxbas(model)
 
         logger.info("Model Run has finished")
         return results
 
     @staticmethod
-    def RunFW1withLake(model: DistributedModel, lake: LakeType) -> SimulationResults:
+    def run_maxbas_with_lake(
+        model: DistributedModel, lake: LakeType
+    ) -> SimulationResults:
         """Run the FW1 distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -381,10 +349,10 @@ class Run:
         _check_lake_meteo(model, lake)
 
         # run the model
-        return Wrapper.FW1Withlake(model, lake)
+        return Wrapper.run_maxbas_with_lake(model, lake)
 
     @staticmethod
-    def runLumped(
+    def run_lumped(
         model: LumpedModelInputs,
         Route: int = 0,
         routing_fn: Callable[..., Any] | None = None,
@@ -421,7 +389,7 @@ class Run:
 
         Qsim = pd.DataFrame(index=ind)
 
-        results = Wrapper.Lumped(model, Route, routing_fn)
+        results = Wrapper.run_lumped(model, Route, routing_fn)
         Qsim["q"] = model.Qsim
         model.Qsim = Qsim[:]
         logger.info("Lumped model run has finished successfully")

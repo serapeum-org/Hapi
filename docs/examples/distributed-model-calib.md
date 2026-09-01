@@ -100,11 +100,11 @@ Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 - The `Run` object connects all the components of the simulation together, the `Catchment` object, the `Lake` object and the `distributedrouting` object
-- import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the RunHapi method to start the simulation
+- import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the run_distributed method to start the simulation
 
 ```python
 from hapi.run import Run
-Run.RunHapi(Coello)
+Run.run_distributed(Coello)
 ```
 - the result of the simulation will be stored as attributes in the Catchment object as follow
 

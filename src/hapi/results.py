@@ -8,8 +8,8 @@ put the interpretation of the arrays (`_maxbas_routed`) on the input object rath
 the arrays themselves.
 
 :class:`SimulationResults` holds them together instead, with the routing scheme as a field.
-A catchment exposes the same attribute names as properties forwarding to it, so existing
-code reads unchanged; see :class:`~hapi.catchment.Catchment`.
+A run assigns one to `Catchment.results`, and that is the only place the arrays live -- read
+them as `model.results.q_total`. The catchment carries no result attributes of its own.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ class RoutingKind(Enum):
     """Which routing scheme produced a set of results.
 
     The distinction is not cosmetic: it decides how a single cell of
-    :attr:`SimulationResults.Qtot` should be read. Under Muskingum the discharge accumulates
+    :attr:`SimulationResults.q_total` should be read. Under Muskingum the discharge accumulates
     downstream, so a cell *is* the discharge at that cell and the outlet cell carries the
     outlet hydrograph. Under MAXBAS every cell is routed straight to the outlet with its own
     `maxbas`, so a cell is only that cell's *contribution* and the hydrograph is the sum over
@@ -62,7 +62,7 @@ class SimulationResults:
             `[sp, sm, uz, lz, wc]`. For a lumped run, `(time, 5)`.
         quz_routed: Upper-zone discharge after routing. `None` until a routing step runs.
         qlz_translated: Lower-zone discharge after translation. `None` until then.
-        Qtot: `quz_routed + qlz_translated`. Read it through
+        q_total: `quz_routed + qlz_translated`. Read it through
             :attr:`outlet_shortcut_valid` rather than assuming what a cell means.
         qout: The outlet hydrograph, when the run computed one. The MAXBAS paths sum over the
             domain and set it directly; the Muskingum paths leave it `None` for
@@ -81,7 +81,7 @@ class SimulationResults:
             ... )
             >>> results.routing.value
             'unrouted'
-            >>> results.Qtot is None
+            >>> results.q_total is None
             True
 
             ```
@@ -107,12 +107,12 @@ class SimulationResults:
     state_variables: np.ndarray
     quz_routed: np.ndarray | None = None
     qlz_translated: np.ndarray | None = None
-    Qtot: np.ndarray | None = None
+    q_total: np.ndarray | None = None
     qout: np.ndarray | None = None
 
     @property
     def outlet_shortcut_valid(self) -> bool:
-        """bool: Whether a single cell of :attr:`Qtot` is the discharge *at* that cell.
+        """bool: Whether a single cell of :attr:`q_total` is the discharge *at* that cell.
 
         True for every scheme except MAXBAS, which routes each cell straight to the outlet
         and so makes a cell a contribution rather than a discharge. Reading the outlet cell

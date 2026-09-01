@@ -501,7 +501,7 @@ class FlowNetwork:
     def acc_val(self) -> list[int]:
         """list[int]: The distinct accumulation values inside the domain, ascending.
 
-        Cached: `SpatialRouting` reads this once per `(accumulation level, row, column)`, so
+        Cached: `route_muskingum` reads this once per `(accumulation level, row, column)`, so
         recomputing the `np.unique` on every read costs `(n_acc - 1) x rows x cols` scans of
         the whole grid -- unnoticeable on the 13x14 test catchment and hours on a real one.
         Replacing `flow_acc_arr` clears the cache.

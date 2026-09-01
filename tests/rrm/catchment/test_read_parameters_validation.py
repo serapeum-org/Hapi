@@ -411,7 +411,7 @@ class TestReadLumpedInputs:
         """Test that the fourth column is derived rather than left missing.
 
         Test scenario:
-            The method documents 3 or 4 columns, but `Wrapper.Lumped` reads `data[:, 3]`
+            The method documents 3 or 4 columns, but `Wrapper.run_lumped` reads `data[:, 3]`
             unconditionally. A three-column file was therefore accepted here and then raised
             `IndexError` in the middle of the run. The derived column is the record's mean
             temperature, which is what the reader this replaced computed.

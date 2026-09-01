@@ -57,7 +57,7 @@ Outputs:
     6-qlz_translated: [numpy attribute]
         3D array of the lower zone discharge translated at each time step
 """
-Run.RunHapi(Coello)
+Run.run_distributed(Coello)
 # %% calculate performance criteria
 Coello.extract_discharge(factor=Coello.GaugesTable["area ratio"].tolist())
 

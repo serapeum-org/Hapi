@@ -71,10 +71,10 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
 }
 
 #: Accepted routing methods, mapped to the one spelling the internals compare against.
-#: `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` exactly, so the constructor
+#: `distrrm.route_muskingum` tests `routing_method != "Muskingum"` exactly, so the constructor
 #: canonicalises rather than storing what it was handed. `"Kinematic"` belongs here because
 #: that comparison is also how the flood model selects its own path: a non-Muskingum method
-#: with a real `bankfull_depth` skips the cell, which `Run.RunFloodModel` relies on.
+#: with a real `bankfull_depth` skips the cell, which `Run.run_flood` relies on.
 #: `hapi.config.CatchmentConfig.routing_method` exposes the first two to YAML and says why the
 #: third is not; a method added here needs a decision there too.
 ROUTING_METHODS = {
@@ -218,12 +218,12 @@ class Catchment:
     The Catchment class includes methods to read the meteorological and
     spatial inputs of the distributed hydrological model. It also reads the
     data of the gauges. Build the catchment, then hand it to whichever
-    :class:`hapi.run.Run` entry point suits it -- `Run.RunHapi(model)`. `Run` states what it
+    :class:`hapi.run.Run` entry point suits it -- `Run.run_distributed(model)`. `Run` states what it
     needs as a protocol, which this class satisfies structurally; neither class inherits
     from the other.
 
     A run assigns its output to :attr:`results`. The result arrays are also readable under
-    their historical names (`Qtot`, `quz`, ...) as read-only properties forwarding to it.
+    their historical names (`q_total`, `quz`, ...) as read-only properties forwarding to it.
     """
 
     def __init__(
@@ -303,7 +303,7 @@ class Catchment:
             self.date_index = pd.date_range(self.start, self.end, freq="h")
 
         # Canonicalised like the two resolutions above, and for a sharper reason:
-        # `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` case-sensitively, and
+        # `distrrm.route_muskingum` tests `routing_method != "Muskingum"` case-sensitively, and
         # the false branch reads `bankfull_depth`, which is None outside the flood model. Left
         # verbatim, a lower-case "muskingum" therefore routed every cell down the MAXBAS branch
         # and raised `TypeError: 'NoneType' object is not subscriptable`.
@@ -338,7 +338,7 @@ class Catchment:
         self.river_roughness: np.ndarray | None = None
         self.flood_plain_roughness: np.ndarray | None = None
         #: Everything one run produced, replaced wholesale by the next run. The seven
-        #: result arrays below are read-only properties forwarding to it, so `model.Qtot`
+        #: result arrays below are read-only properties forwarding to it, so `model.results.q_total`
         #: still reads as it always did while the run layer owns the arrays. `None` until
         #: a `Run.*` entry point has been called.
         self.results: SimulationResults | None = None
@@ -351,69 +351,6 @@ class Catchment:
         #: build itself does not consume, such as `outputs`, so a caller need not restate a
         #: path the file already gives.
         self.config: RunConfig | None = None
-
-    # ------------------------------------------------------------------
-    # Result accessors
-    #
-    # The run layer owns these arrays -- it builds a `SimulationResults` and assigns it to
-    # `results`. They are exposed here, read-only, under the names they have always had, so
-    # `Run.RunHapi(model); model.Qtot` reads exactly as before. Read-only on purpose: they
-    # are outputs, and a run that could be half-overwritten by hand is what the results
-    # object exists to prevent. To stage a post-run state (a test, say), build a
-    # `SimulationResults` and assign `model.results`.
-    # ------------------------------------------------------------------
-
-    @property
-    def quz(self) -> np.ndarray | None:
-        """np.ndarray | None: Upper-zone discharge, or None before a run."""
-        return None if self.results is None else self.results.quz
-
-    @property
-    def qlz(self) -> np.ndarray | None:
-        """np.ndarray | None: Lower-zone discharge, or None before a run."""
-        return None if self.results is None else self.results.qlz
-
-    @property
-    def state_variables(self) -> np.ndarray | None:
-        """np.ndarray | None: State array `[sp, sm, uz, lz, wc]`, or None before a run."""
-        return None if self.results is None else self.results.state_variables
-
-    @property
-    def quz_routed(self) -> np.ndarray | None:
-        """np.ndarray | None: Routed upper-zone discharge, or None before routing."""
-        return None if self.results is None else self.results.quz_routed
-
-    @property
-    def qlz_translated(self) -> np.ndarray | None:
-        """np.ndarray | None: Translated lower-zone discharge, or None before routing."""
-        return None if self.results is None else self.results.qlz_translated
-
-    @property
-    def Qtot(self) -> np.ndarray | None:
-        """np.ndarray | None: Total routed discharge, or None before routing.
-
-        How a single cell reads depends on the routing scheme -- see
-        :attr:`~hapi.results.SimulationResults.outlet_shortcut_valid`.
-        """
-        return None if self.results is None else self.results.Qtot
-
-    @property
-    def qout(self) -> np.ndarray | None:
-        """np.ndarray | None: The outlet hydrograph, or None before a run computes one.
-
-        The MAXBAS paths set this during the run; the Muskingum paths leave it for
-        :meth:`extract_discharge`, which needs the gauge table to find the outlet.
-        """
-        return None if self.results is None else self.results.qout
-
-    @property
-    def _maxbas_routed(self) -> bool:
-        """bool: Whether the results came from triangular (MAXBAS) routing.
-
-        Derived from the results rather than tracked as a flag, so it cannot survive into
-        a later run of a different scheme.
-        """
-        return self.results is not None and not self.results.outlet_shortcut_valid
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> Self:
@@ -819,11 +756,11 @@ class Catchment:
 
         The lumped counterpart of :class:`~hapi.inputs.MeteoInputs`, which carries the
         distributed drivers: the lumped model works on one column per variable rather than a
-        grid, and `Wrapper.Lumped` reads the long-term average straight out of the fourth
+        grid, and `Wrapper.run_lumped` reads the long-term average straight out of the fourth
         column.
 
         A three-column file is completed with a fourth holding the record's mean temperature.
-        `Wrapper.Lumped` reads that column unconditionally, so without it a file this method
+        `Wrapper.run_lumped` reads that column unconditionally, so without it a file this method
         accepts raises `IndexError` in the middle of the run instead.
 
         Args:
@@ -1179,51 +1116,42 @@ class Catchment:
 
         logger.debug("Parameters' bounds are read successfully")
 
-    def extract_discharge(
-        self, calculate_metrics=True, frame_work_1=False, factor=None, only_outlet=False
-    ):
+    def extract_discharge(self, calculate_metrics=True, factor=None):
         """Extract and sum discharge at gauge locations.
 
-        Extracts and sums the discharge from the routed upper zone and
-        translated lower zone arrays at each gauge location. Optionally
-        computes performance metrics (RMSE, NSE, NSEhf, KGE, WB,
-        Pearson-CC, R2) between simulated and observed hydrographs.
+        Which hydrograph is the right one depends on how the run was routed, and the results
+        say so, so nothing has to be passed in. Under Muskingum the discharge accumulates
+        downstream, so each gauge is read from its own cell of `q_total`. Under MAXBAS every
+        cell is routed straight to the outlet, making a cell that cell's *contribution*; the
+        hydrograph is then the basin-wide sum the run already computed into `qout`.
+
+        This used to be a `frame_work_1` flag the caller had to set to match the entry point
+        they had called, with a `ValueError` when they got it wrong. The routing is a
+        property of the arrays, so it is read off them instead.
+
+        Optionally computes performance metrics (RMSE, NSE, NSEhf, KGE, WB, Pearson-CC, R2)
+        between the simulated and observed hydrographs.
 
         Args:
             calculate_metrics (bool, optional): Whether to calculate
                 performance metrics. Default is True.
-            frame_work_1 (bool, optional): True if the routing
-                function is Maxbas. Default is False.
             factor (list, optional): List of multiplication factors
                 for simulated discharge at each gauge. Must have the
-                same length as the number of gauges. Default is None.
-            only_outlet (bool, optional): Currently has **no effect**. The dispatch below
-                reads `elif frame_work_1 or only_outlet`, which is reached only when
-                `frame_work_1` is already True, so this flag never selects anything on its
-                own. Left in place rather than removed because it is part of the public
-                signature; pass `frame_work_1=True` for the basin-wide sum. Default is False.
+                same length as the number of gauges. Applied only on the
+                per-gauge (Muskingum) path. Default is None.
 
         Raises:
-            ValueError: If the gauge table has not been read yet.
+            ValueError: The gauge table has not been read, or the model has not been run.
         """
         if self.GaugesTable is None:
             raise ValueError("please read the gauges' table first.")
         if self.results is None:
             raise ValueError(
                 "there are no results to extract; run the model first, e.g. "
-                "Run.RunHapi(model)"
+                "Run.run_distributed(model)"
             )
 
-        if not frame_work_1:
-            if self._maxbas_routed:
-                raise ValueError(
-                    "this catchment was run with triangular (MAXBAS) routing, which "
-                    "sends every cell straight to the outlet: a single cell of Qtot is "
-                    "that cell's contribution, not the discharge at it, so reading the "
-                    "outlet cell would under-report the hydrograph. Call "
-                    "extract_discharge(frame_work_1=True) to use the basin-wide sum "
-                    "that Run.runFW1 computed."
-                )
+        if self.results.outlet_shortcut_valid:
             self.Qsim = pd.DataFrame(
                 index=self.date_index, columns=self.QGauges.columns
             )
@@ -1234,21 +1162,23 @@ class Catchment:
             outlet_x = self.flow_network.outlet[0][0]
             outlet_y = self.flow_network.outlet[1][0]
 
-            # Muskingum accumulates downstream, so the outlet cell of `Qtot` is the
+            # Muskingum accumulates downstream, so the outlet cell of `q_total` is the
             # outlet hydrograph. The engine cannot set this itself: finding the outlet
             # needs the gauge table, which is an analysis input, not a run input.
-            self.results.qout = self.Qtot[outlet_x, outlet_y, :]
+            self.results.qout = self.results.q_total[outlet_x, outlet_y, :]
 
             for i in range(len(self.GaugesTable)):
                 x_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
                 y_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
                 gauge_id = self.GaugesTable.loc[self.GaugesTable.index[i], "id"]
 
-                # Quz = np.reshape(self.quz_routed[x_ind,y_ind,:-1],self.TS-1)
-                # Qlz = np.reshape(self.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
+                # Quz = np.reshape(self.results.quz_routed[x_ind,y_ind,:-1],self.TS-1)
+                # Qlz = np.reshape(self.results.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
                 # q_sim = Quz + Qlz
 
-                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.meteo.time_steps)
+                q_sim = np.reshape(
+                    self.results.q_total[x_ind, y_ind, :-1], self.meteo.time_steps
+                )
                 if factor is not None:
                     self.Qsim.loc[:, gauge_id] = q_sim * factor[i]
                 else:
@@ -1277,10 +1207,12 @@ class Catchment:
                     self.metrics.loc["R2", gauge_id] = round(
                         metrics.r2(q_obs, q_sim), 3
                     )
-        elif frame_work_1 or only_outlet:
+        else:
+            # MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the
+            # basin-wide sum the run already put in `qout`.
             self.Qsim = pd.DataFrame(index=self.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            q_sim = np.reshape(self.qout, self.meteo.time_steps)
+            q_sim = np.reshape(self.results.qout, self.meteo.time_steps)
             self.Qsim.loc[:, gauge_id] = q_sim
 
             if calculate_metrics:
@@ -1504,28 +1436,28 @@ class Catchment:
         end_i = np.nonzero(self.date_index == end)[0][0]
 
         if option == 1:
-            arr = self.Qtot[:, :, start_i:end_i]
+            arr = self.results.q_total[:, :, start_i:end_i]
             title = "Total Discharge"
         elif option == 2:
-            arr = self.quz_routed[:, :, start_i:end_i]
+            arr = self.results.quz_routed[:, :, start_i:end_i]
             title = "Surface Flow"
         elif option == 3:
-            arr = self.qlz_translated[:, :, start_i:end_i]
+            arr = self.results.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
-            arr = self.state_variables[:, :, start_i:end_i, 0]
+            arr = self.results.state_variables[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
-            arr = self.state_variables[:, :, start_i:end_i, 1]
+            arr = self.results.state_variables[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
-            arr = self.state_variables[:, :, start_i:end_i, 2]
+            arr = self.results.state_variables[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
-            arr = self.state_variables[:, :, start_i:end_i, 3]
+            arr = self.results.state_variables[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
-            arr = self.state_variables[:, :, start_i:end_i, 4]
+            arr = self.results.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
             arr = self.meteo.precipitation[:, :, start_i:end_i]
@@ -1677,21 +1609,21 @@ class Catchment:
                 for i in self.date_index[start_i:end_i]
             ]
             if result == 1:
-                arr = self.Qtot[:, :, start_i:end_i]
+                arr = self.results.q_total[:, :, start_i:end_i]
             elif result == 2:
-                arr = self.quz_routed[:, :, start_i:end_i]
+                arr = self.results.quz_routed[:, :, start_i:end_i]
             elif result == 3:
-                arr = self.qlz_translated[:, :, start_i:end_i]
+                arr = self.results.qlz_translated[:, :, start_i:end_i]
             elif result == 4:
-                arr = self.state_variables[:, :, start_i:end_i, 0]
+                arr = self.results.state_variables[:, :, start_i:end_i, 0]
             elif result == 5:
-                arr = self.state_variables[:, :, start_i:end_i, 1]
+                arr = self.results.state_variables[:, :, start_i:end_i, 1]
             elif result == 6:
-                arr = self.state_variables[:, :, start_i:end_i, 2]
+                arr = self.results.state_variables[:, :, start_i:end_i, 2]
             elif result == 7:
-                arr = self.state_variables[:, :, start_i:end_i, 3]
+                arr = self.results.state_variables[:, :, start_i:end_i, 3]
             elif result == 8:
-                arr = self.state_variables[:, :, start_i:end_i, 4]
+                arr = self.results.state_variables[:, :, start_i:end_i, 4]
             else:
                 raise ValueError(
                     f" The result parameter takes a value between 1 and 8, given: {result}"
@@ -1714,19 +1646,19 @@ class Catchment:
                 data["Qsim"] = self.Qsim[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 2:
-                data["Quz"] = self.quz[start_i:end_i]
+                data["Quz"] = self.results.quz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 3:
-                data["Qlz"] = self.qlz[start_i:end_i]
+                data["Qlz"] = self.results.qlz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 4:
-                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
+                data[STATE_VARIABLES] = self.results.state_variables[start_i:end_i, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 5:
                 data["Qsim"] = self.Qsim[start_i:end_i]
-                data["Quz"] = self.quz[start_i:end_i]
-                data["Qlz"] = self.qlz[start_i:end_i]
-                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
+                data["Quz"] = self.results.quz[start_i:end_i]
+                data["Qlz"] = self.results.qlz[start_i:end_i]
+                data[STATE_VARIABLES] = self.results.state_variables[start_i:end_i, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
                 raise ValueError(

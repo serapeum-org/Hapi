@@ -868,7 +868,7 @@ class TestRunConfigCrossFieldRules:
         Test scenario:
             The two describe the same choice from opposite sides. Left at its `muskingum`
             default, a MAXBAS run carried a `routing_method` contradicting what it does --
-            and that attribute is what `distrrm.SpatialRouting` keys off.
+            and that attribute is what `distrrm.route_muskingum` keys off.
         """
         lumped_mapping["parameters"]["maxbas"] = maxbas
         assert "routing_method" not in lumped_mapping["catchment"], (
@@ -1214,7 +1214,7 @@ class TestRoutingMethodNormalisation:
             stored: The canonical spelling expected on the model.
 
         Test scenario:
-            `distrrm.SpatialRouting` compares `routing_method != "Muskingum"` exactly, and its
+            `distrrm.route_muskingum` compares `routing_method != "Muskingum"` exactly, and its
             false branch reads `bankfull_depth`, which is None outside the flood model. A
             lower-case "muskingum" stored verbatim therefore routed every cell down the MAXBAS
             branch and raised `TypeError: 'NoneType' object is not subscriptable`.
@@ -1229,7 +1229,7 @@ class TestRoutingMethodNormalisation:
         """Test that the flood model's routing method is still a legal value.
 
         Test scenario:
-            `Run.RunFloodModel` relies on the same `!= "Muskingum"` comparison to skip cells
+            `Run.run_flood` relies on the same `!= "Muskingum"` comparison to skip cells
             with a real `bankfull_depth`, so "Kinematic" is a working value and must not be
             rejected by the new validation.
         """
@@ -1425,7 +1425,7 @@ class TestCatchmentFromYaml:
             tmp_path: pytest temporary directory.
 
         Test scenario:
-            `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` case-sensitively,
+            `distrrm.route_muskingum` tests `routing_method != "Muskingum"` case-sensitively,
             and `Catchment.__init__` stores whatever it is given verbatim. A lower-case
             spelling would send every cell down the MAXBAS branch and read `bankfull_depth`,
             which is None outside the flood model.
@@ -1510,26 +1510,19 @@ class TestCatchmentFromYaml:
             f"expected a {cls.__name__}, got {type(model).__name__}"
         )
 
-    def test_run_cannot_be_built_because_it_takes_no_constructor_arguments(
-        self, distributed_mapping, tmp_path
-    ):
-        """Test that `Run.from_yaml` fails loudly rather than building something unusable.
-
-        Args:
-            distributed_mapping: A complete distributed configuration.
-            tmp_path: pytest temporary directory.
+    def test_run_has_no_constructor_and_nothing_to_build_from_a_configuration(self):
+        """Test that `Run` is a namespace of entry points, not something a config builds.
 
         Test scenario:
-            `Run` inherits the classmethod but overrides `__init__` to take only `self`, and
-            its entry points are called unbound on a catchment (`Run.RunHapi(model)`). The
-            override refuses the call with a message naming that pattern, rather than letting
-            constructor arity produce a `TypeError` about an unexpected keyword argument --
-            an error that says nothing about what to do instead.
+            `Run` used to inherit `Catchment.from_yaml` through the subclassing, so the call
+            resolved and had to be overridden to refuse. It no longer inherits anything, so
+            the name is simply absent -- which is the honest answer for a class that holds
+            no state and models nothing.
         """
-        path = write_yaml(distributed_mapping, tmp_path)
-
-        with pytest.raises(TypeError, match="Catchment.from_yaml"):
-            Run.from_yaml(path)
+        assert not hasattr(Run, "from_yaml"), (
+            "Run must not offer from_yaml; a configuration builds a Catchment, which is "
+            "then passed to an entry point"
+        )
 
     def test_a_lumped_configuration_reads_the_averaged_driver_csv(
         self, lumped_mapping, tmp_path

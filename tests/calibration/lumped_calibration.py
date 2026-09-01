@@ -87,7 +87,7 @@ ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start
 optimization_args = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %%
 # run calibration
-cal_parameters = Coello.lumpedCalibration(
+cal_parameters = Coello.calibrate_lumped(
     basic_inputs, optimization_args, print_error=None
 )
 
@@ -96,7 +96,7 @@ print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% run the model
 Coello.parameters = cal_parameters[1]
-Run.runLumped(Coello, Route, routing_fn)
+Run.run_lumped(Coello, Route, routing_fn)
 # %% calculate performance criteria
 scores = dict()
 

@@ -79,7 +79,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 - Run Calibration
 
 ```python
-	cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, print_error=None)
+	cal_parameters = Coello.calibrate_lumped(Basic_inputs, OptimizationArgs, print_error=None)
 
 	print("Objective Function = " + str(round(cal_parameters[0],2)))
 	print("Parameters are " + str(cal_parameters[1]))

@@ -1,6 +1,6 @@
 """Tests for how `Run` and `Catchment` are coupled, and for the results object between them.
 
-`Run` used to subclass `Catchment` and be called unbound (`Run.RunHapi(model)`, with the
+`Run` used to subclass `Catchment` and be called unbound (`Run.run_distributed(model)`, with the
 catchment landing on `self`), writing nine result arrays back onto the model plus a private
 `_maxbas_routed` flag recording which routing had produced them. It is now a namespace of
 static entry points that state what they need as a protocol and return a
@@ -34,7 +34,7 @@ RESULT_FIELDS = (
     "state_variables",
     "quz_routed",
     "qlz_translated",
-    "Qtot",
+    "q_total",
     "qout",
 )
 
@@ -120,13 +120,12 @@ class TestRunIsNotACatchment:
     @pytest.mark.parametrize(
         "name",
         [
-            "RunHapi",
-            "RunFloodModel",
-            "runHAPIwithLake",
-            "runFW1",
-            "RunFW1withLake",
-            "runLumped",
-            "from_yaml",
+            "run_distributed",
+            "run_flood",
+            "run_distributed_with_lake",
+            "run_maxbas",
+            "run_maxbas_with_lake",
+            "run_lumped",
         ],
     )
     def test_every_entry_point_is_a_static_method(self, name: str):
@@ -174,15 +173,26 @@ class TestRunIsNotACatchment:
             "hapi.protocols exist so the run layer does not depend on the concrete class"
         )
 
-    def test_from_yaml_refuses_and_names_the_pattern(self):
-        """Test that `Run.from_yaml` explains itself rather than raising AttributeError.
+    def test_run_offers_nothing_a_configuration_could_build(self):
+        """Test that `Run` exposes no constructor-like surface.
 
         Test scenario:
-            `Run` no longer inherits `Catchment.from_yaml`, so the call would fail with a
-            bare AttributeError. The explicit refusal is kept because it names what to do.
+            The old inheritance made `Run.from_yaml` resolve to `Catchment.from_yaml`, which
+            had to be overridden to refuse. With the inheritance gone the name is absent,
+            and `Run` carries only the entry points.
         """
-        with pytest.raises(TypeError, match="cannot be built from a configuration"):
-            Run.from_yaml("anything.yaml")
+        assert not hasattr(Run, "from_yaml"), (
+            "Run must not offer from_yaml; build a Catchment and pass it to an entry point"
+        )
+        public = {n for n in vars(Run) if not n.startswith("_")}
+        assert public == {
+            "run_distributed",
+            "run_distributed_with_lake",
+            "run_maxbas",
+            "run_maxbas_with_lake",
+            "run_lumped",
+            "run_flood",
+        }, f"Run should carry only the six entry points, got {sorted(public)}"
 
 
 class TestEntryPointsReturnTheirResults:
@@ -200,16 +210,16 @@ class TestEntryPointsReturnTheirResults:
         """
         model = _build("coello", coello_dist_parameters_muskingum, **coello_fixtures)
 
-        results = Run.RunHapi(model)
+        results = Run.run_distributed(model)
 
         assert isinstance(results, SimulationResults), (
-            f"RunHapi must return SimulationResults, got {type(results).__name__}"
+            f"run_distributed must return SimulationResults, got {type(results).__name__}"
         )
         assert results is model.results, (
             "the returned results must be the same object assigned to model.results"
         )
         assert results.routing is RoutingKind.MUSKINGUM, (
-            f"a RunHapi run is Muskingum-routed, got {results.routing}"
+            f"a run_distributed run is Muskingum-routed, got {results.routing}"
         )
 
     def test_run_fw1_returns_maxbas_routed_results(
@@ -225,79 +235,81 @@ class TestEntryPointsReturnTheirResults:
             "coello", coello_dist_parameters_maxbas, maxbas=True, **coello_fixtures
         )
 
-        results = Run.runFW1(model)
+        results = Run.run_maxbas(model)
 
         assert results.routing is RoutingKind.MAXBAS, (
-            f"a runFW1 run is MAXBAS-routed, got {results.routing}"
+            f"a run_maxbas run is MAXBAS-routed, got {results.routing}"
         )
         assert not results.outlet_shortcut_valid, (
             "MAXBAS sends every cell to the outlet, so the outlet-cell shortcut is invalid"
         )
 
 
-class TestResultAttributesAreReadOnlyViews:
-    """The historical attribute names still read, but the results object owns the arrays."""
+class TestResultsAreTheOnlyHomeForTheArrays:
+    """The catchment carries no result attributes; `results` is where they live."""
 
     @pytest.mark.parametrize("field", RESULT_FIELDS)
-    def test_field_reads_through_to_the_results_object(
+    def test_the_catchment_does_not_carry_the_field(self, field: str):
+        """Test that a result name is absent from the catchment entirely.
+
+        Test scenario:
+            These were nullable attributes on `Catchment`, then briefly properties
+            forwarding to `results`. Both are gone: there is one home for the arrays, so a
+            reader cannot pick the stale one by habit.
+
+        Args:
+            field: The result field being checked.
+        """
+        model = Catchment("empty", "2009-01-01", "2009-01-10")
+
+        assert not hasattr(model, field), (
+            f"Catchment must not carry {field}; read it as model.results.{field}"
+        )
+
+    @pytest.mark.parametrize("field", RESULT_FIELDS)
+    def test_the_results_object_carries_the_field_after_a_run(
         self, coello_fixtures: dict, coello_dist_parameters_muskingum: str, field: str
     ):
-        """Test that each historical name returns exactly what the results object holds.
+        """Test that a completed Muskingum run populates every result field.
 
         Test scenario:
-            Existing scripts and notebooks read `model.Qtot` and friends after a run. The
-            properties exist so that keeps working; identity is asserted rather than
-            equality so a copy cannot pass.
+            The Muskingum path fills all of them except `qout`, which needs the gauge table
+            and so is left for `extract_discharge`. Everything else must be an array.
 
         Args:
-            field: The result attribute being checked.
+            field: The result field being checked.
         """
         model = _build("coello", coello_dist_parameters_muskingum, **coello_fixtures)
-        Run.RunHapi(model)
+        results = Run.run_distributed(model)
 
-        assert getattr(model, field) is getattr(model.results, field), (
-            f"model.{field} must read through to results.{field}, not copy it"
-        )
+        value = getattr(results, field)
+        if field == "qout":
+            assert value is None, (
+                "the Muskingum path leaves qout for extract_discharge to fill"
+            )
+        else:
+            assert isinstance(value, np.ndarray), (
+                f"results.{field} must be an array after a run, got {type(value).__name__}"
+            )
 
-    @pytest.mark.parametrize("field", RESULT_FIELDS)
-    def test_field_is_none_before_a_run(self, field: str):
-        """Test that the result names read as None on a catchment that has not run.
+    def test_results_is_none_before_a_run(self):
+        """Test that a catchment that has not run has no results at all.
 
         Test scenario:
-            They used to be None-initialised attributes. Reading one before a run must stay
-            a None rather than becoming an AttributeError.
-
-        Args:
-            field: The result attribute being checked.
+            One `None` to check instead of nine, which is the point: a model either has a
+            finished run behind it or it does not.
         """
         model = Catchment("empty", "2009-01-01", "2009-01-10")
 
-        assert getattr(model, field) is None, (
-            f"model.{field} must be None before a run, got {type(getattr(model, field))}"
+        assert model.results is None, (
+            f"a catchment that has not run must have results=None, got {model.results}"
         )
 
-    @pytest.mark.parametrize("field", RESULT_FIELDS)
-    def test_field_cannot_be_assigned(self, field: str):
-        """Test that a result field rejects assignment.
 
-        Test scenario:
-            These are outputs. A run that can be half-overwritten by hand is exactly what
-            the results object exists to prevent, so the properties have no setter and
-            staging a state goes through `model.results` instead.
+class TestRoutingProvenanceTravelsWithTheArrays:
+    """Routing is a field of the results, so it cannot outlive the run that set it."""
 
-        Args:
-            field: The result attribute being checked.
-        """
-        model = Catchment("empty", "2009-01-01", "2009-01-10")
-
-        with pytest.raises(AttributeError):
-            setattr(model, field, np.zeros((2, 2, 2)))
-
-
-class TestRoutingProvenanceReplacesTheFlag:
-    """`_maxbas_routed` is derived from the results, so it cannot outlive the run."""
-
-    def test_a_muskingum_run_after_a_maxbas_run_clears_the_maxbas_reading(
+    def test_a_muskingum_run_after_a_maxbas_run_reads_as_muskingum(
         self,
         coello_fixtures: dict,
         coello_dist_parameters_maxbas: str,
@@ -306,39 +318,32 @@ class TestRoutingProvenanceReplacesTheFlag:
         """Test that running MAXBAS then Muskingum leaves the model reading as Muskingum.
 
         Test scenario:
-            This is the case the old boolean needed hand-clearing for: `_maxbas_routed` was
-            set by the MAXBAS path and had to be reset by every Muskingum path, with a
-            comment saying so. Deriving it from the results makes that impossible to forget,
-            because a new run replaces the object the reading comes from.
+            This is the case the old boolean needed hand-clearing for: it was set by the
+            MAXBAS path and had to be reset by every Muskingum path, with a comment saying
+            so. Carrying the routing on the results makes that impossible to forget, because
+            a new run replaces the object the reading comes from.
         """
         model = _build(
             "coello", coello_dist_parameters_maxbas, maxbas=True, **coello_fixtures
         )
-        Run.runFW1(model)
-        assert model._maxbas_routed, "the FW1 run should read as MAXBAS-routed"
+        maxbas_results = Run.run_maxbas(model)
+        assert maxbas_results.routing is RoutingKind.MAXBAS, (
+            "the MAXBAS run should record its own routing"
+        )
 
         # Re-read the parameters the Muskingum path needs, then run it on the same model.
         model.read_parameters(coello_dist_parameters_muskingum, False)
-        Run.RunHapi(model)
+        muskingum_results = Run.run_distributed(model)
 
-        assert not model._maxbas_routed, (
-            "after a Muskingum run the model must no longer read as MAXBAS-routed"
+        assert muskingum_results is not maxbas_results, (
+            "a second run must build a new results object, not overwrite fields in place"
+        )
+        assert model.results.routing is RoutingKind.MUSKINGUM, (
+            f"after a Muskingum run the model must read as Muskingum, got "
+            f"{model.results.routing}"
         )
         assert model.results.outlet_shortcut_valid, (
             "the outlet-cell shortcut is valid again once Muskingum has routed the results"
-        )
-
-    def test_a_fresh_catchment_does_not_read_as_maxbas_routed(self):
-        """Test that a model that has never run does not claim MAXBAS routing.
-
-        Test scenario:
-            The derived reading has to answer for the no-results case too, since
-            `extract_discharge` consults it before checking anything else.
-        """
-        model = Catchment("empty", "2009-01-01", "2009-01-10")
-
-        assert not model._maxbas_routed, (
-            "a catchment with no results must not read as MAXBAS-routed"
         )
 
 
@@ -359,7 +364,7 @@ class TestValidationNamesWhatIsMissing:
         model = _build("coello", coello_dist_parameters_muskingum, **fixtures)
 
         with pytest.raises(ValueError, match="flow-direction raster"):
-            Run.RunHapi(model)
+            Run.run_distributed(model)
 
     def test_the_flood_model_names_the_river_geometry_it_lacks(
         self, coello_fixtures: dict, coello_dist_parameters_muskingum: str
@@ -373,7 +378,7 @@ class TestValidationNamesWhatIsMissing:
         model = _build("coello", coello_dist_parameters_muskingum, **coello_fixtures)
 
         with pytest.raises(ValueError, match="read_river_geometry") as exc_info:
-            Run.RunFloodModel(model)
+            Run.run_flood(model)
 
         assert "bankfull_depth" in str(exc_info.value), (
             f"the error should name the missing rasters, got: {exc_info.value}"

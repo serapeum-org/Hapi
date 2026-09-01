@@ -3,7 +3,7 @@
 Everything that used to be a "Paths" block of hardcoded assignments now lives in
 `coello-lumped-model-run-maxbas.yaml`, next to this script -- `Catchment.from_yaml` reads it and
 assembles the model. Running it stays here, as in any hand-wired script: the routing function is
-a run-time choice rather than an input, so it is picked below and handed to `Run.runLumped`.
+a run-time choice rather than an input, so it is picked below and handed to `Run.run_lumped`.
 
 The config's `parameters.maxbas: true` says the parameter file carries the triangular-routing
 parameter; picking `Routing.triangular_routing_1` below is what actually routes with it.
@@ -33,7 +33,7 @@ RoutingFn = Routing.triangular_routing_1
 Route = 1
 
 # %% Run the model
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 
 # %% Calculate performance criteria
 scores = dict()
