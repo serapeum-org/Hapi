@@ -21,7 +21,7 @@ from hapi.catchment import Catchment
 from hapi.run import Run
 
 # %% Load the configuration and build the model
-Coello = Catchment.from_yaml(__file__.removesuffix(".py") + ".yaml")
+Coello = Catchment.from_yaml("coello-distributed-model-run-netcdf.yaml")
 
 # %% Check the drivers actually came from the file and cover the model
 print(f"meteo grid + steps : {Coello.meteo.shape}")
