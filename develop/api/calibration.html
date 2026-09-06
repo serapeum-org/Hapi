@@ -2599,7 +2599,13 @@ consumes.</p>
 <span class="normal">834</span>
 <span class="normal">835</span>
 <span class="normal">836</span>
-<span class="normal">837</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -3009,7 +3015,10 @@ consumes.</p>
             <span class="c1"># search on over a model that never ran -- which is what the bare `except` did.</span>
             <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_set</span><span class="p">(</span><span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span><span class="p">)</span>
-            <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+            <span class="c1"># The states are five times the size of every other result field and a</span>
+            <span class="c1"># calibration never reads them, so they are not allocated -- once per trial</span>
+            <span class="c1"># vector, that is half the peak memory of the whole search.</span>
+            <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">keep_state_variables</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="n">objective</span><span class="p">,</span> <span class="n">of_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
@@ -3156,7 +3165,10 @@ consumes.</p>
             <span class="c1"># vector or a grid mismatch surfaces instead of being scored `nan`.</span>
             <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_set</span><span class="p">(</span><span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span><span class="p">)</span>
-            <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">needs_flow_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># See run_calibration: the states are not read, so they are not allocated.</span>
+            <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">needs_flow_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_state_variables</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
 
             <span class="n">objective</span><span class="p">,</span> <span class="n">of_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
@@ -3682,13 +3694,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">678</span>
 <span class="normal">679</span>
 <span class="normal">680</span>
 <span class="normal">681</span>
@@ -3847,7 +3853,13 @@ dict.</p>
 <span class="normal">834</span>
 <span class="normal">835</span>
 <span class="normal">836</span>
-<span class="normal">837</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4183,10 +4195,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span>
-<span class="normal">543</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">543</span>
 <span class="normal">544</span>
 <span class="normal">545</span>
 <span class="normal">546</span>
@@ -4313,7 +4322,13 @@ dict.</p>
 <span class="normal">667</span>
 <span class="normal">668</span>
 <span class="normal">669</span>
-<span class="normal">670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4389,7 +4404,10 @@ dict.</p>
         <span class="c1"># vector or a grid mismatch surfaces instead of being scored `nan`.</span>
         <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_set</span><span class="p">(</span><span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span><span class="p">)</span>
-        <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">needs_flow_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># See run_calibration: the states are not read, so they are not allocated.</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">needs_flow_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_state_variables</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
         <span class="n">objective</span><span class="p">,</span> <span class="n">of_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
@@ -5341,7 +5359,10 @@ dict.</p>
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
-<span class="normal">538</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -5420,7 +5441,10 @@ dict.</p>
         <span class="c1"># search on over a model that never ran -- which is what the bare `except` did.</span>
         <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_set</span><span class="p">(</span><span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">Par3d</span><span class="p">)</span>
-        <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="c1"># The states are five times the size of every other result field and a</span>
+        <span class="c1"># calibration never reads them, so they are not allocated -- once per trial</span>
+        <span class="c1"># vector, that is half the peak memory of the whole search.</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="n">DistributedRun</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">keep_state_variables</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="n">objective</span><span class="p">,</span> <span class="n">of_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
