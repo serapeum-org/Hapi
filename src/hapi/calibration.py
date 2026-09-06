@@ -466,7 +466,10 @@ class Calibration:
             # search on over a model that never ran -- which is what the bare `except` did.
             spatial_var_fun.Function(par)
             self.model.parameters = self._parameter_set(spatial_var_fun.Par3d)
-            run = DistributedRun.from_model(self.model)
+            # The states are five times the size of every other result field and a
+            # calibration never reads them, so they are not allocated -- once per trial
+            # vector, that is half the peak memory of the whole search.
+            run = DistributedRun.from_model(self.model, keep_state_variables=False)
 
             objective, of_args = self._objective()
             try:
@@ -613,7 +616,10 @@ class Calibration:
             # vector or a grid mismatch surfaces instead of being scored `nan`.
             spatial_var_fun.Function(par)
             self.model.parameters = self._parameter_set(spatial_var_fun.Par3d)
-            run = DistributedRun.from_model(self.model, needs_flow_direction=False)
+            # See run_calibration: the states are not read, so they are not allocated.
+            run = DistributedRun.from_model(
+                self.model, needs_flow_direction=False, keep_state_variables=False
+            )
 
             objective, of_args = self._objective()
             try:

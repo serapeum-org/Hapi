@@ -79,6 +79,12 @@ class DistributedRun:
             `river_geometry` to identify them, checked here rather than in the routing loop.
         flow_path_length: Flow-path length raster, read only by
             :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas_by_path_length`.
+        keep_state_variables: Whether to allocate the per-cell state array. It is
+            `(rows, cols, time, 5)` -- as much memory as every other result field combined --
+            and nothing but `save_results` and `plot_distributed_results` reads it, so a run
+            that will not look at it can halve its peak allocation. Defaults to True, which is
+            what every existing caller got; `Calibration` turns it off, because it runs the
+            model once per trial vector and never reads the states.
     """
 
     period: SimulationPeriod
@@ -89,6 +95,7 @@ class DistributedRun:
     river_geometry: RiverGeometry | None = None
     skip_hydraulic_cells: bool = False
     flow_path_length: np.ndarray | None = None
+    keep_state_variables: bool = True
 
     def __post_init__(self):
         """Check the inputs agree with each other and with the grid.
@@ -160,6 +167,7 @@ class DistributedRun:
         needs_flow_direction: bool = True,
         with_river_geometry: bool = False,
         skip_hydraulic_cells: bool = False,
+        keep_state_variables: bool = True,
     ) -> DistributedRun:
         """Narrow a built catchment into a validated distributed run.
 
@@ -174,6 +182,9 @@ class DistributedRun:
                 reads it.
             with_river_geometry: Carry the river geometry through, for the flood path.
             skip_hydraulic_cells: Leave the river cells to a hydraulic model.
+            keep_state_variables: Allocate the per-cell state array. False halves the run's
+                peak memory at the cost of `save_results` / `plot_distributed_results`
+                options 4 to 8.
 
         Returns:
             DistributedRun: The validated inputs.
@@ -218,6 +229,7 @@ class DistributedRun:
             river_geometry=geometry,
             skip_hydraulic_cells=skip_hydraulic_cells,
             flow_path_length=getattr(model, "flow_path_length_arr", None),
+            keep_state_variables=keep_state_variables,
         )
 
 

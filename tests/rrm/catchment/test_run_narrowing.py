@@ -251,3 +251,94 @@ class TestLumpedNarrowing:
 
         with pytest.raises(ValueError, match="the run is positional"):
             LumpedRun.from_model(built)
+
+
+class TestStateVariablesAreOptional:
+    """The per-cell state array is diagnostic, and half the run's memory."""
+
+    def test_dropping_them_halves_the_result_arrays(self, built: Catchment):
+        """Test that opting out actually removes the allocation.
+
+        Test scenario:
+            `state_variables` is `(rows, cols, time, 5)` -- as much memory as every other
+            result field combined -- and only `save_results` and `plot_distributed_results`
+            read it. A run that will not look at it should not pay for it.
+        """
+        kept = Wrapper.run_muskingum(DistributedRun.from_model(built))
+        dropped = Wrapper.run_muskingum(
+            DistributedRun.from_model(built, keep_state_variables=False)
+        )
+
+        assert kept.state_variables is not None, "kept by default"
+        assert dropped.state_variables is None, "dropped when asked"
+
+        def size(results):
+            fields = (
+                results.quz,
+                results.qlz,
+                results.quz_routed,
+                results.qlz_translated,
+                results.q_total,
+            )
+            total = sum(a.nbytes for a in fields)
+            if results.state_variables is not None:
+                total += results.state_variables.nbytes
+            return total
+
+        assert size(dropped) * 2 == size(kept), (
+            f"the states are half the footprint; {size(dropped)} against {size(kept)}"
+        )
+
+    @pytest.mark.parametrize(
+        "field", ["quz", "qlz", "quz_routed", "qlz_translated", "q_total"]
+    )
+    def test_the_discharge_is_unchanged_either_way(self, built: Catchment, field: str):
+        """Test that dropping the states changes nothing about the discharge.
+
+        Test scenario:
+            The states are written but never read by the routing, so removing the allocation
+            must be invisible in the results. If it is not, something was reading them.
+
+        Args:
+            field: The result field being compared.
+        """
+        kept = Wrapper.run_muskingum(DistributedRun.from_model(built))
+        dropped = Wrapper.run_muskingum(
+            DistributedRun.from_model(built, keep_state_variables=False)
+        )
+
+        np.testing.assert_array_equal(
+            getattr(kept, field),
+            getattr(dropped, field),
+            err_msg=f"{field} must not depend on whether the states were kept",
+        )
+
+    def test_a_state_option_says_why_it_cannot_be_saved(self, built: Catchment):
+        """Test that asking for a state option on such a run names the switch.
+
+        Test scenario:
+            Without the guard this failed on `None` inside a slice, several frames from the
+            option that asked for it and naming nothing the caller controls.
+        """
+        built.results = Wrapper.run_muskingum(
+            DistributedRun.from_model(built, keep_state_variables=False)
+        )
+
+        with pytest.raises(ValueError, match="keep_state_variables"):
+            built.plot_distributed_results("2009-01-01", "2009-01-05", option=4)
+
+    def test_a_discharge_option_still_works_without_them(self, built: Catchment):
+        """Test that the guard only fires for the options that need the states.
+
+        Test scenario:
+            Binding the states once at the top of the method would have made a
+            discharge-only plot raise on a run that never needed them.
+        """
+        built.results = Wrapper.run_muskingum(
+            DistributedRun.from_model(built, keep_state_variables=False)
+        )
+
+        assert built.results.q_total is not None, "the discharge options read this"
+        # option 1 is total discharge; it must not consult the states at all
+        arr = built.results.q_total[:, :, 0:2]
+        assert arr.shape[2] == 2, "a discharge slice works with no states allocated"

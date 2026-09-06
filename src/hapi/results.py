@@ -59,7 +59,11 @@ class SimulationResults:
         quz: `(rows, cols, time)` upper-zone discharge in m3/s. For a lumped run, a 1D series.
         qlz: `(rows, cols, time)` lower-zone discharge in m3/s. For a lumped run, a 1D series.
         state_variables: `(rows, cols, time, 5)` state array, the states being
-            `[sp, sm, uz, lz, wc]`. For a lumped run, `(time, 5)`.
+            `[sp, sm, uz, lz, wc]`. For a lumped run, `(time, 5)`. `None` when a distributed
+            run was asked not to keep them -- it is five times the size of every other field
+            put together and nothing but `save_results` and `plot_distributed_results` reads
+            it, so a run that will not look at it need not pay for it. See
+            :attr:`~hapi.runs.DistributedRun.keep_state_variables`.
         quz_routed: Upper-zone discharge after routing. `None` until a routing step runs.
         qlz_translated: Lower-zone discharge after translation. `None` until then.
         q_total: `quz_routed + qlz_translated`. Read it through
@@ -104,7 +108,7 @@ class SimulationResults:
     routing: RoutingKind
     quz: np.ndarray
     qlz: np.ndarray
-    state_variables: np.ndarray
+    state_variables: np.ndarray | None
     quz_routed: np.ndarray | None = None
     qlz_translated: np.ndarray | None = None
     q_total: np.ndarray | None = None

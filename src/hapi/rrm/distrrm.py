@@ -55,18 +55,19 @@ class DistributedRRM:
             routing=RoutingKind.UNROUTED,
             quz=np.zeros(grid, dtype=np.float32),
             qlz=np.zeros(grid, dtype=np.float32),
-            state_variables=np.zeros((*grid, 5), dtype=np.float32),
+            state_variables=(
+                np.zeros((*grid, 5), dtype=np.float32)
+                if run.keep_state_variables
+                else None
+            ),
         )
 
+        states = results.state_variables
         for x in range(run.flow_network.rows):
             for y in range(run.flow_network.cols):
                 # only for cells in the domain
                 if not np.isnan(run.flow_network.flow_acc_arr[x, y]):
-                    (
-                        results.quz[x, y, :],
-                        results.qlz[x, y, :],
-                        results.state_variables[x, y, :, :],
-                    ) = run.model_setup.model.simulate(
+                    quz_cell, qlz_cell, states_cell = run.model_setup.model.simulate(
                         prec=run.meteo.precipitation[x, y, :],
                         temp=run.meteo.temperature[x, y, :],
                         et=run.meteo.evapotranspiration[x, y, :],
@@ -76,6 +77,12 @@ class DistributedRRM:
                         q_init=run.model_setup.q_init,
                         snow=run.parameters.snow,
                     )
+                    results.quz[x, y, :] = quz_cell
+                    results.qlz[x, y, :] = qlz_cell
+                    # Dropped rather than stored when the caller said it will not read them;
+                    # the states are five times the size of everything else here.
+                    if states is not None:
+                        states[x, y, :, :] = states_cell
 
         area_coef = run.model_setup.area / run.flow_network.px_tot_area
         factor = run.flow_network.px_area * area_coef / run.period.conversion_factor

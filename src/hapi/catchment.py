@@ -223,6 +223,30 @@ def _name_the_path(path) -> Iterator[None]:
         raise FileNotFoundError(f"{exc} (path: {path})") from exc
 
 
+def _require_state_variables(results: SimulationResults) -> np.ndarray:
+    """Return the per-cell state array, or say why it is absent.
+
+    It is `(rows, cols, time, 5)` -- as much memory as every other result field combined -- so a
+    run can be asked not to keep it. Only these plotting and saving options read it, so the
+    error belongs here, naming the switch rather than failing on `None` inside a slice.
+
+    Args:
+        results: The run's results.
+
+    Returns:
+        np.ndarray: The state array.
+
+    Raises:
+        ValueError: The run was asked not to keep the states.
+    """
+    if results.state_variables is None:
+        raise ValueError(
+            "this run did not keep the state variables, so no state option can be plotted or "
+            "saved; run it with keep_state_variables=True (the default) if you need them"
+        )
+    return results.state_variables
+
+
 class Catchment:
     """Catchment for reading meteorological/spatial inputs and running the model.
 
@@ -1364,19 +1388,19 @@ class Catchment:
             arr = self.results.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
-            arr = self.results.state_variables[:, :, start_i:end_i, 0]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
-            arr = self.results.state_variables[:, :, start_i:end_i, 1]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
-            arr = self.results.state_variables[:, :, start_i:end_i, 2]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
-            arr = self.results.state_variables[:, :, start_i:end_i, 3]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
-            arr = self.results.state_variables[:, :, start_i:end_i, 4]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
             arr = self.meteo.precipitation[:, :, start_i:end_i]
@@ -1534,15 +1558,15 @@ class Catchment:
             elif result == 3:
                 arr = self.results.qlz_translated[:, :, start_i:end_i]
             elif result == 4:
-                arr = self.results.state_variables[:, :, start_i:end_i, 0]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 0]
             elif result == 5:
-                arr = self.results.state_variables[:, :, start_i:end_i, 1]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 1]
             elif result == 6:
-                arr = self.results.state_variables[:, :, start_i:end_i, 2]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 2]
             elif result == 7:
-                arr = self.results.state_variables[:, :, start_i:end_i, 3]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 3]
             elif result == 8:
-                arr = self.results.state_variables[:, :, start_i:end_i, 4]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 4]
             else:
                 raise ValueError(
                     f" The result parameter takes a value between 1 and 8, given: {result}"
@@ -1571,13 +1595,17 @@ class Catchment:
                 data["Qlz"] = self.results.qlz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 4:
-                data[STATE_VARIABLES] = self.results.state_variables[start_i:end_i, :]
+                data[STATE_VARIABLES] = _require_state_variables(self.results)[
+                    start_i:end_i, :
+                ]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 5:
                 data["Qsim"] = self.Qsim[start_i:end_i]
                 data["Quz"] = self.results.quz[start_i:end_i]
                 data["Qlz"] = self.results.qlz[start_i:end_i]
-                data[STATE_VARIABLES] = self.results.state_variables[start_i:end_i, :]
+                data[STATE_VARIABLES] = _require_state_variables(self.results)[
+                    start_i:end_i, :
+                ]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
                 raise ValueError(
