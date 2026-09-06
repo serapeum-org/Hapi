@@ -19,6 +19,7 @@ from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
+from hapi.runs import DistributedRun
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
 
@@ -102,7 +103,9 @@ def coello_unrouted(
     coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-    DistributedRRM.run_lumped_model(coello)
+    coello.results = DistributedRRM.run_lumped_model(
+        DistributedRun.from_model(coello, needs_flow_direction=False)
+    )
     return coello
 
 

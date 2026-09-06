@@ -188,11 +188,11 @@ exclude = [
 module = [
     "hapi.catchment",
     "hapi.calibration",
-    "hapi.wrapper",
 ]
-# These modules are built by successive read_*() calls: attributes are typed
-# X | None and populated before use, which mypy cannot verify. Removing the
-# suppressions needs assert-based narrowing helpers first (~257 errors).
+# These two are builders: attributes are typed X | None and populated by successive
+# read_*() calls, which mypy cannot verify. The run layer no longer needs the excuse --
+# `hapi.runs` narrows a builder into a validated, non-optional run, so `run`, `wrapper`
+# and `distrrm` type-check clean. What is left here is the builder side itself.
 disable_error_code = [
     "union-attr",
     "attr-defined",
@@ -262,7 +262,7 @@ cmd = [
     "pytest", "--doctest-modules", "-p", "no:cacheprovider", "--no-cov",
     "src/hapi/config.py", "src/hapi/catchment.py",
     "src/hapi/conceptual.py", "src/hapi/inputs.py", "src/hapi/period.py",
-    "src/hapi/results.py",
+    "src/hapi/results.py", "src/hapi/runs.py",
     "src/hapi/routing.py",
     "src/hapi/run.py",
 ]

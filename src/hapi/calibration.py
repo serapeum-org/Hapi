@@ -17,6 +17,7 @@ from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterSet
+from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
 ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
@@ -356,8 +357,10 @@ class Calibration(Catchment):
                 # rule, so a distribution function producing the wrong width fails here
                 # rather than as an index error inside the per-cell loop.
                 self.parameters = self._parameter_set(spatial_var_fun.Par3d)
-                # run the model
-                Wrapper.run_muskingum(self)
+                # Narrowing is the validation: every trial vector is checked against the grid
+                # and the period here, on the one path that used to skip every check `Run`
+                # made by going straight to the wrapper.
+                self.results = Wrapper.run_muskingum(DistributedRun.from_model(self))
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
@@ -503,8 +506,10 @@ class Calibration(Catchment):
                 )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum
                 # Re-checked per trial -- see run_calibration.
                 self.parameters = self._parameter_set(spatial_var_fun.Par3d)
-                # run the model
-                Wrapper.run_maxbas(self)
+                # See run_calibration: narrowing validates each trial vector.
+                self.results = Wrapper.run_maxbas(
+                    DistributedRun.from_model(self, needs_flow_direction=False)
+                )
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
@@ -637,8 +642,11 @@ class Calibration(Catchment):
             try:
                 # parameters. Checked against (snow, maxbas) as it arrives.
                 self.parameters = self._parameter_set(par)
-                # run the model
-                Wrapper.run_lumped(self, route, routing_fn)
+                # See run_calibration: narrowing validates each trial vector.
+                self.results = Wrapper.run_lumped(
+                    LumpedRun.from_model(self), route, routing_fn
+                )
+                self.Qsim = self.results.q_total
                 # calculate performance of the model
                 try:
                     error = self.objective_function(

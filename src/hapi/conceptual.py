@@ -233,14 +233,17 @@ class ConceptualModelSetup:
     Examples:
         ```python
         >>> from hapi.conceptual import ConceptualModelSetup
-        >>> setup = ConceptualModelSetup(None, 1530.0, [0, 10, 10, 10, 0], q_init=5.0)
+        >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+        >>> setup = ConceptualModelSetup(
+        ...     HBVBergestrom92(), 1530.0, [0, 10, 10, 10, 0], q_init=5.0
+        ... )
         >>> setup.area, setup.q_init
         (1530.0, 5.0)
 
         ```
     """
 
-    model: BaseConceptualModel | None
+    model: BaseConceptualModel
     area: float | int
     initial_cond: list
     q_init: float | None = None

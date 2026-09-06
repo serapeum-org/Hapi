@@ -96,10 +96,14 @@ results = Run.run_flood(Coello)
 # The domain is the flow-accumulation mask, not the whole grid: `q_total` is allocated
 # with zeros everywhere, so counting its non-NaN cells would just report rows x cols.
 inside = ~np.isnan(Coello.flow_network.flow_acc_arr)
-river_cells = int(np.count_nonzero((np.nan_to_num(Coello.bankfull_depth) > 0) & inside))
+river_cells = int(
+    np.count_nonzero((np.nan_to_num(Coello.river_geometry.bankfull_depth) > 0) & inside)
+)
 
 print(f"routing            : {results.routing.value}")
 print(f"q_total            : {results.q_total.shape}")
 print(f"catchment cells    : {int(np.count_nonzero(inside))}")
-print(f"river cells        : {river_cells} (left to a hydraulic model under 'Kinematic')")
+print(
+    f"river cells        : {river_cells} (left to a hydraulic model under 'Kinematic')"
+)
 print(f"basin-wide q_total : {float(np.nansum(results.q_total)):.1f}")

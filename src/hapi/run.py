@@ -22,12 +22,10 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-from hapi.protocols import (
-    DistributedModel,
-    FloodModel,
-    LumpedModelInputs,
-)
+from hapi.inputs import RiverGeometry
+from hapi.protocols import CatchmentLike, SupportsQsim
 from hapi.results import SimulationResults
+from hapi.runs import DistributedRun, LumpedRun
 
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
@@ -35,38 +33,12 @@ from hapi.wrapper import Wrapper
 if TYPE_CHECKING:
     from hapi.catchment import Lake as LakeType
 
-ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
-COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
-#: The flow-direction check tests both axes, so it says both. The entry points used to
-#: carry three different wordings for this one check; the widest is the accurate one.
-GRID_MISMATCH_ERROR = "all input data should have the same number of rows and columns"
 
-
-def _check_parameters_cover_grid(model: DistributedModel) -> None:
-    """Check the parameter array spans the catchment grid.
-
-    The same two checks every distributed entry point makes before handing the model to the
-    wrapper: a parameter array smaller than the grid is indexed out of range inside the
-    per-cell loop, far from the call that supplied it.
-
-    Args:
-        model: The model about to run, carrying `parameters` and `flow_network`.
-
-    Raises:
-        ValueError: The parameter array has the wrong number of rows or columns.
-    """
-    shape = np.asarray(model.parameters.values).shape
-    if shape[0] != model.flow_network.rows:
-        raise ValueError(ROWS_MISMATCH_ERROR)
-    if shape[1] != model.flow_network.cols:
-        raise ValueError(COLS_MISMATCH_ERROR)
-
-
-def _check_lake_meteo(model: DistributedModel, lake: LakeType) -> None:
+def _check_lake_meteo(run: DistributedRun, lake: LakeType) -> None:
     """Check the lake's record lines up with the distributed drivers.
 
     Args:
-        model: The model about to run, whose `meteo` sets the expected length.
+        run: The validated run, whose `meteo` sets the expected length.
         lake: The lake whose `MeteoData` is checked.
 
     Raises:
@@ -80,7 +52,7 @@ def _check_lake_meteo(model: DistributedModel, lake: LakeType) -> None:
             "the lake has no meteorological data; call lake.read_meteo_data before "
             "running a lake-aware entry point"
         )
-    if np.shape(meteo_data)[0] != model.meteo.time_steps:
+    if np.shape(meteo_data)[0] != run.meteo.time_steps:
         raise ValueError(
             "Lake meteorological data has to have the same length as the distributed "
             "raster data"
@@ -91,7 +63,9 @@ def _check_lake_meteo(model: DistributedModel, lake: LakeType) -> None:
         )
 
 
-def _warn_about_the_unrouted_river_cells(model: FloodModel) -> None:
+def _warn_about_the_unrouted_river_cells(
+    run: DistributedRun, geometry: RiverGeometry
+) -> None:
     """Warn that the river cells will be left unrouted, and by how much.
 
     Skipping them is the handoff the flood model was designed around: a 1D hydraulic model
@@ -106,14 +80,17 @@ def _warn_about_the_unrouted_river_cells(model: FloodModel) -> None:
     statement that something downstream takes the river cells, and is left quiet.
 
     Args:
-        model: The model about to run, whose `bankfull_depth` marks the river cells.
+        run: The validated run, supplying the catchment mask.
+        geometry: The river geometry, whose `bankfull_depth` marks the river cells. Passed in
+            rather than read off `run`, where it is legitimately optional -- the caller has
+            already established it is present.
     """
     # Only cells inside the catchment are ever routed, so only those can be skipped. The
     # bankfull-depth raster carries values outside the domain too, and counting those made
     # the message claim more river cells than the catchment has.
-    inside = ~np.isnan(model.flow_network.flow_acc_arr)
+    inside = ~np.isnan(run.flow_network.flow_acc_arr)
     river_cells = int(
-        np.count_nonzero((np.nan_to_num(model.bankfull_depth) > 0) & inside)
+        np.count_nonzero((np.nan_to_num(geometry.bankfull_depth) > 0) & inside)
     )
     domain = int(np.count_nonzero(inside))
     warnings.warn(
@@ -125,39 +102,6 @@ def _warn_about_the_unrouted_river_cells(model: FloodModel) -> None:
         UserWarning,
         stacklevel=3,
     )
-
-
-def _validate_distributed(model: DistributedModel, check_flow_direction: bool) -> None:
-    """Run the checks every distributed entry point makes before the wrapper.
-
-    Args:
-        model: The model about to run.
-        check_flow_direction: Whether to compare the flow-direction raster against the grid.
-            The MAXBAS paths never read that raster, so they do not require it.
-
-    Raises:
-        ValueError: The grid, the drivers and the parameters do not agree.
-    """
-    if check_flow_direction:
-        flow_dir_arr = model.flow_network.flow_dir_arr
-        # `FlowNetwork` takes the direction raster as optional because MAXBAS never reads
-        # it. The paths that route cell to cell do, so say which raster is missing rather
-        # than failing on None inside the routing loop.
-        if flow_dir_arr is None:
-            raise ValueError(
-                "this run routes cell to cell and needs a flow-direction raster, but the "
-                "flow network was built without one; pass it to FlowNetwork.from_rasters"
-            )
-        fd_rows, fd_cols = flow_dir_arr.shape
-        if fd_rows != model.flow_network.rows or fd_cols != model.flow_network.cols:
-            raise ValueError(GRID_MISMATCH_ERROR)
-
-    # The three cubes already agree with each other (checked when MeteoInputs was
-    # built); this is the other half -- that they cover the model's grid.
-    model.meteo.validate_against(
-        model.flow_network.rows, model.flow_network.cols, model.period.date_index
-    )
-    _check_parameters_cover_grid(model)
 
 
 class Run:
@@ -199,7 +143,7 @@ class Run:
     """
 
     @staticmethod
-    def run_distributed(model: DistributedModel) -> SimulationResults:
+    def run_distributed(model: CatchmentLike) -> SimulationResults:
         """Run the distributed hydrological model.
 
         Validates that all input arrays (precipitation, evapotranspiration,
@@ -228,16 +172,16 @@ class Run:
             ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        _validate_distributed(model, check_flow_direction=True)
-        # run the model
-        results = Wrapper.run_muskingum(model)
+        run = DistributedRun.from_model(model)
+        results = Wrapper.run_muskingum(run)
 
+        model.results = results
         logger.info("Model Run has finished")
         return results
 
     @staticmethod
     def run_flood(
-        model: FloodModel, skip_hydraulic_cells: bool | None = None
+        model: CatchmentLike, skip_hydraulic_cells: bool | None = None
     ) -> SimulationResults:
         """Run the flood model.
 
@@ -264,40 +208,25 @@ class Run:
                 arrays, or river geometry arrays have inconsistent
                 dimensions.
         """
-        _validate_distributed(model, check_flow_direction=True)
-
-        named_geometry = {
-            "bankfull_depth": model.bankfull_depth,
-            "river_width": model.river_width,
-            "river_roughness": model.river_roughness,
-            "flood_plain_roughness": model.flood_plain_roughness,
-        }
-        # `read_river_geometry` sets all four together, so a missing one means it was never
-        # called. Naming them beats `np.shape(None)` raising from inside the comparison.
-        missing = [name for name, arr in named_geometry.items() if arr is None]
-        if missing:
-            raise ValueError(
-                f"the flood model needs the river geometry, but {', '.join(missing)} "
-                "is not set; call read_river_geometry first"
-            )
-        # Rebuilt from the non-None values rather than `.values()` directly: the guard above
-        # has already ruled None out, but only a comprehension carries that into the type.
-        geometry = [arr for arr in named_geometry.values() if arr is not None]
-        if any(np.shape(arr)[0] != model.flow_network.rows for arr in geometry):
-            raise ValueError(GRID_MISMATCH_ERROR)
-        if any(np.shape(arr)[1] != model.flow_network.cols for arr in geometry):
-            raise ValueError("all input data should have the same number of columns")
-
         derived = skip_hydraulic_cells is None
         skip = (
-            model.routing_method == "Kinematic" if derived else bool(skip_hydraulic_cells)
+            model.routing_method == "Kinematic"
+            if derived
+            else bool(skip_hydraulic_cells)
         )
 
-        if skip and derived:
-            _warn_about_the_unrouted_river_cells(model)
+        # Every check the old inline block made now happens in the run type: `RiverGeometry`
+        # settles that the five rasters share a grid, and `DistributedRun` that the grid is the
+        # catchment's and that a requested skip has geometry to identify the river cells with.
+        run = DistributedRun.from_model(
+            model, with_river_geometry=True, skip_hydraulic_cells=skip
+        )
 
-        # run the model
-        results = Wrapper.run_muskingum(model, skip_hydraulic_cells=skip)
+        if skip and derived and run.river_geometry is not None:
+            _warn_about_the_unrouted_river_cells(run, run.river_geometry)
+
+        results = Wrapper.run_muskingum(run)
+        model.results = results
         logger.info("RRM has finished")
         # SV = SaintVenant()
         # SV.KinematicRaster(model)
@@ -306,7 +235,7 @@ class Run:
 
     @staticmethod
     def run_distributed_with_lake(
-        model: DistributedModel, lake: LakeType
+        model: CatchmentLike, lake: LakeType
     ) -> SimulationResults:
         """Run the distributed model with a lake component.
 
@@ -330,16 +259,16 @@ class Run:
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
-        _validate_distributed(model, check_flow_direction=True)
-        _check_lake_meteo(model, lake)
-        # run the model
-        results = Wrapper.run_muskingum_with_lake(model, lake)
+        run = DistributedRun.from_model(model)
+        _check_lake_meteo(run, lake)
+        results = Wrapper.run_muskingum_with_lake(run, lake)
 
+        model.results = results
         logger.info("Model Run has finished")
         return results
 
     @staticmethod
-    def run_maxbas(model: DistributedModel) -> SimulationResults:
+    def run_maxbas(model: CatchmentLike) -> SimulationResults:
         """Run the FW1 distributed hydrological model.
 
         Validates that all input arrays have consistent dimensions,
@@ -368,17 +297,15 @@ class Run:
             ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        _validate_distributed(model, check_flow_direction=False)
-        # run the model
-        results = Wrapper.run_maxbas(model)
+        run = DistributedRun.from_model(model, needs_flow_direction=False)
+        results = Wrapper.run_maxbas(run)
 
+        model.results = results
         logger.info("Model Run has finished")
         return results
 
     @staticmethod
-    def run_maxbas_with_lake(
-        model: DistributedModel, lake: LakeType
-    ) -> SimulationResults:
+    def run_maxbas_with_lake(model: CatchmentLike, lake: LakeType) -> SimulationResults:
         """Run the FW1 distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -400,15 +327,16 @@ class Run:
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
-        _validate_distributed(model, check_flow_direction=False)
-        _check_lake_meteo(model, lake)
+        run = DistributedRun.from_model(model, needs_flow_direction=False)
+        _check_lake_meteo(run, lake)
 
-        # run the model
-        return Wrapper.run_maxbas_with_lake(model, lake)
+        results = Wrapper.run_maxbas_with_lake(run, lake)
+        model.results = results
+        return results
 
     @staticmethod
     def run_lumped(
-        model: LumpedModelInputs,
+        model: SupportsQsim,
         Route: int = 0,
         routing_fn: Callable[..., Any] | None = None,
     ) -> SimulationResults:
@@ -441,11 +369,15 @@ class Run:
         # resolution -- this branch used to be written out here for the fourth time.
         ind = model.period.date_index
 
-        Qsim = pd.DataFrame(index=ind)
+        run = LumpedRun.from_model(model)
+        results = Wrapper.run_lumped(run, Route, routing_fn)
 
-        results = Wrapper.run_lumped(model, Route, routing_fn)
-        Qsim["q"] = model.Qsim
+        # The engine puts the lumped total in `results.q_total`; indexing it by the period and
+        # putting the frame on the model is this layer's job, not the engine's.
+        Qsim = pd.DataFrame(index=ind)
+        Qsim["q"] = results.q_total
         model.Qsim = Qsim[:]
+        model.results = results
         logger.info("Lumped model run has finished successfully")
         return results
 

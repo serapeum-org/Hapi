@@ -41,6 +41,7 @@ from hapi.inputs import (
     METEO_VARIABLES,
     FlowNetwork,
     MeteoInputs,
+    RiverGeometry,
     _warn_if_no_sentinel,
     read_rasters,
 )
@@ -328,11 +329,9 @@ class Catchment:
         #: :class:`~hapi.inputs.FlowNetwork` built by its loader.
         self.flow_network: FlowNetwork | None = None
         self.flow_path_length_arr: np.ndarray | None = None
-        self.DEM: np.ndarray | None = None
-        self.bankfull_depth: np.ndarray | None = None
-        self.river_width: np.ndarray | None = None
-        self.river_roughness: np.ndarray | None = None
-        self.flood_plain_roughness: np.ndarray | None = None
+        #: The five hydraulic rasters the flood model reads, once `read_river_geometry` has
+        #: run. Absent-or-complete: they are checked against each other as they are read.
+        self.river_geometry: RiverGeometry | None = None
         #: Everything one run produced, replaced wholesale by the next run. The seven
         #: result arrays below are read-only properties forwarding to it, so `model.results.q_total`
         #: still reads as it always did while the run layer owns the arrays. `None` until
@@ -615,15 +614,16 @@ class Catchment:
             floodplain_roughness_file (str): Path to the floodplain
                 roughness raster file.
         """
-        for name, fpath in [
-            ("DEM", dem_file),
-            ("bankfull_depth", bankfull_depth_file),
-            ("river_width", river_width_file),
-            ("river_roughness", river_roughness_file),
-            ("flood_plain_roughness", floodplain_roughness_file),
-        ]:
-            ds = Dataset.read_file(fpath)
-            setattr(self, name, ds.read_array(band=0))
+        # One object rather than five loose arrays: `RiverGeometry` checks they share a grid
+        # as it reads them, where the file names are still in hand and the error can name the
+        # odd one out. The loop this replaces checked nothing.
+        self.river_geometry = RiverGeometry.from_rasters(
+            dem_file,
+            bankfull_depth_file,
+            river_width_file,
+            river_roughness_file,
+            floodplain_roughness_file,
+        )
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
         """Read model parameter rasters or a CSV parameter file.
@@ -1684,6 +1684,11 @@ class Lake:
         self.LakeArea: float | None = None
         self.InitialCond: list | None = None
         self.StageDischargeCurve: np.ndarray | None = None
+        #: The lake's own simulated outflow, and that series routed to the outflow cell.
+        #: Filled by the lake-aware wrapper entry points, which used to create them by
+        #: assignment -- so they existed only after a run and nothing said they were coming.
+        self.Qlake: np.ndarray | None = None
+        self.QlakeR: np.ndarray | None = None
 
     def read_meteo_data(self, path: str, fmt: str):
         """Read meteorological data for the lake simulation.

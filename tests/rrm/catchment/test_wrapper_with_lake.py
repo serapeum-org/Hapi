@@ -21,6 +21,7 @@ from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.rrm.hbv_lake import HBVLake
 from hapi.run import Run
+from hapi.runs import DistributedRun
 from hapi.wrapper import Wrapper
 
 JIBOA_ROOT = "tests/rrm/data/jiboa"
@@ -296,8 +297,12 @@ class TestRRMWithLake:
         model = coello_with_lake_inputs
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=7)
 
-        Wrapper.run_muskingum(coello_no_lake)
-        Wrapper.run_muskingum_with_lake(model, lake)
+        coello_no_lake.results = Wrapper.run_muskingum(
+            DistributedRun.from_model(coello_no_lake)
+        )
+        model.results = Wrapper.run_muskingum_with_lake(
+            DistributedRun.from_model(model), lake
+        )
 
         row, col = OUTFLOW_CELL
         without = coello_no_lake.results.quz_routed[row, col, :]
@@ -346,7 +351,9 @@ class TestRRMWithLake:
         model = coello_with_lake_inputs
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=11)
 
-        Wrapper.run_muskingum_with_lake(model, lake)
+        model.results = Wrapper.run_muskingum_with_lake(
+            DistributedRun.from_model(model), lake
+        )
 
         steps = model.meteo.simulation_steps
         rows, cols = model.flow_network.rows, model.flow_network.cols
@@ -381,13 +388,17 @@ class TestRRMWithLake:
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=13)
 
-        Wrapper.run_maxbas_with_lake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
         assert not model.results.outlet_shortcut_valid, (
             "the triangular path must mark the model before this test means anything"
         )
 
         model.read_parameters(coello_dist_parameters_muskingum, False)
-        Wrapper.run_muskingum_with_lake(model, lake)
+        model.results = Wrapper.run_muskingum_with_lake(
+            DistributedRun.from_model(model), lake
+        )
 
         assert model.results.outlet_shortcut_valid, (
             "a Muskingum lake run makes the outlet-cell shortcut valid again"
@@ -415,7 +426,9 @@ class TestFW1WithLake:
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=17)
         assert model.results is None, "the fixture must arrive with no run behind it"
 
-        Wrapper.run_maxbas_with_lake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
 
         rows, cols = model.flow_network.rows, model.flow_network.cols
         steps = model.meteo.simulation_steps
@@ -443,7 +456,9 @@ class TestFW1WithLake:
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=19)
 
-        Wrapper.run_maxbas_with_lake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
 
         expected_len = model.meteo.simulation_steps - 1
         assert len(model.results.qout) == expected_len, (
@@ -481,7 +496,9 @@ class TestFW1WithLake:
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=23)
         assert model.results is None, "a fresh model must arrive with no results"
 
-        Wrapper.run_maxbas_with_lake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
 
         assert not model.results.outlet_shortcut_valid, (
             "a triangular lake run must mark the model as MAXBAS-routed"

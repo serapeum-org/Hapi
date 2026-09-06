@@ -372,16 +372,19 @@ class TestValidationNamesWhatIsMissing:
         """Test that the flood model reports which geometry rasters are unset.
 
         Test scenario:
-            `read_river_geometry` sets four arrays together, so a missing one means it was
-            never called. The check used to reach `np.shape(None)`; it now lists the names.
+            The five rasters are one `RiverGeometry` now, built and checked together, so the
+            flood path either has it or does not -- and says which reader supplies it. The
+            check used to reach `np.shape(None)` on whichever array was missing.
         """
         model = _build("coello", coello_dist_parameters_muskingum, **coello_fixtures)
 
         with pytest.raises(ValueError, match="read_river_geometry") as exc_info:
             Run.run_flood(model)
 
-        assert "bankfull_depth" in str(exc_info.value), (
-            f"the error should name the missing rasters, got: {exc_info.value}"
+        # One object to report, not four rasters: `RiverGeometry` is absent-or-complete, so
+        # there is no longer a "three of the four are set" state to enumerate.
+        assert "river_geometry" in str(exc_info.value), (
+            f"the error should name the missing input, got: {exc_info.value}"
         )
 
 

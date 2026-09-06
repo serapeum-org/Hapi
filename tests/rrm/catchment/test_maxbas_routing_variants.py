@@ -20,6 +20,7 @@ from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
+from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
 
@@ -66,7 +67,9 @@ def coello_before_routing(
     rows, cols = coello.flow_network.rows, coello.flow_network.cols
     distance = np.add.outer(np.arange(rows), np.arange(cols)).astype("float64") * 1000.0
     coello.flow_path_length_arr = np.where(np.isnan(acc), np.nan, distance)
-    DistributedRRM.run_lumped_model(coello)
+    coello.results = DistributedRRM.run_lumped_model(
+        DistributedRun.from_model(coello, needs_flow_direction=False)
+    )
     return coello
 
 
@@ -106,7 +109,9 @@ class TestDistMaxbas2:
         before = model.results.quz.copy()
         inside = ~np.isnan(model.flow_path_length_arr)
 
-        DistributedRRM.route_maxbas_by_path_length(model)
+        DistributedRRM.route_maxbas_by_path_length(
+            DistributedRun.from_model(model, needs_flow_direction=False), model.results
+        )
 
         assert not np.array_equal(model.results.quz[inside], before[inside]), (
             "the routing must alter the upper-zone discharge of the masked cells"
@@ -143,7 +148,9 @@ class TestDistMaxbas2:
         )
         before = model.results.quz.copy()
 
-        DistributedRRM.route_maxbas_by_path_length(model)
+        DistributedRRM.route_maxbas_by_path_length(
+            DistributedRun.from_model(model, needs_flow_direction=False), model.results
+        )
 
         near_drop = before[nearest].max() - model.results.quz[nearest].max()
         far_drop = before[furthest].max() - model.results.quz[furthest].max()
@@ -169,7 +176,9 @@ class TestDistMaxbas2:
         model.results.quz[outside] = sentinel
         before = model.results.quz.copy()
 
-        DistributedRRM.route_maxbas_by_path_length(model)
+        DistributedRRM.route_maxbas_by_path_length(
+            DistributedRun.from_model(model, needs_flow_direction=False), model.results
+        )
 
         np.testing.assert_array_equal(
             model.results.quz[outside],
@@ -224,9 +233,10 @@ class TestLumpedRouting:
             unrouted series, so compare against the same run left unrouted, convolved
             independently with the parameter the branch is supposed to use.
         """
-        # Straight to the wrapper: `Run.run_lumped` wraps `Qsim` in a date-indexed frame and
-        # the unrouted series is one step longer than the index, so only the routed form
-        # survives that call.
+        # Straight to the wrapper: `Run.run_lumped` indexes the series by the period, and the
+        # unrouted one is a step longer than the index, so only the routed form survives that
+        # call. The engine leaves its total in `results.q_total`; `Qsim` is what the entry
+        # point puts on the model.
         unrouted = _lumped_model(
             coello_rrm_date,
             lumped_meteo_data_path,
@@ -234,7 +244,7 @@ class TestLumpedRouting:
             coello_AreaCoeff,
             coello_InitialCond,
         )
-        Wrapper.run_lumped(unrouted, Routing=0)
+        unrouted.results = Wrapper.run_lumped(LumpedRun.from_model(unrouted), Routing=0)
         routed = _lumped_model(
             coello_rrm_date,
             lumped_meteo_data_path,
@@ -247,7 +257,7 @@ class TestLumpedRouting:
 
         maxbas = routed.parameters.values[-1]
         expected = Routing.triangular_routing_1(
-            np.array(np.asarray(unrouted.Qsim)[:-1]), maxbas
+            np.array(np.asarray(unrouted.results.q_total)[:-1]), maxbas
         )
         # `run_lumped` wraps the routed series in a date-indexed frame; compare the values.
         actual = np.asarray(routed.Qsim, dtype=float).ravel()

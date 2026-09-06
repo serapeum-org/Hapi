@@ -15,6 +15,7 @@ import numpy as np
 
 from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
+from hapi.runs import DistributedRun
 
 
 class DistributedRRM:
@@ -24,8 +25,10 @@ class DistributedRRM:
     and routes the resulting discharge between cells following the
     river network.
 
-    The class is stateless; all methods are static and operate on a
-    `Model` object that carries the required arrays and parameters.
+    The class is stateless. Every method takes a :class:`~hapi.runs.DistributedRun` --
+    validated, non-optional inputs -- and either returns the results it built or mutates the
+    :class:`~hapi.results.SimulationResults` it is handed. Nothing here reads or writes a
+    catchment, so nothing here has to ask whether its inputs were checked.
     """
 
     def __init__(self):
@@ -33,53 +36,21 @@ class DistributedRRM:
         pass
 
     @staticmethod
-    def run_lumped_model(Model) -> SimulationResults:
+    def run_lumped_model(run: DistributedRun) -> SimulationResults:
         """Run lumped rainfall-runoff model for every grid cell.
 
-        Executes the lumped conceptual model (e.g., HBV) independently
-        for each non-NaN cell in the catchment grid and converts the
-        resulting discharge from mm/time-step to m3/s.
-
-        Builds `Model.results` and returns it, so a caller that needs the arrays does
-        not have to read them back off the model and re-narrow them from `| None`.
+        Args:
+            run: The validated inputs. Reads the flow network, the drivers, the parameter set
+                and the conceptual model setup.
 
         Returns:
-            SimulationResults: The results object, carrying `state_variables`, `quz` and
-            `qlz`, with `routing` still `RoutingKind.UNROUTED`.
-
-        Args:
-            Model (Catchment): A catchment model object carrying the following
-                attributes:
-
-                - `rows` (int): Number of grid rows.
-                - `cols` (int): Number of grid columns.
-                - `TS` (int): Number of time steps.
-                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation
-                  array; NaN marks cells outside the domain.
-                - `LumpedModel`: Lumped model instance with a
-                  `simulate` method.
-                - `Prec` (numpy.ndarray): 3-D precipitation array
-                  `(rows, cols, TS)`.
-                - `Temp` (numpy.ndarray): 3-D temperature array.
-                - `ET` (numpy.ndarray): 3-D evapotranspiration array.
-                - `ll_temp` (numpy.ndarray): 3-D long-term average
-                  temperature array.
-                - `Parameters` (numpy.ndarray): 3-D parameter array
-                  `(rows, cols, n_params)`.
-                - `InitialCond` (list): Initial state variable values
-                  `[sp, sm, uz, lz, wc]`.
-                - `q_init` (float): Initial discharge in m3/s.
-                - `Snow` (int): Snow module flag (0 or 1).
-                - `CatArea` (float): Catchment area in km2.
-                - `px_tot_area` (float): Total pixel area in km2.
-                - `px_area` (float): Single pixel area in km2.
-                - `conversion_factor` (float): Unit conversion
-                  factor (`tfac * 3.6`).
+            SimulationResults: A fresh results object carrying `state_variables`, `quz` and
+            `qlz`, with `routing` still `RoutingKind.UNROUTED` -- a routing step sets it.
         """
         grid = (
-            Model.flow_network.rows,
-            Model.flow_network.cols,
-            Model.meteo.simulation_steps,
+            run.flow_network.rows,
+            run.flow_network.cols,
+            run.meteo.simulation_steps,
         )
         # A fresh results object per run, rather than nine attributes overwritten one at a
         # time: a half-finished run is then distinguishable from a finished one, and the
@@ -90,74 +61,49 @@ class DistributedRRM:
             qlz=np.zeros(grid, dtype=np.float32),
             state_variables=np.zeros((*grid, 5), dtype=np.float32),
         )
-        Model.results = results
 
-        for x in range(Model.flow_network.rows):
-            for y in range(Model.flow_network.cols):
+        for x in range(run.flow_network.rows):
+            for y in range(run.flow_network.cols):
                 # only for cells in the domain
-                if not np.isnan(Model.flow_network.flow_acc_arr[x, y]):
+                if not np.isnan(run.flow_network.flow_acc_arr[x, y]):
                     (
                         results.quz[x, y, :],
                         results.qlz[x, y, :],
                         results.state_variables[x, y, :, :],
-                    ) = Model.model_setup.model.simulate(
-                        prec=Model.meteo.precipitation[x, y, :],
-                        temp=Model.meteo.temperature[x, y, :],
-                        et=Model.meteo.evapotranspiration[x, y, :],
-                        ll_temp=Model.meteo.ll_temp[x, y, :],
-                        par=Model.parameters.values[x, y, :],
-                        init_st=Model.model_setup.initial_cond,
-                        q_init=Model.model_setup.q_init,
-                        snow=Model.parameters.snow,
+                    ) = run.model_setup.model.simulate(
+                        prec=run.meteo.precipitation[x, y, :],
+                        temp=run.meteo.temperature[x, y, :],
+                        et=run.meteo.evapotranspiration[x, y, :],
+                        ll_temp=run.meteo.ll_temp[x, y, :],
+                        par=run.parameter_cube[x, y, :],
+                        init_st=run.model_setup.initial_cond,
+                        q_init=run.model_setup.q_init,
+                        snow=run.parameters.snow,
                     )
 
-        area_coef = Model.model_setup.area / Model.flow_network.px_tot_area
-        factor = Model.flow_network.px_area * area_coef / Model.period.conversion_factor
+        area_coef = run.model_setup.area / run.flow_network.px_tot_area
+        factor = run.flow_network.px_area * area_coef / run.period.conversion_factor
         # convert quz and qlz from mm/time step to m3/sec  # Timef*3.6
         results.quz = results.quz * factor
         results.qlz = results.qlz * factor
         return results
 
     @staticmethod
-    def route_muskingum(Model, skip_hydraulic_cells: bool = False):
+    def route_muskingum(run: DistributedRun, results: SimulationResults) -> None:
         """Route discharge between cells following the flow direction.
 
-        Accumulates and routes upper-zone discharge (`quz`) using
-        Muskingum routing from upstream to downstream cells according
-        to the flow direction raster.  Lower-zone discharge (`qlz`)
-        is translated (accumulated without attenuation) so that total
-        discharge can be computed at any internal point.
-
-        After execution the following attributes are set on *Model*:
-        `quz_routed`, `qlz_translated`, and `q_total`.
+        Accumulates and routes upper-zone discharge from upstream to downstream cells along
+        the flow-direction network, and translates the lower zone (accumulated without
+        attenuation) so total discharge can be read at any internal point. Fills
+        `quz_routed`, `qlz_translated` and `q_total` on `results`, and records
+        `RoutingKind.MUSKINGUM`.
 
         Args:
-            Model (Catchment): A catchment model object carrying the following
-                attributes:
-
-                - `rows` (int): Number of grid rows.
-                - `cols` (int): Number of grid columns.
-                - `TS` (int): Number of time steps.
-                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation
-                  array; NaN marks cells outside the domain.
-                - `quz` (numpy.ndarray): 3-D upper-zone discharge
-                  array `(rows, cols, TS)` in m3/s.
-                - `qlz` (numpy.ndarray): 3-D lower-zone discharge
-                  array `(rows, cols, TS)` in m3/s.
-                - `acc_val` (list): Sorted unique flow accumulation
-                  values.
-                - `FDT` (dict): Flow direction table mapping
-                  `"row,col"` keys to lists of upstream cell
-                  index pairs.
-                - `Parameters` (numpy.ndarray): 3-D parameter array
-                  where indices 10 and 11 are Muskingum K and X.
-                - `dt` (float): Time-step factor (`tfac`).
-                - `bankfull_depth` (numpy.ndarray): 2-D bankfull depth array. Read only
-                  when `skip_hydraulic_cells` is True.
-
-            skip_hydraulic_cells: Skip cells with a positive `bankfull_depth`, because a
-                1D hydraulic model routes them instead. The flood model's path; a plain
-                distributed run leaves it False and routes every cell.
+            run: The validated inputs. `skip_hydraulic_cells` leaves cells with a positive
+                `river_geometry.bankfull_depth` unrouted, because a 1D hydraulic model routes
+                them instead; the run type has already checked the geometry is present.
+            results: The results to route, as returned by :meth:`run_lumped_model`. Mutated
+                in place.
         """
         #    # routing lake discharge with DS cell k & x and adding to cell Q
         #    q_lake=Routing.muskingum_v(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
@@ -166,8 +112,14 @@ class DistributedRRM:
         #    #new
         #    quz[lakecell[0],lakecell[1],:]=quz[lakecell[0],lakecell[1],:]+q_lake
 
-        results = Model.results
         # cells at the divider
+        # `DistributedRun` has already refused a skip with no geometry, so this is the value
+        # that guard proved is there -- bound once, outside the loop it is read in.
+        river_depth = (
+            run.river_geometry.bankfull_depth
+            if run.skip_hydraulic_cells and run.river_geometry is not None
+            else None
+        )
         results.quz_routed = np.zeros_like(results.quz)
 
         # lower zone discharge is going to be just translated without any attenuation
@@ -176,29 +128,29 @@ class DistributedRRM:
 
         results.qlz_translated = np.zeros_like(results.quz)
         # for all cells with 0 flow acc put the quz
-        for x in range(Model.flow_network.rows):  # no of rows
-            for y in range(Model.flow_network.cols):  # no of columns
+        for x in range(run.flow_network.rows):  # no of rows
+            for y in range(run.flow_network.cols):  # no of columns
                 if (
-                    not np.isnan(Model.flow_network.flow_acc_arr[x, y])
-                    and Model.flow_network.flow_acc_arr[x, y] == 0
+                    not np.isnan(run.flow_network.flow_acc_arr[x, y])
+                    and run.flow_network.flow_acc_arr[x, y] == 0
                 ):
                     results.quz_routed[x, y, :] = results.quz[x, y, :]
                     results.qlz_translated[x, y, :] = results.qlz[x, y, :]
 
         # remaining cells
         # Read once: this is the routing inner loop, and `acc_val` scans the whole grid.
-        acc_val = Model.flow_network.acc_val
+        acc_val = run.flow_network.acc_val
         for j in range(1, len(acc_val)):
             # TODO parallelize
             # all cells with the same acc_val can run at the same time
-            for x in range(Model.flow_network.rows):  # no of rows
-                for y in range(Model.flow_network.cols):  # no of columns
+            for x in range(run.flow_network.rows):  # no of rows
+                for y in range(run.flow_network.cols):  # no of columns
                     # check from total flow accumulation
                     if (
-                        not np.isnan(Model.flow_network.flow_acc_arr[x, y])
-                        and Model.flow_network.flow_acc_arr[x, y] == acc_val[j]
+                        not np.isnan(run.flow_network.flow_acc_arr[x, y])
+                        and run.flow_network.flow_acc_arr[x, y] == acc_val[j]
                     ):
-                        if skip_hydraulic_cells and Model.bankfull_depth[x, y] > 0:
+                        if river_depth is not None and river_depth[x, y] > 0:
                             # A river cell a 1D hydraulic model will route instead. The
                             # caller says so explicitly; this used to be inferred from
                             # `routing_method != "Muskingum"`, which meant any catchment
@@ -208,28 +160,24 @@ class DistributedRRM:
                             continue
                         else:
                             # for UZ
-                            q_uzi = np.zeros(Model.meteo.simulation_steps)
+                            q_uzi = np.zeros(run.meteo.simulation_steps)
                             # for lz
-                            qlzi = np.zeros(Model.meteo.simulation_steps)
+                            qlzi = np.zeros(run.meteo.simulation_steps)
                             # iterate to route uz and translate lz
                             for i in range(
-                                len(Model.flow_network.FDT[str(x) + "," + str(y)])
-                            ):  # Model.acc_val[j]
+                                len(run.routing_table[str(x) + "," + str(y)])
+                            ):
                                 # bring the indexes of the us cell
-                                x_ind = Model.flow_network.FDT[str(x) + "," + str(y)][
-                                    i
-                                ][0]
-                                y_ind = Model.flow_network.FDT[str(x) + "," + str(y)][
-                                    i
-                                ][1]
+                                x_ind = run.routing_table[str(x) + "," + str(y)][i][0]
+                                y_ind = run.routing_table[str(x) + "," + str(y)][i][1]
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
                                 q_uzi = q_uzi + routing.muskingum_v(
                                     results.quz_routed[x_ind, y_ind, :],
                                     results.quz_routed[x_ind, y_ind, 0],
-                                    Model.parameters.values[x_ind, y_ind, 10],
-                                    Model.parameters.values[x_ind, y_ind, 11],
-                                    Model.period.dt,
+                                    run.parameter_cube[x_ind, y_ind, 10],
+                                    run.parameter_cube[x_ind, y_ind, 11],
+                                    run.period.dt,
                                 )
 
                                 qlzi = qlzi + results.qlz_translated[x_ind, y_ind, :]
@@ -245,85 +193,68 @@ class DistributedRRM:
         results.routing = RoutingKind.MUSKINGUM
 
     @staticmethod
-    def route_maxbas(Model):
+    def route_maxbas(run: DistributedRun, results: SimulationResults) -> None:
         """Route discharge to the outlet using a triangular function.
 
-        Applies triangular (MAXBAS) routing to the upper-zone
-        discharge of each cell independently.  The MAXBAS parameter
-        is read from the last column of the spatially distributed
-        parameter array.
-
-        The `Model.results.quz` array is modified in place.
+        Applies triangular (MAXBAS) routing to each cell's upper-zone discharge independently,
+        reading the MAXBAS parameter from the last column of the parameter array. `results.quz`
+        is modified in place.
 
         Args:
-            Model (Catchment): A catchment model object carrying the following
-                attributes:
-
-                - `rows` (int): Number of grid rows.
-                - `cols` (int): Number of grid columns.
-                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation
-                  array; NaN marks cells outside the domain.
-                - `Parameters` (numpy.ndarray): 3-D parameter array
-                  where the last index holds the MAXBAS value.
-                - `quz` (numpy.ndarray): 3-D upper-zone discharge
-                  array `(rows, cols, TS)` in m3/s.
+            run: The validated inputs.
+            results: The results to route. Mutated in place.
         """
-        Maxbas = Model.parameters.values[:, :, -1]
-        quz = Model.results.quz
+        Maxbas = run.parameter_cube[:, :, -1]
+        quz = results.quz
 
-        for x in range(Model.flow_network.rows):
-            for y in range(Model.flow_network.cols):
-                if not np.isnan(Model.flow_network.flow_acc_arr[x, y]):
+        for x in range(run.flow_network.rows):
+            for y in range(run.flow_network.cols):
+                if not np.isnan(run.flow_network.flow_acc_arr[x, y]):
                     quz[x, y, :] = routing.triangular_routing_1(
                         quz[x, y, :], Maxbas[x, y]
                     )
 
     @staticmethod
-    def route_maxbas_by_path_length(Model):
+    def route_maxbas_by_path_length(
+        run: DistributedRun, results: SimulationResults
+    ) -> None:
         """Route discharge using a triangular function scaled by flow path length.
 
-        Similar to `route_maxbas`, but the MAXBAS parameter for each
-        cell is rescaled proportionally to its flow path length so that
-        cells farther from the outlet receive more attenuation.
-
-        The `Model.results.quz` array is modified in place.
+        Like :meth:`route_maxbas`, but each cell's MAXBAS is rescaled by its flow path length,
+        so cells farther from the outlet are attenuated more. `results.quz` is modified in
+        place.
 
         Args:
-            Model (Catchment): A catchment model object carrying the following
-                attributes:
+            run: The validated inputs, whose `flow_path_length` supplies the raster.
+            results: The results to route. Mutated in place.
 
-                - `rows` (int): Number of grid rows.
-                - `cols` (int): Number of grid columns.
-                - `flow_acc_arr` (numpy.ndarray): 2-D flow accumulation
-                  array; NaN marks cells outside the domain.
-                - `flow_path_length_arr` (numpy.ndarray): 2-D flow path length
-                  array.
-                - `no_data_value` (float): No-data value used in the
-                  flow path length raster.
-                - `Parameters` (numpy.ndarray): 3-D parameter array
-                  where the last index holds the maximum MAXBAS value.
-                - `quz` (numpy.ndarray): 3-D upper-zone discharge
-                  array `(rows, cols, TS)` in m3/s.
+        Raises:
+            ValueError: The run carries no flow-path-length raster.
         """
-        MAXBAS = np.nanmax(Model.parameters.values[:, :, -1])
+        if run.flow_path_length is None:
+            raise ValueError(
+                "this routing scales MAXBAS by flow path length, but the run carries no "
+                "flow-path-length raster; call read_flow_path_length first"
+            )
+        MAXBAS = np.nanmax(run.parameter_cube[:, :, -1])
         # `read_flow_path_length` already masks this raster's own no-data cells to NaN via
         # pyramids, so no sentinel comparison is needed here -- and the one that used to sit
         # here compared against the *accumulation* raster's sentinel, which is a different
         # raster and need not share a no-data value.
 
-        MaxFPL = np.nanmax(Model.flow_path_length_arr)
-        MinFPL = np.nanmin(Model.flow_path_length_arr)
+        MaxFPL = np.nanmax(run.flow_path_length)
+        MinFPL = np.nanmin(run.flow_path_length)
         # resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
         resize_fun = lambda g: (
             (((g - MinFPL) / (MaxFPL - MinFPL)) * (1 * MAXBAS - 1)) + 1
         )
 
-        NormalizedFPL = resize_fun(Model.flow_path_length_arr)
-        quz = Model.results.quz
+        NormalizedFPL = resize_fun(run.flow_path_length)
+        quz = results.quz
 
-        for x in range(Model.flow_network.rows):
-            for y in range(Model.flow_network.cols):
-                if not np.isnan(Model.flow_path_length_arr[x, y]):
+        for x in range(run.flow_network.rows):
+            for y in range(run.flow_network.cols):
+                if not np.isnan(run.flow_path_length[x, y]):
                     quz[x, y, :] = routing.triangular_routing_2(
                         quz[x, y, :], NormalizedFPL[x, y]
                     )
