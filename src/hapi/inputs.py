@@ -487,7 +487,7 @@ class FlowNetwork:
         return int(np.count_nonzero(~np.isnan(self.flow_acc_arr)))
 
     def __setattr__(self, name: str, value: object) -> None:
-        """Drop the cached `acc_val` when the array it is derived from is replaced.
+        """Drop the caches derived from the accumulation array when it is replaced.
 
         Args:
             name: Attribute being set.
@@ -495,6 +495,7 @@ class FlowNetwork:
         """
         if name == "flow_acc_arr":
             self.__dict__.pop("acc_val", None)
+            self.__dict__.pop("cells_by_acc_val", None)
         object.__setattr__(self, name, value)
 
     @cached_property
@@ -524,6 +525,49 @@ class FlowNetwork:
         """
         values: list[int] = np.unique(_to_int_codes(self.flow_acc_arr)).tolist()
         return values
+
+    @cached_property
+    def cells_by_acc_val(self) -> dict[float, list[tuple[int, int]]]:
+        """dict: In-domain cell indices grouped by their accumulation value, row-major.
+
+        The routing has to visit cells upstream-first, and accumulation gives that order. Asking
+        "which cells are at level j" used to be answered by walking the whole grid and testing
+        every cell against j -- once per level. Since the number of distinct levels grows with
+        the domain, that made the routing pass O(n_acc x rows x cols), effectively quadratic, to
+        visit each cell once. On the 13x14 Coello grid it was 4,004 visits for 89 cells; at
+        250x250 it projects to about 1.9 billion.
+
+        Building the answer once makes the same pass O(no_elem). Cached for the same reason
+        :attr:`acc_val` is, and dropped with it when `flow_acc_arr` is replaced.
+
+        Keys are the raw accumulation values, not truncated ones, so a lookup by an
+        :attr:`acc_val` entry matches exactly the cells the old `==` test matched -- including
+        the case it missed. A fractional accumulation raster (1.2, say) yields the code `1` in
+        `acc_val` and so selects nothing, here as before; that is a separate question from this
+        one, and both shipped datasets are integral.
+
+        Order within a level is row-major, matching the `x`-outer/`y`-inner scan it replaces, so
+        the routing visits cells in exactly the order it did.
+
+        Examples:
+            >>> import numpy as np
+            >>> from hapi.inputs import FlowNetwork
+            >>> acc = np.array([[0.0, 1.0], [1.0, np.nan]])
+            >>> network = FlowNetwork(
+            ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+            ... )
+            >>> network.cells_by_acc_val[0.0]
+            [(0, 0)]
+            >>> network.cells_by_acc_val[1.0]
+            [(0, 1), (1, 0)]
+
+        """
+        grouped: dict[float, list[tuple[int, int]]] = {}
+        rows, cols = np.nonzero(~np.isnan(self.flow_acc_arr))
+        for x, y in zip(rows, cols):
+            key = float(self.flow_acc_arr[x, y])
+            grouped.setdefault(key, []).append((int(x), int(y)))
+        return grouped
 
     @property
     def outlet(self) -> tuple:

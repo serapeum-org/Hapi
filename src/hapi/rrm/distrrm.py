@@ -127,66 +127,54 @@ class DistributedRRM:
         # in the catchment
 
         results.qlz_translated = np.zeros_like(results.quz)
+
+        # Cells grouped by accumulation value, built once. Both loops below used to answer
+        # "which cells are at this level?" by walking the whole grid and testing every cell --
+        # the second one doing it once per level, which made this pass O(n_acc x rows x cols)
+        # to visit each cell once. Row-major within a level, so the visit order is unchanged.
+        cells_by_acc_val = run.flow_network.cells_by_acc_val
+
         # for all cells with 0 flow acc put the quz
-        for x in range(run.flow_network.rows):  # no of rows
-            for y in range(run.flow_network.cols):  # no of columns
-                if (
-                    not np.isnan(run.flow_network.flow_acc_arr[x, y])
-                    and run.flow_network.flow_acc_arr[x, y] == 0
-                ):
-                    results.quz_routed[x, y, :] = results.quz[x, y, :]
-                    results.qlz_translated[x, y, :] = results.qlz[x, y, :]
+        for x, y in cells_by_acc_val.get(0, ()):
+            results.quz_routed[x, y, :] = results.quz[x, y, :]
+            results.qlz_translated[x, y, :] = results.qlz[x, y, :]
 
         # remaining cells
-        # Read once: this is the routing inner loop, and `acc_val` scans the whole grid.
         acc_val = run.flow_network.acc_val
-        for j in range(1, len(acc_val)):
+        for level in acc_val[1:]:
             # TODO parallelize
             # all cells with the same acc_val can run at the same time
-            for x in range(run.flow_network.rows):  # no of rows
-                for y in range(run.flow_network.cols):  # no of columns
-                    # check from total flow accumulation
-                    if (
-                        not np.isnan(run.flow_network.flow_acc_arr[x, y])
-                        and run.flow_network.flow_acc_arr[x, y] == acc_val[j]
-                    ):
-                        if river_depth is not None and river_depth[x, y] > 0:
-                            # A river cell a 1D hydraulic model will route instead. The
-                            # caller says so explicitly; this used to be inferred from
-                            # `routing_method != "Muskingum"`, which meant any catchment
-                            # built with a non-Muskingum method dereferenced
-                            # `bankfull_depth` -- None outside the flood model -- and
-                            # crashed here.
-                            continue
-                        else:
-                            # for UZ
-                            q_uzi = np.zeros(run.meteo.simulation_steps)
-                            # for lz
-                            qlzi = np.zeros(run.meteo.simulation_steps)
-                            # iterate to route uz and translate lz
-                            for i in range(
-                                len(run.routing_table[str(x) + "," + str(y)])
-                            ):
-                                # bring the indexes of the us cell
-                                x_ind = run.routing_table[str(x) + "," + str(y)][i][0]
-                                y_ind = run.routing_table[str(x) + "," + str(y)][i][1]
-                                # sum the Q of the US cells (already routed for its cell)
-                                # route first with there own k & xthen sum
-                                q_uzi = q_uzi + routing.muskingum_v(
-                                    results.quz_routed[x_ind, y_ind, :],
-                                    results.quz_routed[x_ind, y_ind, 0],
-                                    run.parameter_cube[x_ind, y_ind, 10],
-                                    run.parameter_cube[x_ind, y_ind, 11],
-                                    run.period.dt,
-                                )
+            for x, y in cells_by_acc_val.get(level, ()):
+                if river_depth is not None and river_depth[x, y] > 0:
+                    # A river cell a 1D hydraulic model will route instead. The caller says
+                    # so explicitly; this used to be inferred from
+                    # `routing_method != "Muskingum"`, which meant any catchment built with a
+                    # non-Muskingum method dereferenced `bankfull_depth` -- None outside the
+                    # flood model -- and crashed here.
+                    continue
+                cell = f"{x},{y}"
+                upstream = run.routing_table[cell]
+                # for UZ
+                q_uzi = np.zeros(run.meteo.simulation_steps)
+                # for lz
+                qlzi = np.zeros(run.meteo.simulation_steps)
+                # iterate to route uz and translate lz
+                for x_ind, y_ind in upstream:
+                    # sum the Q of the US cells (already routed for its cell)
+                    # route first with there own k & xthen sum
+                    q_uzi = q_uzi + routing.muskingum_v(
+                        results.quz_routed[x_ind, y_ind, :],
+                        results.quz_routed[x_ind, y_ind, 0],
+                        run.parameter_cube[x_ind, y_ind, 10],
+                        run.parameter_cube[x_ind, y_ind, 11],
+                        run.period.dt,
+                    )
 
-                                qlzi = qlzi + results.qlz_translated[x_ind, y_ind, :]
+                    qlzi = qlzi + results.qlz_translated[x_ind, y_ind, :]
 
-                            # add the routed upstream flows to the current Quz in the cell
-                            results.quz_routed[x, y, :] = results.quz[x, y, :] + q_uzi
-                            results.qlz_translated[x, y, :] = (
-                                results.qlz[x, y, :] + qlzi
-                            )
+                # add the routed upstream flows to the current Quz in the cell
+                results.quz_routed[x, y, :] = results.quz[x, y, :] + q_uzi
+                results.qlz_translated[x, y, :] = results.qlz[x, y, :] + qlzi
         results.q_total = results.qlz_translated + results.quz_routed
         # Muskingum accumulates downstream, so a cell of `q_total` is the discharge at that
         # cell and the outlet-cell shortcut in `extract_discharge` is valid.

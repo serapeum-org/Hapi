@@ -352,3 +352,90 @@ class TestAccValCaching:
         assert network.acc_val == expected, (
             f"Expected {expected}, got {network.acc_val}"
         )
+
+
+class TestCellsByAccVal:
+    """The bucketed index that makes the routing pass linear in the domain."""
+
+    def test_it_groups_every_in_domain_cell_exactly_once(self):
+        """Test that the buckets partition the domain -- no cell missed, none duplicated.
+
+        Test scenario:
+            The routing visits cells through these buckets, so a missing cell is a cell that
+            never gets routed and a duplicated one is routed twice. The count is the invariant
+            that makes the replacement safe.
+        """
+        acc = np.array([[0.0, 1.0, 1.0], [2.0, np.nan, 2.0], [3.0, 3.0, np.nan]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        grouped = network.cells_by_acc_val
+        total = sum(len(cells) for cells in grouped.values())
+
+        assert total == network.no_elem, (
+            f"the buckets must hold every domain cell once; {total} against "
+            f"{network.no_elem} in the domain"
+        )
+        flat = [cell for cells in grouped.values() for cell in cells]
+        assert len(set(flat)) == len(flat), "no cell may appear in two buckets"
+
+    def test_order_within_a_level_is_row_major(self):
+        """Test that cells come back in the order the replaced scan visited them.
+
+        Test scenario:
+            The loop this replaces was `for x: for y:`, so within one accumulation level it
+            went row by row. Muskingum routing accumulates, so a different order inside a
+            level could change the result -- this is what makes the change bit-identical.
+        """
+        acc = np.array([[5.0, 5.0], [5.0, 5.0]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        assert network.cells_by_acc_val[5.0] == [(0, 0), (0, 1), (1, 0), (1, 1)], (
+            "cells within a level must be row-major, matching the x-outer/y-inner scan"
+        )
+
+    def test_it_visits_far_fewer_cells_than_a_per_level_grid_scan(self):
+        """Test that the index is what removes the quadratic term.
+
+        Test scenario:
+            Answering "which cells are at level j" by scanning the grid costs
+            `n_acc x rows x cols`; the number of levels grows with the domain, so that is
+            effectively quadratic. This pins the linear count, so a change back to a scan
+            shows up here rather than as an unexplained slowdown on a real catchment.
+        """
+        side = 12
+        acc = np.arange(side * side, dtype=float).reshape(side, side)
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        bucketed = sum(len(cells) for cells in network.cells_by_acc_val.values())
+        scanned = len(network.acc_val) * network.rows * network.cols
+
+        assert bucketed == network.no_elem, "one visit per domain cell"
+        assert scanned // bucketed >= side * side // 2, (
+            f"the scan this replaces cost {scanned} tests against {bucketed} visits; if that "
+            "ratio has collapsed the index is no longer doing its job"
+        )
+
+    def test_replacing_the_accumulation_array_drops_the_index(self):
+        """Test that the cache is invalidated with `acc_val`, not left describing the old grid.
+
+        Test scenario:
+            `acc_val` is already dropped on replacement. An index that survived would send the
+            routing to cell coordinates from a different grid, which is worse than recomputing.
+        """
+        acc = np.array([[0.0, 1.0], [2.0, np.nan]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+        assert len(network.cells_by_acc_val) == 3, "primed from the first array"
+
+        network.flow_acc_arr = np.array([[7.0, 7.0], [7.0, 7.0]])
+
+        assert network.cells_by_acc_val == {7.0: [(0, 0), (0, 1), (1, 0), (1, 1)]}, (
+            "the index must be rebuilt from the replacement array"
+        )
