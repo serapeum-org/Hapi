@@ -1562,10 +1562,10 @@
 <h2 id="3-run-object"><a class="toclink" href="#3-run-object">3-Run Object</a><a class="headerlink" href="#3-run-object" title="Permanent link">#</a></h2>
 <ul>
 <li>The <code>Run</code> object connects all the components of the simulation together, the <code>Catchment</code> object, the <code>Lake</code> object and the <code>distributedrouting</code> object</li>
-<li>import the Run object and use the <code>Catchment</code> object as a parameter to the <code>Run</code> object, then call the RunHapi method to start the simulation</li>
+<li>import the Run object and use the <code>Catchment</code> object as a parameter to the <code>Run</code> object, then call the run_distributed method to start the simulation</li>
 </ul>
 <p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
-<span class="n">Run</span><span class="o">.</span><span class="n">RunHapi</span><span class="p">(</span><span class="n">Coello</span><span class="p">)</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">run_distributed</span><span class="p">(</span><span class="n">Coello</span><span class="p">)</span>
 </code></pre></div>
 - the result of the simulation will be stored as attributes in the Catchment object as follow</p>
 <div class="highlight"><pre><span></span><code><span class="sd">"""</span>

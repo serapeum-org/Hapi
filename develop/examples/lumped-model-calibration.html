@@ -1485,7 +1485,7 @@
 <ul>
 <li>Run Calibration</li>
 </ul>
-<div class="highlight"><pre><span></span><code>    <span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">lumpedCalibration</span><span class="p">(</span><span class="n">Basic_inputs</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">print_error</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code>    <span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">calibrate_lumped</span><span class="p">(</span><span class="n">Basic_inputs</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span> <span class="n">print_error</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Objective Function = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Parameters are "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cal_parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>

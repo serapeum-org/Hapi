@@ -1465,8 +1465,8 @@ prepare the initial conditions, cathcment area and the lumped model.</p>
 <span class="n">RoutingFn</span> <span class="o">=</span> <span class="n">Routing</span><span class="o">.</span><span class="n">muskingum_v</span>
 <span class="n">Route</span> <span class="o">=</span> <span class="mi">1</span>
 </code></pre></div>
-- now all the data required for the model are prepared in the right form, now you can call the <code>runLumped</code> wrapper to initiate the calculation</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">Run</span><span class="o">.</span><span class="n">runLumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="n">Route</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">)</span>
+- now all the data required for the model are prepared in the right form, now you can call the <code>run_lumped</code> wrapper to initiate the calculation</p>
+<p><div class="highlight"><pre><span></span><code><span class="n">Run</span><span class="o">.</span><span class="n">run_lumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="n">Route</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">)</span>
 </code></pre></div>
 to calculate some metrics for the quality assessment of the calculate discharge the <code>statista.descriptors</code> contains some
 metrics like <code>rmse</code>, <code>nse</code>, <code>kge</code> and <code>wb</code> , you need to load it, a measured time series of doscharge for the same

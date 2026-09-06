@@ -2304,7 +2304,7 @@ lumped one, which has no grid to put it on.</p>
 
 <span class="sd">        A lumped run picks its routing function at the call site rather than from this</span>
 <span class="sd">        attribute, so `routing_method` is not load-bearing there -- but it is public, it is what</span>
-<span class="sd">        `distrrm.SpatialRouting` keys off, and leaving it saying `Muskingum` on a run using a</span>
+<span class="sd">        `distrrm.route_muskingum` keys off, and leaving it saying `Muskingum` on a run using a</span>
 <span class="sd">        MAXBAS parameter set would mislead the next reader. An unstated one is therefore</span>
 <span class="sd">        derived from the parameter set rather than left at its default.</span>
 
@@ -2368,7 +2368,7 @@ lumped one, which has no grid to put it on.</p>
             <span class="p">)</span>
         <span class="c1"># `flow_direction` is optional on the block because MAXBAS sends every cell straight</span>
         <span class="c1"># to the outlet and never reads one. Muskingum routes along the network, so without</span>
-        <span class="c1"># it the build succeeds and `Run.RunHapi` dereferences a None array after every</span>
+        <span class="c1"># it the build succeeds and `Run.run_distributed` dereferences a None array after every</span>
         <span class="c1"># raster has been read.</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">catchment</span><span class="o">.</span><span class="n">routing_method</span> <span class="o">==</span> <span class="s2">"muskingum"</span>
