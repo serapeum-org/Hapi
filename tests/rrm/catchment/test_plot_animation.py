@@ -44,7 +44,7 @@ def coello_animated(
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
     coello.read_gauge_table(coello_gauges_table, coello_acc_path)
-    Run.runFW1(coello)
+    Run.run_maxbas(coello)
     return coello
 
 
@@ -67,12 +67,14 @@ def test_plot_state_variable(coello_animated: Catchment):
     """Animating a state variable after a model run works."""
     import matplotlib.animation
 
-    before = coello_animated.state_variables.copy()
+    before = coello_animated.results.state_variables.copy()
     anim = coello_animated.plot_distributed_results(
         "2009-01-01", "2009-01-09", option=5
     )
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
-    assert np.array_equal(before, coello_animated.state_variables, equal_nan=True)
+    assert np.array_equal(
+        before, coello_animated.results.state_variables, equal_nan=True
+    )
 
 
 @pytest.mark.plot

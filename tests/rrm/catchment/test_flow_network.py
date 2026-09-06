@@ -308,7 +308,7 @@ class TestAccValCaching:
         """Test that `acc_val` is computed once rather than on every read.
 
         Test scenario:
-            `SpatialRouting` reads this once per (accumulation level, row, column), so a
+            `route_muskingum` reads this once per (accumulation level, row, column), so a
             property that reruns `np.unique` over the whole grid turns the routing loop into
             `(n_acc - 1) x rows x cols` full-grid scans. On the 13x14 test catchment that is
             invisible; on a 100x100 catchment it dominates the run. Identity across reads is
@@ -351,4 +351,133 @@ class TestAccValCaching:
 
         assert network.acc_val == expected, (
             f"Expected {expected}, got {network.acc_val}"
+        )
+
+
+class TestCellsByAccVal:
+    """The bucketed index that makes the routing pass linear in the domain."""
+
+    def test_it_groups_every_in_domain_cell_exactly_once(self):
+        """Test that the buckets partition the domain -- no cell missed, none duplicated.
+
+        Test scenario:
+            The routing visits cells through these buckets, so a missing cell is a cell that
+            never gets routed and a duplicated one is routed twice. The count is the invariant
+            that makes the replacement safe.
+        """
+        acc = np.array([[0.0, 1.0, 1.0], [2.0, np.nan, 2.0], [3.0, 3.0, np.nan]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        grouped = network.cells_by_acc_val
+        total = sum(len(cells) for cells in grouped.values())
+
+        assert total == network.no_elem, (
+            f"the buckets must hold every domain cell once; {total} against "
+            f"{network.no_elem} in the domain"
+        )
+        flat = [cell for cells in grouped.values() for cell in cells]
+        assert len(set(flat)) == len(flat), "no cell may appear in two buckets"
+
+    def test_order_within_a_level_is_row_major(self):
+        """Test that cells come back in the order the replaced scan visited them.
+
+        Test scenario:
+            The loop this replaces was `for x: for y:`, so within one accumulation level it
+            went row by row. Muskingum routing accumulates, so a different order inside a
+            level could change the result -- this is what makes the change bit-identical.
+        """
+        acc = np.array([[5.0, 5.0], [5.0, 5.0]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        assert network.cells_by_acc_val[5.0] == [(0, 0), (0, 1), (1, 0), (1, 1)], (
+            "cells within a level must be row-major, matching the x-outer/y-inner scan"
+        )
+
+    def test_it_visits_far_fewer_cells_than_a_per_level_grid_scan(self):
+        """Test that the index is what removes the quadratic term.
+
+        Test scenario:
+            Answering "which cells are at level j" by scanning the grid costs
+            `n_acc x rows x cols`; the number of levels grows with the domain, so that is
+            effectively quadratic. This pins the linear count, so a change back to a scan
+            shows up here rather than as an unexplained slowdown on a real catchment.
+        """
+        side = 12
+        acc = np.arange(side * side, dtype=float).reshape(side, side)
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        bucketed = sum(len(cells) for cells in network.cells_by_acc_val.values())
+        scanned = len(network.acc_val) * network.rows * network.cols
+
+        assert bucketed == network.no_elem, "one visit per domain cell"
+        assert scanned // bucketed >= side * side // 2, (
+            f"the scan this replaces cost {scanned} tests against {bucketed} visits; if that "
+            "ratio has collapsed the index is no longer doing its job"
+        )
+
+    def test_a_fractional_raster_still_reaches_every_cell(self):
+        """Test that fractional accumulation values are routed, not silently dropped.
+
+        Test scenario:
+            `acc_val` truncates, so a raster holding 1.2 yields the code 1. The grid scan this
+            index replaced compared the *raw* value against that code, so `1.2 == 1` was False
+            and the cell was never routed -- and since the routing sums `quz_routed` from
+            upstream neighbours, its entire contribution vanished from every cell downstream,
+            with nothing raised. Keying on the same truncated code is what `acc_val` has always
+            documented; only the comparison had drifted away from it.
+        """
+        acc = np.array([[0.0, 1.2], [2.5, 3.0]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        selected = sum(
+            len(network.cells_by_acc_val.get(level, ())) for level in network.acc_val
+        )
+
+        assert selected == network.no_elem, (
+            f"every domain cell must be reachable through an acc_val code; {selected} of "
+            f"{network.no_elem} were, so the rest would never be routed"
+        )
+
+    def test_values_sharing_a_code_are_grouped(self):
+        """Test that 1.2 and 1.8 land in one bucket, as `acc_val` documents.
+
+        Test scenario:
+            `acc_val` collapses them to the single code 1, so the routing treats them as one
+            level. The bucket has to agree, or the level would select only some of its cells.
+        """
+        acc = np.array([[1.2, 1.8], [3.0, np.nan]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        assert network.acc_val == [1, 3], "the two fractional values are one code"
+        assert network.cells_by_acc_val[1] == [(0, 0), (0, 1)], (
+            "both cells at that code must be in its bucket"
+        )
+
+    def test_replacing_the_accumulation_array_drops_the_index(self):
+        """Test that the cache is invalidated with `acc_val`, not left describing the old grid.
+
+        Test scenario:
+            `acc_val` is already dropped on replacement. An index that survived would send the
+            routing to cell coordinates from a different grid, which is worse than recomputing.
+        """
+        acc = np.array([[0.0, 1.0], [2.0, np.nan]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+        assert len(network.cells_by_acc_val) == 3, "primed from the first array"
+
+        network.flow_acc_arr = np.array([[7.0, 7.0], [7.0, 7.0]])
+
+        assert network.cells_by_acc_val == {7.0: [(0, 0), (0, 1), (1, 0), (1, 1)]}, (
+            "the index must be rebuilt from the replacement array"
         )

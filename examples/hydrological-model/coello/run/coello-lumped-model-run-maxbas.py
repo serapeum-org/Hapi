@@ -3,10 +3,13 @@
 Everything that used to be a "Paths" block of hardcoded assignments now lives in
 `coello-lumped-model-run-maxbas.yaml`, next to this script -- `Catchment.from_yaml` reads it and
 assembles the model. Running it stays here, as in any hand-wired script: the routing function is
-a run-time choice rather than an input, so it is picked below and handed to `Run.runLumped`.
+a run-time choice rather than an input, so it is picked below and handed to `Run.run_lumped`.
 
 The config's `parameters.maxbas: true` says the parameter file carries the triangular-routing
 parameter; picking `Routing.triangular_routing_1` below is what actually routes with it.
+
+The path is written from the repo root, so run this script from there:
+`python examples/hydrological-model/coello/run/coello-lumped-model-run-maxbas.py`.
 """
 
 from __future__ import annotations
@@ -20,7 +23,9 @@ from hapi.routing import Routing
 from hapi.run import Run
 
 # %% Load the configuration and build the model
-Coello = Catchment.from_yaml(__file__.removesuffix(".py") + ".yaml")
+Coello = Catchment.from_yaml(
+    "examples/hydrological-model/coello/run/coello-lumped-model-run-maxbas.yaml"
+)
 
 # %% Routing
 # RoutingFn = Routing.triangular_routing_2
@@ -28,7 +33,7 @@ RoutingFn = Routing.triangular_routing_1
 Route = 1
 
 # %% Run the model
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 
 # %% Calculate performance criteria
 scores = dict()
@@ -49,7 +54,9 @@ print("WB= " + str(round(scores["WB"], 2)))
 
 # %% Plot Hydrograph
 gaugei = 0
-fig, ax = Coello.plot_hydrograph(Coello.start, Coello.end, gaugei, title="Lumped Model")
+fig, ax = Coello.plot_hydrograph(
+    Coello.period.start, Coello.period.end, gaugei, title="Lumped Model"
+)
 
 # %% Save Results
 SaveTo = Coello.config.outputs.results_dir

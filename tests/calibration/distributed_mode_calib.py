@@ -12,6 +12,7 @@ import statista.descriptors as metrics
 from pyramids.dataset import Dataset
 
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.rrm.parameters import Parameters as DP
@@ -37,12 +38,12 @@ Create the model object and read the input data
 Sdate = "2009-01-01"
 Edate = "2011-12-31"
 name = "Coello"
-Coello = Calibration(name, Sdate, Edate, spatial_resolution="Distributed")
+Coello = Calibration(Catchment(name, Sdate, Edate, spatial_resolution="Distributed"))
 ### Meteorological & GIS Data
-Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
+Coello.model.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
-Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
+Coello.model.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
+Coello.model.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)
@@ -81,11 +82,11 @@ spatial_var_fun = DP(
 # calculate no of parameters that optimization algorithm is going to generate
 spatial_var_fun.ParametersNO
 # %% Gauges
-Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.model.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.model.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 # %% Objective function
-coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
+coordinates = Coello.model.GaugesTable[["id", "x", "y", "weight"]][:]
 
 # define the objective function and its arguments
 OF_args = [coordinates]
@@ -138,8 +139,8 @@ cal_parameters = Coello.run_calibration(
     spatial_var_fun, optimization_args, print_error=0
 )
 # %% convert parameters to rasters
-# Coello.parameters = [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241, 94.91, 0.2075]
+# Coello.model.parameters.values = [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241, 94.91, 0.2075]
 spatial_var_fun.Function(
-    Coello.parameters, kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
+    Coello.model.parameters.values, kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
 )
 spatial_var_fun.save_parameters(SaveTo)

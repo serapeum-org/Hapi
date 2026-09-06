@@ -1,8 +1,8 @@
 """Tests for the two triangular-routing variants and the lumped routing branches.
 
-`DistributedRRM.DistMaxbas2` is a public entry point that nothing inside the package calls -- it
+`DistributedRRM.route_maxbas_by_path_length` is a public entry point that nothing inside the package calls -- it
 rescales each cell's MAXBAS by its flow path length -- so it is reached only from a test or a
-downstream user. `Wrapper.Lumped` picks its routing call by whether `maxbas` is set, a branch
+downstream user. `Wrapper.run_lumped` picks its routing call by whether `maxbas` is set, a branch
 the existing lumped tests never took.
 """
 
@@ -20,6 +20,7 @@ from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
+from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
 
@@ -66,7 +67,9 @@ def coello_before_routing(
     rows, cols = coello.flow_network.rows, coello.flow_network.cols
     distance = np.add.outer(np.arange(rows), np.arange(cols)).astype("float64") * 1000.0
     coello.flow_path_length_arr = np.where(np.isnan(acc), np.nan, distance)
-    DistributedRRM.run_lumped_model(coello)
+    coello.results = DistributedRRM.run_lumped_model(
+        DistributedRun.from_model(coello, needs_flow_direction=False)
+    )
     return coello
 
 
@@ -89,7 +92,7 @@ def maxbas_parameters_path(lumped_parameters_path: str, tmp_path_factory) -> str
 
 
 class TestDistMaxbas2:
-    """Tests for `DistributedRRM.DistMaxbas2`."""
+    """Tests for `DistributedRRM.route_maxbas_by_path_length`."""
 
     def test_conserves_volume_while_redistributing_it_in_time(
         self, coello_before_routing: Catchment
@@ -103,19 +106,21 @@ class TestDistMaxbas2:
             an equality.
         """
         model = coello_before_routing
-        before = model.quz.copy()
+        before = model.results.quz.copy()
         inside = ~np.isnan(model.flow_path_length_arr)
 
-        DistributedRRM.DistMaxbas2(model)
+        DistributedRRM.route_maxbas_by_path_length(
+            DistributedRun.from_model(model, needs_flow_direction=False), model.results
+        )
 
-        assert not np.array_equal(model.quz[inside], before[inside]), (
+        assert not np.array_equal(model.results.quz[inside], before[inside]), (
             "the routing must alter the upper-zone discharge of the masked cells"
         )
-        assert np.isfinite(model.quz[inside]).all(), (
+        assert np.isfinite(model.results.quz[inside]).all(), (
             "routed discharge must stay finite inside the catchment"
         )
         np.testing.assert_allclose(
-            np.nansum(model.quz[inside]),
+            np.nansum(model.results.quz[inside]),
             np.nansum(before[inside]),
             rtol=1e-6,
             err_msg="triangular routing must conserve volume, not merely bound it",
@@ -128,7 +133,7 @@ class TestDistMaxbas2:
 
         Test scenario:
             This variant exists to give distant cells more attenuation than near ones -- that
-            is the whole difference from `DistMaxbas1`. Comparing the peak reduction of the
+            is the whole difference from `route_maxbas`. Comparing the peak reduction of the
             nearest and furthest in-domain cells is what distinguishes it from a uniform
             kernel; a routing that ignored the flow path would attenuate both equally.
         """
@@ -141,12 +146,14 @@ class TestDistMaxbas2:
         furthest = np.unravel_index(
             np.nanargmax(np.where(inside, fpl, np.nan)), fpl.shape
         )
-        before = model.quz.copy()
+        before = model.results.quz.copy()
 
-        DistributedRRM.DistMaxbas2(model)
+        DistributedRRM.route_maxbas_by_path_length(
+            DistributedRun.from_model(model, needs_flow_direction=False), model.results
+        )
 
-        near_drop = before[nearest].max() - model.quz[nearest].max()
-        far_drop = before[furthest].max() - model.quz[furthest].max()
+        near_drop = before[nearest].max() - model.results.quz[nearest].max()
+        far_drop = before[furthest].max() - model.results.quz[furthest].max()
         assert far_drop > near_drop, (
             f"the cell {far_drop:.4g} from the outlet must be attenuated more than the near "
             f"one ({near_drop:.4g}); equal attenuation means the flow path was ignored"
@@ -165,14 +172,16 @@ class TestDistMaxbas2:
         """
         model = coello_before_routing
         outside = np.isnan(model.flow_path_length_arr)
-        sentinel = np.linspace(1.0, 10.0, model.quz.shape[2])
-        model.quz[outside] = sentinel
-        before = model.quz.copy()
+        sentinel = np.linspace(1.0, 10.0, model.results.quz.shape[2])
+        model.results.quz[outside] = sentinel
+        before = model.results.quz.copy()
 
-        DistributedRRM.DistMaxbas2(model)
+        DistributedRRM.route_maxbas_by_path_length(
+            DistributedRun.from_model(model, needs_flow_direction=False), model.results
+        )
 
         np.testing.assert_array_equal(
-            model.quz[outside],
+            model.results.quz[outside],
             before[outside],
             err_msg="cells with no flow-path length must not be routed",
         )
@@ -185,7 +194,7 @@ def _lumped_model(
     area: float,
     initial_cond: list,
 ) -> Catchment:
-    """Build a lumped catchment ready for `Run.runLumped`.
+    """Build a lumped catchment ready for `Run.run_lumped`.
 
     Args:
         dates: `[start, end]` simulation dates.
@@ -205,7 +214,7 @@ def _lumped_model(
 
 
 class TestLumpedRouting:
-    """Tests for the routing branches of `Wrapper.Lumped` reached through `Run.runLumped`."""
+    """Tests for the routing branches of `Wrapper.run_lumped` reached through `Run.run_lumped`."""
 
     def test_maxbas_routing_convolves_qsim_with_the_last_parameter(
         self,
@@ -218,15 +227,16 @@ class TestLumpedRouting:
         """Test that the MAXBAS branch routes on the trailing parameter and nothing else.
 
         Test scenario:
-            `Wrapper.Lumped` has two routing calls: the MAXBAS one passes a single parameter,
+            `Wrapper.run_lumped` has two routing calls: the MAXBAS one passes a single parameter,
             the Muskingum one passes three. Which runs is decided by the `maxbas` flag
             `read_parameters` stored. Asserting only that `Qsim` is finite would pass for an
             unrouted series, so compare against the same run left unrouted, convolved
             independently with the parameter the branch is supposed to use.
         """
-        # Straight to the wrapper: `Run.runLumped` wraps `Qsim` in a date-indexed frame and
-        # the unrouted series is one step longer than the index, so only the routed form
-        # survives that call.
+        # Straight to the wrapper: `Run.run_lumped` indexes the series by the period, and the
+        # unrouted one is a step longer than the index, so only the routed form survives that
+        # call. The engine leaves its total in `results.q_total`; `Qsim` is what the entry
+        # point puts on the model.
         unrouted = _lumped_model(
             coello_rrm_date,
             lumped_meteo_data_path,
@@ -234,7 +244,7 @@ class TestLumpedRouting:
             coello_AreaCoeff,
             coello_InitialCond,
         )
-        Wrapper.Lumped(unrouted, Routing=0)
+        unrouted.results = Wrapper.run_lumped(LumpedRun.from_model(unrouted), Routing=0)
         routed = _lumped_model(
             coello_rrm_date,
             lumped_meteo_data_path,
@@ -243,13 +253,13 @@ class TestLumpedRouting:
             coello_InitialCond,
         )
 
-        Run.runLumped(routed, Route=1, routing_fn=Routing.triangular_routing_1)
+        Run.run_lumped(routed, Route=1, routing_fn=Routing.triangular_routing_1)
 
-        maxbas = routed.parameters[-1]
+        maxbas = routed.parameters.values[-1]
         expected = Routing.triangular_routing_1(
-            np.array(np.asarray(unrouted.Qsim)[:-1]), maxbas
+            np.array(np.asarray(unrouted.results.q_total)[:-1]), maxbas
         )
-        # `runLumped` wraps the routed series in a date-indexed frame; compare the values.
+        # `run_lumped` wraps the routed series in a date-indexed frame; compare the values.
         actual = np.asarray(routed.Qsim, dtype=float).ravel()
         np.testing.assert_allclose(
             actual,
@@ -285,7 +295,7 @@ class TestLumpedRouting:
         model.read_parameters(lumped_parameters_path, False, maxbas=False)
 
         with pytest.raises(ValueError, match="routing_fn"):
-            Run.runLumped(model, Route=1)
+            Run.run_lumped(model, Route=1)
 
 
 class TestCalculateWeightsGuard:
@@ -309,7 +319,7 @@ class TestCalculateWeightsGuard:
 
         Test scenario:
             `triangular_routing_2` and the three conceptual models already carried this
-            check; `calculate_weights` -- which `triangular_routing_1` and `DistMaxbas1`
+            check; `calculate_weights` -- which `triangular_routing_1` and `route_maxbas`
             resolve their weights through -- did not, and each value failed differently or
             not at all.
         """
@@ -324,7 +334,7 @@ class TestCalculateWeightsGuard:
         """Test that the routing function itself refuses, not only the weights helper.
 
         Test scenario:
-            `triangular_routing_1` is what the lumped MAXBAS example and `DistMaxbas1` call,
+            `triangular_routing_1` is what the lumped MAXBAS example and `route_maxbas` call,
             and it delegates to `calculate_weights` on its first line -- so the guard has to
             surface there rather than being swallowed.
         """

@@ -51,7 +51,7 @@ def coello_run(
     coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-    Run.runFW1(coello)
+    Run.run_maxbas(coello)
     return coello
 
 
@@ -121,8 +121,10 @@ def test_save_results_distributed_values_match_the_model_array(
     )
 
     written = sorted(out.glob("*.tif"))
-    start_i = np.where(coello_run.date_index == np.datetime64("2009-01-01"))[0][0]
-    expected = coello_run.state_variables[:, :, start_i, 0]
+    start_i = np.where(coello_run.period.date_index == np.datetime64("2009-01-01"))[0][
+        0
+    ]
+    expected = coello_run.results.state_variables[:, :, start_i, 0]
     actual = Dataset.read_file(str(written[0])).read_array(band=0)
 
     np.testing.assert_allclose(

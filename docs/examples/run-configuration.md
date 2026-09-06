@@ -14,7 +14,7 @@ from hapi.catchment import Catchment
 from hapi.run import Run
 
 Coello = Catchment.from_yaml("coello-lumped-model-run.yaml")
-Run.runLumped(Coello, Routing.triangular_routing_1)
+Run.run_lumped(Coello, Routing.triangular_routing_1)
 ```
 
 The four shipped examples under `examples/hydrological-model/coello/run/` are each a pair — a
@@ -158,7 +158,7 @@ Coello.save_results(
 
 The schema describes a `Catchment` run. It carries no field for a lake record, a river geometry,
 or a flow-path-length raster, so lake-aware runs (`Run.RunHapiwithLake`), the flood model
-(`Run.RunFloodModel`) and `DistMaxbas2` are still assembled in Python.
+(`Run.run_flood`) and `route_maxbas_by_path_length` are still assembled in Python.
 
 `Calibration.from_yaml` works — it takes the same constructor arguments — and gives back a
 `Calibration` to call the calibration methods on. `Run.from_yaml` does not: `Run` holds entry

@@ -61,17 +61,17 @@ class TestTemporalResolution:
             "coello", "2009-01-01", "2010-01-01", temporal_resolution=resolution
         )
 
-        assert len(model.date_index) == expected_steps, (
-            f"Expected {expected_steps} steps, got {len(model.date_index)}"
+        assert len(model.period.date_index) == expected_steps, (
+            f"Expected {expected_steps} steps, got {len(model.period.date_index)}"
         )
-        assert model.date_index.freqstr.lower() == expected_freq.lower(), (
-            f"Expected frequency {expected_freq}, got {model.date_index.freqstr}"
+        assert model.period.date_index.freqstr.lower() == expected_freq.lower(), (
+            f"Expected frequency {expected_freq}, got {model.period.date_index.freqstr}"
         )
         # `dt` is hard-coded to 1 in both branches, so it carries no resolution information;
         # what distinguishes them is the conversion factor, asserted below.
-        assert model.dt == 1, f"Expected dt of 1, got {model.dt}"
-        assert model.temporal_resolution == resolution.lower(), (
-            f"the resolution must be stored lowercased, got {model.temporal_resolution}"
+        assert model.period.dt == 1, f"Expected dt of 1, got {model.period.dt}"
+        assert model.period.temporal_resolution == resolution.lower(), (
+            f"the resolution must be stored lowercased, got {model.period.temporal_resolution}"
         )
 
     def test_unknown_resolution_is_rejected_at_construction(self):
@@ -82,7 +82,7 @@ class TestTemporalResolution:
             positionally, so a resolution the constructor cannot build an index for has to
             fail at construction rather than leave the model half-built.
         """
-        with pytest.raises(ValueError, match="'daily' and 'hourly'"):
+        with pytest.raises(ValueError, match="temporal resolutions"):
             Catchment("coello", "2009-01-01", "2009-01-10", temporal_resolution="15min")
 
     def test_hourly_resolution_scales_the_conversion_factor(self):
@@ -98,9 +98,12 @@ class TestTemporalResolution:
             "coello", "2009-01-01", "2009-01-10", temporal_resolution="Hourly"
         )
 
-        assert hourly.conversion_factor == pytest.approx(
-            daily.conversion_factor / 24
-        ), f"Expected {daily.conversion_factor / 24}, got {hourly.conversion_factor}"
+        assert hourly.period.conversion_factor == pytest.approx(
+            daily.period.conversion_factor / 24
+        ), (
+            f"Expected {daily.period.conversion_factor / 24}, got "
+            f"{hourly.period.conversion_factor}"
+        )
 
 
 class TestReadParametersDistributed:
@@ -179,13 +182,15 @@ class TestReadParametersDistributed:
 
         distributed.read_parameters(path, snow, maxbas=maxbas)
 
-        assert distributed.parameters.shape[2] == expected_bands, (
+        assert distributed.parameters.values.shape[2] == expected_bands, (
             f"Expected {expected_bands} parameter bands, "
-            f"got {distributed.parameters.shape[2]}"
+            f"got {distributed.parameters.values.shape[2]}"
         )
-        assert distributed.snow is snow, f"snow flag not stored: {distributed.snow}"
-        assert distributed.maxbas is maxbas, (
-            f"maxbas flag not stored: {distributed.maxbas}"
+        assert distributed.parameters.snow is snow, (
+            f"snow flag not stored: {distributed.parameters.snow}"
+        )
+        assert distributed.parameters.maxbas is maxbas, (
+            f"maxbas flag not stored: {distributed.parameters.maxbas}"
         )
 
     def test_missing_directory_names_the_path_it_could_not_read(
@@ -282,8 +287,8 @@ class TestReadLumpedModelQInit:
 
         model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond, q_init=5.0)
 
-        assert model.q_init == pytest.approx(5.0), (
-            f"the initial discharge must be stored, got {model.q_init}"
+        assert model.model_setup.q_init == pytest.approx(5.0), (
+            f"the initial discharge must be stored, got {model.model_setup.q_init}"
         )
 
     def test_omitting_the_initial_discharge_leaves_it_unset(
@@ -299,8 +304,8 @@ class TestReadLumpedModelQInit:
 
         model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond)
 
-        assert model.q_init is None, (
-            f"expected no initial discharge, got {model.q_init}"
+        assert model.model_setup.q_init is None, (
+            f"expected no initial discharge, got {model.model_setup.q_init}"
         )
 
     @pytest.mark.parametrize("bad", [5, "5.0", [5.0]], ids=["int", "str", "list"])
@@ -346,8 +351,8 @@ class TestReadLumpedModelInitialCondition:
 
         model.read_lumped_model(HBVLumped, 1530.0, coello_initial_cond)
 
-        assert model.initial_cond == coello_initial_cond, (
-            f"the initial condition must be stored unchanged, got {model.initial_cond}"
+        assert model.model_setup.initial_cond == coello_initial_cond, (
+            f"the initial condition must be stored unchanged, got {model.model_setup.initial_cond}"
         )
 
     @pytest.mark.parametrize(
@@ -411,7 +416,7 @@ class TestReadLumpedInputs:
         """Test that the fourth column is derived rather than left missing.
 
         Test scenario:
-            The method documents 3 or 4 columns, but `Wrapper.Lumped` reads `data[:, 3]`
+            The method documents 3 or 4 columns, but `Wrapper.run_lumped` reads `data[:, 3]`
             unconditionally. A three-column file was therefore accepted here and then raised
             `IndexError` in the middle of the run. The derived column is the record's mean
             temperature, which is what the reader this replaced computed.

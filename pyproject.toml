@@ -187,13 +187,13 @@ exclude = [
 [[tool.mypy.overrides]]
 module = [
     "hapi.catchment",
-    "hapi.run",
-    "hapi.calibration",
-    "hapi.wrapper",
 ]
-# These modules are built by successive read_*() calls: attributes are typed
-# X | None and populated before use, which mypy cannot verify. Removing the
-# suppressions needs assert-based narrowing helpers first (~257 errors).
+# The builder itself, and the last module on this list. `Catchment` is assembled by
+# successive read_*() calls, so its inputs are X | None until the matching one has run --
+# which mypy cannot verify and which is honest rather than a defect. Everything that
+# *consumes* a catchment now narrows first and type-checks clean: `run`, `wrapper` and
+# `distrrm` through `hapi.runs`, and `calibration` through its own accessors plus the
+# `SpatialDistribution` protocol.
 disable_error_code = [
     "union-attr",
     "attr-defined",
@@ -262,7 +262,10 @@ description = "Run all test suite"
 cmd = [
     "pytest", "--doctest-modules", "-p", "no:cacheprovider", "--no-cov",
     "src/hapi/config.py", "src/hapi/catchment.py",
-    "src/hapi/inputs.py", "src/hapi/routing.py", "src/hapi/run.py",
+    "src/hapi/conceptual.py", "src/hapi/inputs.py", "src/hapi/period.py",
+    "src/hapi/results.py", "src/hapi/runs.py",
+    "src/hapi/routing.py",
+    "src/hapi/run.py",
 ]
 description = "Run the doctests of the modules whose examples are executable"
 

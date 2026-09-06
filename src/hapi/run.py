@@ -4,139 +4,146 @@ The run module connects the parameter spatial distribution function with
 both components of the spatial representation of the hydrological process
 (conceptual model and spatial routing) to calculate the predicted runoff
 at known locations based on a given performance function.
+
+`Run` is a namespace of static entry points, not a class to instantiate. Each one takes the
+model it should run, validates it, and hands it to :class:`~hapi.wrapper.Wrapper`. What each
+entry point requires is stated by the protocols below rather than by naming a concrete class:
+:class:`~hapi.catchment.Catchment` satisfies them structurally, so this module does not import
+it at runtime and anything else carrying the same attributes runs too.
 """
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable
-from pathlib import Path
-from typing import Any, NoReturn
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
-from hapi.catchment import Catchment
-from hapi.catchment import Lake as LakeType
+from hapi.inputs import RiverGeometry
+from hapi.protocols import CatchmentLike, SupportsQsim
+from hapi.results import SimulationResults
+from hapi.runs import DistributedRun, LumpedRun
 
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
 
-ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
-COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"
-GRID_MISMATCH_ERROR = "all input data should have the same number of rows"
+if TYPE_CHECKING:
+    from hapi.catchment import Lake as LakeType
 
 
-def _check_parameters_cover_grid(model: Catchment) -> None:
-    """Check the parameter array spans the catchment grid.
-
-    The same two checks every distributed entry point makes before handing the model to the
-    wrapper: a parameter array smaller than the grid is indexed out of range inside the
-    per-cell loop, far from the call that supplied it.
-
-    Args:
-        model: The model about to run, carrying `parameters` and `flow_network`.
-
-    Raises:
-        ValueError: The parameter array has the wrong number of rows or columns.
-    """
-    if np.shape(model.parameters)[0] != model.flow_network.rows:
-        raise ValueError(ROWS_MISMATCH_ERROR)
-    if np.shape(model.parameters)[1] != model.flow_network.cols:
-        raise ValueError(COLS_MISMATCH_ERROR)
-
-
-def _check_lake_meteo(model: Catchment, lake: LakeType) -> None:
+def _check_lake_meteo(run: DistributedRun, lake: LakeType) -> None:
     """Check the lake's record lines up with the distributed drivers.
 
     Args:
-        model: The model about to run, whose `meteo` sets the expected length.
+        run: The validated run, whose `meteo` sets the expected length.
         lake: The lake whose `MeteoData` is checked.
 
     Raises:
-        ValueError: The lake record is a different length from the distributed drivers, or
-            carries fewer than the three columns the lake model reads.
+        ValueError: The lake has no meteorological record, the record is a different length
+            from the distributed drivers, or it carries fewer than the three columns the
+            lake model reads.
     """
-    if np.shape(lake.MeteoData)[0] != model.meteo.time_steps:
+    meteo_data = lake.MeteoData
+    if meteo_data is None:
+        raise ValueError(
+            "the lake has no meteorological data; call lake.read_meteo_data before "
+            "running a lake-aware entry point"
+        )
+    if np.shape(meteo_data)[0] != run.meteo.time_steps:
         raise ValueError(
             "Lake meteorological data has to have the same length as the distributed "
             "raster data"
         )
-    if np.shape(lake.MeteoData)[1] < 3:
+    if np.shape(meteo_data)[1] < 3:
         raise ValueError(
             "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
         )
 
 
-class Run(Catchment):
+def _warn_about_the_unrouted_river_cells(
+    run: DistributedRun, geometry: RiverGeometry
+) -> None:
+    """Warn that the river cells will be left unrouted, and by how much.
+
+    Skipping them is the handoff the flood model was designed around: a 1D hydraulic model
+    (`SaintVenant.KinematicRaster`) routes them instead. That half left this package in
+    commit `733957be` and now lives in Serapis, so nothing here picks those cells up -- on
+    the Coello example that is 21 of the 89 catchment cells, carrying 92% of the discharge
+    because the river cells are the high-accumulation ones. A caller who has
+    Serapis downstream wants exactly this; a caller who set `routing_method="Kinematic"`
+    without one gets a number that is not a hydrograph, and nothing used to say so.
+
+    Only the *derived* case warns. Passing `skip_hydraulic_cells=True` is an explicit
+    statement that something downstream takes the river cells, and is left quiet.
+
+    Args:
+        run: The validated run, supplying the catchment mask.
+        geometry: The river geometry, whose `bankfull_depth` marks the river cells. Passed in
+            rather than read off `run`, where it is legitimately optional -- the caller has
+            already established it is present.
+    """
+    # Only cells inside the catchment are ever routed, so only those can be skipped. The
+    # bankfull-depth raster carries values outside the domain too, and counting those made
+    # the message claim more river cells than the catchment has.
+    inside = ~np.isnan(run.flow_network.flow_acc_arr)
+    river_cells = int(
+        np.count_nonzero((np.nan_to_num(geometry.bankfull_depth) > 0) & inside)
+    )
+    domain = int(np.count_nonzero(inside))
+    warnings.warn(
+        f"routing_method='Kinematic' leaves the {river_cells} river cells of {domain} "
+        "unrouted, for a 1D hydraulic model to route instead -- but that model is not part "
+        "of Hapi, so their discharge is simply absent from the results. Pass "
+        "skip_hydraulic_cells=True to say a downstream model takes them and silence this, "
+        "or use routing_method='Muskingum' to route every cell here.",
+        UserWarning,
+        stacklevel=3,
+    )
+
+
+class Run:
     """Run the catchment model.
 
-    The Run sub-class validates the spatial data and hands it to the
-    Wrapper class. It is a sub-class of the Catchment class, so you
-    need to create the Catchment object first to run the model.
+    A namespace of static entry points, not a class to instantiate. Each one validates the
+    model it is given and hands it to :class:`~hapi.wrapper.Wrapper`, returning the
+    :class:`~hapi.results.SimulationResults` the run produced. The same object is also
+    assigned to the model's `results`, so the result arrays stay readable off the model
+    afterwards.
 
     Methods:
-        RunHapi: Run the distributed hydrological model.
-        runHAPIwithLake: Run the distributed model with a lake component.
-        runFW1: Run the FW1 distributed model.
-        RunFW1withLake: Run the FW1 model with a lake component.
-        runLumped: Run the lumped conceptual model.
+        run_distributed: Run the distributed hydrological model.
+        run_distributed_with_lake: Run the distributed model with a lake component.
+        run_maxbas: Run the FW1 distributed model.
+        run_maxbas_with_lake: Run the FW1 model with a lake component.
+        run_lumped: Run the lumped conceptual model.
+        run_flood: Run the flood model.
+
+    Examples:
+        - Build a model and run it; the results come back and stay on the model:
+            ```python
+            >>> from hapi.catchment import Catchment
+            >>> from hapi.routing import Routing
+            >>> from hapi.run import Run
+            >>> model = Catchment.from_yaml(
+            ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+            ... )
+            >>> results = Run.run_lumped(model, 1, Routing.muskingum_v)
+            >>> results.routing.value
+            'lumped'
+            >>> results is model.results
+            True
+
+            ```
+
+    See Also:
+        hapi.catchment.Catchment.from_yaml: Builds a model from a run configuration.
     """
 
-    def __init__(self):
-        """Initialize the Run class."""
-        self.Qsim: np.ndarray | pd.DataFrame | None = None
-
-    @classmethod
-    def from_yaml(cls, path: str | Path) -> NoReturn:
-        """Refuse to build a `Run`, explaining the pattern instead.
-
-        `Run` subclasses `Catchment` to hold its entry points, not to be a catchment: its
-        `__init__` takes no arguments, so the inherited `Catchment.from_yaml` could only fail
-        with a `TypeError` about constructor arity -- an error saying nothing about what to do
-        instead. The methods here are called on a model built elsewhere.
-
-        Args:
-            path: Ignored; present so the signature matches the one it overrides.
-
-        Raises:
-            TypeError: Always.
-
-        Examples:
-            - The refusal names the pattern to use instead:
-                ```python
-                >>> from hapi.run import Run
-                >>> try:
-                ...     Run.from_yaml("coello-lumped-model-run.yaml")
-                ... except TypeError as error:
-                ...     print(str(error).split(";")[0])
-                Run cannot be built from a configuration
-
-                ```
-            - Build the model with `Catchment.from_yaml` and hand it to the entry point:
-                ```python
-                >>> from hapi.catchment import Catchment
-                >>> from hapi.routing import Routing
-                >>> from hapi.run import Run
-                >>> model = Catchment.from_yaml(
-                ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
-                ... )
-                >>> Run.runLumped(model, 1, Routing.muskingum_v)
-                >>> len(model.Qsim)
-                1095
-
-                ```
-
-        See Also:
-            hapi.catchment.Catchment.from_yaml: The classmethod that does build a model.
-        """
-        raise TypeError(
-            "Run cannot be built from a configuration; it holds the entry points that run a "
-            "model built elsewhere. Build the model with Catchment.from_yaml(path) and pass "
-            "it in, e.g. Run.RunHapi(model)."
-        )
-
-    def RunHapi(self):
+    @staticmethod
+    def run_distributed(model: CatchmentLike) -> SimulationResults:
         """Run the distributed hydrological model.
 
         Validates that all input arrays (precipitation, evapotranspiration,
@@ -144,93 +151,92 @@ class Run(Catchment):
         dimensions, then executes the rainfall-runoff model via the
         Wrapper.
 
-        The following instance attributes are set after execution:
+        Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
 
-        - `state_variables`: 4D array (rows, cols, time, states) where
-          states are [sp, wc, sm, uz, lv].
-        - `qlz`: 3D array of the lower zone discharge.
-        - `quz`: 3D array of the upper zone discharge.
-        - `qout`: 1D timeseries of discharge at the catchment outlet
-          in m3/sec.
-        - `quz_routed`: 3D array of the upper zone discharge
-          accumulated and routed at each time step.
-        - `qlz_translated`: 3D array of the lower zone discharge
-          translated at each time step.
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`:
+
+            - `state_variables`: 4D array (rows, cols, time, states) where
+              states are [sp, wc, sm, uz, lv].
+            - `qlz`: 3D array of the lower zone discharge.
+            - `quz`: 3D array of the upper zone discharge.
+            - `quz_routed`: 3D array of the upper zone discharge
+              accumulated and routed at each time step.
+            - `qlz_translated`: 3D array of the lower zone discharge
+              translated at each time step.
+            - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet
+              cell carries the outlet hydrograph; `extract_discharge` fills `qout` from it.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        # input dimensions
-        fd_rows, fd_cols = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
-            raise ValueError(GRID_MISMATCH_ERROR)
+        run = DistributedRun.from_model(model)
+        results = Wrapper.run_muskingum(run)
 
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        # run the model
-        Wrapper.RRMModel(self)
+        model.results = results
+        logger.info("Model Run has finished")
+        return results
 
-        print("Model Run has finished")
-
-    def RunFloodModel(self):
+    @staticmethod
+    def run_flood(
+        model: CatchmentLike, skip_hydraulic_cells: bool | None = None
+    ) -> SimulationResults:
         """Run the flood model.
 
         Runs the conceptual distributed hydrological model with
         additional validation for river geometry inputs (bankfull depth,
         river width, river roughness, and flood plain roughness).
 
+        Args:
+            model: The model to run. See :class:`FloodModel` for what it must carry.
+            skip_hydraulic_cells: Leave river cells (a positive `bankfull_depth`) unrouted
+                by the Muskingum pass, because the kinematic-wave model routes them instead.
+                `None`, the default, derives it from the catchment's own
+                `routing_method` -- `"Kinematic"` means yes, anything else no -- and warns,
+                because the hydraulic model that was supposed to take those cells is not part
+                of Hapi. Pass `True` to state that something downstream takes them and
+                silence the warning, or `False` to route every cell here.
+
+        Warns:
+            UserWarning: The skip was derived from `routing_method="Kinematic"`, so the river
+                cells are left unrouted and their discharge is absent from the results.
+
         Raises:
             ValueError: If meteorological input arrays, parameter
                 arrays, or river geometry arrays have inconsistent
                 dimensions.
         """
-        # input dimensions
-        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
-            raise ValueError(GRID_MISMATCH_ERROR)
-
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
+        derived = skip_hydraulic_cells is None
+        skip = (
+            model.routing_method == "Kinematic"
+            if derived
+            else bool(skip_hydraulic_cells)
         )
-        _check_parameters_cover_grid(self)
-        if any(
-            np.shape(arr)[0] != self.flow_network.rows
-            for arr in (
-                self.bankfull_depth,
-                self.river_width,
-                self.river_roughness,
-                self.flood_plain_roughness,
-            )
-        ):
-            raise ValueError(GRID_MISMATCH_ERROR)
-        if any(
-            np.shape(arr)[1] != self.flow_network.cols
-            for arr in (
-                self.bankfull_depth,
-                self.river_width,
-                self.river_roughness,
-                self.flood_plain_roughness,
-            )
-        ):
-            raise ValueError("all input data should have the same number of columns")
 
-        # run the model
-        Wrapper.RRMModel(self)
-        print("RRM has finished")
+        # Every check the old inline block made now happens in the run type: `RiverGeometry`
+        # settles that the five rasters share a grid, and `DistributedRun` that the grid is the
+        # catchment's and that a requested skip has geometry to identify the river cells with.
+        run = DistributedRun.from_model(
+            model, with_river_geometry=True, skip_hydraulic_cells=skip
+        )
+
+        if skip and derived and run.river_geometry is not None:
+            _warn_about_the_unrouted_river_cells(run, run.river_geometry)
+
+        results = Wrapper.run_muskingum(run)
+        model.results = results
+        logger.info("RRM has finished")
         # SV = SaintVenant()
-        # SV.KinematicRaster(self)
+        # SV.KinematicRaster(model)
         # print("1D model Run has finished")
+        return results
 
-    def runHAPIwithLake(self, lake: LakeType):
+    @staticmethod
+    def run_distributed_with_lake(
+        model: CatchmentLike, lake: LakeType
+    ) -> SimulationResults:
         """Run the distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -239,72 +245,67 @@ class Run(Catchment):
         the Wrapper.
 
         Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
             lake: Lake object containing lake configuration and
                 meteorological data. Must have a `MeteoData` attribute
                 with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
+
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
-        # input dimensions
-        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
-            raise ValueError(
-                "all input data should have the same number of rows and columns"
-            )
+        run = DistributedRun.from_model(model)
+        _check_lake_meteo(run, lake)
+        results = Wrapper.run_muskingum_with_lake(run, lake)
 
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        _check_lake_meteo(self, lake)
-        # run the model
-        Wrapper.RRMWithlake(self, lake)
+        model.results = results
+        logger.info("Model Run has finished")
+        return results
 
-        print("Model Run has finished")
-
-    def runFW1(self):
+    @staticmethod
+    def run_maxbas(model: CatchmentLike) -> SimulationResults:
         """Run the FW1 distributed hydrological model.
 
         Validates that all input arrays have consistent dimensions,
-        then executes the FW1 model via the Wrapper.
+        then executes the FW1 model via the Wrapper. The flow-direction
+        raster is not checked here because MAXBAS never reads it.
 
-        The following instance attributes are set after execution:
+        Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
 
-        - `st`: 4D array of state variables.
-        - `q_out`: 1D array of calculated discharge at the catchment
-          outlet, summed over every cell.
-        - `q_uz`: 3D array of distributed discharge for each cell.
-        - `Qtot`, `quz_routed`, `qlz_translated`: 3D per-cell fields
-          read by `save_results` and `plot_distributed_results`. MAXBAS
-          routes each cell straight to the outlet, so a cell of `Qtot` is
-          that cell's *contribution* to the outlet — `np.nansum` over the
-          domain reproduces `q_out`. Use
-          `extract_discharge(frame_work_1=True)`; the default outlet-cell
-          shortcut is invalid for this path and raises.
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`:
+
+            - `state_variables`: 4D array of state variables.
+            - `qout`: 1D array of calculated discharge at the catchment
+              outlet, summed over every cell.
+            - `quz`: 3D array of distributed discharge for each cell.
+            - `q_total`, `quz_routed`, `qlz_translated`: 3D per-cell fields
+              read by `save_results` and `plot_distributed_results`. MAXBAS
+              routes each cell straight to the outlet, so a cell of `q_total` is
+              that cell's *contribution* to the outlet — `np.nansum` over the
+              domain reproduces `qout`. Use
+              `extract_discharge` reads the routing off the results and takes the
+              basin-wide sum on this path automatically.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 row counts, column counts, or temporal lengths.
         """
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        # run the model
-        Wrapper.FW1(self)
+        run = DistributedRun.from_model(model, needs_flow_direction=False)
+        results = Wrapper.run_maxbas(run)
 
-        print("Model Run has finished")
+        model.results = results
+        logger.info("Model Run has finished")
+        return results
 
-    def RunFW1withLake(self, lake: LakeType):
+    @staticmethod
+    def run_maxbas_with_lake(model: CatchmentLike, lake: LakeType) -> SimulationResults:
         """Run the FW1 distributed model with a lake component.
 
         Validates that all input arrays have consistent dimensions and
@@ -312,98 +313,73 @@ class Run(Catchment):
         then executes the FW1 model with lake routing via the Wrapper.
 
         Args:
+            model: The model to run. See :class:`DistributedModel` for what it must carry.
             lake: Lake object containing lake configuration and
                 meteorological data. Must have a `MeteoData` attribute
                 with shape `(time_steps, >= 3)` where columns are
                 rain, ET, and temperature.
 
-        Note:
-            The following catchment attributes should be set before
-            calling this method:
-
-            - `prec_path`: Path to the folder containing precipitation
-              rasters.
-            - `evap_path`: Path to the folder containing
-              evapotranspiration rasters.
-            - `temp_path`: Path to the folder containing temperature
-              rasters.
-            - `flow_acc_path`: Path to the flow accumulation raster.
-            - `flow_direction_path`: Path to the flow direction raster.
-            - `ParPath`: Path to the folder containing parameter
-              rasters.
-            - `p2`: List of unoptimized parameters where `p2[0]`
-              is tfac and `p2[1]` is catchment area in km2.
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`.
 
         Raises:
             ValueError: If input data arrays have inconsistent
                 dimensions or if the lake meteorological data length
                 does not match the distributed raster data length.
         """
-        # input data validation
+        run = DistributedRun.from_model(model, needs_flow_direction=False)
+        _check_lake_meteo(run, lake)
 
-        # input dimensions
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.date_index
-        )
-        _check_parameters_cover_grid(self)
-        _check_lake_meteo(self, lake)
+        results = Wrapper.run_maxbas_with_lake(run, lake)
+        model.results = results
+        return results
 
-        # run the model
-        Wrapper.FW1Withlake(self, lake)
-
-    def runLumped(
-        self,
+    @staticmethod
+    def run_lumped(
+        model: SupportsQsim,
         Route: int = 0,
         routing_fn: Callable[..., Any] | None = None,
-    ):
+    ) -> SimulationResults:
         """Run the lumped conceptual model.
 
         Executes a lumped conceptual hydrological model, optionally
         routing the generated discharge hydrograph. The simulated
-        discharge is stored in `self.Qsim` as a pandas DataFrame
+        discharge is stored in `model.Qsim` as a pandas DataFrame
         indexed by the simulation date range.
 
         Args:
+            model: The model to run. See :class:`LumpedModelInputs` for what it must carry.
             Route: Flag to decide whether to route the generated
                 discharge hydrograph. Use 0 for no routing or 1 to
                 enable routing. Defaults to 0.
             routing_fn: Function to route the discharge hydrograph.
-                If None, an empty list is used. Defaults to None.
+                Required when `Route` is not 0.
 
-        Note:
-            The following attributes should be defined before calling
-            this method:
+        Returns:
+            SimulationResults: The run's output, also assigned to `model.results`. A lumped
+            run applies no spatial routing, so the routed fields stay None and
+            `routing` is `RoutingKind.LUMPED`.
 
-            - `LumpedModel`: Conceptual model containing a
-              `simulate` method.
-            - `data`: Numpy array of meteorological data with
-              columns for precipitation, evapotranspiration,
-              temperature, and long-term average temperature.
-            - `Parameters`: Numpy array of conceptual model
-              parameters.
-            - `CatArea`: Catchment area in km2.
-            - `conversion_factor`: Time conversion factor
-              (e.g., 24 for daily).
-            - `InitialCond`: List of initial state variable
-              values [sp, sm, uz, lz, wc].
-            - `Snow`: Whether to use the snow subroutine (0 or 1).
-            - `q_init`: Initial discharge value.
+        Raises:
+            ValueError: `Route` is not 0 and no routing function was given.
         """
         if routing_fn is None and Route != 0:
             raise ValueError("routing_fn must be a callable when Route != 0")
-        if self.temporal_resolution.lower() == "daily":
-            ind = pd.date_range(self.start, self.end, freq="D")
-        else:
-            ind = pd.date_range(self.start, self.end, freq="h")
+        # The calendar belongs to the period, which derives it from the span and the
+        # resolution -- this branch used to be written out here for the fourth time.
+        ind = model.period.date_index
 
+        run = LumpedRun.from_model(model)
+        results = Wrapper.run_lumped(run, Route, routing_fn)
+
+        # The engine puts the lumped total in `results.q_total`; indexing it by the period and
+        # putting the frame on the model is this layer's job, not the engine's.
         Qsim = pd.DataFrame(index=ind)
-
-        Wrapper.Lumped(self, Route, routing_fn)
-        Qsim["q"] = self.Qsim
-        self.Qsim = Qsim[:]
+        Qsim["q"] = results.q_total
+        model.Qsim = Qsim[:]
+        model.results = results
         logger.info("Lumped model run has finished successfully")
+        return results
 
 
 if __name__ == "__main__":

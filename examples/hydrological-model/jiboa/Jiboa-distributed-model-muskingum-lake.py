@@ -128,9 +128,9 @@ Jiboa.read_discharge_gauges(
     end_date=Date2,
 )
 # %% run the model
-Run.runHAPIwithLake(Jiboa, JiboaLake)
+Run.run_distributed_with_lake(Jiboa, JiboaLake)
 # %% calculate some metrics
-Jiboa.extract_discharge(only_outlet=True)
+Jiboa.extract_discharge()
 
 for i in range(len(Jiboa.GaugesTable)):
     gaugeid = Jiboa.GaugesTable.loc[i, "id"]

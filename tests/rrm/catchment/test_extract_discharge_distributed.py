@@ -28,7 +28,7 @@ def coello_muskingum_run(
     """Distributed Coello catchment with a completed Muskingum run.
 
     Returns:
-        Catchment: Model with `Qtot` populated by the spatial routing.
+        Catchment: Model with `q_total` populated by the spatial routing.
     """
     coello = Catchment(
         "coello",
@@ -52,7 +52,7 @@ def coello_muskingum_run(
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
     coello.read_gauge_table(coello_gauges_table, coello_acc_path)
     coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
-    Run.RunHapi(coello)
+    Run.run_distributed(coello)
     return coello
 
 
@@ -61,8 +61,8 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
 
     Test scenario:
         After a Muskingum run, extract_discharge with the default
-        frame_work_1=False walks the gauge table, extracts Qsim per gauge
-        from Qtot, and fills the metrics frame (RMSE, NSE, NSEhf, KGE, WB,
+        Muskingum-routed results walk the gauge table, extracting Qsim per gauge
+        from q_total, and fills the metrics frame (RMSE, NSE, NSEhf, KGE, WB,
         Pearson-CC, R2) with finite numbers.
     """
     coello = coello_muskingum_run
@@ -83,7 +83,7 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
     assert np.isfinite(coello.metrics.to_numpy(dtype=float)).all(), (
         "All metric values should be finite"
     )
-    assert coello.Qsim.shape == (len(coello.date_index), n_gauges), (
+    assert coello.Qsim.shape == (len(coello.period.date_index), n_gauges), (
         f"Qsim shape mismatch: {coello.Qsim.shape}"
     )
 

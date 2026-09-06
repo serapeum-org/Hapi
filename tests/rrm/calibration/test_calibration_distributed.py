@@ -14,7 +14,10 @@ from pandas import DataFrame
 
 from hapi import calibration as calibration_module
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
+from hapi.conceptual import ParameterBounds
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
@@ -68,16 +71,18 @@ def gauged_calibration(
 
     Returns:
         Calibration: Instance carrying `meteo`, `flow_network`, `GaugesTable` and a
-            synthetic `Qtot` field, with no model run behind it.
+            synthetic `q_total` field, with no model run behind it.
     """
     coello = Calibration(
-        "coello",
-        coello_start_date,
-        coello_end_date,
-        spatial_resolution="Distributed",
-        temporal_resolution="Daily",
+        Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
+        )
     )
-    coello.meteo = MeteoInputs.from_rasters(
+    coello.model.meteo = MeteoInputs.from_rasters(
         coello_prec_path,
         coello_temp_path,
         coello_evap_path,
@@ -87,20 +92,31 @@ def gauged_calibration(
         date=True,
         file_name_data_fmt="%Y.%m.%d",
     )
-    coello.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
+    coello.model.flow_network = FlowNetwork.from_rasters(
+        coello_acc_path, coello_fd_path
+    )
     # Needed even though the objective overwrites `parameters`: `read_parameters` is also
     # what sets `snow`, and HBV's parameter parse branches on it being exactly 0 or 1. Left
     # as None it raises inside the run, which the objective's bare `except` swallows.
-    coello.read_parameters(coello_dist_parameters_muskingum, False)
-    coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-    coello.GaugesTable = DataFrame(
+    coello.model.read_parameters(coello_dist_parameters_muskingum, False)
+    coello.model.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
+    coello.model.GaugesTable = DataFrame(
         {"id": [1, 2], "cell_row": [2, 5], "cell_col": [3, 6]}
     )
-    rows, cols = coello.flow_network.rows, coello.flow_network.cols
-    steps = coello.meteo.time_steps
+    rows, cols = coello.model.flow_network.rows, coello.model.flow_network.cols
+    steps = coello.model.meteo.time_steps
     rng = np.random.default_rng(1337)
-    coello.Qtot = rng.random((rows, cols, steps + 1))
-    coello.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
+    # Stage the post-run state the way the run layer builds it. `q_total` and the rest are
+    # read-only views onto `results`, so a finished Muskingum run is described rather than
+    # poked in field by field.
+    coello.model.results = SimulationResults(
+        routing=RoutingKind.MUSKINGUM,
+        quz=np.zeros((rows, cols, steps + 1)),
+        qlz=np.zeros((rows, cols, steps + 1)),
+        state_variables=np.zeros((rows, cols, steps + 1, 5)),
+        q_total=rng.random((rows, cols, steps + 1)),
+    )
+    coello.model.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
     return coello
 
 
@@ -110,10 +126,10 @@ class TestExtractDischarge:
     def test_fills_qsim_from_qtot_at_each_gauge_cell(
         self, gauged_calibration: Calibration
     ):
-        """Test that every gauge column is read from its own cell of `Qtot`.
+        """Test that every gauge column is read from its own cell of `q_total`.
 
         Test scenario:
-            The override reads `Qtot[row, col, :-1]` per gauge and sizes the result from
+            The override reads `q_total[row, col, :-1]` per gauge and sizes the result from
             `meteo.time_steps` — the count that moved onto MeteoInputs. Both columns must
             match the cells the gauge table names, and the trailing step must be dropped.
         """
@@ -121,19 +137,19 @@ class TestExtractDischarge:
 
         coello.extract_discharge()
 
-        expected_shape = (coello.meteo.time_steps, 2)
+        expected_shape = (coello.model.meteo.time_steps, 2)
         assert coello.Qsim.shape == expected_shape, (
             f"Expected Qsim shape {expected_shape}, got {coello.Qsim.shape}"
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 0],
-            coello.Qtot[2, 3, :-1],
-            err_msg="gauge 1 must come from cell (2, 3) of Qtot",
+            coello.model.results.q_total[2, 3, :-1],
+            err_msg="gauge 1 must come from cell (2, 3) of q_total",
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 1],
-            coello.Qtot[5, 6, :-1],
-            err_msg="gauge 2 must come from cell (5, 6) of Qtot",
+            coello.model.results.q_total[5, 6, :-1],
+            err_msg="gauge 2 must come from cell (5, 6) of q_total",
         )
 
     def test_factor_scales_each_gauge_independently(
@@ -151,12 +167,12 @@ class TestExtractDischarge:
 
         np.testing.assert_allclose(
             coello.Qsim[:, 0],
-            coello.Qtot[2, 3, :-1] * 2.0,
+            coello.model.results.q_total[2, 3, :-1] * 2.0,
             err_msg="gauge 1 must be scaled by its own factor",
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 1],
-            coello.Qtot[5, 6, :-1] * 10.0,
+            coello.model.results.q_total[5, 6, :-1] * 10.0,
             err_msg="gauge 2 must be scaled by its own factor",
         )
 
@@ -166,12 +182,12 @@ class TestExtractDischarge:
         """Test that reading gauge cells after a MAXBAS run raises instead of under-reporting.
 
         Test scenario:
-            Triangular routing sends every cell straight to the outlet, so a cell of `Qtot`
+            Triangular routing sends every cell straight to the outlet, so a cell of `q_total`
             is that cell's contribution rather than the discharge at it. Calibrating against
             it would fit the wrong signal, so the guard must refuse rather than return numbers.
         """
         coello = gauged_calibration
-        coello._maxbas_routed = True
+        coello.model.results.routing = RoutingKind.MAXBAS
 
         with pytest.raises(ValueError, match="MAXBAS") as exc_info:
             coello.extract_discharge()
@@ -196,8 +212,7 @@ class TestRunCalibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         res = coello.run_calibration(spatial_var_stub, _optimization_args())
 
@@ -206,9 +221,12 @@ class TestRunCalibration:
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
     def test_rejects_meteo_that_does_not_cover_the_grid(
@@ -222,14 +240,13 @@ class TestRunCalibration:
             grids would burn a full optimisation before failing.
         """
         coello = gauged_calibration
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         # Built in one go: replacing the cubes one at a time is now refused, because a
         # half-applied crop is exactly the inconsistency MeteoInputs guarantees against.
-        coello.meteo = MeteoInputs(
-            precipitation=coello.meteo.precipitation[:, :-1, :],
-            temperature=coello.meteo.temperature[:, :-1, :],
-            evapotranspiration=coello.meteo.evapotranspiration[:, :-1, :],
+        coello.model.meteo = MeteoInputs(
+            precipitation=coello.model.meteo.precipitation[:, :-1, :],
+            temperature=coello.model.meteo.temperature[:, :-1, :],
+            evapotranspiration=coello.model.meteo.evapotranspiration[:, :-1, :],
         )
 
         with pytest.raises(ValueError, match="must share the catchment's grid"):
@@ -264,17 +281,18 @@ class TestRunCalibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(_pairwise_objective, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         ran_with: list[np.ndarray] = []
-        original = calibration_module.Wrapper.RRMModel
+        original = calibration_module.Wrapper.run_muskingum
 
         def spy(model, *args, **kwargs):
-            ran_with.append(np.asarray(model.parameters, dtype=float).copy())
+            ran_with.append(np.asarray(model.parameters.values, dtype=float).copy())
             return original(model, *args, **kwargs)
 
-        monkeypatch.setattr(calibration_module.Wrapper, "RRMModel", staticmethod(spy))
+        monkeypatch.setattr(
+            calibration_module.Wrapper, "run_muskingum", staticmethod(spy)
+        )
 
         coello.run_calibration(spatial_var_stub, _optimization_args())
 
@@ -304,7 +322,7 @@ class TestRunCalibration:
 
 
 class TestFW1Calibration:
-    """Tests for `Calibration.FW1Calibration` (triangular routing)."""
+    """Tests for `Calibration.calibrate_maxbas` (triangular routing)."""
 
     def test_stores_the_optimizer_result_on_the_instance(
         self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
@@ -317,19 +335,21 @@ class TestFW1Calibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
-        res = coello.FW1Calibration(spatial_var_stub, _optimization_args())
+        res = coello.calibrate_maxbas(spatial_var_stub, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
         assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
 
@@ -370,8 +390,7 @@ class TestCheckOptimizationArgs:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         with pytest.raises(TypeError, match=f"{bad_kind} arguments should be a dict"):
             coello.run_calibration(spatial_var_stub, args)
@@ -382,12 +401,14 @@ class TestCheckOptimizationArgs:
 
 
 class TestLumpedCalibration:
-    """Tests for `Calibration.lumpedCalibration`."""
+    """Tests for `Calibration.calibrate_lumped`."""
 
     def test_stores_the_optimizer_result_on_the_instance(
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that the lumped entry point writes back `parameters` and `OFvalue`.
@@ -397,30 +418,44 @@ class TestLumpedCalibration:
             ones, so it is pinned separately: `OFvalue` is still res[0] and `parameters`
             still res[1].
         """
-        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+        coello.model.read_lumped_inputs(lumped_meteo_data_path)
+        # Without this the trials failed and the bare `except` scored them all `nan`; the stub
+        # returns its canned result regardless, so the test passed over a model that never ran.
+        coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0, RoutingFn=Routing.triangular_routing_1, InitialValues=[]
         )
 
-        res = coello.lumpedCalibration(basic_inputs, _optimization_args())
+        res = coello.calibrate_lumped(basic_inputs, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
         assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
     def test_initial_values_are_seeded_into_the_problem(
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that `InitialValues` reaches the optimisation problem as a starting point.
@@ -430,17 +465,26 @@ class TestLumpedCalibration:
             Both branches must declare one variable per bound, so the problem is the same
             size whether or not a warm start was given.
         """
-        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+        coello.model.read_lumped_inputs(lumped_meteo_data_path)
+        # Without this the trials failed and the bare `except` scored them all `nan`; the stub
+        # returns its canned result regardless, so the test passed over a model that never ran.
+        coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
             RoutingFn=Routing.triangular_routing_1,
             InitialValues=list(np.full(12, 0.5)),
         )
 
-        coello.lumpedCalibration(basic_inputs, _optimization_args())
+        coello.calibrate_lumped(basic_inputs, _optimization_args())
 
         assert stub_optimizer["n_vars"] == 12, (
             f"Expected one variable per bound (12), got {stub_optimizer['n_vars']}"
@@ -450,6 +494,8 @@ class TestLumpedCalibration:
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that `InitialValues` shorter than the bounds is rejected, not indexed out of range.
@@ -460,15 +506,24 @@ class TestLumpedCalibration:
             stub_optimizer: Records whether the optimiser was reached.
 
         Test scenario:
-            The seeded branch loops `range(len(self.LB))` and indexes `initial_values[i]`, so
+            The seeded branch loops `range(len(self.bounds.lower))` and indexes `initial_values[i]`, so
             a shorter list used to run past its end partway through building the problem,
             leaving `opt_prob` half-populated and raising `IndexError` far from the call that
             supplied the list. The length is now compared up front.
         """
-        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+        coello.model.read_lumped_inputs(lumped_meteo_data_path)
+        # Without this the trials failed and the bare `except` scored them all `nan`; the stub
+        # returns its canned result regardless, so the test passed over a model that never ran.
+        coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
             RoutingFn=Routing.triangular_routing_1,
@@ -478,7 +533,7 @@ class TestLumpedCalibration:
         optimization_args = _optimization_args()
 
         with pytest.raises(ValueError, match="one value per parameter") as exc:
-            coello.lumpedCalibration(basic_inputs, optimization_args)
+            coello.calibrate_lumped(basic_inputs, optimization_args)
 
         assert "3" in str(exc.value), (
             f"the error should name the given length: {exc.value}"
@@ -548,7 +603,8 @@ def spatial_var_stub(gauged_calibration: Calibration) -> _SpatialVarStub:
         _SpatialVarStub: Object exposing `Function`, `Par3d`, `no_parameters`, `no_elem`.
     """
     return _SpatialVarStub(
-        gauged_calibration.flow_network.rows, gauged_calibration.flow_network.cols
+        gauged_calibration.model.flow_network.rows,
+        gauged_calibration.model.flow_network.cols,
     )
 
 

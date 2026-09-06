@@ -53,7 +53,7 @@ Route = 1
 routing_fn = Routing.muskingum
 # %%
 ### run the model
-Run.runLumped(Coello, Route, routing_fn)
+Run.run_lumped(Coello, Route, routing_fn)
 # %%
 scores = dict()
 
@@ -87,7 +87,7 @@ the Sensitivity class takes 4 main arguments:
     the following defined function contains two inner functions that calculate discharge
     for the lumped HBV model and the RMSE of the calculated discharge.
 
-    the first function "Run.runLumped" takes some arguments we need to pass through
+    the first function "Run.run_lumped" takes some arguments we need to pass through
     the one_at_a_time method [ConceptualModel,data,p2,init_st,snow,Routing, routing_fn]
     with the same order in the defined function "wrapper"
 
@@ -111,18 +111,18 @@ Each parameter has a dictionary with two keys 0: list of parameters with relativ
 
 # For Type 1
 def WrapperType1(Randpar, Route, routing_fn, Qobs):
-    Coello.parameters = Randpar
+    Coello.parameters.values = Randpar
 
-    Run.runLumped(Coello, Route, routing_fn)
+    Run.run_lumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse
 
 
 # For Type 2
 def WrapperType2(Randpar, Route, routing_fn, Qobs):
-    Coello.parameters = Randpar
+    Coello.parameters.values = Randpar
 
-    Run.runLumped(Coello, Route, routing_fn)
+    Run.run_lumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse, Coello.Qsim["q"]
 
@@ -135,7 +135,14 @@ elif Type == 2:
     fn = WrapperType2
 
 
-Sen = SA(parameters, Coello.LB, Coello.UB, fn, n_values=5, return_values=Type)
+Sen = SA(
+    parameters,
+    Coello.bounds.lower,
+    Coello.bounds.upper,
+    fn,
+    n_values=5,
+    return_values=Type,
+)
 Sen.one_at_a_time(Route, routing_fn, Qobs)
 # %%
 From = ""

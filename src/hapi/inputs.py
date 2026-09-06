@@ -487,21 +487,52 @@ class FlowNetwork:
         return int(np.count_nonzero(~np.isnan(self.flow_acc_arr)))
 
     def __setattr__(self, name: str, value: object) -> None:
-        """Drop the cached `acc_val` when the array it is derived from is replaced.
+        """Drop the caches derived from the accumulation array when it is replaced.
 
         Args:
             name: Attribute being set.
             value: New value.
         """
+        if name in ("flow_acc_arr", "flow_dir_arr"):
+            self._check_replacement(name, value)
         if name == "flow_acc_arr":
             self.__dict__.pop("acc_val", None)
+            self.__dict__.pop("cells_by_acc_val", None)
         object.__setattr__(self, name, value)
+
+    def _check_replacement(self, name: str, value: object) -> None:
+        """Reject a raster that would leave the two describing different grids.
+
+        `__post_init__` alone cannot hold the class's promise that the two rasters share a
+        grid: the fields are plain mutable attributes, so replacing one afterwards silently
+        broke it, and a cell index then meant a different place in each. `MeteoInputs` has
+        guarded its cubes this way since it was written; this is the same guard, which the run
+        layer had been compensating for by re-checking the shape itself.
+
+        Args:
+            name: Which raster is being replaced.
+            value: The replacement.
+
+        Raises:
+            ValueError: The replacement is not a 2D array of the shape the other one has.
+        """
+        other = "flow_dir_arr" if name == "flow_acc_arr" else "flow_acc_arr"
+        current = getattr(self, other, None)
+        if current is None or value is None:
+            return
+        expected = np.shape(current)
+        if not isinstance(value, np.ndarray) or value.shape != expected:
+            got = getattr(value, "shape", type(value).__name__)
+            raise ValueError(
+                f"{name} must stay {expected} to match {other}, got {got}; build a new "
+                "FlowNetwork to change the catchment's grid"
+            )
 
     @cached_property
     def acc_val(self) -> list[int]:
         """list[int]: The distinct accumulation values inside the domain, ascending.
 
-        Cached: `SpatialRouting` reads this once per `(accumulation level, row, column)`, so
+        Cached: `route_muskingum` reads this once per `(accumulation level, row, column)`, so
         recomputing the `np.unique` on every read costs `(n_acc - 1) x rows x cols` scans of
         the whole grid -- unnoticeable on the 13x14 test catchment and hours on a real one.
         Replacing `flow_acc_arr` clears the cache.
@@ -524,6 +555,69 @@ class FlowNetwork:
         """
         values: list[int] = np.unique(_to_int_codes(self.flow_acc_arr)).tolist()
         return values
+
+    @cached_property
+    def cells_by_acc_val(self) -> dict[int, list[tuple[int, int]]]:
+        """dict: In-domain cell indices grouped by their accumulation code, row-major.
+
+        The routing has to visit cells upstream-first, and accumulation gives that order. Asking
+        "which cells are at level j" used to be answered by walking the whole grid and testing
+        every cell against j -- once per level. Since the number of distinct levels grows with
+        the domain, that made the routing pass O(n_acc x rows x cols), effectively quadratic, to
+        visit each cell once. On the 13x14 Coello grid it was 4,004 visits for 89 cells; at
+        250x250 it projects to about 1.9 billion.
+
+        Building the answer once makes the same pass O(no_elem). Cached for the same reason
+        :attr:`acc_val` is, and dropped with it when `flow_acc_arr` is replaced.
+
+        Keys are **truncated** to integers, the same codes :attr:`acc_val` holds, so every
+        in-domain cell is reachable through one of them. That matters for a fractional raster:
+        the grid scan this replaced compared the raw value against a truncated code, so `1.2`
+        never matched the code `1` and the cell was never routed at all -- and because the
+        routing sums `quz_routed` from upstream neighbours, that cell's whole contribution
+        vanished from every cell below it, silently. Truncating both sides is what
+        :attr:`acc_val` has always documented ("1.2 and 1.8 are one code"); only the comparison
+        had drifted.
+
+        Order within a level is row-major, matching the `x`-outer/`y`-inner scan it replaces, so
+        the routing visits cells in exactly the order it did.
+
+        Examples:
+            - Integral accumulation, which is what a cell-count raster holds:
+
+              >>> import numpy as np
+              >>> from hapi.inputs import FlowNetwork
+              >>> acc = np.array([[0.0, 1.0], [1.0, np.nan]])
+              >>> network = FlowNetwork(
+              ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+              ... )
+              >>> network.cells_by_acc_val[0]
+              [(0, 0)]
+              >>> network.cells_by_acc_val[1]
+              [(0, 1), (1, 0)]
+
+            - Fractional values share the code they truncate to, so they route together
+              rather than being dropped:
+
+              >>> import numpy as np
+              >>> from hapi.inputs import FlowNetwork
+              >>> acc = np.array([[1.2, 1.8], [3.0, np.nan]])
+              >>> network = FlowNetwork(
+              ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+              ... )
+              >>> network.acc_val
+              [1, 3]
+              >>> network.cells_by_acc_val[1]
+              [(0, 0), (0, 1)]
+
+        """
+        grouped: dict[int, list[tuple[int, int]]] = {}
+        rows, cols = np.nonzero(~np.isnan(self.flow_acc_arr))
+        for x, y in zip(rows, cols):
+            # Truncated, matching `acc_val`: see the note above on the comparison that drifted.
+            key = int(self.flow_acc_arr[x, y])
+            grouped.setdefault(key, []).append((int(x), int(y)))
+        return grouped
 
     @property
     def outlet(self) -> tuple:
@@ -1577,6 +1671,133 @@ PARAMETERS_LIST = [
     "17_K_muskingum",
     "18_x_muskingum",
 ]
+
+
+#: The five rasters the flood model reads, in the order `read_river_geometry` takes them.
+RIVER_GEOMETRY_RASTERS = (
+    "dem",
+    "bankfull_depth",
+    "river_width",
+    "river_roughness",
+    "flood_plain_roughness",
+)
+
+
+@dataclass(frozen=True)
+class RiverGeometry:
+    """The hydraulic rasters the flood model reads, held together and checked as a set.
+
+    Five arrays that must describe one grid, previously five loose attributes on
+    :class:`~hapi.catchment.Catchment` assigned by a single loop that checked nothing -- not
+    that they shared a shape, and not that they covered the catchment. Two unrelated places
+    then dereferenced them: the flood entry point, and the Muskingum routing loop, which read
+    `bankfull_depth[x, y]` to decide whether a cell belongs to a hydraulic model.
+
+    Held together, the invariant is checked once, where the file names are still in hand and
+    the error can say which raster is the odd one out.
+
+    Attributes:
+        dem: `(rows, cols)` elevation.
+        bankfull_depth: `(rows, cols)` bankfull depth. A positive value marks a river cell.
+        river_width: `(rows, cols)` channel width.
+        river_roughness: `(rows, cols)` channel roughness.
+        flood_plain_roughness: `(rows, cols)` floodplain roughness.
+
+    Examples:
+        - The five must share a shape:
+            ```python
+            >>> import numpy as np
+            >>> from hapi.inputs import RiverGeometry
+            >>> flat = np.ones((3, 4))
+            >>> RiverGeometry(flat, flat, flat, flat, flat).shape
+            (3, 4)
+
+            ```
+        - A raster of the wrong size is named, not silently carried:
+            ```python
+            >>> import numpy as np
+            >>> from hapi.inputs import RiverGeometry
+            >>> flat = np.ones((3, 4))
+            >>> RiverGeometry(flat, flat, np.ones((2, 4)), flat, flat)
+            Traceback (most recent call last):
+                ...
+            ValueError: the river geometry rasters must share one grid, but river_width is (2, 4) and dem is (3, 4)
+
+            ```
+    """
+
+    dem: np.ndarray
+    bankfull_depth: np.ndarray
+    river_width: np.ndarray
+    river_roughness: np.ndarray
+    flood_plain_roughness: np.ndarray
+
+    def __post_init__(self):
+        """Check the five rasters describe one grid.
+
+        Raises:
+            ValueError: A raster is a different shape from the DEM, so a cell index would mean
+                a different place in each.
+        """
+        expected = np.shape(self.dem)
+        for name in RIVER_GEOMETRY_RASTERS[1:]:
+            shape = np.shape(getattr(self, name))
+            if shape != expected:
+                raise ValueError(
+                    f"the river geometry rasters must share one grid, but {name} is {shape} "
+                    f"and dem is {expected}"
+                )
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        """tuple[int, int]: The `(rows, cols)` grid all five share."""
+        return np.shape(self.dem)
+
+    def covers(self, rows: int, cols: int) -> bool:
+        """Report whether the geometry sits on a given grid.
+
+        Args:
+            rows: Number of rows to compare against.
+            cols: Number of columns.
+
+        Returns:
+            bool: True when the geometry's grid is exactly `(rows, cols)`.
+        """
+        return self.shape == (rows, cols)
+
+    @classmethod
+    def from_rasters(
+        cls,
+        dem_file: str,
+        bankfull_depth_file: str,
+        river_width_file: str,
+        river_roughness_file: str,
+        floodplain_roughness_file: str,
+    ) -> RiverGeometry:
+        """Read the five rasters and check they agree before returning them.
+
+        Args:
+            dem_file: Path to the DEM raster.
+            bankfull_depth_file: Path to the bankfull-depth raster.
+            river_width_file: Path to the river-width raster.
+            river_roughness_file: Path to the channel-roughness raster.
+            floodplain_roughness_file: Path to the floodplain-roughness raster.
+
+        Returns:
+            RiverGeometry: The five arrays, sharing one grid.
+
+        Raises:
+            FileNotFoundError: A path does not exist.
+            ValueError: The rasters do not share a grid.
+        """
+        paths = (
+            dem_file,
+            bankfull_depth_file,
+            river_width_file,
+            river_roughness_file,
+            floodplain_roughness_file,
+        )
+        return cls(*(Dataset.read_file(path).read_array(band=0) for path in paths))
 
 
 class Inputs:

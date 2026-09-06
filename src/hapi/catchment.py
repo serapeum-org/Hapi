@@ -35,14 +35,18 @@ from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
+from hapi.conceptual import ConceptualModelSetup, ParameterSet
 from hapi.config import RunConfig
 from hapi.inputs import (
     METEO_VARIABLES,
     FlowNetwork,
     MeteoInputs,
+    RiverGeometry,
     _warn_if_no_sentinel,
     read_rasters,
 )
+from hapi.period import SimulationPeriod
+from hapi.results import SimulationResults
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
@@ -69,13 +73,21 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
     "HBV": HBV,
 }
 
-#: Accepted routing methods, mapped to the one spelling the internals compare against.
-#: `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` exactly, so the constructor
-#: canonicalises rather than storing what it was handed. `"Kinematic"` belongs here because
-#: that comparison is also how the flood model selects its own path: a non-Muskingum method
-#: with a real `bankfull_depth` skips the cell, which `Run.RunFloodModel` relies on.
-#: `hapi.config.CatchmentConfig.routing_method` exposes the first two to YAML and says why the
-#: third is not; a method added here needs a decision there too.
+#: Accepted routing methods, canonicalised to one spelling.
+#:
+#: This records *which routing the parameter set was calibrated for*. It does not select the
+#: routing -- the `Run.*` entry point does that -- but it is not decoration either:
+#: `hapi.config` cross-checks it against `parameters.maxbas`, and that check is load-bearing.
+#: A MAXBAS set holds 11 parameters and a Muskingum set 12, and `maxbas` is what decides which
+#: count is expected, so a set contradicting the routing still passes the count check and the
+#: run then reads the Muskingum X as the MAXBAS value -- a quietly wrong hydrograph.
+#:
+#: `"Kinematic"` is the kinematic-wave routing the flood model applies to river cells (see
+#: `SaintVenant.KinematicRaster`, and the roadmap item in README). `Run.run_flood` reads it to
+#: decide whether the Muskingum pass should leave those cells alone. It is *read by the entry
+#: point*, not compared inside the routing loop -- that comparison used to run on every
+#: distributed model, so a catchment declaring Kinematic and calling `run_distributed`
+#: dereferenced a `bankfull_depth` of None and crashed partway through routing.
 ROUTING_METHODS = {
     "muskingum": "Muskingum",
     "maxbas": "MAXBAS",
@@ -211,14 +223,42 @@ def _name_the_path(path) -> Iterator[None]:
         raise FileNotFoundError(f"{exc} (path: {path})") from exc
 
 
+def _require_state_variables(results: SimulationResults) -> np.ndarray:
+    """Return the per-cell state array, or say why it is absent.
+
+    It is `(rows, cols, time, 5)` -- as much memory as every other result field combined -- so a
+    run can be asked not to keep it. Only these plotting and saving options read it, so the
+    error belongs here, naming the switch rather than failing on `None` inside a slice.
+
+    Args:
+        results: The run's results.
+
+    Returns:
+        np.ndarray: The state array.
+
+    Raises:
+        ValueError: The run was asked not to keep the states.
+    """
+    if results.state_variables is None:
+        raise ValueError(
+            "this run did not keep the state variables, so no state option can be plotted or "
+            "saved; run it with keep_state_variables=True (the default) if you need them"
+        )
+    return results.state_variables
+
+
 class Catchment:
     """Catchment for reading meteorological/spatial inputs and running the model.
 
     The Catchment class includes methods to read the meteorological and
     spatial inputs of the distributed hydrological model. It also reads the
-    data of the gauges. It is a superclass that has the Run subclass, so you
-    need to build the Catchment object and hand it as an input to the Run
-    class to run the model.
+    data of the gauges. Build the catchment, then hand it to whichever
+    :class:`hapi.run.Run` entry point suits it -- `Run.run_distributed(model)`. `Run` states what it
+    needs as a protocol, which this class satisfies structurally; neither class inherits
+    from the other.
+
+    A run assigns its output to :attr:`results`. The result arrays are also readable under
+    their historical names (`q_total`, `quz`, ...) as read-only properties forwarding to it.
     """
 
     def __init__(
@@ -258,15 +298,9 @@ class Catchment:
                 "Kinematic".
         """
         self.name = name
-        self.start = dt.datetime.strptime(start_data, fmt)
-        self.end = dt.datetime.strptime(end, fmt)
 
-        # All three of the mode arguments are lower-cased below, so a non-string reaches
-        # `.lower()` and raises an `AttributeError` naming neither the argument nor the class.
-        # Checked together, once, rather than three times over.
         for argument, value in (
             ("spatial_resolution", spatial_resolution),
-            ("temporal_resolution", temporal_resolution),
             ("routing_method", routing_method),
         ):
             if not isinstance(value, str):
@@ -280,26 +314,17 @@ class Catchment:
             )
         self.spatial_resolution = spatial_resolution.lower()
 
-        if temporal_resolution.lower() not in ["daily", "hourly"]:
-            raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
-        self.temporal_resolution = temporal_resolution.lower()
-        # assuming the default dt is 1 day
-        # Only the two resolutions the check above admits: an `else` here would be
-        # unreachable, and the one that used to sit here set a conversion factor but no
-        # `date_index`, which reads as support for sub-daily steps that does not exist.
-        # Adding one (q mm, area km2: 1/(3.6*f)) means widening the check above too.
-        if self.temporal_resolution == "daily":
-            self.dt = 1  # 24
-            self.conversion_factor = CONVERSION_FACTOR * 1
-            self.date_index = pd.date_range(self.start, self.end, freq="D")
-        else:
-            self.dt = 1  # 24
-            self.conversion_factor = CONVERSION_FACTOR * 1 / 24
-            self.date_index = pd.date_range(self.start, self.end, freq="h")
+        #: The span this model runs over. One object rather than six attributes: `start`,
+        #: `end` and `temporal_resolution` are the inputs, and `date_index`, `dt` and
+        #: `conversion_factor` are derived from them on read, so they cannot describe a
+        #: different span from the one the model is set to. It validates the resolution and
+        #: rejects a backwards span.
+        self.period = SimulationPeriod.parse(
+            start_data, end, fmt=fmt, temporal_resolution=temporal_resolution
+        )
 
-        # Canonicalised like the two resolutions above, and for a sharper reason:
-        # `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` case-sensitively, and
-        # the false branch reads `bankfull_depth`, which is None outside the flood model. Left
+        # Canonicalised so the config cross-check against `parameters.maxbas` compares one
+        # spelling. The routing loop no longer compares against it at all. Left
         # verbatim, a lower-case "muskingum" therefore routed every cell down the MAXBAS branch
         # and raised `TypeError: 'NoneType' object is not subscriptable`.
         if routing_method.lower() not in ROUTING_METHODS:
@@ -308,44 +333,34 @@ class Catchment:
                 f"got {routing_method!r}"
             )
         self.routing_method = ROUTING_METHODS[routing_method.lower()]
-        self.parameters: np.ndarray | list | None = None
+        #: The parameters and the `(snow, maxbas)` pair that fixes their width, as
+        #: `read_parameters` produces them. Its constructor enforces the count rule, so every
+        #: route to a parameter set is checked -- including the per-trial replacements a
+        #: calibration makes. `None` until read.
+        self.parameters: ParameterSet | None = None
+        #: The conceptual model and the state it starts from, as `read_lumped_model`
+        #: produces them. `None` until read.
+        self.model_setup: ConceptualModelSetup | None = None
         self.data: np.ndarray | None = None
         #: The three meteorological drivers. Assign a :class:`~hapi.inputs.MeteoInputs`
         #: built by one of its loaders; everything meteorological hangs off it.
         self.meteo: MeteoInputs | None = None
         self.QGauges: pd.DataFrame | None = None
-        self.snow: int | None = None
-        self.maxbas: bool | None = None
-        self.lumped_model: BaseConceptualModel | None = None
-        self.area: float | int | None = None
-        self.initial_cond: list | None = None
-        self.q_init: float | None = None
         self.GaugesTable: FeatureCollection | pd.DataFrame | None = None
-        self.UB: np.ndarray | None = None
-        self.LB: np.ndarray | None = None
         #: The routing network and the grid it defines. Assign a
         #: :class:`~hapi.inputs.FlowNetwork` built by its loader.
         self.flow_network: FlowNetwork | None = None
         self.flow_path_length_arr: np.ndarray | None = None
-        self.DEM: np.ndarray | None = None
-        self.bankfull_depth: np.ndarray | None = None
-        self.river_width: np.ndarray | None = None
-        self.river_roughness: np.ndarray | None = None
-        self.flood_plain_roughness: np.ndarray | None = None
-        self.qout: np.ndarray | None = None
-        self.Qtot: np.ndarray | None = None
-        self.quz_routed: np.ndarray | None = None
-        self.qlz_translated: np.ndarray | None = None
-        # True once a triangular (MAXBAS) run has filled the output fields. The
-        # MAXBAS routing sends every cell straight to the outlet, so a single cell of
-        # `Qtot` is that cell's contribution, not the discharge at it — which makes
-        # the outlet-cell shortcut in `extract_discharge` invalid. See its guard.
-        self._maxbas_routed: bool = False
-        self.state_variables: np.ndarray | None = None
+        #: The five hydraulic rasters the flood model reads, once `read_river_geometry` has
+        #: run. Absent-or-complete: they are checked against each other as they are read.
+        self.river_geometry: RiverGeometry | None = None
+        #: Everything one run produced, replaced wholesale by the next run. The seven
+        #: result arrays below are read-only properties forwarding to it, so `model.results.q_total`
+        #: still reads as it always did while the run layer owns the arrays. `None` until
+        #: a `Run.*` entry point has been called.
+        self.results: SimulationResults | None = None
         self.anim: matplotlib.animation.FuncAnimation | None = None
         self._animation_glyph: ArrayGlyph | None = None
-        self.quz: np.ndarray | None = None
-        self.qlz: np.ndarray | None = None
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
         #: The configuration this model was built from, when it came from
@@ -367,10 +382,9 @@ class Catchment:
         Running the model stays the caller's job, through whichever `Run.*` entry point suits
         `routing_method` and `spatial_resolution`.
 
-        Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the
-        same constructor arguments. `Run` does not: it overrides `__init__` to take none, and
-        its entry points are called unbound on a catchment (`Run.RunHapi(model)`), so it
-        overrides this method to refuse the call and say so.
+        Neither `Run` nor `Calibration` is a catchment any more, so there is no subclass for
+        this to build: `Run` is a namespace of entry points, and `Calibration` takes the model
+        it calibrates -- `Calibration(Catchment.from_yaml(path))`.
 
         Args:
             path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for
@@ -402,7 +416,7 @@ class Catchment:
                 'Coello'
                 >>> model.spatial_resolution
                 'lumped'
-                >>> len(model.date_index)
+                >>> len(model.period.date_index)
                 1095
 
                 ```
@@ -438,10 +452,6 @@ class Catchment:
         _resolve_config_paths(config, Path(path).resolve().parent)
         catchment = config.catchment
 
-        # The first three go positionally on purpose: `Catchment.__init__` calls its second
-        # parameter `start_data` and `Calibration.__init__` calls it `start`, so naming them
-        # would break `Calibration.from_yaml` -- which this method is documented to support --
-        # while still working here. Renaming the parameter is the fix, and is breaking.
         model = cls(
             catchment.name,
             catchment.start,
@@ -622,15 +632,16 @@ class Catchment:
             floodplain_roughness_file (str): Path to the floodplain
                 roughness raster file.
         """
-        for name, fpath in [
-            ("DEM", dem_file),
-            ("bankfull_depth", bankfull_depth_file),
-            ("river_width", river_width_file),
-            ("river_roughness", river_roughness_file),
-            ("flood_plain_roughness", floodplain_roughness_file),
-        ]:
-            ds = Dataset.read_file(fpath)
-            setattr(self, name, ds.read_array(band=0))
+        # One object rather than five loose arrays: `RiverGeometry` checks they share a grid
+        # as it reads them, where the file names are still in hand and the error can name the
+        # odd one out. The loop this replaces checked nothing.
+        self.river_geometry = RiverGeometry.from_rasters(
+            dem_file,
+            bankfull_depth_file,
+            river_width_file,
+            river_roughness_file,
+            floodplain_roughness_file,
+        )
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
         """Read model parameter rasters or a CSV parameter file.
@@ -661,37 +672,23 @@ class Catchment:
             # offending directory, so _name_the_path re-raises with it.
             with _name_the_path(path):
                 cube = read_rasters(path, regex_string=r"\d+", date=False)
-            self.parameters = np.moveaxis(cube.values, 0, -1)
+            parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
                 raise FileNotFoundError(
                     "The parameter file you have entered does not exist"
                 )
 
-            self.parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
+            parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
 
         if not (not snow or snow):
             raise ValueError(
                 "snow input defines whether to consider snow subroutine or not it has to be True or False"
             )
 
-        self.snow = snow
-        self.maxbas = maxbas
-
-        # (snow, maxbas) -> the parameter count that combination requires. A table rather
-        # than eight near-identical branches: the counts are the only thing that varied, and
-        # two of the branches spelled the comparison `not len(...) == N`.
-        expected = PARAMETER_COUNTS[(bool(snow), bool(maxbas))]
-        actual = (
-            self.parameters.shape[2]
-            if self.spatial_resolution == "distributed"
-            else len(self.parameters)
-        )
-        if actual != expected:
-            raise ValueError(
-                f"current version of HBV (with snow) takes {expected} parameters you have "
-                f"entered {actual}"
-            )
+        # The count check lives in `ParameterSet.__post_init__`, so it runs on every route
+        # to a parameter set rather than only on this one.
+        self.parameters = ParameterSet(parameters, snow=snow, maxbas=maxbas)
 
         logger.debug("Parameters are read successfully")
 
@@ -728,29 +725,11 @@ class Catchment:
                 "ConceptualModel should be a module or a python file contains functions "
             )
 
-        self.lumped_model = lumped_model()
-        self.area = catchment_area
-
-        # Typed before it is measured. The other order called `len` first, so None reported
-        # "object of type 'NoneType' has no len()" rather than naming the argument, and the
-        # `is not None` the type check then carried could never be false -- `len` would
-        # already have raised.
-        if not isinstance(initial_condition, list):
-            raise TypeError(
-                f"init_st should be of type list, got {type(initial_condition).__name__}"
-            )
-        if len(initial_condition) != 5:
-            raise ValueError(
-                f"state variables are 5 and the given initial values are {len(initial_condition)}"
-            )
-
-        self.initial_cond = initial_condition
-
-        if q_init is not None and not isinstance(q_init, float):
-            raise TypeError(
-                f"q_init should be of type float, got {type(q_init).__name__}"
-            )
-        self.q_init = q_init
+        # The checks on `initial_condition` and `q_init` live in
+        # `ConceptualModelSetup.__post_init__` now.
+        self.model_setup = ConceptualModelSetup(
+            lumped_model(), catchment_area, initial_condition, q_init
+        )
 
         logger.debug("Lumped model is read successfully")
 
@@ -759,11 +738,11 @@ class Catchment:
 
         The lumped counterpart of :class:`~hapi.inputs.MeteoInputs`, which carries the
         distributed drivers: the lumped model works on one column per variable rather than a
-        grid, and `Wrapper.Lumped` reads the long-term average straight out of the fourth
+        grid, and `Wrapper.run_lumped` reads the long-term average straight out of the fourth
         column.
 
         A three-column file is completed with a fourth holding the record's mean temperature.
-        `Wrapper.Lumped` reads that column unconditionally, so without it a file this method
+        `Wrapper.run_lumped` reads that column unconditionally, so without it a file this method
         accepts raises `IndexError` in the middle of the run instead.
 
         Args:
@@ -973,10 +952,9 @@ class Catchment:
             ValueError: If the gauge table has not been read yet
                 (distributed mode).
         """
-        if self.temporal_resolution.lower() == "daily":
-            ind = pd.date_range(self.start, self.end, freq="D")
-        else:
-            ind = pd.date_range(self.start, self.end, freq="h")
+        # The calendar belongs to the period, which derives it from the span and the
+        # resolution. This was the last of four hand-written copies of that branch.
+        ind = self.period.date_index
 
         if self.spatial_resolution.lower() == "distributed":
             self._read_one_discharge_file_per_gauge(
@@ -1050,7 +1028,9 @@ class Catchment:
                 )
 
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-            self.QGauges[labels[i]] = f.loc[self.start : self.end, f.columns[-1]]
+            self.QGauges[labels[i]] = f.loc[
+                self.period.start : self.period.end, f.columns[-1]
+            ]
 
     def _read_the_single_discharge_file(
         self, path: str, index: pd.DatetimeIndex, delimiter: str, fmt: str
@@ -1075,92 +1055,48 @@ class Catchment:
         self.QGauges = pd.DataFrame(index=index)
         f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
         f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-        self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
+        self.QGauges[f.columns[0]] = f.loc[
+            self.period.start : self.period.end, f.columns[0]
+        ]
 
-    def read_parameters_bound(
-        self,
-        upper_bound: list | np.ndarray,
-        lower_bound: list | np.ndarray,
-        snow: bool = False,
-        maxbas: bool = False,
-    ):
-        """Read the lower and upper parameter bounds for calibration.
-
-        Args:
-            upper_bound (list | np.ndarray): Upper bound values
-                for each parameter.
-            lower_bound (list | np.ndarray): Lower bound values
-                for each parameter.
-            snow (bool, optional): Whether to simulate snow
-                processes. If True, snow-related parameters must be
-                bounded. Default is False.
-            maxbas (bool, optional): True if the parameters include
-                maxbas. Default is False.
-
-        Raises:
-            ValueError: If the lengths of `upper_bound` and
-                `lower_bound` are not equal.
-            ValueError: If `snow` is not a boolean.
-        """
-        if len(upper_bound) != len(lower_bound):
-            raise ValueError(
-                f"the length of UB should be the same as LB, got {len(upper_bound)} and "
-                f"{len(lower_bound)}"
-            )
-        self.UB = np.array(upper_bound)
-        self.LB = np.array(lower_bound)
-
-        if not isinstance(snow, bool):
-            raise ValueError(
-                " snow input defines whether to consider snow subroutine or not it has to be True or False"
-            )
-        self.snow = snow
-        self.maxbas = maxbas
-
-        logger.debug("Parameters' bounds are read successfully")
-
-    def extract_discharge(
-        self, calculate_metrics=True, frame_work_1=False, factor=None, only_outlet=False
-    ):
+    def extract_discharge(self, calculate_metrics=True, factor=None):
         """Extract and sum discharge at gauge locations.
 
-        Extracts and sums the discharge from the routed upper zone and
-        translated lower zone arrays at each gauge location. Optionally
-        computes performance metrics (RMSE, NSE, NSEhf, KGE, WB,
-        Pearson-CC, R2) between simulated and observed hydrographs.
+        Which hydrograph is the right one depends on how the run was routed, and the results
+        say so, so nothing has to be passed in. Under Muskingum the discharge accumulates
+        downstream, so each gauge is read from its own cell of `q_total`. Under MAXBAS every
+        cell is routed straight to the outlet, making a cell that cell's *contribution*; the
+        hydrograph is then the basin-wide sum the run already computed into `qout`.
+
+        This used to be a `frame_work_1` flag the caller had to set to match the entry point
+        they had called, with a `ValueError` when they got it wrong. The routing is a
+        property of the arrays, so it is read off them instead.
+
+        Optionally computes performance metrics (RMSE, NSE, NSEhf, KGE, WB, Pearson-CC, R2)
+        between the simulated and observed hydrographs.
 
         Args:
             calculate_metrics (bool, optional): Whether to calculate
                 performance metrics. Default is True.
-            frame_work_1 (bool, optional): True if the routing
-                function is Maxbas. Default is False.
             factor (list, optional): List of multiplication factors
                 for simulated discharge at each gauge. Must have the
-                same length as the number of gauges. Default is None.
-            only_outlet (bool, optional): Currently has **no effect**. The dispatch below
-                reads `elif frame_work_1 or only_outlet`, which is reached only when
-                `frame_work_1` is already True, so this flag never selects anything on its
-                own. Left in place rather than removed because it is part of the public
-                signature; pass `frame_work_1=True` for the basin-wide sum. Default is False.
+                same length as the number of gauges. Applied only on the
+                per-gauge (Muskingum) path. Default is None.
 
         Raises:
-            ValueError: If the gauge table has not been read yet.
+            ValueError: The gauge table has not been read, or the model has not been run.
         """
         if self.GaugesTable is None:
             raise ValueError("please read the gauges' table first.")
+        if self.results is None:
+            raise ValueError(
+                "there are no results to extract; run the model first, e.g. "
+                "Run.run_distributed(model)"
+            )
 
-        if not frame_work_1:
-            if self._maxbas_routed:
-                raise ValueError(
-                    "this catchment was run with triangular (MAXBAS) routing, which "
-                    "sends every cell straight to the outlet: a single cell of Qtot is "
-                    "that cell's contribution, not the discharge at it, so reading the "
-                    "outlet cell would under-report the hydrograph. Call "
-                    "extract_discharge(frame_work_1=True) to use the basin-wide sum "
-                    "that Run.runFW1 computed."
-                )
+        if self.results.outlet_shortcut_valid:
             self.Qsim = pd.DataFrame(
-                index=self.date_index, columns=self.QGauges.columns
+                index=self.period.date_index, columns=self.QGauges.columns
             )
             if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
@@ -1169,20 +1105,23 @@ class Catchment:
             outlet_x = self.flow_network.outlet[0][0]
             outlet_y = self.flow_network.outlet[1][0]
 
-            # self.qout = self.qlz_translated[outlet_x,outlet_y,:] + self.quz_routed[outlet_x,outlet_y,:]
-            # self.Qtot = self.qlz_translated + self.quz_routed
-            self.qout = self.Qtot[outlet_x, outlet_y, :]
+            # Muskingum accumulates downstream, so the outlet cell of `q_total` is the
+            # outlet hydrograph. The engine cannot set this itself: finding the outlet
+            # needs the gauge table, which is an analysis input, not a run input.
+            self.results.qout = self.results.q_total[outlet_x, outlet_y, :]
 
             for i in range(len(self.GaugesTable)):
                 x_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
                 y_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
                 gauge_id = self.GaugesTable.loc[self.GaugesTable.index[i], "id"]
 
-                # Quz = np.reshape(self.quz_routed[x_ind,y_ind,:-1],self.TS-1)
-                # Qlz = np.reshape(self.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
+                # Quz = np.reshape(self.results.quz_routed[x_ind,y_ind,:-1],self.TS-1)
+                # Qlz = np.reshape(self.results.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
                 # q_sim = Quz + Qlz
 
-                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.meteo.time_steps)
+                q_sim = np.reshape(
+                    self.results.q_total[x_ind, y_ind, :-1], self.meteo.time_steps
+                )
                 if factor is not None:
                     self.Qsim.loc[:, gauge_id] = q_sim * factor[i]
                 else:
@@ -1211,10 +1150,12 @@ class Catchment:
                     self.metrics.loc["R2", gauge_id] = round(
                         metrics.r2(q_obs, q_sim), 3
                     )
-        elif frame_work_1 or only_outlet:
-            self.Qsim = pd.DataFrame(index=self.date_index)
+        else:
+            # MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the
+            # basin-wide sum the run already put in `qout`.
+            self.Qsim = pd.DataFrame(index=self.period.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            q_sim = np.reshape(self.qout, self.meteo.time_steps)
+            q_sim = np.reshape(self.results.qout, self.meteo.time_steps)
             self.Qsim.loc[:, gauge_id] = q_sim
 
             if calculate_metrics:
@@ -1434,32 +1375,32 @@ class Catchment:
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.nonzero(self.date_index == start)[0][0]
-        end_i = np.nonzero(self.date_index == end)[0][0]
+        start_i = np.nonzero(self.period.date_index == start)[0][0]
+        end_i = np.nonzero(self.period.date_index == end)[0][0]
 
         if option == 1:
-            arr = self.Qtot[:, :, start_i:end_i]
+            arr = self.results.q_total[:, :, start_i:end_i]
             title = "Total Discharge"
         elif option == 2:
-            arr = self.quz_routed[:, :, start_i:end_i]
+            arr = self.results.quz_routed[:, :, start_i:end_i]
             title = "Surface Flow"
         elif option == 3:
-            arr = self.qlz_translated[:, :, start_i:end_i]
+            arr = self.results.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
-            arr = self.state_variables[:, :, start_i:end_i, 0]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
-            arr = self.state_variables[:, :, start_i:end_i, 1]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
-            arr = self.state_variables[:, :, start_i:end_i, 2]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
-            arr = self.state_variables[:, :, start_i:end_i, 3]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
-            arr = self.state_variables[:, :, start_i:end_i, 4]
+            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
             arr = self.meteo.precipitation[:, :, start_i:end_i]
@@ -1478,7 +1419,7 @@ class Catchment:
         arr = arr.copy()
         arr[np.isnan(self.flow_network.flow_acc_arr), :] = np.nan
 
-        time = self.date_index[start_i:end_i]
+        time = self.period.date_index[start_i:end_i]
 
         if gauges:
             # animate expects a 3-column array: [value to display, cell row, cell column].
@@ -1577,17 +1518,17 @@ class Catchment:
             )
 
         if start == "":
-            start = self.date_index[0]
+            start = self.period.date_index[0]
         elif isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
 
         if end == "":
-            end = self.date_index[-1]
+            end = self.period.date_index[-1]
         elif isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
-        start_i = np.nonzero(self.date_index == start)[0][0]
-        end_i = np.nonzero(self.date_index == end)[0][0] + 1
+        start_i = np.nonzero(self.period.date_index == start)[0][0]
+        end_i = np.nonzero(self.period.date_index == end)[0][0] + 1
 
         if self.spatial_resolution == "distributed":
             if flow_acc_path == "":
@@ -1608,24 +1549,24 @@ class Catchment:
                 os.makedirs(path, exist_ok=True)
             names = [
                 os.path.join(path, f"{prefix}{str(i)[:10]}.tif")
-                for i in self.date_index[start_i:end_i]
+                for i in self.period.date_index[start_i:end_i]
             ]
             if result == 1:
-                arr = self.Qtot[:, :, start_i:end_i]
+                arr = self.results.q_total[:, :, start_i:end_i]
             elif result == 2:
-                arr = self.quz_routed[:, :, start_i:end_i]
+                arr = self.results.quz_routed[:, :, start_i:end_i]
             elif result == 3:
-                arr = self.qlz_translated[:, :, start_i:end_i]
+                arr = self.results.qlz_translated[:, :, start_i:end_i]
             elif result == 4:
-                arr = self.state_variables[:, :, start_i:end_i, 0]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 0]
             elif result == 5:
-                arr = self.state_variables[:, :, start_i:end_i, 1]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 1]
             elif result == 6:
-                arr = self.state_variables[:, :, start_i:end_i, 2]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 2]
             elif result == 7:
-                arr = self.state_variables[:, :, start_i:end_i, 3]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 3]
             elif result == 8:
-                arr = self.state_variables[:, :, start_i:end_i, 4]
+                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 4]
             else:
                 raise ValueError(
                     f" The result parameter takes a value between 1 and 8, given: {result}"
@@ -1648,19 +1589,23 @@ class Catchment:
                 data["Qsim"] = self.Qsim[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 2:
-                data["Quz"] = self.quz[start_i:end_i]
+                data["Quz"] = self.results.quz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 3:
-                data["Qlz"] = self.qlz[start_i:end_i]
+                data["Qlz"] = self.results.qlz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 4:
-                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
+                data[STATE_VARIABLES] = _require_state_variables(self.results)[
+                    start_i:end_i, :
+                ]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 5:
                 data["Qsim"] = self.Qsim[start_i:end_i]
-                data["Quz"] = self.quz[start_i:end_i]
-                data["Qlz"] = self.qlz[start_i:end_i]
-                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
+                data["Quz"] = self.results.quz[start_i:end_i]
+                data["Qlz"] = self.results.qlz[start_i:end_i]
+                data[STATE_VARIABLES] = _require_state_variables(self.results)[
+                    start_i:end_i, :
+                ]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
                 raise ValueError(
@@ -1723,6 +1668,11 @@ class Lake:
         self.LakeArea: float | None = None
         self.InitialCond: list | None = None
         self.StageDischargeCurve: np.ndarray | None = None
+        #: The lake's own simulated outflow, and that series routed to the outflow cell.
+        #: Filled by the lake-aware wrapper entry points, which used to create them by
+        #: assignment -- so they existed only after a run and nothing said they were coming.
+        self.Qlake: np.ndarray | None = None
+        self.QlakeR: np.ndarray | None = None
 
     def read_meteo_data(self, path: str, fmt: str):
         """Read meteorological data for the lake simulation.

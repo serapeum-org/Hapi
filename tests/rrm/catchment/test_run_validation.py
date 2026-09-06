@@ -1,6 +1,6 @@
 """Tests for the input validation `Run`'s lake and flood entry points perform.
 
-These three entry points (`RunFloodModel`, `runHAPIwithLake`, `RunFW1withLake`) each open with a
+These three entry points (`run_flood`, `run_distributed_with_lake`, `run_maxbas_with_lake`) each open with a
 block of dimension checks that now read through `flow_network` and `meteo` rather than through
 attributes on the catchment. The wrapper each one dispatches to is replaced by a spy, so the tests
 pin the validation and the dispatch without running a lake or a hydraulic model.
@@ -8,14 +8,17 @@ pin the validation and the dispatch without running a lake or a hydraulic model.
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pytest
 
 from hapi import run as run_module
 from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
+from hapi.runs import DistributedRun
 
 
 class _LakeStub:
@@ -38,12 +41,12 @@ def spied_wrapper(monkeypatch) -> dict:
     calls: dict = {}
 
     def _make(name: str):
-        def _spy(*args):
+        def _spy(*args, **kwargs):
             calls[name] = args
 
         return _spy
 
-    for name in ("RRMModel", "RRMWithlake", "FW1Withlake"):
+    for name in ("run_muskingum", "run_muskingum_with_lake", "run_maxbas_with_lake"):
         monkeypatch.setattr(run_module.Wrapper, name, staticmethod(_make(name)))
     return calls
 
@@ -96,14 +99,17 @@ def _load_flat_river_geometry(model: Catchment) -> None:
         model: Model whose `flow_network` supplies the grid shape.
     """
     shape = (model.flow_network.rows, model.flow_network.cols)
-    model.bankfull_depth = np.full(shape, 2.0)
-    model.river_width = np.full(shape, 10.0)
-    model.river_roughness = np.full(shape, 0.03)
-    model.flood_plain_roughness = np.full(shape, 0.06)
+    model.river_geometry = RiverGeometry(
+        dem=np.full(shape, 100.0),
+        bankfull_depth=np.full(shape, 2.0),
+        river_width=np.full(shape, 10.0),
+        river_roughness=np.full(shape, 0.03),
+        flood_plain_roughness=np.full(shape, 0.06),
+    )
 
 
 class TestRunFloodModel:
-    """Tests for `Run.RunFloodModel`."""
+    """Tests for `Run.run_flood`."""
 
     def test_dispatches_once_every_input_lines_up(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -113,15 +119,21 @@ class TestRunFloodModel:
         Test scenario:
             The flood entry point checks the flow-direction grid, the meteo cubes, the
             parameter array and the four river-geometry rasters before dispatching. With all
-            of them on the catchment grid it must call `Wrapper.RRMModel` with the model.
+            of them on the catchment grid it must call `Wrapper.run_muskingum` with the model.
         """
         _load_flat_river_geometry(coello_loaded)
 
-        Run.RunFloodModel(coello_loaded)
+        Run.run_flood(coello_loaded)
 
-        assert "RRMModel" in spied_wrapper, "RRMModel should have been dispatched"
-        assert spied_wrapper["RRMModel"][0] is coello_loaded, (
-            "the wrapper must receive the model itself"
+        assert "run_muskingum" in spied_wrapper, (
+            "run_muskingum should have been dispatched"
+        )
+        run = spied_wrapper["run_muskingum"][0]
+        assert isinstance(run, DistributedRun), (
+            f"the wrapper must receive a validated DistributedRun, got {type(run).__name__}"
+        )
+        assert run.meteo is coello_loaded.meteo, (
+            "the run must carry the model's own inputs, not copies"
         )
 
     def test_rejects_river_geometry_off_the_catchment_grid(
@@ -134,13 +146,15 @@ class TestRunFloodModel:
             flow network. A width raster one row short must raise rather than index past the
             end of the grid inside the hydraulic routing.
         """
-        _load_flat_river_geometry(coello_loaded)
-        coello_loaded.river_width = coello_loaded.river_width[:-1, :]
+        shape = (coello_loaded.flow_network.rows, coello_loaded.flow_network.cols)
+        flat = np.full(shape, 1.0)
 
-        with pytest.raises(ValueError, match="number of rows"):
-            Run.RunFloodModel(coello_loaded)
+        # `RiverGeometry` refuses the set outright: the five must describe one grid, and that
+        # is settled where they are built rather than inside the flood entry point.
+        with pytest.raises(ValueError, match="must share one grid"):
+            RiverGeometry(flat, flat, flat[:-1, :], flat, flat)
 
-        assert "RRMModel" not in spied_wrapper, (
+        assert "run_muskingum" not in spied_wrapper, (
             "the wrapper must not run on inconsistent geometry"
         )
 
@@ -163,15 +177,15 @@ class TestRunFloodModel:
         )
 
         with pytest.raises(ValueError, match="must share the catchment's grid"):
-            Run.RunFloodModel(coello_loaded)
+            Run.run_flood(coello_loaded)
 
-        assert "RRMModel" not in spied_wrapper, (
+        assert "run_muskingum" not in spied_wrapper, (
             "the wrapper must not run on inconsistent meteo inputs"
         )
 
 
 class TestRunHapiWithLake:
-    """Tests for `Run.runHAPIwithLake`."""
+    """Tests for `Run.run_distributed_with_lake`."""
 
     def test_dispatches_once_the_lake_record_matches_the_simulation(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -181,15 +195,18 @@ class TestRunHapiWithLake:
         Test scenario:
             The lake is a lumped inflow whose own meteorological record must run step for
             step with the distributed cubes. A matching record must dispatch to
-            `Wrapper.RRMWithlake` with both the model and the lake.
+            `Wrapper.run_muskingum_with_lake` with both the model and the lake.
         """
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
-        Run.runHAPIwithLake(coello_loaded, lake)
+        Run.run_distributed_with_lake(coello_loaded, lake)
 
-        assert "RRMWithlake" in spied_wrapper, "RRMWithlake should have been dispatched"
-        assert spied_wrapper["RRMWithlake"] == (coello_loaded, lake), (
-            "the wrapper must receive the model and the lake"
+        assert "run_muskingum_with_lake" in spied_wrapper, (
+            "run_muskingum_with_lake should have been dispatched"
+        )
+        run, seen_lake = spied_wrapper["run_muskingum_with_lake"]
+        assert isinstance(run, DistributedRun) and seen_lake is lake, (
+            "the wrapper must receive a validated DistributedRun and the lake"
         )
 
     def test_rejects_a_lake_record_of_the_wrong_length(
@@ -206,9 +223,9 @@ class TestRunHapiWithLake:
         lake = _LakeStub(coello_loaded.meteo.time_steps - 1)
 
         with pytest.raises(ValueError, match="same length"):
-            Run.runHAPIwithLake(coello_loaded, lake)
+            Run.run_distributed_with_lake(coello_loaded, lake)
 
-        assert "RRMWithlake" not in spied_wrapper, (
+        assert "run_muskingum_with_lake" not in spied_wrapper, (
             "the wrapper must not run against a mismatched lake record"
         )
 
@@ -224,29 +241,29 @@ class TestRunHapiWithLake:
         lake = _LakeStub(coello_loaded.meteo.time_steps, columns=2)
 
         with pytest.raises(ValueError, match="three columns"):
-            Run.runHAPIwithLake(coello_loaded, lake)
+            Run.run_distributed_with_lake(coello_loaded, lake)
 
-    def test_rejects_a_flow_direction_grid_of_the_wrong_shape(
-        self, coello_loaded: Catchment, spied_wrapper: dict
+    def test_a_flow_direction_grid_of_the_wrong_shape_cannot_be_installed(
+        self, coello_loaded: Catchment
     ):
-        """Test that the flow-direction grid is checked against the network's own shape.
+        """Test that the two rasters cannot be left describing different grids.
 
         Test scenario:
-            `FlowNetwork` sizes itself from the accumulation raster, so a flow-direction
-            array of a different shape means the two rasters do not describe the same
-            catchment and the routing table would be indexed out of range.
+            `FlowNetwork` sizes itself from the accumulation raster, so a flow-direction array
+            of a different shape means the two do not describe the same catchment and the
+            routing table would be indexed out of range. `__post_init__` checked that at
+            construction but `__setattr__` did not re-check on replacement, so this used to be
+            stageable and the run layer re-checked the shape to catch it. The guard now lives
+            where the mistake is made, which is why that run-layer check could go.
         """
-        coello_loaded.flow_network.flow_dir_arr = (
-            coello_loaded.flow_network.flow_dir_arr[:-1, :]
+        network = coello_loaded.flow_network
+
+        with pytest.raises(ValueError, match="must stay"):
+            network.flow_dir_arr = network.flow_dir_arr[:-1, :]
+
+        assert network.flow_dir_arr.shape == (network.rows, network.cols), (
+            "the refused assignment must leave the network as it was"
         )
-        lake = _LakeStub(coello_loaded.meteo.time_steps)
-
-        with pytest.raises(ValueError, match="rows and columns"):
-            Run.runHAPIwithLake(coello_loaded, lake)
-
-
-class TestRunFW1WithLake:
-    """Tests for `Run.RunFW1withLake`."""
 
     def test_dispatches_once_the_lake_record_matches_the_simulation(
         self, coello_loaded: Catchment, spied_wrapper: dict
@@ -256,15 +273,18 @@ class TestRunFW1WithLake:
         Test scenario:
             The FW1 lake path skips the flow-direction check — triangular routing needs no
             direction grid — but keeps the meteo, parameter and lake checks. A consistent
-            model must reach `Wrapper.FW1Withlake`.
+            model must reach `Wrapper.run_maxbas_with_lake`.
         """
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
-        Run.RunFW1withLake(coello_loaded, lake)
+        Run.run_maxbas_with_lake(coello_loaded, lake)
 
-        assert "FW1Withlake" in spied_wrapper, "FW1Withlake should have been dispatched"
-        assert spied_wrapper["FW1Withlake"] == (coello_loaded, lake), (
-            "the wrapper must receive the model and the lake"
+        assert "run_maxbas_with_lake" in spied_wrapper, (
+            "run_maxbas_with_lake should have been dispatched"
+        )
+        run, seen_lake = spied_wrapper["run_maxbas_with_lake"]
+        assert isinstance(run, DistributedRun) and seen_lake is lake, (
+            "the wrapper must receive a validated DistributedRun and the lake"
         )
 
     def test_rejects_parameters_off_the_catchment_grid(
@@ -276,12 +296,140 @@ class TestRunFW1WithLake:
             The parameter rasters are read independently of the GIS inputs, so they can
             disagree with the grid. A parameter cube one row short must raise.
         """
-        coello_loaded.parameters = coello_loaded.parameters[:-1, :, :]
+        # Trimming a row keeps the parameter *width*, so `ParameterSet` still accepts it --
+        # its rule is the count per cell. Covering the grid is the flow network's business,
+        # which is what `_check_parameters_cover_grid` is for.
+        coello_loaded.parameters = coello_loaded.parameters.with_values(
+            coello_loaded.parameters.values[:-1, :, :]
+        )
         lake = _LakeStub(coello_loaded.meteo.time_steps)
 
         with pytest.raises(ValueError, match="as many rows as the catchment grid"):
-            Run.RunFW1withLake(coello_loaded, lake)
+            Run.run_maxbas_with_lake(coello_loaded, lake)
 
-        assert "FW1Withlake" not in spied_wrapper, (
+        assert "run_maxbas_with_lake" not in spied_wrapper, (
             "the wrapper must not run on mis-shaped parameters"
+        )
+
+
+class TestFloodModelHonoursKinematic:
+    """`run_flood` reads `routing_method` to decide whether Muskingum skips the river cells."""
+
+    @pytest.mark.parametrize(
+        "declared, expected_skip",
+        [("Kinematic", True), ("Muskingum", False)],
+    )
+    def test_the_skip_is_derived_from_the_declared_routing(
+        self, coello_loaded: Catchment, monkeypatch, declared: str, expected_skip: bool
+    ):
+        """Test that the kinematic-wave declaration reaches the routing as a real argument.
+
+        Test scenario:
+            `"Kinematic"` means the wave model routes the river cells, so the Muskingum pass
+            must leave them alone. That used to be a `routing_method != "Muskingum"` compare
+            *inside* the routing loop, which is why it also fired on plain distributed runs.
+            It is now read once, by this entry point, and passed down explicitly.
+
+        Args:
+            declared: The routing method the catchment declares.
+            expected_skip: Whether the wrapper should be told to skip hydraulic cells.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = declared
+        seen: dict = {}
+
+        def _spy(run):
+            seen["skip"] = run.skip_hydraulic_cells
+
+        monkeypatch.setattr(run_module.Wrapper, "run_muskingum", staticmethod(_spy))
+
+        Run.run_flood(coello_loaded)
+
+        assert seen["skip"] is expected_skip, (
+            f"routing_method={declared!r} should give skip_hydraulic_cells="
+            f"{expected_skip}, got {seen['skip']}"
+        )
+
+    def test_an_explicit_argument_overrides_the_declaration(
+        self, coello_loaded: Catchment, monkeypatch
+    ):
+        """Test that a caller can ask for the skip without declaring Kinematic.
+
+        Test scenario:
+            Deriving from `routing_method` keeps the historical spelling working, but the
+            request is a run-time choice, so it stays expressible directly.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = "Muskingum"
+        seen: dict = {}
+
+        def _spy(run):
+            seen["skip"] = run.skip_hydraulic_cells
+
+        monkeypatch.setattr(run_module.Wrapper, "run_muskingum", staticmethod(_spy))
+
+        Run.run_flood(coello_loaded, skip_hydraulic_cells=True)
+
+        assert seen["skip"] is True, (
+            "an explicit argument must win over the declaration"
+        )
+
+    def test_a_derived_kinematic_skip_warns_that_the_river_cells_go_unrouted(
+        self, coello_loaded: Catchment, monkeypatch
+    ):
+        """Test that inferring the skip from `routing_method` says what it costs.
+
+        Test scenario:
+            Skipping the river cells is the handoff the flood model was built around -- a 1D
+            hydraulic model routes them instead -- but that model left this package for
+            Serapis, so nothing here picks them up and their discharge is simply absent.
+            Someone who set `routing_method="Kinematic"` without a downstream model gets a
+            number that is not a hydrograph, so the derived case has to say so.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = "Kinematic"
+        monkeypatch.setattr(
+            run_module.Wrapper, "run_muskingum", staticmethod(lambda *a, **k: None)
+        )
+
+        with pytest.warns(UserWarning, match="unrouted") as record:
+            Run.run_flood(coello_loaded)
+
+        message = str(record[0].message)
+        assert "skip_hydraulic_cells=True" in message, (
+            f"the warning should name the way to silence it, got: {message}"
+        )
+        # The geometry helper marks every cell as a river cell, and the Coello grid has 89
+        # inside the flow-accumulation mask -- so the count must be the domain, not rows x
+        # cols, which is what counting the raster alone reported.
+        inside = int(
+            np.count_nonzero(~np.isnan(coello_loaded.flow_network.flow_acc_arr))
+        )
+        assert f"{inside} river cells of {inside}" in message, (
+            f"the counts must be taken inside the catchment, got: {message}"
+        )
+
+    def test_an_explicit_skip_does_not_warn(
+        self, coello_loaded: Catchment, monkeypatch
+    ):
+        """Test that asking for the skip outright is left quiet.
+
+        Test scenario:
+            `skip_hydraulic_cells=True` is a statement that something downstream takes the
+            river cells. That is the supported workflow, so it must not nag every run; the
+            warning exists for the case nobody chose.
+        """
+        _load_flat_river_geometry(coello_loaded)
+        coello_loaded.routing_method = "Kinematic"
+        monkeypatch.setattr(
+            run_module.Wrapper, "run_muskingum", staticmethod(lambda *a, **k: None)
+        )
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            Run.run_flood(coello_loaded, skip_hydraulic_cells=True)
+
+        unrouted = [w for w in caught if "unrouted" in str(w.message)]
+        assert not unrouted, (
+            f"an explicit skip must not warn, got: {[str(w.message) for w in unrouted]}"
         )

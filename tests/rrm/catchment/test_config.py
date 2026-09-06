@@ -868,7 +868,7 @@ class TestRunConfigCrossFieldRules:
         Test scenario:
             The two describe the same choice from opposite sides. Left at its `muskingum`
             default, a MAXBAS run carried a `routing_method` contradicting what it does --
-            and that attribute is what `distrrm.SpatialRouting` keys off.
+            and that attribute is what `distrrm.route_muskingum` keys off.
         """
         lumped_mapping["parameters"]["maxbas"] = maxbas
         assert "routing_method" not in lumped_mapping["catchment"], (
@@ -1214,7 +1214,7 @@ class TestRoutingMethodNormalisation:
             stored: The canonical spelling expected on the model.
 
         Test scenario:
-            `distrrm.SpatialRouting` compares `routing_method != "Muskingum"` exactly, and its
+            `distrrm.route_muskingum` compares `routing_method != "Muskingum"` exactly, and its
             false branch reads `bankfull_depth`, which is None outside the flood model. A
             lower-case "muskingum" stored verbatim therefore routed every cell down the MAXBAS
             branch and raised `TypeError: 'NoneType' object is not subscriptable`.
@@ -1226,12 +1226,14 @@ class TestRoutingMethodNormalisation:
         )
 
     def test_kinematic_is_accepted_for_the_flood_model(self):
-        """Test that the flood model's routing method is still a legal value.
+        """Test that the kinematic-wave routing method stays a legal value.
 
         Test scenario:
-            `Run.RunFloodModel` relies on the same `!= "Muskingum"` comparison to skip cells
-            with a real `bankfull_depth`, so "Kinematic" is a working value and must not be
-            rejected by the new validation.
+            "Kinematic" names the routing the flood model applies to river cells. It is read
+            by `Run.run_flood`, which uses it to decide whether the Muskingum pass leaves
+            those cells to the hydraulic model -- so it carries meaning and must be accepted.
+            What changed is only where it is read: no longer inside the routing loop, where
+            it ran for every distributed model.
         """
         model = Catchment(
             "coello", "2009-01-01", "2009-01-10", routing_method="Kinematic"
@@ -1286,20 +1288,6 @@ class TestRoutingMethodNormalisation:
             f"the error should name what it got: {exc.value}"
         )
 
-    def test_calibration_accepts_the_same_three_arguments(self):
-        """Test that the guard reaches `Calibration`, which passes the arguments down.
-
-        Test scenario:
-            `Calibration.__init__` forwards all three to `Catchment.__init__` unchanged, and
-            its annotations used to advertise a `None` that crashed.
-        """
-        with pytest.raises(TypeError, match="routing_method must be a string"):
-            Calibration("Coello", "2009-01-01", "2009-01-10", routing_method=None)
-
-
-class TestCatchmentFromYaml:
-    """Tests for `Catchment.from_yaml`, which turns a configuration into a built model."""
-
     def test_a_distributed_configuration_populates_every_input(
         self, distributed_mapping, tmp_path, coello_cat_area, coello_initial_cond
     ):
@@ -1322,13 +1310,15 @@ class TestCatchmentFromYaml:
         assert model.spatial_resolution == "distributed"
         assert model.meteo is not None, "meteo was not assigned"
         assert model.flow_network is not None, "flow_network was not assigned"
-        assert model.parameters is not None, "parameters were not read"
-        assert model.lumped_model is not None, "the conceptual model was not read"
+        assert model.parameters.values is not None, "parameters were not read"
+        assert model.model_setup.model is not None, "the conceptual model was not read"
         assert model.GaugesTable is not None, "the gauge table was not read"
         assert model.QGauges is not None, "the discharge was not read"
-        assert model.area == coello_cat_area, f"area not set: {model.area}"
-        assert model.initial_cond == coello_initial_cond, (
-            f"initial condition not set: {model.initial_cond}"
+        assert model.model_setup.area == coello_cat_area, (
+            f"area not set: {model.model_setup.area}"
+        )
+        assert model.model_setup.initial_cond == coello_initial_cond, (
+            f"initial condition not set: {model.model_setup.initial_cond}"
         )
 
     def test_the_drivers_cover_the_model_period(self, distributed_mapping, tmp_path):
@@ -1345,12 +1335,12 @@ class TestCatchmentFromYaml:
         """
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"drivers hold {model.meteo.time_steps} steps, model spans "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
-        assert model.meteo.time[0] == model.date_index[0], (
-            f"drivers start at {model.meteo.time[0]}, model at {model.date_index[0]}"
+        assert model.meteo.time[0] == model.period.date_index[0], (
+            f"drivers start at {model.meteo.time[0]}, model at {model.period.date_index[0]}"
         )
 
     def test_an_explicit_meteo_window_overrides_the_catchment_dates(
@@ -1393,7 +1383,7 @@ class TestCatchmentFromYaml:
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
         assert model.parameters is None, (
-            f"parameters should be unread, got {type(model.parameters)}"
+            f"parameters should be unread, got {type(model.parameters.values)}"
         )
         assert model.meteo is not None, "the rest of the build should still have run"
 
@@ -1425,7 +1415,7 @@ class TestCatchmentFromYaml:
             tmp_path: pytest temporary directory.
 
         Test scenario:
-            `distrrm.SpatialRouting` tests `routing_method != "Muskingum"` case-sensitively,
+            `distrrm.route_muskingum` tests `routing_method != "Muskingum"` case-sensitively,
             and `Catchment.__init__` stores whatever it is given verbatim. A lower-case
             spelling would send every cell down the MAXBAS branch and read `bankfull_depth`,
             which is None outside the flood model.
@@ -1488,7 +1478,7 @@ class TestCatchmentFromYaml:
         with pytest.raises(ValueError, match="not.*registered"):
             Catchment.from_yaml(path)
 
-    @pytest.mark.parametrize("cls", [Catchment, Calibration])
+    @pytest.mark.parametrize("cls", [Catchment])
     def test_the_builder_returns_the_class_it_was_called_on(
         self, distributed_mapping, tmp_path, cls
     ):
@@ -1510,26 +1500,19 @@ class TestCatchmentFromYaml:
             f"expected a {cls.__name__}, got {type(model).__name__}"
         )
 
-    def test_run_cannot_be_built_because_it_takes_no_constructor_arguments(
-        self, distributed_mapping, tmp_path
-    ):
-        """Test that `Run.from_yaml` fails loudly rather than building something unusable.
-
-        Args:
-            distributed_mapping: A complete distributed configuration.
-            tmp_path: pytest temporary directory.
+    def test_run_has_no_constructor_and_nothing_to_build_from_a_configuration(self):
+        """Test that `Run` is a namespace of entry points, not something a config builds.
 
         Test scenario:
-            `Run` inherits the classmethod but overrides `__init__` to take only `self`, and
-            its entry points are called unbound on a catchment (`Run.RunHapi(model)`). The
-            override refuses the call with a message naming that pattern, rather than letting
-            constructor arity produce a `TypeError` about an unexpected keyword argument --
-            an error that says nothing about what to do instead.
+            `Run` used to inherit `Catchment.from_yaml` through the subclassing, so the call
+            resolved and had to be overridden to refuse. It no longer inherits anything, so
+            the name is simply absent -- which is the honest answer for a class that holds
+            no state and models nothing.
         """
-        path = write_yaml(distributed_mapping, tmp_path)
-
-        with pytest.raises(TypeError, match="Catchment.from_yaml"):
-            Run.from_yaml(path)
+        assert not hasattr(Run, "from_yaml"), (
+            "Run must not offer from_yaml; a configuration builds a Catchment, which is "
+            "then passed to an entry point"
+        )
 
     def test_a_lumped_configuration_reads_the_averaged_driver_csv(
         self, lumped_mapping, tmp_path
@@ -1551,7 +1534,9 @@ class TestCatchmentFromYaml:
         assert model.data is not None, "the averaged drivers were not read"
         assert model.meteo is None, "a lumped run should build no driver grid"
         assert model.flow_network is None, "a lumped run should build no flow network"
-        assert model.parameters is not None, "the lumped parameter file was not read"
+        assert model.parameters.values is not None, (
+            "the lumped parameter file was not read"
+        )
 
     def test_a_lumped_run_reads_discharge_without_a_gauge_table(
         self, lumped_mapping, tmp_path
@@ -1593,13 +1578,13 @@ class TestCatchmentFromYaml:
 
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"drivers hold {model.meteo.time_steps} steps, model spans "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
-        assert model.meteo.time[0] == model.date_index[0], (
+        assert model.meteo.time[0] == model.period.date_index[0], (
             f"window start {model.meteo.time[0]} does not match the model's "
-            f"{model.date_index[0]}"
+            f"{model.period.date_index[0]}"
         )
 
     def test_a_stated_meteo_window_uses_the_meteo_format(
@@ -2008,10 +1993,10 @@ class TestCatchmentFromYaml:
         other.mkdir()
         unquoted = Catchment.from_yaml(write_yaml(unquoted_mapping, other))
 
-        assert unquoted.start == quoted.start, (
-            f"expected {quoted.start}, got {unquoted.start}"
+        assert unquoted.period.start == quoted.period.start, (
+            f"expected {quoted.period.start}, got {unquoted.period.start}"
         )
-        assert len(unquoted.date_index) == len(quoted.date_index), (
+        assert len(unquoted.period.date_index) == len(quoted.period.date_index), (
             "both spellings should span the same period"
         )
 
@@ -2048,9 +2033,9 @@ class TestCatchmentFromYaml:
 
         model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert model.meteo.time_steps == len(model.date_index), (
+        assert model.meteo.time_steps == len(model.period.date_index), (
             f"the drivers must span the model period: {model.meteo.time_steps} against "
-            f"{len(model.date_index)}"
+            f"{len(model.period.date_index)}"
         )
 
     def test_a_missing_driver_folder_is_reported_before_anything_is_read(
