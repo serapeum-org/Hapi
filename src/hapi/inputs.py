@@ -527,8 +527,8 @@ class FlowNetwork:
         return values
 
     @cached_property
-    def cells_by_acc_val(self) -> dict[float, list[tuple[int, int]]]:
-        """dict: In-domain cell indices grouped by their accumulation value, row-major.
+    def cells_by_acc_val(self) -> dict[int, list[tuple[int, int]]]:
+        """dict: In-domain cell indices grouped by their accumulation code, row-major.
 
         The routing has to visit cells upstream-first, and accumulation gives that order. Asking
         "which cells are at level j" used to be answered by walking the whole grid and testing
@@ -540,32 +540,52 @@ class FlowNetwork:
         Building the answer once makes the same pass O(no_elem). Cached for the same reason
         :attr:`acc_val` is, and dropped with it when `flow_acc_arr` is replaced.
 
-        Keys are the raw accumulation values, not truncated ones, so a lookup by an
-        :attr:`acc_val` entry matches exactly the cells the old `==` test matched -- including
-        the case it missed. A fractional accumulation raster (1.2, say) yields the code `1` in
-        `acc_val` and so selects nothing, here as before; that is a separate question from this
-        one, and both shipped datasets are integral.
+        Keys are **truncated** to integers, the same codes :attr:`acc_val` holds, so every
+        in-domain cell is reachable through one of them. That matters for a fractional raster:
+        the grid scan this replaced compared the raw value against a truncated code, so `1.2`
+        never matched the code `1` and the cell was never routed at all -- and because the
+        routing sums `quz_routed` from upstream neighbours, that cell's whole contribution
+        vanished from every cell below it, silently. Truncating both sides is what
+        :attr:`acc_val` has always documented ("1.2 and 1.8 are one code"); only the comparison
+        had drifted.
 
         Order within a level is row-major, matching the `x`-outer/`y`-inner scan it replaces, so
         the routing visits cells in exactly the order it did.
 
         Examples:
-            >>> import numpy as np
-            >>> from hapi.inputs import FlowNetwork
-            >>> acc = np.array([[0.0, 1.0], [1.0, np.nan]])
-            >>> network = FlowNetwork(
-            ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
-            ... )
-            >>> network.cells_by_acc_val[0.0]
-            [(0, 0)]
-            >>> network.cells_by_acc_val[1.0]
-            [(0, 1), (1, 0)]
+            - Integral accumulation, which is what a cell-count raster holds:
+
+              >>> import numpy as np
+              >>> from hapi.inputs import FlowNetwork
+              >>> acc = np.array([[0.0, 1.0], [1.0, np.nan]])
+              >>> network = FlowNetwork(
+              ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+              ... )
+              >>> network.cells_by_acc_val[0]
+              [(0, 0)]
+              >>> network.cells_by_acc_val[1]
+              [(0, 1), (1, 0)]
+
+            - Fractional values share the code they truncate to, so they route together
+              rather than being dropped:
+
+              >>> import numpy as np
+              >>> from hapi.inputs import FlowNetwork
+              >>> acc = np.array([[1.2, 1.8], [3.0, np.nan]])
+              >>> network = FlowNetwork(
+              ...     acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+              ... )
+              >>> network.acc_val
+              [1, 3]
+              >>> network.cells_by_acc_val[1]
+              [(0, 0), (0, 1)]
 
         """
-        grouped: dict[float, list[tuple[int, int]]] = {}
+        grouped: dict[int, list[tuple[int, int]]] = {}
         rows, cols = np.nonzero(~np.isnan(self.flow_acc_arr))
         for x, y in zip(rows, cols):
-            key = float(self.flow_acc_arr[x, y])
+            # Truncated, matching `acc_val`: see the note above on the comparison that drifted.
+            key = int(self.flow_acc_arr[x, y])
             grouped.setdefault(key, []).append((int(x), int(y)))
         return grouped
 

@@ -421,6 +421,48 @@ class TestCellsByAccVal:
             "ratio has collapsed the index is no longer doing its job"
         )
 
+    def test_a_fractional_raster_still_reaches_every_cell(self):
+        """Test that fractional accumulation values are routed, not silently dropped.
+
+        Test scenario:
+            `acc_val` truncates, so a raster holding 1.2 yields the code 1. The grid scan this
+            index replaced compared the *raw* value against that code, so `1.2 == 1` was False
+            and the cell was never routed -- and since the routing sums `quz_routed` from
+            upstream neighbours, its entire contribution vanished from every cell downstream,
+            with nothing raised. Keying on the same truncated code is what `acc_val` has always
+            documented; only the comparison had drifted away from it.
+        """
+        acc = np.array([[0.0, 1.2], [2.5, 3.0]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        selected = sum(
+            len(network.cells_by_acc_val.get(level, ())) for level in network.acc_val
+        )
+
+        assert selected == network.no_elem, (
+            f"every domain cell must be reachable through an acc_val code; {selected} of "
+            f"{network.no_elem} were, so the rest would never be routed"
+        )
+
+    def test_values_sharing_a_code_are_grouped(self):
+        """Test that 1.2 and 1.8 land in one bucket, as `acc_val` documents.
+
+        Test scenario:
+            `acc_val` collapses them to the single code 1, so the routing treats them as one
+            level. The bucket has to agree, or the level would select only some of its cells.
+        """
+        acc = np.array([[1.2, 1.8], [3.0, np.nan]])
+        network = FlowNetwork(
+            acc, no_data_value=-9999.0, cell_size=4000.0, px_area=16.0
+        )
+
+        assert network.acc_val == [1, 3], "the two fractional values are one code"
+        assert network.cells_by_acc_val[1] == [(0, 0), (0, 1)], (
+            "both cells at that code must be in its bucket"
+        )
+
     def test_replacing_the_accumulation_array_drops_the_index(self):
         """Test that the cache is invalidated with `acc_val`, not left describing the old grid.
 
