@@ -12,11 +12,12 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
+from loguru import logger
 from Oasis.harmonysearch import HSapi
 from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
-from hapi.conceptual import ParameterSet
+from hapi.conceptual import ParameterBounds, ParameterSet
 from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
@@ -52,70 +53,98 @@ def _check_optimization_args(api_obj_args: Any, api_solve_args: Any) -> None:
         )
 
 
-class Calibration(Catchment):
-    """Calibration class for distributed hydrological model parameter optimization.
+class Calibration:
+    """Calibrates a catchment's parameters against observed discharge.
 
-    The Calibration class connects the parameter spatial distribution function
-    with both components of the spatial representation of the hydrological
-    process (conceptual model and spatial routing) to calculate the
-    performance of predicted runoff at known locations based on a given
-    performance function.
+    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it
+    inherited a forty-attribute builder to use a dozen fields of, and inherited
+    `plot_hydrograph` -- which reads `Qsim.loc[...]` and so could never work against the bare
+    array this class's own `extract_discharge` produces. Composition removes that class of
+    problem: nothing is inherited, so nothing can be inherited broken.
 
-    The Calibration class is a subclass of the Catchment superclass, so you
-    need to create the Catchment object first to be able to run the
-    calibration.
+    The search space lives here too. `ParameterBounds` is read by nothing else, and it carries
+    the `(snow, maxbas)` pair every trial vector is checked against, so it belongs beside the
+    optimiser rather than on the model.
 
-    Note:
-        Results live on `self.results` (a :class:`~hapi.results.SimulationResults`), so the
-        objective functions read `self.results.q_total` rather than an attribute on the
-        catchment. Unlike `Run`, this class is still a `Catchment` subclass; converting it
-        to composition is tracked separately.
+    Attributes:
+        model: The catchment being calibrated. Build it first, then hand it over.
+        bounds: The search space, once `read_parameters_bound` has run.
+        objective_function: The metric being optimised.
+        OFArgs: Extra arguments forwarded to it.
+        OFvalue: The best objective value the optimiser found.
+        best_parameters: The optimiser's answer -- the flat vector it searched over. Not a
+            runnable parameter set: for a distributed calibration the winning vector still has
+            to go through the spatial-distribution function to become the `(rows, cols, n)`
+            array a run reads. The runnable set is `model.parameters`.
+        Qsim: The simulated hydrograph at the gauge cells, as `extract_discharge` builds it --
+            a bare array sized `(time_steps, n_gauges)`, which is what the objective function
+            consumes.
+
+    Examples:
+        ```python
+        >>> from hapi.calibration import Calibration      # doctest: +SKIP
+        >>> from hapi.catchment import Catchment          # doctest: +SKIP
+        >>> model = Catchment.from_yaml("coello.yaml")    # doctest: +SKIP
+        >>> calibration = Calibration(model)              # doctest: +SKIP
+        >>> calibration.read_parameters_bound(upper, lower)   # doctest: +SKIP
+        >>> calibration.read_objective_function(rmse, [])     # doctest: +SKIP
+        ```
     """
 
-    def __init__(
-        self,
-        name: Any,
-        start: str,
-        end: str,
-        fmt: str = "%Y-%m-%d",
-        spatial_resolution: str = "Lumped",
-        temporal_resolution: str = "Daily",
-        routing_method: str = "Muskingum",
-    ):
-        """Initialize the Calibration object.
+    def __init__(self, model: Catchment):
+        """Wrap the catchment to be calibrated.
 
         Args:
-            name (Any): Name of the Catchment.
-            start (str): Starting date as a string.
-            end (str): End date as a string.
-            fmt (str, optional): Format of the given date.
-                Default is "%Y-%m-%d".
-            spatial_resolution (str, optional): Spatial resolution mode,
-                either "Lumped" or "Distributed". Default is "Lumped".
-            temporal_resolution (str, optional): Temporal resolution mode,
-                either "Hourly" or "Daily". Default is "Daily".
-            routing_method (str, optional): Routing method name.
-                Default is "Muskingum".
+            model: The catchment to calibrate, with its inputs read. Its `parameters` are
+                replaced once per trial vector, so it comes back carrying the last set tried.
+
+        Raises:
+            TypeError: `model` is not a `Catchment`.
         """
-        super().__init__(
-            name,
-            start,
-            end,
-            fmt,
-            spatial_resolution,
-            temporal_resolution,
-            routing_method,
-        )
+        if not isinstance(model, Catchment):
+            raise TypeError(
+                f"Calibration takes the Catchment it calibrates, got "
+                f"{type(model).__name__}; build the model first, then wrap it"
+            )
+        self.model = model
+        self.bounds: ParameterBounds | None = None
         self.objective_function: Callable[..., Any] | None = None
         self.OFArgs: list | None = None
         self.OFvalue: float | None = None
-        #: The optimiser's answer -- the flat vector it searched over, as returned in
-        #: `res[1]`. Deliberately *not* the model's runnable parameter set: for a distributed
-        #: calibration the winning vector still has to go through the spatial-distribution
-        #: function to become the `(rows, cols, n)` array a run reads, so the two are
-        #: different shapes describing different things. The runnable set lives on
-        #: `self.parameters.values`.
         self.best_parameters: np.ndarray | list | None = None
+        self.Qsim: np.ndarray | None = None
+
+    def read_parameters_bound(
+        self,
+        upper_bound: list | np.ndarray,
+        lower_bound: list | np.ndarray,
+        snow: bool = False,
+        maxbas: bool = False,
+    ) -> None:
+        """Read the search space the optimiser explores.
+
+        Moved here from `Catchment`: nothing but a calibration reads it, and it carries the
+        `(snow, maxbas)` pair that fixes how wide every trial vector must be -- which is the
+        rule `_parameter_set` checks each one against.
+
+        Args:
+            upper_bound: Upper bound per parameter.
+            lower_bound: Lower bound per parameter.
+            snow: Whether the snow routine runs.
+            maxbas: Whether the vector carries a MAXBAS value instead of Muskingum's two.
+
+        Raises:
+            ValueError: The bounds are different lengths, or `snow` is not a bool.
+        """
+        if not isinstance(snow, bool):
+            raise ValueError(
+                "snow input defines whether to consider snow subroutine or not it has to "
+                "be True or False"
+            )
+        self.bounds = ParameterBounds(
+            lower_bound, upper_bound, snow=snow, maxbas=maxbas
+        )
+        logger.debug("Parameters' bounds are read successfully")
 
     def _declare_the_parameter_variables(
         self, opt_prob: Optimization, initial_values: list | None = None
@@ -169,8 +198,8 @@ class Calibration(Catchment):
         Raises:
             ValueError: The trial set is not the width the configuration requires.
         """
-        if self.parameters is not None:
-            return self.parameters.with_values(values)
+        if self.model.parameters is not None:
+            return self.model.parameters.with_values(values)
         bounds = self.bounds
         snow = bounds.snow if bounds is not None else False
         maxbas = bounds.maxbas if bounds is not None else False
@@ -216,7 +245,7 @@ class Calibration(Catchment):
         """Extract the simulated discharge hydrograph at gauge locations.
 
         Extracts discharge values from the total routed discharge array
-        (`self.results.q_total`) at each gauge location and stores them in
+        (`self.model.results.q_total`) at each gauge location and stores them in
         `self.Qsim`. Optionally applies a multiplication factor per
         gauge.
 
@@ -233,7 +262,7 @@ class Calibration(Catchment):
             ValueError: The results came from MAXBAS routing, whose per-cell values are
                 contributions rather than discharges.
         """
-        if not self.results.outlet_shortcut_valid:
+        if not self.model.results.outlet_shortcut_valid:
             raise ValueError(
                 "this catchment was run with triangular (MAXBAS) routing, which sends "
                 "every cell straight to the outlet: a single cell of q_total is that cell's "
@@ -242,19 +271,23 @@ class Calibration(Catchment):
                 "calibrated against the wrong signal."
             )
 
-        self.Qsim = np.zeros((self.meteo.time_steps, len(self.GaugesTable)))
+        self.Qsim = np.zeros((self.model.meteo.time_steps, len(self.model.GaugesTable)))
         # error = 0
-        for i in range(len(self.GaugesTable)):
-            Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
-            Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
-            # gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
+        for i in range(len(self.model.GaugesTable)):
+            Xind = int(
+                self.model.GaugesTable.loc[self.model.GaugesTable.index[i], "cell_row"]
+            )
+            Yind = int(
+                self.model.GaugesTable.loc[self.model.GaugesTable.index[i], "cell_col"]
+            )
+            # gaugeid = self.model.GaugesTable.loc[self.model.GaugesTable.index[i],"id"]
 
-            # Quz = self.results.quz_routed[Xind,Yind,:-1]
-            # Qlz = self.results.qlz_translated[Xind,Yind,:-1]
+            # Quz = self.model.results.quz_routed[Xind,Yind,:-1]
+            # Qlz = self.model.results.qlz_translated[Xind,Yind,:-1]
             # self.Qsim[:,i] = Quz + Qlz
 
             Qsim = np.reshape(
-                self.results.q_total[Xind, Yind, :-1], self.meteo.time_steps
+                self.model.results.q_total[Xind, Yind, :-1], self.model.meteo.time_steps
             )
 
             if factor is not None:
@@ -320,14 +353,19 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows, fd_cols] = self.flow_network.flow_dir_arr.shape
-        if fd_rows != self.flow_network.rows or fd_cols != self.flow_network.cols:
+        [fd_rows, fd_cols] = self.model.flow_network.flow_dir_arr.shape
+        if (
+            fd_rows != self.model.flow_network.rows
+            or fd_cols != self.model.flow_network.cols
+        ):
             raise ValueError(ROWS_MISMATCH_ERROR)
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.period.date_index
+        self.model.meteo.validate_against(
+            self.model.flow_network.rows,
+            self.model.flow_network.cols,
+            self.model.period.date_index,
         )
 
         # basic inputs
@@ -348,31 +386,28 @@ class Calibration(Catchment):
 
         ### calculate the objective function
         def opt_fun(par):
+            # Distributing the parameters and narrowing the model both happen *outside* the
+            # try. They are checks on the setup, not on this candidate: a wrong-width vector or
+            # a grid mismatch is a bug to surface, and scoring it `nan` would let the optimiser
+            # search on over a model that never ran -- which is what the bare `except` did.
+            spatial_var_fun.Function(par)
+            self.model.parameters = self._parameter_set(spatial_var_fun.Par3d)
+            run = DistributedRun.from_model(self.model)
+
             try:
-                # distribute the parameters
-                spatial_var_fun.Function(
-                    par
-                )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
-                # Re-checked per trial: `with_parameters` re-runs the (snow, maxbas) count
-                # rule, so a distribution function producing the wrong width fails here
-                # rather than as an index error inside the per-cell loop.
-                self.parameters = self._parameter_set(spatial_var_fun.Par3d)
-                # Narrowing is the validation: every trial vector is checked against the grid
-                # and the period here, on the one path that used to skip every check `Run`
-                # made by going straight to the wrapper.
-                self.results = Wrapper.run_muskingum(DistributedRun.from_model(self))
+                self.model.results = Wrapper.run_muskingum(run)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
-                        self.QGauges, *[self.GaugesTable]
-                    )  # self.results.qout, self.results.quz_routed, self.results.qlz_translated,
+                        self.model.QGauges, *[self.model.GaugesTable]
+                    )  # self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,
                     f = list(range(9, len(par), spatial_var_fun.no_parameters))
                     g = list()
                     for i in range(len(f)):
                         k = par[f[i]]
                         x = par[f[i] + 1]
-                        g.append(2 * k * x / self.period.dt)
-                        g.append((2 * k * (1 - x)) / self.period.dt)
+                        g.append(2 * k * x / self.model.period.dt)
+                        g.append((2 * k * (1 - x)) / self.model.period.dt)
 
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
@@ -384,7 +419,11 @@ class Calibration(Catchment):
                     print(par)
 
                 fail = 0
-            except:
+            except Exception as exc:
+                # A genuine numerical failure for this candidate. Narrowed from a bare
+                # `except`, which also caught KeyboardInterrupt -- so a long calibration
+                # could not be stopped -- and reported every defect as a bad parameter set.
+                logger.warning(f"trial failed, scoring it infeasible: {exc!r}")
                 error = np.nan
                 g = []
                 fail = 1
@@ -477,8 +516,10 @@ class Calibration(Catchment):
 
         # The three cubes already agree with each other (checked when MeteoInputs was
         # built); this is the other half -- that they cover the model's grid.
-        self.meteo.validate_against(
-            self.flow_network.rows, self.flow_network.cols, self.period.date_index
+        self.model.meteo.validate_against(
+            self.model.flow_network.rows,
+            self.model.flow_network.cols,
+            self.model.period.date_index,
         )
 
         # basic inputs
@@ -499,21 +540,20 @@ class Calibration(Catchment):
 
         # calculate the objective function
         def opt_fun(par):
+            # See run_calibration: the setup checks belong outside the try, so a wrong-width
+            # vector or a grid mismatch surfaces instead of being scored `nan`.
+            spatial_var_fun.Function(par)
+            self.model.parameters = self._parameter_set(spatial_var_fun.Par3d)
+            run = DistributedRun.from_model(self.model, needs_flow_direction=False)
+
             try:
-                # distribute the parameters
-                spatial_var_fun.Function(
-                    par
-                )  # , kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb, Maskingum=spatial_var_fun.Maskingum
-                # Re-checked per trial -- see run_calibration.
-                self.parameters = self._parameter_set(spatial_var_fun.Par3d)
-                # See run_calibration: narrowing validates each trial vector.
-                self.results = Wrapper.run_maxbas(
-                    DistributedRun.from_model(self, needs_flow_direction=False)
-                )
+                self.model.results = Wrapper.run_maxbas(run)
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
-                        self.QGauges, self.results.qout, *[self.GaugesTable]
+                        self.model.QGauges,
+                        self.model.results.qout,
+                        *[self.model.GaugesTable],
                     )
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
@@ -525,7 +565,9 @@ class Calibration(Catchment):
                     print(par)
 
                 fail = 0
-            except:
+            except Exception as exc:
+                # See run_calibration: narrowed from a bare `except`.
+                logger.warning(f"trial failed, scoring it infeasible: {exc!r}")
                 error = np.nan
                 fail = 1
 
@@ -639,22 +681,23 @@ class Calibration(Catchment):
 
         ### calculate the objective function
         def opt_fun(par):
+            # See run_calibration: the setup checks belong outside the try.
+            self.model.parameters = self._parameter_set(par)
+            run = LumpedRun.from_model(self.model)
+
             try:
-                # parameters. Checked against (snow, maxbas) as it arrives.
-                self.parameters = self._parameter_set(par)
-                # See run_calibration: narrowing validates each trial vector.
-                self.results = Wrapper.run_lumped(
-                    LumpedRun.from_model(self), route, routing_fn
-                )
-                self.Qsim = self.results.q_total
+                self.model.results = Wrapper.run_lumped(run, route, routing_fn)
+                self.Qsim = self.model.results.q_total
                 # calculate performance of the model
                 try:
                     error = self.objective_function(
-                        self.QGauges[self.QGauges.columns[-1]], self.Qsim, *self.OFArgs
+                        self.model.QGauges[self.model.QGauges.columns[-1]],
+                        self.Qsim,
+                        *self.OFArgs,
                     )
                     g = [
-                        2 * par[-2] * par[-1] / self.period.dt,
-                        (2 * par[-2] * (1 - par[-1])) / self.period.dt,
+                        2 * par[-2] * par[-1] / self.model.period.dt,
+                        (2 * par[-2] * (1 - par[-1])) / self.model.period.dt,
                     ]
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
@@ -666,7 +709,11 @@ class Calibration(Catchment):
                     )
                     # print(par)
                 fail = 0
-            except:
+            except Exception as exc:
+                # A genuine numerical failure for this candidate. Narrowed from a bare
+                # `except`, which also caught KeyboardInterrupt -- so a long calibration
+                # could not be stopped -- and reported every defect as a bad parameter set.
+                logger.warning(f"trial failed, scoring it infeasible: {exc!r}")
                 error = np.nan
                 g = []
                 fail = 1

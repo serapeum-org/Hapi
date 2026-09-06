@@ -15,6 +15,7 @@ import statista.descriptors as PC
 from deap import algorithms, base, creator, tools
 
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -29,8 +30,8 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
-Coello = Calibration(name, start, end)
-Coello.read_lumped_inputs(MeteoDataPath)
+Coello = Calibration(Catchment(name, start, end))
+Coello.model.read_lumped_inputs(MeteoDataPath)
 # %% Basic_inputs
 # catchment area
 AreaCoeff = 1530
@@ -39,7 +40,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = False
-Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
+Coello.model.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
 
@@ -61,7 +62,7 @@ Route = 1
 RoutingFn = Routing.triangular_routing_1
 
 # outlet discharge
-Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.model.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Calibration
 creator.create("FitnessMin", base.Fitness, weights=(1.0,))
 creator.create("IndividualContainer", list, fitness=creator.FitnessMin)
@@ -91,11 +92,11 @@ Coello.OFArgs = []
 
 
 def objfn(individual):
-    # Coello.read_parameters(Parameterpath, Snow)
-    Coello.parameters = individual
+    # Coello.model.read_parameters(Parameterpath, Snow)
+    Coello.model.parameters = individual
     Run.run_lumped(Coello, Route, RoutingFn)
-    # [Coello.QGauges.columns[-1]]
-    error = PC.NSEHF(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
+    # [Coello.model.QGauges.columns[-1]]
+    error = PC.NSEHF(Coello.model.QGauges, Coello.Qsim, *Coello.OFArgs)
     return (error,)
 
 
@@ -144,7 +145,7 @@ best_ind = tools.selBest(pop, 1)[0]
 print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
 # %% Run the Model
 
-Coello.parameters = best_ind
+Coello.model.parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
@@ -154,7 +155,7 @@ Run.run_lumped(Coello, Route, RoutingFn)
 
 metrics = dict()
 
-Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
+Qobs = Coello.model.QGauges[Coello.model.QGauges.columns[0]]
 
 metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
 metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
@@ -173,7 +174,7 @@ print("WB= " + str(round(metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
+Coello.model.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 
 # %% Save the Parameters
 
@@ -192,4 +193,4 @@ EndDate = "2010-04-20"
 Path = (
     Path + f"{Coello.name}-results-lumped-model" + str(dt.datetime.now())[0:10] + ".txt"
 )
-Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)
+Coello.model.save_results(result=5, start=StartDate, end=EndDate, path=Path)

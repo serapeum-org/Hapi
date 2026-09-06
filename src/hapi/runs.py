@@ -56,7 +56,9 @@ def _require(model: CatchmentLike, name: str, hint: str) -> Any:
     """
     value = getattr(model, name, None)
     if value is None:
-        raise ValueError(f"this run needs {name}, which is not set on the model; {hint}")
+        raise ValueError(
+            f"this run needs {name}, which is not set on the model; {hint}"
+        )
     return value
 
 
@@ -108,7 +110,9 @@ class DistributedRun:
         if shape[1] != cols:
             raise ValueError(COLS_MISMATCH_ERROR)
 
-        if self.river_geometry is not None and not self.river_geometry.covers(rows, cols):
+        if self.river_geometry is not None and not self.river_geometry.covers(
+            rows, cols
+        ):
             raise ValueError(GRID_MISMATCH_ERROR)
 
         if self.skip_hydraulic_cells and self.river_geometry is None:
@@ -191,7 +195,10 @@ class DistributedRun:
             # `FlowNetwork.__post_init__` already checks this at construction, but
             # `__setattr__` does not re-check on replacement (unlike `MeteoInputs`), so a
             # raster swapped in afterwards can still disagree with the grid.
-            if flow_network.flow_dir_arr.shape != (flow_network.rows, flow_network.cols):
+            if flow_network.flow_dir_arr.shape != (
+                flow_network.rows,
+                flow_network.cols,
+            ):
                 raise ValueError(GRID_MISMATCH_ERROR)
             if flow_network.FDT is None:
                 raise ValueError(
@@ -201,7 +208,9 @@ class DistributedRun:
 
         geometry = None
         if with_river_geometry or skip_hydraulic_cells:
-            geometry = _require(model, "river_geometry", "call read_river_geometry first")
+            geometry = _require(
+                model, "river_geometry", "call read_river_geometry first"
+            )
 
         return cls(
             period=model.period,

@@ -189,10 +189,15 @@ module = [
     "hapi.catchment",
     "hapi.calibration",
 ]
-# These two are builders: attributes are typed X | None and populated by successive
-# read_*() calls, which mypy cannot verify. The run layer no longer needs the excuse --
-# `hapi.runs` narrows a builder into a validated, non-optional run, so `run`, `wrapper`
-# and `distrrm` type-check clean. What is left here is the builder side itself.
+# The builder side. `Catchment` is assembled by successive read_*() calls, so its inputs
+# are X | None until the matching one has run -- which mypy cannot verify and which is
+# honest rather than a defect. `Calibration` reads those same optional attributes off the
+# model it holds, and its `SpatialVarFun` argument is typed `Callable` though the code uses
+# `.Function` / `.Par3d` / `.no_parameters` on it; a Protocol for that would close most of
+# the remaining 44.
+#
+# The run layer no longer needs the excuse: `hapi.runs` narrows a builder into a validated,
+# non-optional run, so `run`, `wrapper` and `distrrm` all type-check clean.
 disable_error_code = [
     "union-attr",
     "attr-defined",

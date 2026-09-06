@@ -78,8 +78,12 @@ class TestNarrowingIsTheValidation:
         run = DistributedRun.from_model(built)
 
         for field in ("period", "meteo", "flow_network", "parameters", "model_setup"):
-            assert getattr(run, field) is not None, f"{field} must be settled on the run"
-        assert run.meteo is built.meteo, "the run carries the model's own inputs, not copies"
+            assert getattr(run, field) is not None, (
+                f"{field} must be settled on the run"
+            )
+        assert run.meteo is built.meteo, (
+            "the run carries the model's own inputs, not copies"
+        )
 
     @pytest.mark.parametrize(
         "missing, expected",

@@ -227,29 +227,6 @@ class TestDistributed:
         assert coello.model_setup.area == coello_cat_area
         assert coello.model_setup.initial_cond == coello_initial_cond
 
-    def test_read_parameters_bound(
-        self,
-        coello_start_date: str,
-        coello_end_date: str,
-        coello_parameter_bounds: Tuple[List, List],
-    ):
-        LB = coello_parameter_bounds[0]
-        UB = coello_parameter_bounds[1]
-        Snow = False
-        coello = Catchment(
-            "coello",
-            coello_start_date,
-            coello_end_date,
-            spatial_resolution="Distributed",
-            temporal_resolution="Daily",
-            fmt="%Y-%m-%d",
-        )
-        coello.read_parameters_bound(UB, LB, Snow)
-        assert all(coello.bounds.lower == LB)
-        assert all(coello.bounds.upper == UB)
-        assert coello.bounds.snow == Snow
-        assert coello.bounds.maxbas is False
-
     def test_read_gauge_table(
         self,
         coello_start_date: str,

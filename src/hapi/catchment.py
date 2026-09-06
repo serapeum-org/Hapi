@@ -35,7 +35,7 @@ from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
-from hapi.conceptual import ConceptualModelSetup, ParameterBounds, ParameterSet
+from hapi.conceptual import ConceptualModelSetup, ParameterSet
 from hapi.config import RunConfig
 from hapi.inputs import (
     METEO_VARIABLES,
@@ -323,8 +323,6 @@ class Catchment:
         self.meteo: MeteoInputs | None = None
         self.QGauges: pd.DataFrame | None = None
         self.GaugesTable: FeatureCollection | pd.DataFrame | None = None
-        #: The search space a calibration explores, once read. `None` otherwise.
-        self.bounds: ParameterBounds | None = None
         #: The routing network and the grid it defines. Assign a
         #: :class:`~hapi.inputs.FlowNetwork` built by its loader.
         self.flow_network: FlowNetwork | None = None
@@ -360,9 +358,9 @@ class Catchment:
         Running the model stays the caller's job, through whichever `Run.*` entry point suits
         `routing_method` and `spatial_resolution`.
 
-        Builds `cls`, so `Calibration.from_yaml(...)` returns a `Calibration` -- it takes the
-        same constructor arguments. `Run` is not a catchment at all and has nothing to build;
-        `Run.from_yaml` exists only to say so and point here.
+        Neither `Run` nor `Calibration` is a catchment any more, so there is no subclass for
+        this to build: `Run` is a namespace of entry points, and `Calibration` takes the model
+        it calibrates -- `Calibration(Catchment.from_yaml(path))`.
 
         Args:
             path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for
@@ -430,10 +428,6 @@ class Catchment:
         _resolve_config_paths(config, Path(path).resolve().parent)
         catchment = config.catchment
 
-        # The first three go positionally on purpose: `Catchment.__init__` calls its second
-        # parameter `start_data` and `Calibration.__init__` calls it `start`, so naming them
-        # would break `Calibration.from_yaml` -- which this method is documented to support --
-        # while still working here. Renaming the parameter is the fix, and is breaking.
         model = cls(
             catchment.name,
             catchment.start,
@@ -1041,43 +1035,6 @@ class Catchment:
         self.QGauges[f.columns[0]] = f.loc[
             self.period.start : self.period.end, f.columns[0]
         ]
-
-    def read_parameters_bound(
-        self,
-        upper_bound: list | np.ndarray,
-        lower_bound: list | np.ndarray,
-        snow: bool = False,
-        maxbas: bool = False,
-    ):
-        """Read the lower and upper parameter bounds for calibration.
-
-        Args:
-            upper_bound (list | np.ndarray): Upper bound values
-                for each parameter.
-            lower_bound (list | np.ndarray): Lower bound values
-                for each parameter.
-            snow (bool, optional): Whether to simulate snow
-                processes. If True, snow-related parameters must be
-                bounded. Default is False.
-            maxbas (bool, optional): True if the parameters include
-                maxbas. Default is False.
-
-        Raises:
-            ValueError: If the lengths of `upper_bound` and
-                `lower_bound` are not equal.
-            ValueError: If `snow` is not a boolean.
-        """
-        if not isinstance(snow, bool):
-            raise ValueError(
-                " snow input defines whether to consider snow subroutine or not it has to be True or False"
-            )
-        # A calibration reads no parameter file, so the bounds are where `(snow, maxbas)`
-        # enters -- carried here so every trial vector can be checked against it.
-        self.bounds = ParameterBounds(
-            lower_bound, upper_bound, snow=snow, maxbas=maxbas
-        )
-
-        logger.debug("Parameters' bounds are read successfully")
 
     def extract_discharge(self, calculate_metrics=True, factor=None):
         """Extract and sum discharge at gauge locations.

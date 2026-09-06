@@ -1288,20 +1288,6 @@ class TestRoutingMethodNormalisation:
             f"the error should name what it got: {exc.value}"
         )
 
-    def test_calibration_accepts_the_same_three_arguments(self):
-        """Test that the guard reaches `Calibration`, which passes the arguments down.
-
-        Test scenario:
-            `Calibration.__init__` forwards all three to `Catchment.__init__` unchanged, and
-            its annotations used to advertise a `None` that crashed.
-        """
-        with pytest.raises(TypeError, match="routing_method must be a string"):
-            Calibration("Coello", "2009-01-01", "2009-01-10", routing_method=None)
-
-
-class TestCatchmentFromYaml:
-    """Tests for `Catchment.from_yaml`, which turns a configuration into a built model."""
-
     def test_a_distributed_configuration_populates_every_input(
         self, distributed_mapping, tmp_path, coello_cat_area, coello_initial_cond
     ):
@@ -1492,7 +1478,7 @@ class TestCatchmentFromYaml:
         with pytest.raises(ValueError, match="not.*registered"):
             Catchment.from_yaml(path)
 
-    @pytest.mark.parametrize("cls", [Catchment, Calibration])
+    @pytest.mark.parametrize("cls", [Catchment])
     def test_the_builder_returns_the_class_it_was_called_on(
         self, distributed_mapping, tmp_path, cls
     ):
