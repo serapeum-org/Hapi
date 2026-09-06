@@ -21,11 +21,12 @@ it at runtime.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, Protocol
 
 import numpy as np
 
-from hapi.conceptual import ConceptualModelSetup, ParameterBounds, ParameterSet
+from hapi.conceptual import ConceptualModelSetup, ParameterSet
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 from hapi.period import SimulationPeriod
 from hapi.results import SimulationResults
@@ -46,7 +47,6 @@ class CatchmentLike(Protocol):
         data: The lumped driver record, once `read_lumped_inputs` has run.
         river_geometry: The hydraulic rasters, once `read_river_geometry` has run.
         flow_path_length_arr: The flow-path-length raster, once read.
-        bounds: The calibration search space, once `read_parameters_bound` has run.
         routing_method: Which routing the parameter set was calibrated for.
         results: Where a run's output lands. `None` before the first run.
     """
@@ -59,7 +59,6 @@ class CatchmentLike(Protocol):
     data: np.ndarray | None
     river_geometry: RiverGeometry | None
     flow_path_length_arr: np.ndarray | None
-    bounds: ParameterBounds | None
     routing_method: str
     results: SimulationResults | None
 
@@ -72,3 +71,33 @@ class SupportsQsim(CatchmentLike, Protocol):
     """
 
     Qsim: Any
+
+
+class SpatialDistribution(Protocol):
+    """What a calibration needs of the thing that maps a flat vector onto the model's grid.
+
+    The optimiser searches over a flat vector; the model runs on a `(rows, cols, n)` array. A
+    spatial-distribution object is what converts one into the other, and
+    :class:`hapi.rrm.parameters.Parameters` is the implementation that ships here.
+
+    The calibration entry points used to type this argument `Callable[..., Any]`, which was
+    doubly wrong: a calibration never calls it, and what it actually does is read four members
+    off it. So the annotation described a function while the code used an object, and mypy had
+    nothing to check the four accesses against.
+
+    Attributes:
+        Function: The distribution strategy, chosen by `Parameters.__init__` from the `function`
+            argument -- an attribute holding a callable rather than a method, which is why it is
+            declared as one. A calibration calls it with the trial vector alone; callers outside
+            may pass `kub` / `klb` too, hence the open signature.
+        Par3d: The `(rows, cols, no_parameters)` array `Function` fills in. Read straight after
+            each call, so the two are a pair: calling `Function` is what makes this current.
+        no_parameters: Parameters per cell. Strides the Muskingum K/X pairs out of the trial
+            vector when the constraints are built.
+        no_elem: Cells inside the domain. Sizes the two inequality constraints per cell.
+    """
+
+    Function: Callable[..., Any]
+    Par3d: np.ndarray
+    no_parameters: int
+    no_elem: int

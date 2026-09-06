@@ -407,6 +407,8 @@ class TestLumpedCalibration:
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that the lumped entry point writes back `parameters` and `OFvalue`.
@@ -421,6 +423,13 @@ class TestLumpedCalibration:
         # Without this the trials failed and the bare `except` scored them all `nan`; the stub
         # returns its canned result regardless, so the test passed over a model that never ran.
         coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
         coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0, RoutingFn=Routing.triangular_routing_1, InitialValues=[]
@@ -445,6 +454,8 @@ class TestLumpedCalibration:
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that `InitialValues` reaches the optimisation problem as a starting point.
@@ -459,6 +470,13 @@ class TestLumpedCalibration:
         # Without this the trials failed and the bare `except` scored them all `nan`; the stub
         # returns its canned result regardless, so the test passed over a model that never ran.
         coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
         coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
@@ -476,6 +494,8 @@ class TestLumpedCalibration:
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that `InitialValues` shorter than the bounds is rejected, not indexed out of range.
@@ -496,6 +516,13 @@ class TestLumpedCalibration:
         # Without this the trials failed and the bare `except` scored them all `nan`; the stub
         # returns its canned result regardless, so the test passed over a model that never ran.
         coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
         coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,

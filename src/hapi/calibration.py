@@ -18,6 +18,9 @@ from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds, ParameterSet
+from hapi.inputs import MeteoInputs
+from hapi.protocols import SpatialDistribution
+from hapi.results import SimulationResults
 from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
@@ -165,20 +168,23 @@ class Calibration:
         # One starting value per parameter. A shorter list used to index out of range
         # part-way through building the problem, naming neither argument and leaving
         # `opt_prob` half-populated.
-        seeded = initial_values is not None and len(initial_values) > 0
-        if seeded and len(initial_values) != len(self.bounds):
+        bounds = self._search_space()
+        # Bound rather than re-tested: `initial_values is not None` twice does not carry the
+        # narrowing into the indexing below, and the empty list is the "not seeded" case.
+        seeds = list(initial_values) if initial_values else []
+        if seeds and len(seeds) != len(bounds):
             raise ValueError(
                 f"initial_values must hold one value per parameter; the bounds define "
-                f"{len(self.bounds)} and {len(initial_values)} were given"
+                f"{len(bounds)} and {len(seeds)} were given"
             )
 
-        for i in range(len(self.bounds)):
-            seed = {"value": initial_values[i]} if seeded else {}
+        for i in range(len(bounds)):
+            seed = {"value": seeds[i]} if seeds else {}
             opt_prob.addVar(
                 f"x{i}",
                 type="c",
-                lower=self.bounds.lower[i],
-                upper=self.bounds.upper[i],
+                lower=bounds.lower[i],
+                upper=bounds.upper[i],
                 **seed,
             )
 
@@ -204,6 +210,87 @@ class Calibration:
         snow = bounds.snow if bounds is not None else False
         maxbas = bounds.maxbas if bounds is not None else False
         return ParameterSet(values, snow=snow, maxbas=maxbas)
+
+    def _check_before_optimising(self, **narrowing: Any) -> None:
+        """Fail before the optimiser is built rather than on its first trial.
+
+        Calls the same seam the objective function calls -- so there is still one place the
+        checks live -- just earlier, because starting a search that cannot possibly complete
+        wastes however long the first trial takes to reach the mismatch.
+
+        The parameter array is skipped when unread: a calibration derives it from the bounds,
+        so there may be nothing to narrow yet, and the first trial checks it then.
+
+        Args:
+            **narrowing: Forwarded to :meth:`~hapi.runs.DistributedRun.from_model`.
+
+        Raises:
+            ValueError: The objective function is unread, or the model's inputs disagree.
+        """
+        # The model first: a grid that does not line up is a data problem, and reporting it
+        # ahead of a missing setup step is what a caller can act on.
+        if self.model.parameters is not None:
+            DistributedRun.from_model(self.model, **narrowing)
+        self._objective()
+
+    def _search_space(self) -> ParameterBounds:
+        """Return the bounds, or say which reader supplies them.
+
+        The three entry points and the variable declaration all need them, and all used to
+        index `self.bounds` straight -- so a caller who forgot got a `TypeError` on `None`
+        part-way through building the optimisation problem.
+
+        Returns:
+            ParameterBounds: The search space.
+
+        Raises:
+            ValueError: The bounds have not been read.
+        """
+        if self.bounds is None:
+            raise ValueError(
+                "the search space has not been read; call read_parameters_bound before "
+                "starting a calibration"
+            )
+        return self.bounds
+
+    def _objective(self) -> tuple[Callable[..., Any], list]:
+        """Return the objective function and its extra arguments.
+
+        Returns:
+            tuple[Callable, list]: The metric and the arguments forwarded to it.
+
+        Raises:
+            ValueError: No objective function has been read.
+        """
+        if self.objective_function is None:
+            raise ValueError(
+                "there is no objective function to calibrate against; call "
+                "read_objective_function first"
+            )
+        return self.objective_function, self.OFArgs or []
+
+    def _gauged_results(self) -> tuple[SimulationResults, MeteoInputs, Any]:
+        """Return the finished run and the gauge table its hydrographs are read at.
+
+        Returns:
+            tuple: The results, the drivers (which size the series), and the gauge table.
+
+        Raises:
+            ValueError: The model has not been run, or the gauges have not been read.
+        """
+        results = self.model.results
+        if results is None:
+            raise ValueError(
+                "there are no results to extract; the calibration runs the model itself, so "
+                "this means no trial has completed"
+            )
+        if self.model.meteo is None:
+            raise ValueError("the model has no drivers; assign model.meteo first")
+        if self.model.GaugesTable is None:
+            raise ValueError(
+                "the gauge table has not been read; call model.read_gauge_table first"
+            )
+        return results, self.model.meteo, self.model.GaugesTable
 
     def read_objective_function(
         self, objective_function: Callable[..., Any], args: list | None
@@ -262,7 +349,13 @@ class Calibration:
             ValueError: The results came from MAXBAS routing, whose per-cell values are
                 contributions rather than discharges.
         """
-        if not self.model.results.outlet_shortcut_valid:
+        results, meteo, gauges = self._gauged_results()
+        if results.q_total is None:
+            raise ValueError(
+                "the results carry no routed discharge; the run did not complete"
+            )
+        q_total = results.q_total
+        if not results.outlet_shortcut_valid:
             raise ValueError(
                 "this catchment was run with triangular (MAXBAS) routing, which sends "
                 "every cell straight to the outlet: a single cell of q_total is that cell's "
@@ -271,24 +364,18 @@ class Calibration:
                 "calibrated against the wrong signal."
             )
 
-        self.Qsim = np.zeros((self.model.meteo.time_steps, len(self.model.GaugesTable)))
+        self.Qsim = np.zeros((meteo.time_steps, len(gauges)))
         # error = 0
-        for i in range(len(self.model.GaugesTable)):
-            Xind = int(
-                self.model.GaugesTable.loc[self.model.GaugesTable.index[i], "cell_row"]
-            )
-            Yind = int(
-                self.model.GaugesTable.loc[self.model.GaugesTable.index[i], "cell_col"]
-            )
+        for i in range(len(gauges)):
+            Xind = int(gauges.loc[gauges.index[i], "cell_row"])
+            Yind = int(gauges.loc[gauges.index[i], "cell_col"])
             # gaugeid = self.model.GaugesTable.loc[self.model.GaugesTable.index[i],"id"]
 
             # Quz = self.model.results.quz_routed[Xind,Yind,:-1]
             # Qlz = self.model.results.qlz_translated[Xind,Yind,:-1]
             # self.Qsim[:,i] = Quz + Qlz
 
-            Qsim = np.reshape(
-                self.model.results.q_total[Xind, Yind, :-1], self.model.meteo.time_steps
-            )
+            Qsim = np.reshape(q_total[Xind, Yind, :-1], meteo.time_steps)
 
             if factor is not None:
                 self.Qsim[:, i] = Qsim * factor[i]
@@ -302,7 +389,7 @@ class Calibration:
 
     def run_calibration(
         self,
-        spatial_var_fun: Callable[..., Any],
+        spatial_var_fun: SpatialDistribution,
         optimization_args: list,
         print_error: int | None = None,
     ):
@@ -326,10 +413,9 @@ class Calibration:
               gauge metadata.
 
         Args:
-            spatial_var_fun: Spatial variable function object with a
-                `Function` method that distributes parameters and a
-                `Par3d` attribute holding the 3D parameter array, plus
-                `no_parameters` and `no_elem` attributes.
+            spatial_var_fun: The spatial-distribution object that maps the optimiser's flat
+                vector onto the model's grid. See :class:`~hapi.protocols.SpatialDistribution`
+                for the four members read off it.
             optimization_args: A list of three elements:
                 - `optimization_args[0]` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
@@ -351,22 +437,9 @@ class Calibration:
             TypeError: If either bundle of optimization arguments is not a
                 dict.
         """
-        # input dimensions
-        # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows, fd_cols] = self.model.flow_network.flow_dir_arr.shape
-        if (
-            fd_rows != self.model.flow_network.rows
-            or fd_cols != self.model.flow_network.cols
-        ):
-            raise ValueError(ROWS_MISMATCH_ERROR)
-
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.model.meteo.validate_against(
-            self.model.flow_network.rows,
-            self.model.flow_network.cols,
-            self.model.period.date_index,
-        )
+        # No dimension checks here: `DistributedRun.from_model` in the objective below is the
+        # single seam that makes them, and it runs outside the try, so the first trial surfaces
+        # a mismatch. Repeating them here is the drift the seam exists to stop.
 
         # basic inputs
         # check if all inputs are included
@@ -382,6 +455,7 @@ class Calibration:
         # check optimization arguement
         _check_optimization_args(api_obj_args, api_solve_args)
 
+        self._check_before_optimising()
         print("Calibration starts")
 
         ### calculate the objective function
@@ -394,11 +468,12 @@ class Calibration:
             self.model.parameters = self._parameter_set(spatial_var_fun.Par3d)
             run = DistributedRun.from_model(self.model)
 
+            objective, of_args = self._objective()
             try:
                 self.model.results = Wrapper.run_muskingum(run)
                 # calculate performance of the model
                 try:
-                    error = self.objective_function(
+                    error = objective(
                         self.model.QGauges, *[self.model.GaugesTable]
                     )  # self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,
                     f = list(range(9, len(par), spatial_var_fun.no_parameters))
@@ -464,7 +539,7 @@ class Calibration:
 
     def calibrate_maxbas(
         self,
-        spatial_var_fun: Callable[..., Any],
+        spatial_var_fun: SpatialDistribution,
         optimization_args: list,
         print_error: int | None = None,
     ):
@@ -485,9 +560,8 @@ class Calibration:
               gauge metadata.
 
         Args:
-            spatial_var_fun: Spatial variable function object with a
-                `Function` method that distributes parameters and a
-                `Par3d` attribute holding the 3D parameter array.
+            spatial_var_fun: The spatial-distribution object. See
+                :class:`~hapi.protocols.SpatialDistribution`.
             optimization_args: A list of three elements:
                 - `optimization_args[0]` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).
@@ -514,13 +588,7 @@ class Calibration:
         # [fd_rows,fd_cols] = self.flow_dir_arr.shape
         # assert fd_rows == self.rows and fd_cols == self.cols, ROWS_MISMATCH_ERROR
 
-        # The three cubes already agree with each other (checked when MeteoInputs was
-        # built); this is the other half -- that they cover the model's grid.
-        self.model.meteo.validate_against(
-            self.model.flow_network.rows,
-            self.model.flow_network.cols,
-            self.model.period.date_index,
-        )
+        # See run_calibration: the checks live in `DistributedRun.from_model`.
 
         # basic inputs
         # check if all inputs are included
@@ -536,6 +604,7 @@ class Calibration:
         # check optimization arguement
         _check_optimization_args(api_obj_args, api_solve_args)
 
+        self._check_before_optimising(needs_flow_direction=False)
         print("Calibration starts")
 
         # calculate the objective function
@@ -546,11 +615,12 @@ class Calibration:
             self.model.parameters = self._parameter_set(spatial_var_fun.Par3d)
             run = DistributedRun.from_model(self.model, needs_flow_direction=False)
 
+            objective, of_args = self._objective()
             try:
                 self.model.results = Wrapper.run_maxbas(run)
                 # calculate performance of the model
                 try:
-                    error = self.objective_function(
+                    error = objective(
                         self.model.QGauges,
                         self.model.results.qout,
                         *[self.model.GaugesTable],
@@ -677,6 +747,8 @@ class Calibration:
         # check optimization arguement
         _check_optimization_args(api_obj_args, api_solve_args)
 
+        # A lumped run has no grid to check, so only the objective is verified up front.
+        self._objective()
         print("Calibration starts")
 
         ### calculate the objective function
@@ -685,15 +757,23 @@ class Calibration:
             self.model.parameters = self._parameter_set(par)
             run = LumpedRun.from_model(self.model)
 
+            objective, of_args = self._objective()
+            observed = self.model.QGauges
+            if observed is None:
+                raise ValueError(
+                    "there is no observed discharge to score against; call "
+                    "model.read_discharge_gauges first"
+                )
             try:
-                self.model.results = Wrapper.run_lumped(run, route, routing_fn)
-                self.Qsim = self.model.results.q_total
+                run_results = Wrapper.run_lumped(run, route, routing_fn)
+                self.model.results = run_results
+                self.Qsim = run_results.q_total
                 # calculate performance of the model
                 try:
-                    error = self.objective_function(
-                        self.model.QGauges[self.model.QGauges.columns[-1]],
+                    error = objective(
+                        observed[observed.columns[-1]],
                         self.Qsim,
-                        *self.OFArgs,
+                        *of_args,
                     )
                     g = [
                         2 * par[-2] * par[-1] / self.model.period.dt,
