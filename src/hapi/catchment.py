@@ -928,10 +928,9 @@ class Catchment:
             ValueError: If the gauge table has not been read yet
                 (distributed mode).
         """
-        if self.period.temporal_resolution.lower() == "daily":
-            ind = pd.date_range(self.period.start, self.period.end, freq="D")
-        else:
-            ind = pd.date_range(self.period.start, self.period.end, freq="h")
+        # The calendar belongs to the period, which derives it from the span and the
+        # resolution. This was the last of four hand-written copies of that branch.
+        ind = self.period.date_index
 
         if self.spatial_resolution.lower() == "distributed":
             self._read_one_discharge_file_per_gauge(

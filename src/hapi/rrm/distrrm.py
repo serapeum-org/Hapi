@@ -31,10 +31,6 @@ class DistributedRRM:
     catchment, so nothing here has to ask whether its inputs were checked.
     """
 
-    def __init__(self):
-        """Distributed constructor."""
-        pass
-
     @staticmethod
     def run_lumped_model(run: DistributedRun) -> SimulationResults:
         """Run lumped rainfall-runoff model for every grid cell.

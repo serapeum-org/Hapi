@@ -69,10 +69,6 @@ class Wrapper:
         Lumped: Run a lumped conceptual model with optional routing.
     """
 
-    def __init__(self):
-        """Initialize the Wrapper class."""
-        pass
-
     @staticmethod
     def run_muskingum(run: DistributedRun) -> SimulationResults:
         """Run the distributed rainfall-runoff model with spatial routing.

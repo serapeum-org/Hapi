@@ -493,10 +493,40 @@ class FlowNetwork:
             name: Attribute being set.
             value: New value.
         """
+        if name in ("flow_acc_arr", "flow_dir_arr"):
+            self._check_replacement(name, value)
         if name == "flow_acc_arr":
             self.__dict__.pop("acc_val", None)
             self.__dict__.pop("cells_by_acc_val", None)
         object.__setattr__(self, name, value)
+
+    def _check_replacement(self, name: str, value: object) -> None:
+        """Reject a raster that would leave the two describing different grids.
+
+        `__post_init__` alone cannot hold the class's promise that the two rasters share a
+        grid: the fields are plain mutable attributes, so replacing one afterwards silently
+        broke it, and a cell index then meant a different place in each. `MeteoInputs` has
+        guarded its cubes this way since it was written; this is the same guard, which the run
+        layer had been compensating for by re-checking the shape itself.
+
+        Args:
+            name: Which raster is being replaced.
+            value: The replacement.
+
+        Raises:
+            ValueError: The replacement is not a 2D array of the shape the other one has.
+        """
+        other = "flow_dir_arr" if name == "flow_acc_arr" else "flow_acc_arr"
+        current = getattr(self, other, None)
+        if current is None or value is None:
+            return
+        expected = np.shape(current)
+        if not isinstance(value, np.ndarray) or value.shape != expected:
+            got = getattr(value, "shape", type(value).__name__)
+            raise ValueError(
+                f"{name} must stay {expected} to match {other}, got {got}; build a new "
+                "FlowNetwork to change the catchment's grid"
+            )
 
     @cached_property
     def acc_val(self) -> list[int]:

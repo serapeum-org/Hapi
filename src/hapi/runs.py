@@ -192,14 +192,9 @@ class DistributedRun:
                     "this run routes cell to cell and needs a flow-direction raster, but the "
                     "flow network was built without one; pass it to FlowNetwork.from_rasters"
                 )
-            # `FlowNetwork.__post_init__` already checks this at construction, but
-            # `__setattr__` does not re-check on replacement (unlike `MeteoInputs`), so a
-            # raster swapped in afterwards can still disagree with the grid.
-            if flow_network.flow_dir_arr.shape != (
-                flow_network.rows,
-                flow_network.cols,
-            ):
-                raise ValueError(GRID_MISMATCH_ERROR)
+            # No shape check here: `FlowNetwork` guards its own invariant at construction and
+            # on replacement now, so the two rasters cannot disagree. This compensated for the
+            # replacement gap, and became unreachable when that closed.
             if flow_network.FDT is None:
                 raise ValueError(
                     "cell-to-cell routing needs the flow-direction table; the flow network "

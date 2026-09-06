@@ -243,27 +243,27 @@ class TestRunHapiWithLake:
         with pytest.raises(ValueError, match="three columns"):
             Run.run_distributed_with_lake(coello_loaded, lake)
 
-    def test_rejects_a_flow_direction_grid_of_the_wrong_shape(
-        self, coello_loaded: Catchment, spied_wrapper: dict
+    def test_a_flow_direction_grid_of_the_wrong_shape_cannot_be_installed(
+        self, coello_loaded: Catchment
     ):
-        """Test that the flow-direction grid is checked against the network's own shape.
+        """Test that the two rasters cannot be left describing different grids.
 
         Test scenario:
-            `FlowNetwork` sizes itself from the accumulation raster, so a flow-direction
-            array of a different shape means the two rasters do not describe the same
-            catchment and the routing table would be indexed out of range.
+            `FlowNetwork` sizes itself from the accumulation raster, so a flow-direction array
+            of a different shape means the two do not describe the same catchment and the
+            routing table would be indexed out of range. `__post_init__` checked that at
+            construction but `__setattr__` did not re-check on replacement, so this used to be
+            stageable and the run layer re-checked the shape to catch it. The guard now lives
+            where the mistake is made, which is why that run-layer check could go.
         """
-        coello_loaded.flow_network.flow_dir_arr = (
-            coello_loaded.flow_network.flow_dir_arr[:-1, :]
+        network = coello_loaded.flow_network
+
+        with pytest.raises(ValueError, match="must stay"):
+            network.flow_dir_arr = network.flow_dir_arr[:-1, :]
+
+        assert network.flow_dir_arr.shape == (network.rows, network.cols), (
+            "the refused assignment must leave the network as it was"
         )
-        lake = _LakeStub(coello_loaded.meteo.time_steps)
-
-        with pytest.raises(ValueError, match="rows and columns"):
-            Run.run_distributed_with_lake(coello_loaded, lake)
-
-
-class TestRunFW1WithLake:
-    """Tests for `Run.run_maxbas_with_lake`."""
 
     def test_dispatches_once_the_lake_record_matches_the_simulation(
         self, coello_loaded: Catchment, spied_wrapper: dict
