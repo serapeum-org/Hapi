@@ -33,7 +33,8 @@ from pyramids.dataset import Dataset
 from pyramids.feature import FeatureCollection
 
 from hapi.conceptual import ConceptualModelSetup, ParameterSet
-from hapi.config import RunConfig
+from hapi.core.config import RunConfig
+from hapi.core.period import SimulationPeriod
 from hapi.inputs import (
     METEO_VARIABLES,
     FlowNetwork,
@@ -42,7 +43,6 @@ from hapi.inputs import (
     _warn_if_no_sentinel,
     read_rasters,
 )
-from hapi.period import SimulationPeriod
 from hapi.results import RoutingKind, SimulationResults
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
@@ -62,7 +62,7 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
 #:
 #: This records *which routing the parameter set was calibrated for*. It does not select the
 #: routing -- the `Run.*` entry point does that -- but it is not decoration either:
-#: `hapi.config` cross-checks it against `parameters.maxbas`, and that check is load-bearing.
+#: `hapi.core.config` cross-checks it against `parameters.maxbas`, and that check is load-bearing.
 #: A MAXBAS set holds 11 parameters and a Muskingum set 12, and `maxbas` is what decides which
 #: count is expected, so a set contradicting the routing still passes the count check and the
 #: run then reads the Muskingum X as the MAXBAS value -- a quietly wrong hydrograph.
@@ -365,7 +365,7 @@ class Catchment:
         the `read_*` calls in the order they depend on each other -- the sequence a hand-written
         script's block of path assignments used to drive by hand.
 
-        `hapi.config` only parses and validates; every assignment onto the model happens here.
+        `hapi.core.config` only parses and validates; every assignment onto the model happens here.
         Running the model stays the caller's job, through whichever `Run.*` entry point suits
         `routing_method` and `spatial_resolution`.
 
@@ -374,7 +374,7 @@ class Catchment:
         it calibrates -- `Calibration(Catchment.from_yaml(path))`.
 
         Args:
-            path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.config` for
+            path: Path to the YAML file, as a string or a `Path`. See :mod:`hapi.core.config` for
                 the schema.
 
         Returns:
@@ -384,7 +384,7 @@ class Catchment:
             FileNotFoundError: No file at `path`.
             yaml.YAMLError: The file is not valid YAML.
             pydantic.ValidationError: The file is missing a required field, carries an unknown
-                one, or breaks one of the cross-field rules in :class:`hapi.config.RunConfig`.
+                one, or breaks one of the cross-field rules in :class:`hapi.core.config.RunConfig`.
             ValueError: The file is empty, or `conceptual_model.model_class` names a model
                 that is not in `CONCEPTUAL_MODELS`.
 

@@ -40,7 +40,7 @@ Out of scope, each because the schema carries no field that reaches it:
 Examples:
     - Validate a lumped configuration and read back what it holds:
         ```python
-        >>> from hapi.config import RunConfig
+        >>> from hapi.core.config import RunConfig
         >>> config = RunConfig.model_validate(
         ...     {
         ...         "catchment": {
@@ -69,7 +69,7 @@ Examples:
     - A distributed run needs a routing network, so one without it is refused:
         ```python
         >>> from pydantic import ValidationError
-        >>> from hapi.config import RunConfig
+        >>> from hapi.core.config import RunConfig
         >>> try:
         ...     RunConfig.model_validate(
         ...         {
@@ -188,14 +188,14 @@ def missing_drivers_message(missing: Sequence[str]) -> str:
     Examples:
         - One driver missing reads as a singular:
             ```python
-            >>> from hapi.config import missing_drivers_message
+            >>> from hapi.core.config import missing_drivers_message
             >>> missing_drivers_message(["temperature"])
             'a distributed run needs all three meteorological drivers; temperature is unset'
 
             ```
         - Several are listed in the order they are given:
             ```python
-            >>> from hapi.config import missing_drivers_message
+            >>> from hapi.core.config import missing_drivers_message
             >>> message = missing_drivers_message(["temperature", "evapotranspiration"])
             >>> message.split("; ")[1]
             'temperature, evapotranspiration are unset'

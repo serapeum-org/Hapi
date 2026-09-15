@@ -8,25 +8,25 @@ Build a model from a file with
 [`Catchment.from_yaml`](catchment.md#hapi.catchment.Catchment.from_yaml).
 
 ## RunConfig
-::: hapi.config.RunConfig
+::: hapi.core.config.RunConfig
 
 ## CatchmentConfig
-::: hapi.config.CatchmentConfig
+::: hapi.core.config.CatchmentConfig
 
 ## MeteoConfig
-::: hapi.config.MeteoConfig
+::: hapi.core.config.MeteoConfig
 
 ## FlowNetworkConfig
-::: hapi.config.FlowNetworkConfig
+::: hapi.core.config.FlowNetworkConfig
 
 ## ParametersConfig
-::: hapi.config.ParametersConfig
+::: hapi.core.config.ParametersConfig
 
 ## ConceptualModelConfig
-::: hapi.config.ConceptualModelConfig
+::: hapi.core.config.ConceptualModelConfig
 
 ## GaugesConfig
-::: hapi.config.GaugesConfig
+::: hapi.core.config.GaugesConfig
 
 ## OutputsConfig
-::: hapi.config.OutputsConfig
+::: hapi.core.config.OutputsConfig

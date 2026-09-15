@@ -27,8 +27,8 @@ from typing import Any, Protocol
 import numpy as np
 
 from hapi.conceptual import ConceptualModelSetup, ParameterSet
+from hapi.core.period import SimulationPeriod
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
-from hapi.period import SimulationPeriod
 from hapi.results import SimulationResults
 
 

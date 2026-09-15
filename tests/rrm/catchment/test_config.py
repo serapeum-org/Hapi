@@ -1,6 +1,6 @@
 """Tests for the YAML run-configuration schema and the model it builds.
 
-`hapi.config` is pure data: pydantic models that validate a parsed YAML mapping. The rules that
+`hapi.core.config` is pure data: pydantic models that validate a parsed YAML mapping. The rules that
 matter are the cross-field ones, because which blocks a configuration needs depends on
 `catchment.spatial_resolution` and on `meteo.source` -- a distributed run needs a routing
 network and all three drivers, a lumped one needs the single averaged-driver CSV. Those rules
@@ -26,7 +26,7 @@ from pydantic import ValidationError
 
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
-from hapi.config import (
+from hapi.core.config import (
     CatchmentConfig,
     ConceptualModelConfig,
     FlowNetworkConfig,

@@ -24,7 +24,7 @@ spelling is what keeps both honest; a script passing a spelling outside the tabl
 to one of the three.
 
 A YAML run configuration reaches only the first two: `kinematic` selects the flood model, which
-[`hapi.config`](config.md) does not describe.
+[`hapi.core.config`](config.md) does not describe.
 
 ## Catchment
 ::: hapi.catchment.Catchment

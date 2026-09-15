@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     import matplotlib.animation
     from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph
 
-    from hapi.period import SimulationPeriod
+    from hapi.core.period import SimulationPeriod
 
 #: The five per-cell states, in the order the last axis of `state_variables` carries them.
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
@@ -631,7 +631,7 @@ class SimulationResults:
                 >>> from pathlib import Path
                 >>> import numpy as np
                 >>> from hapi.conceptual import ConceptualModelSetup, ParameterSet
-                >>> from hapi.period import SimulationPeriod
+                >>> from hapi.core.period import SimulationPeriod
                 >>> from hapi.results import RoutingKind, SimulationResults
                 >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
                 >>> from hapi.runs import LumpedRun

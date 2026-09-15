@@ -39,7 +39,7 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from pyramids.netcdf import NetCDF
 
-from hapi.config import (
+from hapi.core.config import (
     NETCDF_PATH_MESSAGE,
     MeteoConfig,
     missing_drivers_message,
@@ -1259,7 +1259,7 @@ class MeteoInputs:
 
         The dispatch behind a `meteo` block of a YAML run configuration: `"rasters"` reads three
         folders, `"netcdf_files"` one file per driver, and `"netcdf"` a single combined file
-        whose variables the block names. `hapi.config.RunConfig` has already checked that the
+        whose variables the block names. `hapi.core.config.RunConfig` has already checked that the
         fields the chosen source needs are set, so this calls the loader directly.
 
         Each bound is parsed with the format it was written in -- `config.fmt` for a bound the
@@ -1290,7 +1290,7 @@ class MeteoInputs:
 
             - Load a combined NetCDF by naming the variable each driver sits in:
                 ```python
-                >>> from hapi.config import MeteoConfig
+                >>> from hapi.core.config import MeteoConfig
                 >>> from hapi.inputs import MeteoInputs
                 >>> meteo = MeteoInputs.from_config(
                 ...     MeteoConfig(
@@ -1309,7 +1309,7 @@ class MeteoInputs:
                 ```
             - Narrow the same file to part of its record with the fallback window:
                 ```python
-                >>> from hapi.config import MeteoConfig
+                >>> from hapi.core.config import MeteoConfig
                 >>> from hapi.inputs import MeteoInputs
                 >>> meteo = MeteoInputs.from_config(
                 ...     MeteoConfig(
@@ -1350,7 +1350,7 @@ class MeteoInputs:
         # The three are optional on the model because a lumped configuration sets none of them,
         # while every distributed source needs all three. `RunConfig` enforces that, so reaching
         # the raise means a `MeteoConfig` was built by hand -- and it raises the same sentence,
-        # phrased once in `hapi.config`, because it is the same rule. Bound to locals so the
+        # phrased once in `hapi.core.config`, because it is the same rule. Bound to locals so the
         # check both reports what is missing and narrows the type for the calls below.
         precipitation = config.precipitation
         temperature = config.temperature

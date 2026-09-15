@@ -29,8 +29,8 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 
 from hapi.conceptual import ConceptualModelSetup, ParameterSet
+from hapi.core.period import SimulationPeriod
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
-from hapi.period import SimulationPeriod
 
 if TYPE_CHECKING:
     from hapi.protocols import CatchmentLike

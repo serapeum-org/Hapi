@@ -1,11 +1,11 @@
 """Custom warning classes and utilities for silencing warnings.
 
-The ``hapi_warnings`` module provides custom warning types used
-throughout the Hapi package and helper functions to suppress
-specific warning categories during runtime.
+This module provides the custom warning types used throughout the
+package and helper functions to suppress specific warning categories
+during runtime.
 
 Examples:
-    >>> from hapi.hapi_warnings import InstabilityWarning
+    >>> from hapi.core.silence import InstabilityWarning
     >>> import warnings
     >>> warnings.warn(
     ...     "Simulation diverged at step 5",
@@ -26,7 +26,7 @@ class InstabilityWarning(UserWarning):
     results, such as diverging flows or extreme parameter values.
 
     Examples:
-        >>> from hapi.hapi_warnings import InstabilityWarning
+        >>> from hapi.core.silence import InstabilityWarning
         >>> import warnings
         >>> with warnings.catch_warnings(record=True) as w:
         ...     warnings.simplefilter("always")
@@ -50,7 +50,7 @@ def SilencePandasWarning():
     pandas when deprecated APIs are used.
 
     Examples:
-        >>> from hapi.hapi_warnings import SilencePandasWarning
+        >>> from hapi.core.silence import SilencePandasWarning
         >>> SilencePandasWarning()
     """
     warnings.simplefilter(action="ignore", category=FutureWarning)

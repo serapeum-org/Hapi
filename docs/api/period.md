@@ -18,4 +18,4 @@ len(model.period)            # the same number
 ```
 
 ## SimulationPeriod
-::: hapi.period.SimulationPeriod
+::: hapi.core.period.SimulationPeriod

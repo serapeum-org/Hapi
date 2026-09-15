@@ -43,7 +43,7 @@ class SimulationPeriod:
     Examples:
         - The calendar is derived, so it always matches the span:
             ```python
-            >>> from hapi.period import SimulationPeriod
+            >>> from hapi.core.period import SimulationPeriod
             >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-10")
             >>> len(period)
             10
@@ -53,7 +53,7 @@ class SimulationPeriod:
             ```
         - An hourly period covers the same span with a different step:
             ```python
-            >>> from hapi.period import SimulationPeriod
+            >>> from hapi.core.period import SimulationPeriod
             >>> hourly = SimulationPeriod.parse(
             ...     "2009-01-01", "2009-01-02", temporal_resolution="Hourly"
             ... )
@@ -65,7 +65,7 @@ class SimulationPeriod:
             ```
         - It is frozen, so a derived value can never be left describing a different span:
             ```python
-            >>> from hapi.period import SimulationPeriod
+            >>> from hapi.core.period import SimulationPeriod
             >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-10")
             >>> period.end = "2010-01-01"  # doctest: +ELLIPSIS
             Traceback (most recent call last):
@@ -132,7 +132,7 @@ class SimulationPeriod:
 
         Examples:
             ```python
-            >>> from hapi.period import SimulationPeriod
+            >>> from hapi.core.period import SimulationPeriod
             >>> SimulationPeriod.parse("01/2009/01", "10/2009/01", fmt="%d/%Y/%m").days
             10
 
@@ -151,7 +151,7 @@ class SimulationPeriod:
         Examples:
             - Each supported resolution maps to the alias `pd.date_range` expects:
                 ```python
-                >>> from hapi.period import SimulationPeriod
+                >>> from hapi.core.period import SimulationPeriod
                 >>> SimulationPeriod.parse("2009-01-01", "2009-01-10").freq
                 'D'
                 >>> SimulationPeriod.parse(
@@ -176,7 +176,7 @@ class SimulationPeriod:
         Examples:
             - One entry per step, inclusive of both ends:
                 ```python
-                >>> from hapi.period import SimulationPeriod
+                >>> from hapi.core.period import SimulationPeriod
                 >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-05")
                 >>> [step.strftime("%m-%d") for step in period.date_index]
                 ['01-01', '01-02', '01-03', '01-04', '01-05']
@@ -184,7 +184,7 @@ class SimulationPeriod:
                 ```
             - Built once and handed back, because the span it describes cannot change:
                 ```python
-                >>> from hapi.period import SimulationPeriod
+                >>> from hapi.core.period import SimulationPeriod
                 >>> period = SimulationPeriod.parse("2009-01-01", "2009-12-31")
                 >>> period.date_index is period.date_index
                 True
@@ -208,7 +208,7 @@ class SimulationPeriod:
         Examples:
             - The two resolutions differ by exactly a factor of 24:
                 ```python
-                >>> from hapi.period import SimulationPeriod
+                >>> from hapi.core.period import SimulationPeriod
                 >>> daily = SimulationPeriod.parse("2009-01-01", "2009-01-10")
                 >>> hourly = SimulationPeriod.parse(
                 ...     "2009-01-01", "2009-01-02", temporal_resolution="Hourly"
