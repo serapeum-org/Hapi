@@ -57,7 +57,7 @@ for the whole catchment or HRUs or HRUs with some lumped parameters
 for muskingum parameters k & x include the upper and lower bound in both
 UB & LB with the order of Klb then kub
 function inside the calibration algorithm is written as following
-par_dist=spatial_var_fun(par,*SpatialVarArgs,kub=kub,klb=klb)
+par_dist = spatial_var_fun(par)
 
 """
 raster = Dataset.read_file(FlowAccPath)
@@ -76,8 +76,8 @@ spatial_var_fun = DP(
     no_lumped_par=no_lumped_par,
     lumped_par_pos=lumped_par_pos,
     function=2,
-    klb=klb,
-    kub=kub,
+    k_lower_bound=klb,
+    k_upper_bound=kub,
 )
 # calculate no of parameters that optimization algorithm is going to generate
 spatial_var_fun.ParametersNO
@@ -143,7 +143,8 @@ cal_parameters = Coello.run_calibration(
 #     [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241,
 #      94.91, 0.2075]
 # )
-spatial_var_fun.Function(
-    Coello.model.parameters.values, kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
-)
+# `Function` takes exactly one argument, the flat vector the optimiser produced --
+# `par3d(self, par_g)`. `kub`/`klb` were commented out of the signature years ago, and
+# `model.parameters` is a `ParameterSet`, a different shape describing a different thing.
+spatial_var_fun.Function(Coello.best_parameters)
 spatial_var_fun.save_parameters(SaveTo)
