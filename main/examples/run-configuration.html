@@ -541,6 +541,16 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -769,6 +779,146 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/runs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/period.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation period
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/conceptual.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptual model inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/protocols.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocols
   
 
     
@@ -1597,10 +1747,20 @@ about one catchment — and the call order is something you have to know.</p>
 <code>Catchment.from_yaml</code> reads the file, validates it, and makes the same <code>read_*</code> calls in the
 same order:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
 
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"coello-lumped-model-run.yaml"</span><span class="p">)</span>
-<span class="n">Run</span><span class="o">.</span><span class="n">runLumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="n">Routing</span><span class="o">.</span><span class="n">triangular_routing_1</span><span class="p">)</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span>
+    <span class="s2">"examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"</span>
+<span class="p">)</span>
+<span class="c1"># `Route` is the flag; the routing function is the third argument. Passing the function</span>
+<span class="c1"># as the flag routes with nothing, because a callable is truthy.</span>
+<span class="c1">#</span>
+<span class="c1"># The function has to match the parameter set the config declares. This one says</span>
+<span class="c1"># `maxbas: false`, so `Wrapper.run_lumped` takes the Muskingum branch and calls the</span>
+<span class="c1"># function with five arguments — a triangular function takes two and raises. Use</span>
+<span class="c1"># `coello-lumped-model-run-maxbas.yaml` with `Routing.triangular_routing_1` instead.</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">run_lumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">)</span>
 </code></pre></div>
 <p>The four shipped examples under <code>examples/hydrological-model/coello/run/</code> are each a pair — a
 <code>.py</code> that runs the model and a <code>.yaml</code> beside it holding everything the run needs.</p>
@@ -1731,7 +1891,7 @@ the block's <code>fmt</code>.</p>
 itself consume remain reachable — <code>outputs</code> above all:</p>
 <div class="highlight"><pre><span></span><code><span class="n">outputs</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outputs</span>
 <span class="n">save_to</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">results_dir</span> <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
     <span class="n">flow_acc_path</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_accumulation</span><span class="p">,</span>
     <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">path</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span>
@@ -1739,11 +1899,12 @@ itself consume remain reachable — <code>outputs</code> above all:</p>
 </code></pre></div>
 <h2 id="out-of-scope"><a class="toclink" href="#out-of-scope">Out of scope</a><a class="headerlink" href="#out-of-scope" title="Permanent link">#</a></h2>
 <p>The schema describes a <code>Catchment</code> run. It carries no field for a lake record, a river geometry,
-or a flow-path-length raster, so lake-aware runs (<code>Run.RunHapiwithLake</code>), the flood model
-(<code>Run.RunFloodModel</code>) and <code>DistMaxbas2</code> are still assembled in Python.</p>
-<p><code>Calibration.from_yaml</code> works — it takes the same constructor arguments — and gives back a
-<code>Calibration</code> to call the calibration methods on. <code>Run.from_yaml</code> does not: <code>Run</code> holds entry
-points called on a model built elsewhere, so it refuses and says so.</p>
+or a flow-path-length raster, so lake-aware runs (<code>Run.run_distributed_with_lake</code>), the flood
+model (<code>Run.run_flood</code>) and <code>route_maxbas_by_path_length</code> are still assembled in Python.</p>
+<p><code>Calibration.from_yaml</code> does not exist: <code>Calibration</code> is no longer a <code>Catchment</code> subclass, so it
+inherits nothing. Build the model from the file and hand it over —
+<code>Calibration(Catchment.from_yaml(path))</code>. <code>Run.from_yaml</code> does not exist either: <code>Run</code> holds
+entry points called on a model built elsewhere.</p>
 <p>The full field-by-field reference is on the <a href="../api/config.html">Config API page</a>.</p>
 
 

@@ -541,6 +541,16 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -769,6 +779,146 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/runs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/period.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation period
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/conceptual.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptual model inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/protocols.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocols
   
 
     
@@ -1486,11 +1636,11 @@
 </ul>
 <p><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s1">'Lumped'</span><span class="p">,</span>
-                 <span class="n">TemporalResolution</span> <span class="o">=</span> <span class="s2">"Daily"</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">start_data</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Lumped"</span><span class="p">,</span>
+                 <span class="n">temporal_resolution</span><span class="o">=</span><span class="s2">"Daily"</span><span class="p">,</span> <span class="n">routing_method</span><span class="o">=</span><span class="s2">"Muskingum"</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        =============================================================================</span>
-<span class="sd">            Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',</span>
+<span class="sd">            Catchment(name, start_data, end, fmt="%Y-%m-%d", spatial_resolution="Lumped",</span>
 <span class="sd">                             TemporalResolution = "Daily")</span>
 <span class="sd">        =============================================================================</span>
 <span class="sd">        Parameters</span>
@@ -1517,7 +1667,7 @@
 <span class="n">end</span> <span class="o">=</span> <span class="s2">"2011-12-31"</span>
 <span class="n">name</span> <span class="o">=</span> <span class="s2">"Coello"</span>
 
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">"Distributed"</span><span class="p">)</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Distributed"</span><span class="p">)</span>
 </code></pre></div>
 <h1 id="read-meteorological-inputs"><a class="toclink" href="#read-meteorological-inputs">Read Meteorological Inputs</a><a class="headerlink" href="#read-meteorological-inputs" title="Permanent link">#</a></h1>
 <ul>
@@ -1555,22 +1705,23 @@
 <ul>
 <li>to check the performance of the model we need to read the gauge hydrographs</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="s2">"Hapi/Data/00inputs/Discharge/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">GaugesPath</span> <span class="o">=</span> <span class="s2">"Hapi/Data/00inputs/Discharge/stations/"</span>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="n">GaugesPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/"</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="3-run-object"><a class="toclink" href="#3-run-object">3-Run Object</a><a class="headerlink" href="#3-run-object" title="Permanent link">#</a></h2>
 <ul>
 <li>The <code>Run</code> object connects all the components of the simulation together, the <code>Catchment</code> object, the <code>Lake</code> object and the <code>distributedrouting</code> object</li>
-<li>import the Run object and use the <code>Catchment</code> object as a parameter to the <code>Run</code> object, then call the RunHapi method to start the simulation</li>
+<li>import the Run object and use the <code>Catchment</code> object as a parameter to the <code>Run</code>
+  object, then call the run_distributed method to start the simulation</li>
 </ul>
 <p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
-<span class="n">Run</span><span class="o">.</span><span class="n">RunHapi</span><span class="p">(</span><span class="n">Coello</span><span class="p">)</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">run_distributed</span><span class="p">(</span><span class="n">Coello</span><span class="p">)</span>
 </code></pre></div>
-- the result of the simulation will be stored as attributes in the Catchment object as follow</p>
+- the result of the simulation is returned, and also assigned to <code>Coello.results</code> as follow</p>
 <div class="highlight"><pre><span></span><code><span class="sd">"""</span>
 <span class="sd">Outputs:</span>
-<span class="sd">    1-statevariables: [numpy attribute]</span>
+<span class="sd">    1-state_variables:</span>
 <span class="sd">        4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]</span>
 <span class="sd">    2-qlz: [numpy attribute]</span>
 <span class="sd">        3D array of the lower zone discharge</span>
@@ -1621,7 +1772,8 @@
 <h2 id="6-animation"><a class="toclink" href="#6-animation">6-Animation</a><a class="headerlink" href="#6-animation" title="Permanent link">#</a></h2>
 <ul>
 <li>The best way to visualize a time series of distributed data is an animation. The <code>Catchment</code> object
-  has a <code>plot_distributed_results</code> method which animates any of the model results.</li>
+  carries a <code>SimulationResults</code> object on <code>model.results</code>, whose <code>animate</code> method animates
+  any of them.</li>
 </ul>
 <p>The keyword arguments are forwarded to
 <code>cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate</code>; see its documentation for the full list.
@@ -1631,7 +1783,7 @@ cleopatra 0.30 moved the styling keywords onto typed group objects, so the colou
 <code>.boundary(bounds=...)</code>), the cell-value labels are
 <code>cells=CellValues(show=True, size=..., background_threshold=...)</code>, and the frame time-stamp is
 <code>frame_label=FrameLabel(location=[...], color=...)</code>. The gauge markers are built by Hapi itself
-when <code>gauges=True</code>.</p>
+from the gauge table you pass as <code>gauges=</code>.</p>
 <p><code>option</code> selects the variable to animate:</p>
 <table>
 <thead>
@@ -1688,11 +1840,11 @@ when <code>gauges=True</code>.</p>
 <span class="n">plotstart</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
 <span class="n">plotend</span> <span class="o">=</span> <span class="s2">"2009-04-20"</span>
 
-<span class="n">anim</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">plot_distributed_results</span><span class="p">(</span>
+<span class="n">anim</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span>
     <span class="n">plotstart</span><span class="p">,</span>
     <span class="n">plotend</span><span class="p">,</span>
     <span class="n">option</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">gauges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">gauges</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">,</span>
     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
     <span class="n">ticks_spacing</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
@@ -1708,7 +1860,7 @@ when <code>gauges=True</code>.</p>
   Pillow; <code>mov</code>, <code>avi</code> and <code>mp4</code> need <a href="https://ffmpeg.org/">FFmpeg</a> installed and available on your
   system.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">"results/anim.gif"</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">"results/anim.gif"</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="7-save-the-result-into-rasters"><a class="toclink" href="#7-save-the-result-into-rasters">7-Save the result into rasters</a><a class="headerlink" href="#7-save-the-result-into-rasters" title="Permanent link">#</a></h2>
 <ul>
@@ -1718,12 +1870,12 @@ when <code>gauges=True</code>.</p>
 <span class="n">end</span> <span class="o">=</span> <span class="s2">"2010-04-20"</span>
 <span class="n">prefix</span> <span class="o">=</span> <span class="s2">"Qtot_"</span>
 
-<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
-    <span class="n">FlowAccPath</span><span class="p">,</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">"results/"</span><span class="p">,</span>
+    <span class="n">flow_acc_path</span><span class="o">=</span><span class="n">FlowAccPath</span><span class="p">,</span>
     <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
     <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">"results/"</span><span class="p">,</span>
     <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>

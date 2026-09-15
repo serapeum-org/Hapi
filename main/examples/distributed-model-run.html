@@ -541,6 +541,16 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -769,6 +779,146 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/runs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/period.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation period
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/conceptual.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceptual model inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/protocols.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocols
   
 
     
@@ -1578,6 +1728,7 @@ one file holding the paths, dates and settings, read by <code>Catchment.from_yam
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowNetwork</span><span class="p">,</span> <span class="n">MeteoInputs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="kn">import</span> <span class="n">HBVBergestrom92</span> <span class="k">as</span> <span class="n">HBV</span>
 
@@ -1603,28 +1754,32 @@ one file holding the paths, dates and settings, read by <code>Catchment.from_yam
 <span class="n">Sdate</span> <span class="o">=</span> <span class="s1">'2009-01-01'</span>
 <span class="n">Edate</span> <span class="o">=</span> <span class="s1">'2011-12-31'</span>
 <span class="n">name</span> <span class="o">=</span> <span class="s2">"Coello"</span>
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Sdate</span><span class="p">,</span> <span class="n">Edate</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Distributed"</span><span class="p">)</span>
+<span class="c1"># `Calibration` holds a catchment rather than being one, so the model is built first</span>
+<span class="c1"># and every reader is called on `Coello.model`.</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Sdate</span><span class="p">,</span> <span class="n">Edate</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Distributed"</span><span class="p">))</span>
 
 <span class="c1"># Meteorological &amp; GIS Data</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">,</span> <span class="n">TempPath</span><span class="p">,</span> <span class="n">Evap_Path</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meteo</span> <span class="o">=</span> <span class="n">MeteoInputs</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">PrecPath</span><span class="p">,</span> <span class="n">TempPath</span><span class="p">,</span> <span class="n">Evap_Path</span><span class="p">)</span>
 
-<span class="n">Coello</span><span class="o">.</span><span class="n">flow_network</span> <span class="o">=</span> <span class="n">FlowNetwork</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">,</span> <span class="n">FlowDPath</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">flow_network</span> <span class="o">=</span> <span class="n">FlowNetwork</span><span class="o">.</span><span class="n">from_rasters</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">,</span> <span class="n">FlowDPath</span><span class="p">)</span>
 
 <span class="c1"># Lumped Model</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_lumped_model</span><span class="p">(</span><span class="n">HBV</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">read_lumped_model</span><span class="p">(</span><span class="n">HBV</span><span class="p">,</span> <span class="n">AreaCoeff</span><span class="p">,</span> <span class="n">InitialCond</span><span class="p">)</span>
 
 <span class="c1"># Gauges Data</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
 <span class="n">GaugesPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/"</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="spatial-variability-object"><a class="toclink" href="#spatial-variability-object">Spatial Variability Object</a><a class="headerlink" href="#spatial-variability-object" title="Permanent link">#</a></h2>
 <ul>
 <li>The <code>DistParameters</code> distribute the parameter vector on the cells following some spatial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in an additional map)</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameters</span> <span class="k">as</span> <span class="n">DP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
 
-<span class="n">raster</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="c1"># A pyramids `Dataset`, not a bare GDAL handle — `Parameters.__init__` refuses anything else.</span>
+<span class="n">raster</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">FlowAccPath</span><span class="p">)</span>
 <span class="c1">#-------------</span>
 <span class="c1"># for lumped catchment parameters</span>
 <span class="n">no_parameters</span> <span class="o">=</span> <span class="mi">12</span>
@@ -1635,27 +1790,30 @@ one file holding the paths, dates and settings, read by <code>Catchment.from_yam
 <span class="n">lumped_par_pos</span> <span class="o">=</span> <span class="p">[</span><span class="mi">7</span><span class="p">]</span>
 
 <span class="n">SpatialVarFun</span> <span class="o">=</span> <span class="n">DP</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">no_parameters</span><span class="p">,</span> <span class="n">no_lumped_par</span><span class="o">=</span><span class="n">no_lumped_par</span><span class="p">,</span>
-                   <span class="n">lumped_par_pos</span><span class="o">=</span><span class="n">lumped_par_pos</span><span class="p">,</span><span class="n">Function</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Klb</span><span class="o">=</span><span class="n">klb</span><span class="p">,</span> <span class="n">Kub</span><span class="o">=</span><span class="n">kub</span><span class="p">)</span>
+                   <span class="n">lumped_par_pos</span><span class="o">=</span><span class="n">lumped_par_pos</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                   <span class="n">k_lower_bound</span><span class="o">=</span><span class="n">klb</span><span class="p">,</span> <span class="n">k_upper_bound</span><span class="o">=</span><span class="n">kub</span><span class="p">)</span>
 <span class="c1"># calculate no of parameters that optimization algorithm is going to generate</span>
 <span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">ParametersNO</span>
 </code></pre></div>
 <h2 id="define-the-objective-function"><a class="toclink" href="#define-the-objective-function">Define the objective function</a><a class="headerlink" href="#define-the-objective-function" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">coordinates</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s1">'id'</span><span class="p">,</span><span class="s1">'x'</span><span class="p">,</span><span class="s1">'y'</span><span class="p">,</span><span class="s1">'weight'</span><span class="p">]][:]</span>
+<div class="highlight"><pre><span></span><code><span class="n">coordinates</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s1">'id'</span><span class="p">,</span><span class="s1">'x'</span><span class="p">,</span><span class="s1">'y'</span><span class="p">,</span><span class="s1">'weight'</span><span class="p">]][:]</span>
 
-<span class="c1"># define the objective function and its arguments</span>
-<span class="n">OF_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">coordinates</span><span class="p">]</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="n">Qobs</span><span class="p">,</span> <span class="n">Qout</span><span class="p">,</span> <span class="n">q_uz_routed</span><span class="p">,</span> <span class="n">q_lz_trans</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">):</span>
-    <span class="n">Coello</span><span class="o">.</span><span class="n">extract_discharge</span><span class="p">()</span>
-    <span class="n">all_errors</span><span class="o">=</span><span class="p">[]</span>
+<span class="c1"># `run_calibration` calls the objective as `objective(QGauges, GaugesTable)` — two</span>
+<span class="c1"># positional arguments, and nothing else. The arity is checked against the signature</span>
+<span class="c1"># before the search starts, so a mismatch is reported rather than scored as `nan`.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="n">Qobs</span><span class="p">,</span> <span class="n">gauges_table</span><span class="p">):</span>
+    <span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">extract_discharge</span><span class="p">()</span>
+    <span class="n">all_errors</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># error for all internal stations</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)):</span>
-        <span class="n">all_errors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span><span class="p">(</span><span class="n">Qobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">Qobs</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">Coello</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[:,</span><span class="n">i</span><span class="p">])))</span> <span class="c1">#*coordinates.loc[coordinates.index[i],'weight']</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
-        <span class="n">error</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">error</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gauges_table</span><span class="p">)):</span>
+        <span class="n">all_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span><span class="p">(</span><span class="n">Qobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">Qobs</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">Coello</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Qsim</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">all_errors</span><span class="p">)</span>
 
-    <span class="n">Coello</span><span class="o">.</span><span class="n">read_objective_function</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">OF_args</span><span class="p">)</span>
+
+<span class="c1"># Registered outside the function — indented inside it, this line never ran.</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_objective_function</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="p">[])</span>
 </code></pre></div>
 <h2 id="calibration-algorithm-arguments"><a class="toclink" href="#calibration-algorithm-arguments">Calibration algorithm Arguments</a><a class="headerlink" href="#calibration-algorithm-arguments" title="Permanent link">#</a></h2>
 <ul>
@@ -1680,7 +1838,9 @@ OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 <div class="highlight"><pre><span></span><code><span class="n">cal_parameters</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">run_calibration</span><span class="p">(</span><span class="n">SpatialVarFun</span><span class="p">,</span> <span class="n">OptimizationArgs</span><span class="p">,</span><span class="n">print_error</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="save-results"><a class="toclink" href="#save-results">Save results</a><a class="headerlink" href="#save-results" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">kub</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Kub</span><span class="p">,</span> <span class="n">klb</span><span class="o">=</span><span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Klb</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># `best_parameters` is the flat vector the optimiser produced, which is what `Function`</span>
+<span class="c1"># maps onto the grid; it takes that one argument and nothing else.</span>
+<span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">Coello</span><span class="o">.</span><span class="n">best_parameters</span><span class="p">)</span>
 <span class="n">SpatialVarFun</span><span class="o">.</span><span class="n">save_parameters</span><span class="p">(</span><span class="n">SaveTo</span><span class="p">)</span>
 </code></pre></div>
 
