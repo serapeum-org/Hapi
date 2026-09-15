@@ -501,7 +501,7 @@ class TestDatesAreResolvedAgainstTheRun:
         """
         start = dt.datetime(2009, 1, 1)
         end = dt.datetime(2009, 1, 5)
-        destination = str(tmp_path)
+        destination = tmp_path
 
         with pytest.raises(ValueError, match="between 1 and 8"):
             unrouted.save(
@@ -558,7 +558,7 @@ class TestDatesAreResolvedAgainstTheRun:
         """
         out = tmp_path / "whole.csv"
 
-        lumped_results.save(path=str(out), result=1)
+        lumped_results.save(path=out, result=1)
 
         written = pd.read_csv(out)
         assert len(written) == len(lumped_results.run.period), (
@@ -598,7 +598,7 @@ class TestTheCsvBranch:
         """
         out = tmp_path / f"result-{result}.csv"
 
-        lumped_results.save(path=str(out), result=result)
+        lumped_results.save(path=out, result=result)
 
         written = pd.read_csv(out)
         assert written.columns.to_list() == ["date", *columns], (
@@ -626,7 +626,7 @@ class TestTheCsvBranch:
         """
         out = tmp_path / "dates.csv"
 
-        lumped_results.save(path=str(out), result=1)
+        lumped_results.save(path=out, result=1)
 
         written = pd.read_csv(out)
         expected = [
@@ -654,7 +654,7 @@ class TestTheCsvBranch:
         out = tmp_path / "never.csv"
 
         with pytest.raises(ValueError, match="between 1 and 5"):
-            lumped_results.save(path=str(out), result=result)
+            lumped_results.save(path=out, result=result)
 
         assert not out.exists(), "nothing should be written when the option is refused"
 
@@ -684,9 +684,9 @@ class TestResultsBuiltByHand:
             rather than surface as an `AttributeError` on `None.period`.
         """
         with pytest.raises(ValueError, match="carry no run"):
-            orphan.save(path=str(tmp_path), flow_acc_path="unused")
+            orphan.save(path=tmp_path, flow_acc_path="unused")
 
-    def test_a_non_string_path_is_refused_before_anything_else(self, orphan):
+    def test_a_path_of_the_wrong_type_is_refused_before_anything_else(self, orphan):
         """Test that `path` is type-checked ahead of the run lookup.
 
         Args:
@@ -695,9 +695,11 @@ class TestResultsBuiltByHand:
         Test scenario:
             `outputs.results_dir` is optional in a run configuration, so a caller forwarding
             it can hold `None`. The check has to come first, or the message would name the
-            missing run instead of the argument the caller actually got wrong.
+            missing run instead of the argument the caller actually got wrong. A `Path` is
+            not what this rejects -- `str` and `Path` are both accepted, and the other
+            tests in this module pass `tmp_path` straight in.
         """
-        with pytest.raises(TypeError, match="path must be a string") as exc:
+        with pytest.raises(TypeError, match="path must be a str or Path") as exc:
             orphan.save(path=None)
 
         assert "NoneType" in str(exc.value), (

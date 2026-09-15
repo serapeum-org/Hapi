@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from pyramids.dataset import Dataset
+from pyramids.dataset import Dataset, GeoReference
 
 from hapi.rrm.parameters import Parameters
 
@@ -12,11 +12,11 @@ NO_DATA = -9999.0
 def _dataset(arr: np.ndarray) -> Dataset:
     """Build an in-memory Dataset from a 2-D array."""
     rows, _ = arr.shape
-    return Dataset.create_from_array(
+    return Dataset.from_array(
         arr.astype(np.float64),
-        top_left_corner=(0.0, float(rows)),
-        cell_size=1.0,
-        epsg=4326,
+        geo_ref=GeoReference(
+            top_left_corner=(0.0, float(rows)), cell_size=1.0, epsg=4326
+        ),
         no_data_value=NO_DATA,
     )
 

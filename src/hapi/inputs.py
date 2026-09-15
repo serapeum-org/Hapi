@@ -702,7 +702,7 @@ class FlowNetwork:
         # that reads a catchment and then moves or rewrites its inputs fails, and a loop
         # over basins accumulates handles. Everything read from the dataset is copied into
         # arrays here, so nothing needs the handle afterwards.
-        with Dataset.read_file(str(flow_acc)) as acc:
+        with Dataset.read_file(flow_acc) as acc:
             _warn_if_no_sentinel(acc, "flow accumulation")
             acc_arr = np.ma.filled(
                 acc.read_array(band=0, masked=True).astype(float), np.nan
@@ -711,7 +711,7 @@ class FlowNetwork:
 
         dir_arr, table = None, None
         if flow_dir is not None:
-            with DEM.read_file(str(flow_dir)) as direction:
+            with DEM.read_file(flow_dir) as direction:
                 _warn_if_no_sentinel(direction, "flow direction")
                 dir_arr = np.ma.filled(
                     direction.read_array(band=0, masked=True).astype(float), np.nan
@@ -1188,7 +1188,7 @@ class MeteoInputs:
         for name, path in zip(
             METEO_VARIABLES, (precipitation, temperature, evapotranspiration)
         ):
-            nc = NetCDF.read_file(str(path))
+            nc = NetCDF.read_file(path)
             if variable is None:
                 if len(nc.variable_names) != 1:
                     raise ValueError(
@@ -1540,7 +1540,7 @@ class MeteoInputs:
             zip(METEO_VARIABLES, (precipitation, temperature, evapotranspiration))
         )
         for name, source in sources.items():
-            holder = NetCDF.read_file(str(source))
+            holder = NetCDF.read_file(source)
             if len(holder.variable_names) != 1:
                 raise ValueError(
                     f"{source} holds {len(holder.variable_names)} variables "
@@ -1549,17 +1549,17 @@ class MeteoInputs:
                 )
 
         (seed_name, seed_path), *rest = sources.items()
-        combined = NetCDF.read_file(str(seed_path))
+        combined = NetCDF.read_file(seed_path)
         combined.rename_variable(combined.variable_names[0], seed_name)
 
         for name, source in rest:
-            holder = NetCDF.read_file(str(source))
+            holder = NetCDF.read_file(source)
             combined.add_variable(holder)
             combined.rename_variable(holder.variable_names[0], name)
 
         out = Path(out_path)
         out.unlink(missing_ok=True)
-        combined.to_file(str(out))
+        combined.to_file(out)
         logger.debug(f"three drivers combined into {out}")
         return out
 
@@ -1771,11 +1771,11 @@ class RiverGeometry:
     @classmethod
     def from_rasters(
         cls,
-        dem_file: str,
-        bankfull_depth_file: str,
-        river_width_file: str,
-        river_roughness_file: str,
-        floodplain_roughness_file: str,
+        dem_file: str | Path,
+        bankfull_depth_file: str | Path,
+        river_width_file: str | Path,
+        river_roughness_file: str | Path,
+        floodplain_roughness_file: str | Path,
     ) -> RiverGeometry:
         """Read the five rasters and check they agree before returning them.
 
@@ -1826,7 +1826,7 @@ class Inputs:
         >>> inp = Inputs("data/dem.tif")
     """
 
-    def __init__(self, src: str):
+    def __init__(self, src: str | Path):
         """Initialize the Inputs instance with a reference DEM path.
 
         Args:
@@ -1866,25 +1866,29 @@ class Inputs:
             - Align two rasters onto a DEM grid and read back what was written:
                 ```python
                 >>> import numpy as np, os, tempfile
-                >>> from pyramids.dataset import Dataset
+                >>> from pathlib import Path
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.inputs import Inputs
-                >>> root = tempfile.mkdtemp()
-                >>> dem_path = os.path.join(root, "dem.tif")
-                >>> Dataset.create_from_array(
-                ...     np.ones((4, 4), dtype="float32"), top_left_corner=(0.0, 4.0),
-                ...     cell_size=1.0, epsg=4326, no_data_value=-9999.0, path=dem_path,
+                >>> grid = GeoReference(
+                ...     top_left_corner=(0.0, 4.0), cell_size=1.0, epsg=4326
+                ... )
+                >>> root = Path(tempfile.mkdtemp())
+                >>> dem_path = root / "dem.tif"
+                >>> Dataset.from_array(
+                ...     np.ones((4, 4), dtype="float32"), geo_ref=grid,
+                ...     no_data_value=-9999.0, path=dem_path,
                 ... ).close()
-                >>> src_dir = os.path.join(root, "src")
-                >>> os.makedirs(src_dir)
+                >>> src_dir = root / "src"
+                >>> src_dir.mkdir()
                 >>> for stamp in ("2020.01.01", "2020.01.02"):
-                ...     Dataset.create_from_array(
-                ...         np.full((4, 4), 5.0, dtype="float32"), top_left_corner=(0.0, 4.0),
-                ...         cell_size=1.0, epsg=4326, no_data_value=-9999.0,
-                ...         path=os.path.join(src_dir, f"prec_{stamp}.tif"),
+                ...     Dataset.from_array(
+                ...         np.full((4, 4), 5.0, dtype="float32"), geo_ref=grid,
+                ...         no_data_value=-9999.0,
+                ...         path=src_dir / f"prec_{stamp}.tif",
                 ...     ).close()
-                >>> out_dir = os.path.join(root, "out")
+                >>> out_dir = root / "out"
                 >>> Inputs(dem_path).prepare_inputs(src_dir, out_dir)
-                >>> sorted(os.listdir(out_dir))
+                >>> sorted(path.name for path in out_dir.iterdir())
                 ['prec_2020.01.01.tif', 'prec_2020.01.02.tif']
 
                 ```
@@ -1917,8 +1921,10 @@ class Inputs:
         file_names = [Path(file).name for file in cube.files]
         cube.align(mask, inplace=True)
         cube.crop(mask, inplace=True)
-        path = [f"{outputs_dir}/{name}" for name in file_names]
-        cube.to_file(path)
+        # Joined with `/` rather than interpolated: `outputs_dir` may be a Path, and
+        # f"{dir}/{name}" would then splice a POSIX separator into a Windows path.
+        # `to_file` takes a list of Path as readily as a list of str.
+        cube.to_file([Path(outputs_dir) / name for name in file_names])
 
     @staticmethod
     def extract_parameters_boundaries(basin: FeatureCollection):
@@ -1958,7 +1964,7 @@ class Inputs:
                 f"check the following files{file_path}, {max_dir}, {min_dir} does not exist"
             )
 
-        dataset = Dataset.read_file(str(file_path))
+        dataset = Dataset.read_file(file_path)
         # Wrap on the way in so a plain GeoDataFrame is accepted as readily as a
         # FeatureCollection; the constructor is a no-op for one that is already wrapped.
         basin = FeatureCollection(basin).to_crs(crs=dataset.crs)
@@ -1966,14 +1972,14 @@ class Inputs:
         # max values
         ub = list()
         for i in range(len(PARAMETERS_LIST)):
-            dataset = Dataset.read_file(f"{data_dir}/max/{PARAMETERS_LIST[i]}.tif")
+            dataset = Dataset.read_file(max_dir / f"{PARAMETERS_LIST[i]}.tif")
             vals = dataset.stats(mask=basin)
             ub.append(vals.loc[vals.index[0], "max"])
 
         # min values
         lb = list()
         for i in range(len(PARAMETERS_LIST)):
-            dataset = Dataset.read_file(f"{data_dir}/min/{PARAMETERS_LIST[i]}.tif")
+            dataset = Dataset.read_file(min_dir / f"{PARAMETERS_LIST[i]}.tif")
             vals = dataset.stats(mask=basin)
             lb.append(vals.loc[vals.index[0], "min"])
 
@@ -1989,7 +1995,7 @@ class Inputs:
         gdf: FeatureCollection | None,
         scenario: str,
         as_raster: bool = False,
-        save_to: str = "",
+        save_to: str | Path = "",
     ):
         """Extract HBV parameter values or rasters for a catchment.
 
@@ -2040,13 +2046,13 @@ class Inputs:
         parameters_path = data_dir / scenario
 
         if not as_raster:
-            dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
+            dataset = Dataset.read_file(parameters_path / f"{PARAMETERS_LIST[0]}.tif")
             gdf = FeatureCollection(gdf).to_crs(crs=dataset.crs)
 
             stats = pd.DataFrame(columns=["min", "max", "mean", "std"])
             for i in range(len(PARAMETERS_LIST)):
                 dataset = Dataset.read_file(
-                    f"{parameters_path}/{PARAMETERS_LIST[i]}.tif"
+                    parameters_path / f"{PARAMETERS_LIST[i]}.tif"
                 )
                 vals = dataset.stats(mask=gdf)
                 stats.loc[PARAMETERS_LIST[i], :] = vals.loc[
@@ -2054,11 +2060,11 @@ class Inputs:
                 ].values
             return stats
         else:
-            self.prepare_inputs(f"{parameters_path}/", save_to)
+            self.prepare_inputs(parameters_path, save_to)
 
     @staticmethod
     def create_lumped_inputs(
-        path: str,
+        path: str | Path,
         regex_string: str = r"\d{4}.\d{2}.\d{2}",
         date: bool = True,
         file_name_data_fmt: str | None = None,
@@ -2100,16 +2106,19 @@ class Inputs:
         Examples:
             - Reduce two dated rasters to one catchment average each, in date order:
                 ```python
-                >>> import numpy as np, os, tempfile
-                >>> from pyramids.dataset import Dataset
+                >>> import numpy as np, tempfile
+                >>> from pathlib import Path
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.inputs import Inputs
-                >>> src_dir = tempfile.mkdtemp()
+                >>> src_dir = Path(tempfile.mkdtemp())
                 >>> for stamp, value in (("2020.01.02", 4.0), ("2020.01.01", 2.0)):
-                ...     Dataset.create_from_array(
+                ...     Dataset.from_array(
                 ...         np.full((2, 2), value, dtype="float32"),
-                ...         top_left_corner=(0.0, 2.0), cell_size=1.0, epsg=4326,
+                ...         geo_ref=GeoReference(
+                ...             top_left_corner=(0.0, 2.0), cell_size=1.0, epsg=4326
+                ...         ),
                 ...         no_data_value=-9999.0,
-                ...         path=os.path.join(src_dir, f"prec_{stamp}.tif"),
+                ...         path=src_dir / f"prec_{stamp}.tif",
                 ...     ).close()
                 >>> averages = Inputs.create_lumped_inputs(
                 ...     src_dir, regex_string=r"\d{4}.\d{2}.\d{2}", date=True,
@@ -2121,15 +2130,18 @@ class Inputs:
                 ```
             - A uniform raster averages to its own value:
                 ```python
-                >>> import numpy as np, os, tempfile
-                >>> from pyramids.dataset import Dataset
+                >>> import numpy as np, tempfile
+                >>> from pathlib import Path
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.inputs import Inputs
-                >>> src_dir = tempfile.mkdtemp()
-                >>> Dataset.create_from_array(
+                >>> src_dir = Path(tempfile.mkdtemp())
+                >>> Dataset.from_array(
                 ...     np.full((3, 3), 7.5, dtype="float32"),
-                ...     top_left_corner=(0.0, 3.0), cell_size=1.0, epsg=4326,
+                ...     geo_ref=GeoReference(
+                ...         top_left_corner=(0.0, 3.0), cell_size=1.0, epsg=4326
+                ...     ),
                 ...     no_data_value=-9999.0,
-                ...     path=os.path.join(src_dir, "prec_2021.06.01.tif"),
+                ...     path=src_dir / "prec_2021.06.01.tif",
                 ... ).close()
                 >>> averages = Inputs.create_lumped_inputs(
                 ...     src_dir, regex_string=r"\d{4}.\d{2}.\d{2}", date=True,

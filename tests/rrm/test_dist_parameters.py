@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from pyramids.dataset import Dataset
+from pyramids.dataset import Dataset, GeoReference
 
 from hapi.rrm.parameters import Parameters as DP
 
@@ -94,11 +94,13 @@ class TestParametersMasking:
         Returns:
             Dataset: An in-memory raster on a 4000 m UTM 18N grid.
         """
-        return Dataset.create_from_array(
+        return Dataset.from_array(
             array,
-            top_left_corner=(0.0, array.shape[0] * 4000.0),
-            cell_size=4000.0,
-            epsg=32618,
+            geo_ref=GeoReference(
+                top_left_corner=(0.0, array.shape[0] * 4000.0),
+                cell_size=4000.0,
+                epsg=32618,
+            ),
             no_data_value=no_data_value,
         )
 
@@ -368,15 +370,16 @@ class TestParametersMasking:
 SUBPROCESS_PROBE = """
 import sys
 import numpy as np
-from pyramids.dataset import Dataset
+from pyramids.dataset import Dataset, GeoReference
 from hapi.rrm.parameters import Parameters
 
-raster = Dataset.create_from_array(
+raster = Dataset.from_array(
     np.array([[1, 2], [3, -9999]], dtype="int32"),
-    top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618, no_data_value=-9999,
+    geo_ref=GeoReference(top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618),
+    no_data_value=-9999,
 )
 try:
-    Parameters(raster, 12).save_parameters("definitely-missing-dir/")
+    Parameters(raster, 12).save_parameters("definitely-missing-dir")
 except FileNotFoundError:
     sys.exit(0)
 sys.exit(1)
@@ -390,11 +393,11 @@ def _raster() -> Dataset:
     Returns:
         Dataset: A 2x2 raster on a 4000 m UTM 18N grid with one no-data cell.
     """
-    return Dataset.create_from_array(
+    return Dataset.from_array(
         np.array([[1, 2], [3, NO_DATA]], dtype="int32"),
-        top_left_corner=(0.0, 8000.0),
-        cell_size=4000.0,
-        epsg=32618,
+        geo_ref=GeoReference(
+            top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618
+        ),
         no_data_value=NO_DATA,
     )
 
@@ -409,26 +412,35 @@ class TestSaveParametersValidation:
             tmp_path: pytest's per-test temporary directory.
 
         Test scenario:
-            ``save_parameters`` builds each output name by concatenating onto ``path``, so
-            it cannot delegate to pyramids the way the readers do — the failure would
-            otherwise surface per-file, midway through writing.
+            The directory is checked once, up front, rather than left to pyramids: a
+            missing folder would otherwise surface on the first write, leaving some
+            parameters on disk and the rest not.
         """
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            DP(_raster(), 12).save_parameters(str(tmp_path / "absent") + "/")
+            DP(_raster(), 12).save_parameters(tmp_path / "absent")
 
-    def test_non_string_path_raises(self, tmp_path):
-        """Test that a non-``str`` output path is rejected with ``TypeError``.
+    def test_path_object_is_accepted(self, tmp_path):
+        """Test that a ``pathlib.Path`` output directory writes the rasters.
 
         Args:
             tmp_path: pytest's per-test temporary directory.
 
         Test scenario:
-            Unlike the readers, this method really does need a ``str``: it concatenates
-            ``path + name``, which ``Path`` does not support. The check is kept rather
-            than delegated — but raised, not asserted.
+            This method used to reject a ``Path`` outright, because it built each
+            output name by concatenation (``path + name``). Joining with ``/``
+            instead removes the reason for the rule, so the whole API now takes
+            either spelling. Passing ``tmp_path`` unconverted is the point.
         """
-        with pytest.raises(TypeError, match="string"):
-            DP(_raster(), 12).save_parameters(tmp_path)
+        distributor = DP(_raster(), 12)
+        distributor.Snow = 0
+        distributor.Par3d = np.zeros((2, 2, 12), dtype="float32")
+
+        distributor.save_parameters(tmp_path)
+
+        written = sorted(tmp_path.glob("*.tif"))
+        assert len(written) == 12, (
+            f"a Path destination should write 12 rasters, got {[f.name for f in written]}"
+        )
 
     def test_validation_survives_optimised_mode(self):
         """Test that the guard still fires under ``python -O``.
@@ -476,14 +488,14 @@ class TestSaveParametersValidation:
             The two snow branches carry different parameter-name lists (12 without snow,
             15 with), and the writer emits one dated GeoTIFF per layer of ``Par3d``. The
             method had no tests before, so this covers the happy path alongside the
-            validation guards above. ``path`` must end with a separator: output names are
-            built by concatenation.
+            validation guards above. ``path`` names the directory; it no longer has to
+            end with a separator, because the names are joined rather than concatenated.
         """
         distributor = DP(_raster(), expected)
         distributor.Snow = snow
         distributor.Par3d = np.zeros((2, 2, expected), dtype="float32")
 
-        distributor.save_parameters(str(tmp_path) + "/")
+        distributor.save_parameters(tmp_path)
 
         written = sorted(tmp_path.glob("*.tif"))
         assert len(written) == expected, (

@@ -20,7 +20,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from pyramids.dataset import Dataset
+from pyramids.dataset import Dataset, GeoReference
 
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs, read_rasters
@@ -65,12 +65,14 @@ def write_raster(tmp_path):
     ) -> str:
         path = tmp_path / name
         height = CELL_SIZE if pixel_height is None else pixel_height
-        Dataset.create_from_array(
+        Dataset.from_array(
             array,
-            geo=(0.0, CELL_SIZE, 0.0, array.shape[0] * height, 0.0, -height),
-            epsg=EPSG,
+            geo_ref=GeoReference(
+                geo=(0.0, CELL_SIZE, 0.0, array.shape[0] * height, 0.0, -height),
+                epsg=EPSG,
+            ),
             no_data_value=no_data_value,
-            path=str(path),
+            path=path,
         ).close()
         return str(path)
 
@@ -437,15 +439,14 @@ class TestReadFlowAcc:
             consumer of ``cell_size`` treats it as a magnitude — as the value it replaced
             was, having been ``abs()``-ed.
         """
-        path = str(Path(write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))))
+        path = write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
         flipped = Dataset.read_file(path)
         gt = list(flipped.geotransform)
         gt[1] = -gt[1]
         flipped_path = path.replace(".tif", "_flipped.tif")
-        Dataset.create_from_array(
+        Dataset.from_array(
             flipped.read_array(band=0),
-            geo=tuple(gt),
-            epsg=EPSG,
+            geo_ref=GeoReference(geo=tuple(gt), epsg=EPSG),
             no_data_value=NO_DATA,
             path=flipped_path,
         ).close()
@@ -468,7 +469,7 @@ class TestReadFlowAcc:
             guard used to produce.
         """
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            FlowNetwork.from_rasters(str(tmp_path / "absent.tif"))
+            FlowNetwork.from_rasters(tmp_path / "absent.tif")
 
     def test_unreadable_file_raises(self, catchment, tmp_path):
         """Test that a file GDAL cannot open is rejected.
@@ -483,7 +484,7 @@ class TestReadFlowAcc:
         other.write_text("not a geotiff", encoding="utf-8")
 
         with pytest.raises(RuntimeError):
-            FlowNetwork.from_rasters(str(other))
+            FlowNetwork.from_rasters(other)
 
     def test_path_object_is_accepted(self, catchment, write_raster):
         """Test that a ``pathlib.Path`` is a valid argument.
@@ -511,7 +512,7 @@ class TestReadFlowAcc:
         source = Dataset.read_file(
             write_raster(np.array([[0, 1], [2, NO_DATA]], dtype="int32"))
         )
-        asc_path = str(tmp_path / "acc.asc")
+        asc_path = tmp_path / "acc.asc"
         source.to_file(asc_path)
 
         catchment.flow_network = FlowNetwork.from_rasters(asc_path)
@@ -567,9 +568,9 @@ class TestDirectoryReaders:
             A model run reads three directories, so a bare "the path does not exist" does not
             identify the culprit.
         """
-        missing = str(tmp_path / "absent")
+        missing = tmp_path / "absent"
 
-        with pytest.raises(FileNotFoundError, match=re.escape(missing)):
+        with pytest.raises(FileNotFoundError, match=re.escape(str(missing))):
             MeteoInputs.from_rasters(
                 missing, missing, missing, file_name_data_fmt="%Y.%m.%d"
             )
@@ -588,9 +589,7 @@ class TestDirectoryReaders:
         empty.mkdir()
 
         with pytest.raises(FileNotFoundError, match=re.escape(str(empty))):
-            MeteoInputs.from_rasters(
-                str(empty), str(empty), str(empty), file_name_data_fmt="%Y.%m.%d"
-            )
+            MeteoInputs.from_rasters(empty, empty, empty, file_name_data_fmt="%Y.%m.%d")
 
     @pytest.mark.parametrize("bound", ["start", "end"])
     def test_a_datetime_bound_needs_the_date_ordering(self, coello_prec_path, bound):
@@ -719,7 +718,7 @@ class TestReadFlowDir:
         other.write_text("not a geotiff", encoding="utf-8")
 
         with pytest.raises(RuntimeError):
-            FlowNetwork.from_rasters(acc_for_shape((2, 2)), str(other))
+            FlowNetwork.from_rasters(acc_for_shape((2, 2)), other)
 
     def test_missing_file_raises(self, catchment, tmp_path, acc_for_shape):
         """Test that a missing flow-direction raster is rejected by pyramids.
@@ -728,9 +727,7 @@ class TestReadFlowDir:
             ``FileNotFoundError`` from ``DEM.read_file``, matching the other readers.
         """
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            FlowNetwork.from_rasters(
-                acc_for_shape((2, 2)), str(tmp_path / "absent.tif")
-            )
+            FlowNetwork.from_rasters(acc_for_shape((2, 2)), tmp_path / "absent.tif")
 
     def test_fdt_and_flow_dir_arr_use_different_masks(
         self, catchment, write_raster, acc_for
@@ -856,7 +853,7 @@ class TestReadFlowPathLength:
         other.write_text("not a geotiff", encoding="utf-8")
 
         with pytest.raises(RuntimeError):
-            catchment.read_flow_path_length(str(other))
+            catchment.read_flow_path_length(other)
 
     def test_missing_file_raises(self, catchment, tmp_path):
         """Test that a missing flow-path-length raster is rejected by pyramids.
@@ -865,4 +862,4 @@ class TestReadFlowPathLength:
             ``FileNotFoundError`` from ``Dataset.read_file``, matching the other readers.
         """
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            catchment.read_flow_path_length(str(tmp_path / "absent.tif"))
+            catchment.read_flow_path_length(tmp_path / "absent.tif")

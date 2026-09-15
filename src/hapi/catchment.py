@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import datetime as dt
 import inspect
-import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -186,7 +185,7 @@ def _check_the_configured_paths_exist(config: RunConfig, distributed: bool) -> N
 
 
 @contextmanager
-def _name_the_path(path) -> Iterator[None]:
+def _name_the_path(path: str | Path) -> Iterator[None]:
     """Re-raise a pyramids `FileNotFoundError` with the offending path in the message.
 
     `DatasetCollection.from_files` reports "The path you have provided does
@@ -517,7 +516,7 @@ class Catchment:
         model.config = config
         return model
 
-    def read_flow_path_length(self, path: str):
+    def read_flow_path_length(self, path: str | Path):
         """Read the flow path length raster.
 
         Reads the flow path length raster into `flow_path_length_arr`. The grid it sits
@@ -541,13 +540,16 @@ class Catchment:
             - Read a small path-length raster; the one no-data cell is excluded from the
               domain count:
                 ```python
-                >>> import numpy as np, os, tempfile
-                >>> from pyramids.dataset import Dataset
+                >>> import numpy as np, tempfile
+                >>> from pathlib import Path
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.catchment import Catchment
-                >>> path = os.path.join(tempfile.mkdtemp(), "fpl.tif")
-                >>> Dataset.create_from_array(
+                >>> path = Path(tempfile.mkdtemp()) / "fpl.tif"
+                >>> Dataset.from_array(
                 ...     np.array([[10, 20], [30, -9999]], dtype="int32"),
-                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     geo_ref=GeoReference(
+                ...         top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618
+                ...     ),
                 ...     no_data_value=-9999, path=path,
                 ... ).close()
                 >>> model = Catchment("example", "2000-01-01", "2000-01-02",
@@ -561,13 +563,16 @@ class Catchment:
                 ```
             - A real length within 0.1% of the sentinel is kept, so every cell counts:
                 ```python
-                >>> import numpy as np, os, tempfile
-                >>> from pyramids.dataset import Dataset
+                >>> import numpy as np, tempfile
+                >>> from pathlib import Path
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.catchment import Catchment
-                >>> path = os.path.join(tempfile.mkdtemp(), "fpl_near.tif")
-                >>> Dataset.create_from_array(
+                >>> path = Path(tempfile.mkdtemp()) / "fpl_near.tif"
+                >>> Dataset.from_array(
                 ...     np.array([[10, 20], [30, -9990]], dtype="int32"),
-                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     geo_ref=GeoReference(
+                ...         top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618
+                ...     ),
                 ...     no_data_value=-9999, path=path,
                 ... ).close()
                 >>> model = Catchment("example", "2000-01-01", "2000-01-02",
@@ -598,11 +603,11 @@ class Catchment:
 
     def read_river_geometry(
         self,
-        dem_file: str,
-        bankfull_depth_file: str,
-        river_width_file: str,
-        river_roughness_file: str,
-        floodplain_roughness_file: str,
+        dem_file: str | Path,
+        bankfull_depth_file: str | Path,
+        river_width_file: str | Path,
+        river_roughness_file: str | Path,
+        floodplain_roughness_file: str | Path,
     ):
         """Read river geometry rasters for hydraulic routing.
 
@@ -632,7 +637,9 @@ class Catchment:
             floodplain_roughness_file,
         )
 
-    def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
+    def read_parameters(
+        self, path: str | Path, snow: bool = False, maxbas: bool = False
+    ):
         """Read model parameter rasters or a CSV parameter file.
 
         For distributed mode, reads parameter rasters from a folder.
@@ -663,7 +670,7 @@ class Catchment:
                 cube = read_rasters(path, regex_string=r"\d+", date=False)
             parameters = np.moveaxis(cube.values, 0, -1)
         else:
-            if not os.path.exists(path):
+            if not Path(path).exists():
                 raise FileNotFoundError(
                     "The parameter file you have entered does not exist"
                 )
@@ -722,7 +729,7 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def read_lumped_inputs(self, path: str):
+    def read_lumped_inputs(self, path: str | Path):
         """Read meteorological inputs for lumped mode.
 
         The lumped counterpart of :class:`~hapi.inputs.MeteoInputs`, which carries the
@@ -763,7 +770,10 @@ class Catchment:
         logger.debug("Lumped Model inputs are read successfully")
 
     def read_gauge_table(
-        self, path: str, flow_acc_file: str = "", fmt: str = "%Y-%m-%d"
+        self,
+        path: str | Path,
+        flow_acc_file: str | Path = "",
+        fmt: str = "%Y-%m-%d",
     ):
         """Read the gauge table listing gauge locations and properties.
 
@@ -857,8 +867,10 @@ class Catchment:
         See Also:
             Catchment.read_discharge_gauges: Read the observed discharge series per gauge.
         """
-        # read the gauge table
-        if path.endswith(".geojson"):
+        # read the gauge table. The extension is read off a Path rather than with
+        # `str.endswith`, which a Path does not have -- and `.suffix` is compared
+        # case-insensitively here, where the string test missed `.GeoJSON`.
+        if Path(path).suffix.lower() == ".geojson":
             # FeatureCollection is-a GeoDataFrame, so every downstream consumer
             # (.loc, .columns, map_to_array_coordinates) is unaffected. The old
             # `driver="GeoJSON"` was a write-time option that pyogrio warned about
@@ -886,7 +898,7 @@ class Catchment:
                         "column should be omitted entirely."
                     )
                 self.GaugesTable[column] = parsed
-        if flow_acc_file != "" and "cell_row" not in col_list:
+        if flow_acc_file and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
             # calculate the nearest cell to each station
             dataset = Dataset.read_file(flow_acc_file)
@@ -897,7 +909,7 @@ class Catchment:
 
     def read_discharge_gauges(
         self,
-        path: str,
+        path: str | Path,
         delimiter: str = ",",
         column: str = "id",
         fmt: str = "%Y-%m-%d",
@@ -963,7 +975,7 @@ class Catchment:
 
     def _read_one_discharge_file_per_gauge(
         self,
-        path: str,
+        path: str | Path,
         index: pd.DatetimeIndex,
         delimiter: str,
         column: str,
@@ -999,11 +1011,14 @@ class Catchment:
         labels = self.GaugesTable[column].tolist()
         self.QGauges = pd.DataFrame(index=index, columns=labels)
 
+        # Joined with `/` rather than interpolated: `path` may be a Path, and
+        # f"{path}/{name}.csv" would splice a POSIX separator into a Windows path.
+        folder = Path(path)
         for i in range(len(self.GaugesTable)):
             name = self.GaugesTable.loc[i, "id"]
             if readfrom != "":
                 f = pd.read_csv(
-                    f"{path}/{name}.csv",
+                    folder / f"{name}.csv",
                     index_col=0,
                     delimiter=delimiter,
                     skiprows=readfrom,
@@ -1022,7 +1037,7 @@ class Catchment:
             ]
 
     def _read_the_single_discharge_file(
-        self, path: str, index: pd.DatetimeIndex, delimiter: str, fmt: str
+        self, path: str | Path, index: pd.DatetimeIndex, delimiter: str, fmt: str
     ) -> None:
         """Fill `QGauges` from one CSV, the lumped case.
 
@@ -1038,7 +1053,7 @@ class Catchment:
         Raises:
             FileNotFoundError: `path` does not exist.
         """
-        if not os.path.exists(path):
+        if not Path(path).exists():
             raise FileNotFoundError(f"The file you have entered{path} does not exist")
 
         self.QGauges = pd.DataFrame(index=index)
@@ -1351,7 +1366,7 @@ class Lake:
         self.Qlake: np.ndarray | None = None
         self.QlakeR: np.ndarray | None = None
 
-    def read_meteo_data(self, path: str, fmt: str):
+    def read_meteo_data(self, path: str | Path, fmt: str):
         """Read meteorological data for the lake simulation.
 
         Reads rainfall, evapotranspiration, and temperature data from a
@@ -1375,11 +1390,11 @@ class Lake:
 
         logger.debug("Lake Meteo data are read successfully")
 
-    def read_parameters(self, path):
+    def read_parameters(self, path: str | Path):
         """Read lake model parameters from a text file.
 
         Args:
-            path (str): Path to the parameter text file.
+            path: Path to the parameter text file, as a `str` or a `Path`.
         """
         self.Parameters = np.loadtxt(path).tolist()
         logger.debug("Lake Parameters are read successfully")

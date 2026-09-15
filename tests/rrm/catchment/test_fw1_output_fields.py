@@ -246,7 +246,7 @@ def test_save_rasters_of_discharge_after_fw1(
         0
     ]
     np.testing.assert_allclose(
-        Dataset.read_file(str(written[0])).read_array(band=0),
+        Dataset.read_file(written[0]).read_array(band=0),
         coello_fw1.results.q_total[:, :, start_i],
         rtol=1e-5,
         err_msg="the first raster must hold the first q_total step",

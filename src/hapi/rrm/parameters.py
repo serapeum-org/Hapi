@@ -9,9 +9,9 @@ generated parameters into rasters.
 from __future__ import annotations
 
 import datetime as dt
-import os
 import warnings
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -110,11 +110,13 @@ class Parameters:
               parameterise:
                 ```python
                 >>> import numpy as np
-                >>> from pyramids.dataset import Dataset
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.rrm.parameters import Parameters
-                >>> raster = Dataset.create_from_array(
+                >>> raster = Dataset.from_array(
                 ...     np.array([[1, 2], [3, -9999]], dtype="int32"),
-                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     geo_ref=GeoReference(
+                ...         top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618
+                ...     ),
                 ...     no_data_value=-9999,
                 ... )
                 >>> distributor = Parameters(raster, 12)
@@ -130,11 +132,13 @@ class Parameters:
               catchment cell and widens the parameter array:
                 ```python
                 >>> import numpy as np
-                >>> from pyramids.dataset import Dataset
+                >>> from pyramids.dataset import Dataset, GeoReference
                 >>> from hapi.rrm.parameters import Parameters
-                >>> raster = Dataset.create_from_array(
+                >>> raster = Dataset.from_array(
                 ...     np.array([[1, 2], [3, -9990]], dtype="int32"),
-                ...     top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618,
+                ...     geo_ref=GeoReference(
+                ...         top_left_corner=(0.0, 8000.0), cell_size=4000.0, epsg=32618
+                ...     ),
                 ...     no_data_value=-9999,
                 ... )
                 >>> distributor = Parameters(raster, 12)
@@ -796,19 +800,17 @@ class Parameters:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
 
-    def save_parameters(self, path: str | None):
+    def save_parameters(self, path: str | Path | None):
         """Save distributed parameters as raster files.
 
         Takes the generated 3D parameter array and saves each parameter
         layer as a separate GeoTIFF raster file.
 
         Args:
-            path: Path to the folder where the parameter rasters will
-                be saved.
+            path: Folder the parameter rasters are written into, as a `str` or a
+                `Path`. `None` writes them into the working directory.
 
         Raises:
-            TypeError: `path` is not a `str`. Output names are built by concatenation
-                (`path + name`), which a `Path` does not support.
             FileNotFoundError: The output directory does not exist. Checked up front so
                 the failure does not surface midway through writing.
 
@@ -817,13 +819,11 @@ class Parameters:
             set before calling this method: `DistParFn`, `raster`,
             `Par`, `no_parameters`, `snow`, `kub`, and `klb`.
         """
-        # Not delegated to pyramids: the output names are built by string concatenation
-        # below (`path + name`), so this genuinely needs a str, and the directory must
-        # exist before the first raster is written. Raised rather than asserted so the
-        # checks survive `python -O`.
-        if not isinstance(path, str):
-            raise TypeError(f"path should be of type string, given: {type(path)}")
-        if not os.path.exists(path):
+        # Checked here rather than left to pyramids: the directory must exist before
+        # the first raster is written, or a run fails halfway through with some
+        # parameters on disk and some not. Raised rather than asserted so the check
+        # survives `python -O`.
+        if path is not None and not Path(path).exists():
             raise FileNotFoundError(f"{path} you have provided does not exist")
 
         # save
@@ -861,10 +861,15 @@ class Parameters:
                 "18_perc",
             ]
 
-        if path is not None:
-            pnme = [
-                path + i + "_" + str(dt.datetime.now())[0:10] + ".tif" for i in pnme
-            ]
+        # Joined with `/` rather than concatenated, so a `Path` works and a directory
+        # given without a trailing separator no longer writes `some/dir01_rfcf_....tif`
+        # beside the folder it was meant to go in. A bare name, when `path` is None,
+        # still lands in the working directory.
+        stamp = str(dt.datetime.now())[0:10]
+        destinations: list[str | Path] = [
+            Path(path) / f"{name}_{stamp}.tif" if path is not None else name
+            for name in pnme
+        ]
 
         for i in range(np.shape(self.Par3d)[2]):
-            Dataset.dataset_like(self.raster, self.Par3d[:, :, i], path=pnme[i])
+            Dataset.dataset_like(self.raster, self.Par3d[:, :, i], path=destinations[i])

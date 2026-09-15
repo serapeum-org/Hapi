@@ -21,7 +21,7 @@ import numpy as np
 
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
-from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.glyphs.gridded.array_glyph import Animation, FrameLabel
 from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
@@ -192,7 +192,8 @@ upper zone and lower zone discharge, and the state variables. The keyword
 arguments are forwarded to
 ``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
 for the full list of supported options. Since cleopatra 0.30 the styling
-keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
+keywords are grouped into typed objects (``color``, ``cells``), and since 0.38
+the playback ones (``interval``, ``frame_label``) live on ``playback=Animation``.
 """
 
 plotstart = "2012-07-20"
@@ -205,10 +206,9 @@ Anim = Jiboa.results.animate(
     option=3,
     cells=CellValues(show=False, background_threshold=160),
     ticks_spacing=10,
-    interval=10,
+    playback=Animation(interval=10, frame_label=FrameLabel(location=[0.6, 0.8])),
     gauges=None,
     cmap="inferno",
-    frame_label=FrameLabel(location=[0.6, 0.8]),
     color=ColorScaling.power(gamma=0.08),
 )
 # %%

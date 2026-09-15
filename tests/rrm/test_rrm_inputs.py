@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from pyramids.dataset import Dataset
+from pyramids.dataset import Dataset, GeoReference
 from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from shapely.geometry import Polygon
@@ -39,7 +39,7 @@ def test_prepare_inputs(
     assert rpath.exists()
     files = list(rpath.iterdir())
     assert len(files) == 10
-    cube = Datacube.from_files(str(rpath))
+    cube = Datacube.from_files(rpath)
     # if rpath.exists():
     #     rpath.unlink()
 
@@ -59,11 +59,11 @@ class TestExtractParameters:
         #     rpath.unlink()
 
         inputs = Inputs(coello_acc_path)
-        inputs.extract_parameters(None, "3", as_raster=True, save_to=str(rpath))
+        inputs.extract_parameters(None, "3", as_raster=True, save_to=rpath)
         assert rpath.exists()
         files = list(rpath.iterdir())
         assert len(files) == 19
-        cube = Datacube.from_files(str(rpath))
+        cube = Datacube.from_files(rpath)
         # if rpath.exists():
         #     rpath.unlink()
 
@@ -208,17 +208,17 @@ class TestChronologicalReading:
             ("2020.01.02", 1.0),
             ("2020.01.10", 2.0),
         ):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((2, 2), value, dtype="float32"),
-                top_left_corner=(0.0, 2.0),
-                cell_size=1.0,
-                epsg=4326,
+                geo_ref=GeoReference(
+                    top_left_corner=(0.0, 2.0), cell_size=1.0, epsg=4326
+                ),
                 no_data_value=-9999.0,
-                path=str(tmp_path / f"prec_{stamp}.tif"),
+                path=tmp_path / f"prec_{stamp}.tif",
             ).close()
 
         averages = Inputs.create_lumped_inputs(
-            str(tmp_path),
+            tmp_path,
             regex_string=r"\d{4}.\d{2}.\d{2}",
             date=True,
             file_name_data_fmt="%Y.%m.%d",
@@ -282,28 +282,24 @@ class TestPrepareInputs:
             silently and write the aligned rasters.
         """
         dem_path = tmp_path / "dem.tif"
-        Dataset.create_from_array(
+        Dataset.from_array(
             np.ones((4, 4), dtype="float32"),
-            top_left_corner=(0.0, 4.0),
-            cell_size=1.0,
-            epsg=4326,
+            geo_ref=GeoReference(top_left_corner=(0.0, 4.0), cell_size=1.0, epsg=4326),
             no_data_value=-9999.0,
-            path=str(dem_path),
+            path=dem_path,
         ).close()
 
         src_dir = tmp_path / "src"
         src_dir.mkdir()
-        Dataset.create_from_array(
+        Dataset.from_array(
             np.full((4, 4), 5.0, dtype="float32"),
-            top_left_corner=(0.0, 4.0),
-            cell_size=1.0,
-            epsg=4326,
+            geo_ref=GeoReference(top_left_corner=(0.0, 4.0), cell_size=1.0, epsg=4326),
             no_data_value=-9999.0,
-            path=str(src_dir / "prec_2020.01.01.tif"),
+            path=src_dir / "prec_2020.01.01.tif",
         ).close()
 
         out_dir = tmp_path / "out"
-        Inputs(str(dem_path)).prepare_inputs(src_dir, out_dir)
+        Inputs(dem_path).prepare_inputs(src_dir, out_dir)
 
         assert [f.name for f in sorted(out_dir.iterdir())] == ["prec_2020.01.01.tif"], (
             f"expected the source file name to be preserved, got {list(out_dir.iterdir())}"
@@ -363,19 +359,21 @@ class TestVectorTypes:
                 (rows, cols), position + PARAMETER_OUTSIDE_OFFSET, dtype=np.float32
             )
             array[ring:-ring, ring:-ring] = position
-            Dataset.create_from_array(
+            Dataset.from_array(
                 array,
-                geo=(
-                    x_min - PARAMETER_MARGIN,
-                    PARAMETER_CELL_SIZE,
-                    0.0,
-                    y_max + PARAMETER_MARGIN,
-                    0.0,
-                    -PARAMETER_CELL_SIZE,
+                geo_ref=GeoReference(
+                    geo=(
+                        x_min - PARAMETER_MARGIN,
+                        PARAMETER_CELL_SIZE,
+                        0.0,
+                        y_max + PARAMETER_MARGIN,
+                        0.0,
+                        -PARAMETER_CELL_SIZE,
+                    ),
+                    epsg=PARAMETER_EPSG,
                 ),
-                epsg=PARAMETER_EPSG,
                 no_data_value=-9999.0,
-                path=str(directory / f"{name}.tif"),
+                path=directory / f"{name}.tif",
             ).close()
 
         monkeypatch.setenv("HAPI_DATA_DIR", str(tmp_path))
@@ -498,12 +496,11 @@ class TestReadRastersOrdering:
             Path: The folder holding ``0_Par_x.tif`` ... ``11_Par_x.tif``.
         """
         for i in range(12):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((4, 4), float(i), dtype=np.float32),
-                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
-                epsg=4326,
+                geo_ref=GeoReference(geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05), epsg=4326),
                 no_data_value=-9999.0,
-            ).to_file(str(tmp_path / f"{i}_Par_x.tif"))
+            ).to_file(tmp_path / f"{i}_Par_x.tif")
         return tmp_path
 
     def test_numeric_mode_orders_by_value_not_lexicographically(self, unpadded_rasters):
@@ -557,12 +554,11 @@ class TestReadRastersDateInference:
                 each raster carrying its day-of-month as its pixel value.
         """
         for i in range(12):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((4, 4), float(i + 1), dtype=np.float32),
-                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
-                epsg=4326,
+                geo_ref=GeoReference(geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05), epsg=4326),
                 no_data_value=-9999.0,
-            ).to_file(str(tmp_path / f"{i}_precip_2009.01.{i + 1:02d}.tif"))
+            ).to_file(tmp_path / f"{i}_precip_2009.01.{i + 1:02d}.tif")
         return tmp_path
 
     @pytest.mark.parametrize(
@@ -672,12 +668,11 @@ class TestReadRastersDateInference:
             warning names the string it could not place and how to resolve it.
         """
         for day in (1, 2):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((4, 4), float(day), dtype=np.float32),
-                geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
-                epsg=4326,
+                geo_ref=GeoReference(geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05), epsg=4326),
                 no_data_value=-9999.0,
-            ).to_file(str(tmp_path / f"precip_{day:02d}.02.1990.tif"))
+            ).to_file(tmp_path / f"precip_{day:02d}.02.1990.tif")
 
         with pytest.warns(UserWarning, match="file_name_data_fmt"):
             read_rasters(tmp_path, regex_string=r"\d{2}.\d{2}.\d{4}", date=True)

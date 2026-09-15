@@ -182,7 +182,7 @@ class TestReadGaugeTable:
             }
         ).to_csv(path, index=False)
 
-        catchment.read_gauge_table(str(path))
+        catchment.read_gauge_table(path)
 
         assert catchment.GaugesTable.loc[0, "start"].year == 2009, (
             f"start should parse to 2009, got {catchment.GaugesTable.loc[0, 'start']}"
@@ -211,7 +211,7 @@ class TestReadGaugeTable:
             }
         ).to_csv(path, index=False)
 
-        catchment.read_gauge_table(str(path))
+        catchment.read_gauge_table(path)
 
         for column in ("start", "end"):
             assert pd.api.types.is_datetime64_any_dtype(
@@ -235,7 +235,7 @@ class TestReadGaugeTable:
         path = tmp_path / "gauges_start_only.csv"
         pd.DataFrame({"id": [1], "start": ["2009-01-01"]}).to_csv(path, index=False)
 
-        catchment.read_gauge_table(str(path))
+        catchment.read_gauge_table(path)
 
         assert catchment.GaugesTable.loc[0, "start"].year == 2009, (
             f"start should parse to 2009, got {catchment.GaugesTable.loc[0, 'start']}"
@@ -259,7 +259,7 @@ class TestReadGaugeTable:
             {"id": [1], "start": ["03/04/2009"], "end": ["05/06/2011"]}
         ).to_csv(path, index=False)
 
-        catchment.read_gauge_table(str(path), fmt="%d/%m/%Y")
+        catchment.read_gauge_table(path, fmt="%d/%m/%Y")
 
         parsed = catchment.GaugesTable.loc[0, "start"]
         assert (parsed.day, parsed.month, parsed.year) == (3, 4, 2009), (
@@ -288,7 +288,7 @@ class TestReadGaugeTable:
         ).to_csv(path, index=False)
 
         with pytest.raises(ValueError, match="no usable date"):
-            catchment.read_gauge_table(str(path))
+            catchment.read_gauge_table(path)
 
     def test_date_not_matching_the_format_raises(self, catchment, tmp_path):
         """Test that an unparseable date is rejected.
@@ -306,7 +306,7 @@ class TestReadGaugeTable:
         ).to_csv(path, index=False)
 
         with pytest.raises(ValueError):
-            catchment.read_gauge_table(str(path))
+            catchment.read_gauge_table(path)
 
     def test_geojson_dates_are_parsed_too(self, catchment, tmp_path):
         """Test that the date conversion also applies on the GeoJSON branch.
@@ -327,7 +327,7 @@ class TestReadGaugeTable:
         path = tmp_path / "gauges_dates.geojson"
         gdf.to_file(path, driver="GeoJSON")
 
-        catchment.read_gauge_table(str(path))
+        catchment.read_gauge_table(path)
 
         assert catchment.GaugesTable.loc[0, "start"].year == 2009, (
             f"start should parse to 2009, got {catchment.GaugesTable.loc[0, 'start']}"

@@ -1715,7 +1715,7 @@ class TestRoutingMethodNormalisation:
         path.write_text(yaml.safe_dump(distributed_mapping), encoding="utf-8")
 
         monkeypatch.chdir(tmp_path)
-        model = Catchment.from_yaml(str(path))
+        model = Catchment.from_yaml(path)
 
         assert model.meteo is not None, (
             "the drivers should resolve from the config's own dir"
@@ -1776,7 +1776,7 @@ class TestRoutingMethodNormalisation:
         path.write_text("", encoding="utf-8")
 
         with pytest.raises(ValueError, match="is empty") as exc:
-            Catchment.from_yaml(str(path))
+            Catchment.from_yaml(path)
 
         assert "empty.yaml" in str(exc.value), (
             f"the error should name the file: {exc.value}"
@@ -1838,7 +1838,7 @@ class TestRoutingMethodNormalisation:
         missing = tmp_path / "not-here.yaml"
 
         with pytest.raises(FileNotFoundError):
-            Catchment.from_yaml(str(missing))
+            Catchment.from_yaml(missing)
 
     def test_malformed_yaml_is_reported_as_malformed(self, tmp_path):
         """Test that a file YAML cannot parse raises `yaml.YAMLError`.
@@ -1854,7 +1854,7 @@ class TestRoutingMethodNormalisation:
         path.write_text("catchment: {name: Coello\n", encoding="utf-8")
 
         with pytest.raises(yaml.YAMLError):
-            Catchment.from_yaml(str(path))
+            Catchment.from_yaml(path)
 
     def test_a_top_level_scalar_is_refused(self, tmp_path):
         """Test that a file holding a bare scalar is refused rather than indexed.
@@ -1871,7 +1871,7 @@ class TestRoutingMethodNormalisation:
         path.write_text("hello\n", encoding="utf-8")
 
         with pytest.raises(ValidationError, match="valid dictionary"):
-            Catchment.from_yaml(str(path))
+            Catchment.from_yaml(path)
 
     def test_every_missing_input_path_is_named_at_once(
         self, distributed_mapping, tmp_path

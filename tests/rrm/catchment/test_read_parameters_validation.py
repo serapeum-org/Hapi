@@ -287,7 +287,7 @@ class TestReadParametersDistributed:
         missing = tmp_path / "no-such-parameters"
 
         with pytest.raises(FileNotFoundError, match="no-such-parameters"):
-            distributed.read_parameters(str(missing), False, maxbas=True)
+            distributed.read_parameters(missing, False, maxbas=True)
 
 
 class TestReadParametersLumped:
@@ -333,7 +333,7 @@ class TestReadParametersLumped:
         )
 
         with pytest.raises(ValueError, match=f"takes {expected_count} parameters"):
-            model.read_parameters(str(path), snow, maxbas=maxbas)
+            model.read_parameters(path, snow, maxbas=maxbas)
 
     def test_missing_file_raises_before_reading(
         self, coello_start_date: str, coello_end_date: str, tmp_path
@@ -347,7 +347,7 @@ class TestReadParametersLumped:
         model = Catchment("coello", coello_start_date, coello_end_date)
 
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            model.read_parameters(str(tmp_path / "absent.csv"), False)
+            model.read_parameters(tmp_path / "absent.csv", False)
 
 
 class TestReadLumpedModelQInit:
@@ -534,7 +534,7 @@ class TestReadLumpedInputs:
         ).to_csv(path, index=False)
         model = Catchment("coello", coello_start_date, coello_end_date)
 
-        model.read_lumped_inputs(str(path))
+        model.read_lumped_inputs(path)
 
         assert model.data.shape[1] == 4, (
             f"expected 4 columns, got {model.data.shape[1]}"
@@ -566,4 +566,4 @@ class TestReadLumpedInputs:
         model = Catchment("coello", coello_start_date, coello_end_date)
 
         with pytest.raises(ValueError, match="should be of length at least 3"):
-            model.read_lumped_inputs(str(path))
+            model.read_lumped_inputs(path)

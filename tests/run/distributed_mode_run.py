@@ -1,6 +1,6 @@
 Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
-from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.glyphs.gridded.array_glyph import Animation, FrameLabel
 from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
@@ -84,7 +84,8 @@ Animate the distributed results.
 SimulationResults.animate forwards the keyword arguments to
 ``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
 for the full list of supported options. Since cleopatra 0.30 the styling
-keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
+keywords are grouped into typed objects (``color``, ``cells``), and since 0.38
+the playback ones (``interval``, ``frame_label``) live on ``playback=Animation``.
 """
 
 plotstart = "2009-01-01"
@@ -97,10 +98,9 @@ Anim = Coello.results.animate(
     option=1,
     cells=CellValues(show=True, background_threshold=160),
     ticks_spacing=5,
-    interval=200,
+    playback=Animation(interval=200, frame_label=FrameLabel(location=[0.1, 0.2])),
     gauges=Coello.GaugesTable,
     cmap="inferno",
-    frame_label=FrameLabel(location=[0.1, 0.2]),
     color=ColorScaling.linear(),
 )
 

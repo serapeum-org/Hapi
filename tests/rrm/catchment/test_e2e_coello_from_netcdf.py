@@ -289,7 +289,7 @@ class TestMuskingumPipeline:
             f"expected one raster per step ({len(model.period.date_index)}), got {len(written)}"
         )
 
-        first = Dataset.read_file(str(written[0])).read_array()
+        first = Dataset.read_file(written[0]).read_array()
         expected = model.results.q_total[:, :, 0]
         inside = ~np.isnan(model.flow_network.flow_acc_arr)
         np.testing.assert_allclose(

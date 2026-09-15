@@ -89,7 +89,7 @@ def test_save_writes_one_raster_per_step(
     assert len(written) == 5, f"expected one raster per date, got {len(written)}"
 
     template = Dataset.read_file(coello_acc_path)
-    first = Dataset.read_file(str(written[0]))
+    first = Dataset.read_file(written[0])
     assert (first.rows, first.columns) == (template.rows, template.columns), (
         "the written raster must inherit the flow-accumulation grid"
     )
@@ -126,7 +126,7 @@ def test_save_values_match_the_model_array(
         0
     ]
     expected = coello_run.results.state_variables[:, :, start_i, 0]
-    actual = Dataset.read_file(str(written[0])).read_array(band=0)
+    actual = Dataset.read_file(written[0]).read_array(band=0)
 
     np.testing.assert_allclose(
         actual, expected, rtol=1e-5, err_msg="the first raster must hold the first step"
@@ -157,7 +157,7 @@ def test_save_joins_a_directory_written_without_a_separator(
         result=4,
         start="2009-01-01",
         end="2009-01-02",
-        path=str(out),
+        path=out,
     )
 
     assert len(sorted(out.glob("*.tif"))) == 2, (
@@ -187,7 +187,7 @@ def test_save_creates_the_directory_it_is_given(
         result=4,
         start="2009-01-01",
         end="2009-01-02",
-        path=str(out),
+        path=out,
     )
 
     assert len(sorted(out.glob("*.tif"))) == 2, (
@@ -195,8 +195,8 @@ def test_save_creates_the_directory_it_is_given(
     )
 
 
-def test_save_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
-    """Test that a non-string `path` is refused by name rather than by concatenation.
+def test_save_refuses_a_path_of_the_wrong_type(coello_run: Catchment):
+    """Test that a `path` that is neither `str` nor `Path` is refused by name.
 
     Args:
         coello_run: Distributed Coello catchment with a completed run.
@@ -204,9 +204,10 @@ def test_save_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
     Test scenario:
         `outputs.results_dir` is optional in a run configuration, so a caller forwarding it
         straight through can hold None. That used to surface as a `TypeError` from a string
-        concatenation, naming neither the argument nor what it should be.
+        concatenation, naming neither the argument nor what it should be. The guard rejects
+        `None`, not a `Path`: the tests around this one pass `tmp_path` unconverted.
     """
-    with pytest.raises(TypeError, match="path must be a string") as exc:
+    with pytest.raises(TypeError, match="path must be a str or Path") as exc:
         coello_run.results.save(flow_acc_path="unused", result=1, path=None)
 
     assert "NoneType" in str(exc.value), (
@@ -301,7 +302,7 @@ def test_save_hands_the_writer_a_copy_not_a_view(
     monkeypatch.setattr(results_module, "Datacube", _RecordingCube)
 
     coello_run.results.save(
-        path=str(tmp_path),
+        path=tmp_path,
         flow_acc_path=coello_acc_path,
         result=1,
         start="2009-01-01",
@@ -331,7 +332,7 @@ def test_save_without_a_template_raster_says_what_it_needs(
         failure on an empty path, several frames from the argument the caller omitted.
     """
     with pytest.raises(ValueError, match="flow_acc_path"):
-        coello_run.results.save(path=str(tmp_path), result=1)
+        coello_run.results.save(path=tmp_path, result=1)
 
 
 @pytest.mark.parametrize("result", [0, 9])
@@ -354,8 +355,6 @@ def test_save_refuses_a_raster_option_outside_the_range(
     out = tmp_path / "never"
 
     with pytest.raises(ValueError, match="between 1 and 8"):
-        coello_run.results.save(
-            path=str(out), flow_acc_path=coello_acc_path, result=result
-        )
+        coello_run.results.save(path=out, flow_acc_path=coello_acc_path, result=result)
 
     assert not out.exists(), "nothing should be created when the option is refused"

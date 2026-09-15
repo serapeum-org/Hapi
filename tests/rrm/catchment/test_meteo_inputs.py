@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas import DataFrame
-from pyramids.dataset import Dataset, DatasetCollection
+from pyramids.dataset import Dataset, DatasetCollection, GeoReference
 from pyramids.netcdf import NetCDF
 
 from hapi import inputs as inputs_module
@@ -213,13 +213,14 @@ class TestPerVariableOverrides:
             folder = tmp_path / name
             folder.mkdir()
             for day in range(1, 5):
-                Dataset.create_from_array(
+                Dataset.from_array(
                     np.full((3, 3), base + day, dtype=np.float32),
-                    geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05),
-                    epsg=4326,
+                    geo_ref=GeoReference(
+                        geo=(0.0, 0.05, 0.0, 0.2, 0.0, -0.05), epsg=4326
+                    ),
                     no_data_value=-9999.0,
-                ).to_file(str(folder / pattern.format(day=day)))
-            folders[name] = str(folder)
+                ).to_file(folder / pattern.format(day=day))
+            folders[name] = folder
         return folders
 
     def test_a_shared_regex_cannot_serve_both_conventions(self, mixed_convention: dict):
@@ -404,12 +405,13 @@ class TestWritingNetcdf:
             failure the calendar check exists to prevent. Better to refuse at the write.
         """
         for i in range(2):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((3, 3), float(i), dtype="float32"),
-                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
-                epsg=32618,
+                geo_ref=GeoReference(
+                    geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0), epsg=32618
+                ),
                 no_data_value=-9999.0,
-            ).to_file(str(tmp_path / f"undated_{i}.tif"))
+            ).to_file(tmp_path / f"undated_{i}.tif")
 
         with pytest.warns(UserWarning, match="matched no file name"):
             with pytest.raises(ValueError, match="no calendar"):
@@ -462,7 +464,7 @@ class TestWritingNetcdf:
             tmp_path / "meteo.nc",
         )
 
-        nc = NetCDF.read_file(str(out))
+        nc = NetCDF.read_file(out)
         assert sorted(nc.variable_names) == sorted(METEO_VARIABLES), (
             f"expected the drivers as variable names, got {nc.variable_names}"
         )
@@ -492,12 +494,13 @@ class TestWritingNetcdf:
             folder = tmp_path / name
             folder.mkdir()
             for day in range(1, 3):
-                Dataset.create_from_array(
+                Dataset.from_array(
                     np.full((3, 3), value, dtype="float32"),
-                    geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
-                    epsg=32618,
+                    geo_ref=GeoReference(
+                        geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0), epsg=32618
+                    ),
                     no_data_value=-9999.0,
-                ).to_file(str(folder / f"v_2009.01.{day:02d}.tif"))
+                ).to_file(folder / f"v_2009.01.{day:02d}.tif")
             MeteoInputs.raster_folder_to_netcdf(folder, tmp_path / f"{name}.nc")
 
         out = MeteoInputs.combine_netcdf_files(
@@ -658,13 +661,14 @@ class TestNetcdfWindow:
             calendar check exists to prevent.
         """
         for i in range(2):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((3, 3), float(i), dtype="float32"),
-                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
-                epsg=32618,
+                geo_ref=GeoReference(
+                    geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0), epsg=32618
+                ),
                 no_data_value=-9999.0,
-            ).to_file(str(tmp_path / f"plain_{i}.tif"))
-        undated = str(tmp_path / "undated.nc")
+            ).to_file(tmp_path / f"plain_{i}.tif")
+        undated = tmp_path / "undated.nc"
         DatasetCollection.from_files(tmp_path, glob="*.tif").to_netcdf(undated)
 
         with pytest.raises(ValueError, match="carries none"):
@@ -1145,12 +1149,13 @@ def numbered_rasters(tmp_path) -> Path:
         Path: Folder holding ``0_par.tif`` ... ``3_par.tif``, each filled with its own index.
     """
     for i in range(4):
-        Dataset.create_from_array(
+        Dataset.from_array(
             np.full((3, 3), float(i), dtype="float32"),
-            geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
-            epsg=32618,
+            geo_ref=GeoReference(
+                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0), epsg=32618
+            ),
             no_data_value=-9999.0,
-        ).to_file(str(tmp_path / f"{i}_par.tif"))
+        ).to_file(tmp_path / f"{i}_par.tif")
     return tmp_path
 
 
@@ -1168,12 +1173,13 @@ class TestReadRasters:
             the glob but carrying no number cannot be placed in that order, and silently
             dropping or appending it would scramble the cube.
         """
-        Dataset.create_from_array(
+        Dataset.from_array(
             np.zeros((2, 2), dtype="float32"),
-            geo=(0.0, 4000.0, 0.0, 8000.0, 0.0, -4000.0),
-            epsg=32618,
+            geo_ref=GeoReference(
+                geo=(0.0, 4000.0, 0.0, 8000.0, 0.0, -4000.0), epsg=32618
+            ),
             no_data_value=-9999.0,
-        ).to_file(str(tmp_path / "no_index_here.tif"))
+        ).to_file(tmp_path / "no_index_here.tif")
 
         with pytest.raises(ValueError, match="matched no number"):
             read_rasters(tmp_path, regex_string=r"\d+", date=False)
@@ -1447,13 +1453,14 @@ class TestVariableSelectionAndCalendar:
             run to 1970, so the loader must report no calendar instead.
         """
         for i in range(2):
-            Dataset.create_from_array(
+            Dataset.from_array(
                 np.full((3, 3), float(i), dtype="float32"),
-                geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0),
-                epsg=32618,
+                geo_ref=GeoReference(
+                    geo=(0.0, 4000.0, 0.0, 12000.0, 0.0, -4000.0), epsg=32618
+                ),
                 no_data_value=-9999.0,
-            ).to_file(str(tmp_path / f"plain_{i}.tif"))
-        undated = str(tmp_path / "undated.nc")
+            ).to_file(tmp_path / f"plain_{i}.tif")
+        undated = tmp_path / "undated.nc"
         DatasetCollection.from_files(tmp_path, glob="*.tif").to_netcdf(undated)
 
         inputs = MeteoInputs.from_netcdf_files(

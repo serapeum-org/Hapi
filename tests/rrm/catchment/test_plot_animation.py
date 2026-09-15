@@ -60,6 +60,7 @@ def bare_results() -> SimulationResults:
 def test_plot_precipitation_with_gauges(coello_animated: Catchment):
     """Animating a meteo input with gauge points returns a FuncAnimation."""
     import matplotlib.animation
+    from cleopatra.glyphs.gridded.array_glyph import Animation
 
     before = coello_animated.meteo.precipitation.copy()
     anim = coello_animated.results.animate(
@@ -67,7 +68,7 @@ def test_plot_precipitation_with_gauges(coello_animated: Catchment):
         "2009-01-09",
         option=9,
         gauges=coello_animated.GaugesTable,
-        interval=100,
+        playback=Animation(interval=100),
     )
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
     # plotting must not mutate the model arrays stored on the instance
@@ -103,13 +104,15 @@ def test_plot_accepts_grouped_style_objects(coello_animated: Catchment):
     Test scenario:
         cleopatra 0.30 replaced the loose styling keywords (`color_scale`,
         `display_cell_value`, `num_size`, `background_color_threshold`,
-        `text_loc`) with typed group objects, and a removed keyword now raises
-        rather than being silently ignored. `animate` forwards
-        `**kwargs` untouched, so this pins that the group objects pass through —
-        and that Hapi never re-introduces a loose keyword that would raise.
+        `text_loc`) with typed group objects, and 0.38 moved the playback ones
+        (`interval`, `frame_label`, `cell_value_text_colors`, `data_getter`) into
+        `playback=Animation(...)`. A removed keyword raises rather than being
+        silently ignored. `animate` forwards `**kwargs` untouched, so this pins
+        that every group object passes through — and that Hapi never
+        re-introduces a loose keyword that would raise.
     """
     import matplotlib.animation
-    from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+    from cleopatra.glyphs.gridded.array_glyph import Animation, FrameLabel
     from cleopatra.styling.params import CellValues
     from cleopatra.styling.scaling import ColorScaling
 
@@ -118,10 +121,13 @@ def test_plot_accepts_grouped_style_objects(coello_animated: Catchment):
         "2009-01-09",
         option=9,
         gauges=coello_animated.GaugesTable,
-        interval=100,
+        playback=Animation(
+            interval=100,
+            frame_label=FrameLabel(location=[0.1, 0.2], color="black"),
+            cell_value_text_colors=("yellow", "blue"),
+        ),
         color=ColorScaling.power(gamma=0.5),
         cells=CellValues(show=True, size=8, background_threshold=None),
-        frame_label=FrameLabel(location=[0.1, 0.2], color="black"),
         ticks_spacing=5,
         cmap="inferno",
     )
@@ -169,7 +175,7 @@ def test_save_animation_gif(coello_animated: Catchment, tmp_path):
     """save_animation writes a non-empty gif after plotting."""
     coello_animated.results.animate("2009-01-01", "2009-01-09", option=9)
     out = tmp_path / "anim.gif"
-    coello_animated.results.save_animation(str(out), fps=2)
+    coello_animated.results.save_animation(out, fps=2)
     assert out.exists()
     assert out.stat().st_size > 0
 

@@ -26,9 +26,9 @@ no claim to.
 from __future__ import annotations
 
 import datetime as dt
-import os
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -437,15 +437,17 @@ class SimulationResults:
                 the table is an analysis input, so it is passed in.
             **kwargs: Additional keyword arguments passed to `ArrayGlyph.animate`. Loose
                 styling keywords still accepted: title (str), title_size (int), cmap (str),
-                vmin (float), vmax (float), interval (int), figsize (tuple),
-                cell_value_text_colors (tuple), ticks_spacing (int), cbar_label (str),
-                cbar_label_size (int), cbar_length (float), cbar_orientation (str).
-                Styling that cleopatra 0.30 moved onto typed group objects is passed as those
-                objects instead: color=`ColorScaling` (was color_scale / gamma / bounds /
-                midpoint), cells=`CellValues` (was display_cell_value / num_size /
-                background_color_threshold), contour=`Contour` (was levels),
-                data_style=`DataStyle` (was style / hillshade), frame_label=`FrameLabel`
-                (was label_location / label_color / text_loc). See
+                vmin (float), vmax (float), figsize (tuple), ticks_spacing (int),
+                cbar_label (str), cbar_label_size (int), cbar_length (float),
+                cbar_orientation (str).
+                Styling that cleopatra moved onto typed group objects is passed as those
+                objects instead, and a keyword cleopatra no longer knows raises rather than
+                being ignored: playback=`Animation` (0.38: was interval / frame_label /
+                cell_value_text_colors / data_getter), color=`ColorScaling` (0.30: was
+                color_scale / gamma / bounds / midpoint), cells=`CellValues` (was
+                display_cell_value / num_size / background_color_threshold),
+                contour=`Contour` (was levels), data_style=`DataStyle` (was style /
+                hillshade). See
                 `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate` for the full list.
 
         Returns:
@@ -543,7 +545,7 @@ class SimulationResults:
 
         return anim
 
-    def save_animation(self, path: str, fps: int = 2) -> None:
+    def save_animation(self, path: str | Path, fps: int = 2) -> None:
         """Save the animation built by :meth:`animate`.
 
         The output format is determined by the file extension. GIF uses PillowWriter;
@@ -583,13 +585,13 @@ class SimulationResults:
 
     def save(
         self,
-        path: str = "",
+        path: str | Path = "",
         result: int = 1,
         start: str | dt.datetime = "",
         end: str | dt.datetime = "",
         prefix: str = "",
         fmt: str = "%Y-%m-%d",
-        flow_acc_path: str = "",
+        flow_acc_path: str | Path = "",
     ) -> None:
         """Write the results to disk: one raster per step, or a CSV for a lumped run.
 
@@ -598,7 +600,8 @@ class SimulationResults:
 
         Args:
             path: Output directory for a distributed run (created if it does not exist), or
-                the CSV file itself for a lumped one. Default is "", the working directory.
+                the CSV file itself for a lumped one, as a `str` or a `Path`. Default is
+                "", the working directory.
             result: What to write. Distributed: 1 - Total discharge, 2 - Surface flow (the
                 routed upper zone), 3 - Ground water flow (the translated lower zone),
                 4 - Snow pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
@@ -615,8 +618,8 @@ class SimulationResults:
                 back from the file.
 
         Raises:
-            TypeError: `path` is not a string. `outputs.results_dir` is optional in a run
-                configuration, so a caller forwarding it can hold None.
+            TypeError: `path` is neither a `str` nor a `Path`. `outputs.results_dir` is
+                optional in a run configuration, so a caller forwarding it can hold None.
             ValueError: `result` is not a valid option, `flow_acc_path` is missing on a
                 distributed run, or the results carry no run to date them by.
 
@@ -665,7 +668,7 @@ class SimulationResults:
                 >>> results.save(path=None)
                 Traceback (most recent call last):
                     ...
-                TypeError: path must be a string naming a directory (distributed) or a file (lumped), got NoneType
+                TypeError: path must be a str or Path naming a directory (distributed) or a file (lumped), got NoneType
 
                 ```
 
@@ -674,10 +677,14 @@ class SimulationResults:
             hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
                 anything to write.
         """
-        if not isinstance(path, str):
+        # Checked rather than delegated: `outputs.results_dir` is optional in a run
+        # configuration, so a caller forwarding it can hold None, and the writers would
+        # only fail much later. `Path` is as welcome as `str` -- Path("") is `.`, the
+        # same working directory the empty default names.
+        if not isinstance(path, str | Path):
             raise TypeError(
-                f"path must be a string naming a directory (distributed) or a file "
-                f"(lumped), got {type(path).__name__}"
+                f"path must be a str or Path naming a directory (distributed) or a "
+                f"file (lumped), got {type(path).__name__}"
             )
 
         run = self._require_run()
@@ -695,12 +702,12 @@ class SimulationResults:
     def _save_rasters(
         self,
         period: SimulationPeriod,
-        path: str,
+        path: str | Path,
         result: int,
         start_i: int,
         end_i: int,
         prefix: str,
-        flow_acc_path: str,
+        flow_acc_path: str | Path,
     ) -> None:
         """Write one GeoTIFF per step off the flow-accumulation raster's grid.
 
@@ -716,7 +723,7 @@ class SimulationResults:
         Raises:
             ValueError: `flow_acc_path` is empty, or `result` is not between 1 and 8.
         """
-        if flow_acc_path == "":
+        if not flow_acc_path:
             raise ValueError(
                 "writing rasters needs a georeferencing template; pass flow_acc_path, the "
                 "flow-accumulation raster the model was built on"
@@ -735,11 +742,13 @@ class SimulationResults:
         # `path` names a directory here, unlike the CSV branch where it is the file itself.
         # Joined rather than concatenated: the old `path + prefix` wrote
         # `some/dirResult_2009-01-01.tif` for any directory given without a trailing
-        # separator, which is how a directory is normally written.
-        if path and not os.path.isdir(path):
-            os.makedirs(path, exist_ok=True)
+        # separator, which is how a directory is normally written. `Path("")` is `.`,
+        # so the empty default still writes into the working directory.
+        destination = Path(path)
+        if path and not destination.is_dir():
+            destination.mkdir(parents=True, exist_ok=True)
         names = [
-            os.path.join(path, f"{prefix}{str(i)[:10]}.tif")
+            destination / f"{prefix}{str(i)[:10]}.tif"
             for i in period.date_index[start_i:end_i]
         ]
 
@@ -764,7 +773,7 @@ class SimulationResults:
     def _save_csv(
         self,
         period: SimulationPeriod,
-        path: str,
+        path: str | Path,
         result: int,
         start_i: int,
         end_i: int,

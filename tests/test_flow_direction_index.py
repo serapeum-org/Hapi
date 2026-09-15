@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from pyramids.dataset import GeoReference
 
 from hapi.dem import (
     D8_ENCODINGS,
@@ -32,11 +33,11 @@ def _create_fd_raster(data: np.ndarray, no_data: float = NO_DATA) -> DEM:
         An in-memory DEM dataset.
     """
     rows, _ = data.shape
-    return DEM.create_from_array(
+    return DEM.from_array(
         data,
-        top_left_corner=(0.0, float(rows)),
-        cell_size=1.0,
-        epsg=4326,
+        geo_ref=GeoReference(
+            top_left_corner=(0.0, float(rows)), cell_size=1.0, epsg=4326
+        ),
         no_data_value=no_data,
     )
 
