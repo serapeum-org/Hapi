@@ -8,7 +8,7 @@ does have no flow network.
 The run layer needs the opposite thing: a catchment that is *finished*. Conflating the two is
 what made the engines dereference `X | None` on every line, why four modules were excused from
 mypy, and -- worse -- why "has this been validated?" was a question you answered by remembering
-which entry point you came through. `Calibration` went straight to :class:`~hapi.wrapper.Wrapper`
+which entry point you came through. `Calibration` went straight to :class:`~hapi.engine.wrapper.Wrapper`
 and so skipped every check `Run` performed, on the one path that rebuilds the parameter array
 thousands of times.
 
@@ -78,7 +78,7 @@ class DistributedRun:
         skip_hydraulic_cells: Leave river cells unrouted for a 1D hydraulic model. Needs
             `river_geometry` to identify them, checked here rather than in the routing loop.
         flow_path_length: Flow-path length raster, read only by
-            :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas_by_path_length`.
+            :meth:`~hapi.engine.distributed.DistributedRRM.route_maxbas_by_path_length`.
         keep_state_variables: Whether to allocate the per-cell state array. It is
             `(rows, cols, time, 5)` -- as much memory as every other result field combined --
             and nothing but `results.save` and `results.animate` reads it, so a run

@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from hapi.conceptual.hbv_lake import HBVLake
-from hapi.routing import Routing as routing
-from hapi.rrm.distrrm import DistributedRRM as distrrm
+from hapi.engine.distributed import DistributedRRM as distrrm
+from hapi.engine.routing import Routing as routing
 from hapi.simulation.results import RoutingKind, SimulationResults
 from hapi.simulation.validated import DistributedRun, LumpedRun
 
@@ -89,7 +89,7 @@ class Wrapper:
 
         Returns:
             SimulationResults: The run's output. Nothing is written to the caller's model;
-            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
+            the entry point in :mod:`hapi.engine.run` is what puts it on `model.results`.
         """
         # run the rainfall runoff model separately
         results = distrrm.run_lumped_model(run)
@@ -129,7 +129,7 @@ class Wrapper:
 
         Returns:
             SimulationResults: The run's output. Nothing is written to the caller's model;
-            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
+            the entry point in :mod:`hapi.engine.run` is what puts it on `model.results`.
         """
         meteo_data, lake_parameters, outflow_cell = _lake_inputs(Lake)
         plake = meteo_data[:, 0]
@@ -203,7 +203,7 @@ class Wrapper:
         The output discharge is computed as the sum of routed upper
         zone and unrouted lower zone discharge across all cells.
 
-        :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas` fills the per-cell output
+        :meth:`~hapi.engine.distributed.DistributedRRM.route_maxbas` fills the per-cell output
         fields (`q_total`, `quz_routed`, `qlz_translated`) and records
         `RoutingKind.MAXBAS`, so the discharge options of `results.save` /
         `results.animate` work on this path; see that method for the MAXBAS semantics.
@@ -214,7 +214,7 @@ class Wrapper:
 
         Returns:
             SimulationResults: The run's output. Nothing is written to the caller's model;
-            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
+            the entry point in :mod:`hapi.engine.run` is what puts it on `model.results`.
         """
         # subcatchment
         results = distrrm.run_lumped_model(run)
@@ -254,7 +254,7 @@ class Wrapper:
 
         Returns:
             SimulationResults: The run's output. Nothing is written to the caller's model;
-            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
+            the entry point in :mod:`hapi.engine.run` is what puts it on `model.results`.
         """
         meteo_data, lake_parameters, outflow_cell = _lake_inputs(Lake)
         plake = meteo_data[:, 0]
@@ -337,7 +337,7 @@ class Wrapper:
         Returns:
             SimulationResults: The run's output, with the total discharge in `q_total` and
             `routing` set to `RoutingKind.LUMPED`. Nothing is written to the caller's
-            model; :meth:`~hapi.run.Run.run_lumped` is what indexes `q_total` by the period
+            model; :meth:`~hapi.engine.run.Run.run_lumped` is what indexes `q_total` by the period
             and puts the frame on `model.Qsim`.
 
         Raises:

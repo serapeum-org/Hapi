@@ -17,9 +17,9 @@ from deap import algorithms, base, creator, tools
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterSet
-from hapi.routing import Routing
+from hapi.engine.routing import Routing
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from hapi.run import Run
+from hapi.engine.run import Run
 
 # %% Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"

@@ -236,7 +236,7 @@ class SimulationPeriod:
         silently answered here.
 
         Note that the catchment routing reads this while the lake paths in
-        :mod:`hapi.wrapper` pass :attr:`conversion_factor` (86.4 daily) into the same `dt`
+        :mod:`hapi.engine.wrapper` pass :attr:`conversion_factor` (86.4 daily) into the same `dt`
         parameter of the same `Routing.muskingum_v`. Both predate this class and neither was
         changed when it was extracted, so one of the two is routing on a time step 86.4x off
         from the other. Which one is the same physics question as issue #218.

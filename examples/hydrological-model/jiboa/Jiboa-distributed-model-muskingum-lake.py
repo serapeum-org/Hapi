@@ -29,7 +29,7 @@ from hapi.catchment import Catchment, Lake
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.conceptual.hbv import HBV
 from hapi.conceptual.hbv_lake import HBVLake
-from hapi.run import Run
+from hapi.engine.run import Run
 
 # %%
 root_dir = Path(r"examples/hydrological-model/jiboa/data")

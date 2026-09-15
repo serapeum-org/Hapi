@@ -20,10 +20,10 @@ import pytest
 
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.engine.distributed import DistributedRRM
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
-from hapi.routing import Routing
-from hapi.rrm.distrrm import DistributedRRM
-from hapi.run import Run
 from hapi.simulation.results import STATE_VARIABLES, RoutingKind, SimulationResults
 from hapi.simulation.validated import DistributedRun
 

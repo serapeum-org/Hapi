@@ -8,8 +8,8 @@ from hapi.calibration import Calibration
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterSet
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from hapi.routing import Routing
-from hapi.run import Run
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
 
 # %% Paths
 Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"

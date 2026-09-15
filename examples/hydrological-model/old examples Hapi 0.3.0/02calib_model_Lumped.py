@@ -8,7 +8,7 @@ import pandas as pd
 import statista.descriptors as PC
 
 from hapi.calibration import Calibration
-from hapi.routing import Routing
+from hapi.engine.routing import Routing
 
 # %%
 ### meteorological data

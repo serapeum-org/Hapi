@@ -92,7 +92,7 @@ class RoutingKind(Enum):
     Attributes:
         UNROUTED: The per-cell conceptual model has run, but no routing has been applied yet.
             The state every distributed run passes through between
-            :meth:`~hapi.rrm.distrrm.DistributedRRM.run_lumped_model` and its routing step.
+            :meth:`~hapi.engine.distributed.DistributedRRM.run_lumped_model` and its routing step.
         MUSKINGUM: Cell-to-cell Muskingum routing along the flow network.
         MAXBAS: Triangular (MAXBAS) routing of each cell straight to the outlet.
         LUMPED: No spatial routing -- the catchment was run as a single unit.

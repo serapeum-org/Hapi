@@ -18,11 +18,11 @@ import pytest
 from hapi.catchment import Catchment, Lake
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.conceptual.hbv_lake import HBVLake
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
+from hapi.engine.wrapper import Wrapper
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.routing import Routing
-from hapi.run import Run
 from hapi.simulation.validated import DistributedRun
-from hapi.wrapper import Wrapper
 
 JIBOA_ROOT = "tests/rrm/data/jiboa"
 # Must be inside the Coello domain. (2, 1) -- the cell the Jiboa fixture drains into -- is

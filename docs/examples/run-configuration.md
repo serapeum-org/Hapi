@@ -11,8 +11,8 @@ same order:
 
 ```python
 from hapi.catchment import Catchment
-from hapi.routing import Routing
-from hapi.run import Run
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
 
 Coello = Catchment.from_yaml(
     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"

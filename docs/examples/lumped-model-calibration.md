@@ -10,8 +10,8 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	from hapi.calibration import Calibration
 	from hapi.catchment import Catchment
 	from hapi.conceptual import ParameterSet
-	from hapi.routing import Routing
-	from hapi.run import Run
+	from hapi.engine.routing import Routing
+	from hapi.engine.run import Run
 	import statista.descriptors as metrics
 
 	Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"

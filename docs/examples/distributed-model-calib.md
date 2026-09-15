@@ -104,7 +104,7 @@ Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
   object, then call the run_distributed method to start the simulation
 
 ```python
-from hapi.run import Run
+from hapi.engine.run import Run
 Run.run_distributed(Coello)
 ```
 - the result of the simulation is returned, and also assigned to `Coello.results` as follow

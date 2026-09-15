@@ -1,6 +1,6 @@
 """What the run layer accepts from a caller, before it has been narrowed.
 
-The entry points in :mod:`hapi.run` used to declare their argument as
+The entry points in :mod:`hapi.engine.run` used to declare their argument as
 :class:`~hapi.catchment.Catchment` -- a class of 40-odd attributes, of which any one run touches
 a dozen. That named the wrong thing: it over-stated the requirement, and pointed the dependency
 at a concrete class, so the run layer could not be reasoned about without the class it runs.
@@ -15,7 +15,7 @@ optional at all.
 
 So there are two types on purpose, and the split is the point: this one describes what a caller
 can hand over, the run types describe what an engine is allowed to receive. `Catchment`
-satisfies this protocol structurally, so neither :mod:`hapi.run` nor :mod:`hapi.wrapper` imports
+satisfies this protocol structurally, so neither :mod:`hapi.engine.run` nor :mod:`hapi.engine.wrapper` imports
 it at runtime.
 """
 

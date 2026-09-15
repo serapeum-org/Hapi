@@ -6,7 +6,7 @@ both components of the spatial representation of the hydrological process
 at known locations based on a given performance function.
 
 `Run` is a namespace of static entry points, not a class to instantiate. Each one takes the
-model it should run, validates it, and hands it to :class:`~hapi.wrapper.Wrapper`. What each
+model it should run, validates it, and hands it to :class:`~hapi.engine.wrapper.Wrapper`. What each
 entry point requires is stated by the protocols below rather than by naming a concrete class:
 :class:`~hapi.catchment.Catchment` satisfies them structurally, so this module does not import
 it at runtime and anything else carrying the same attributes runs too.
@@ -22,13 +22,12 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+# from hapi.hm.saintvenant import SaintVenant
+from hapi.engine.wrapper import Wrapper
 from hapi.inputs import RiverGeometry
 from hapi.simulation.protocols import CatchmentLike, SupportsQsim
 from hapi.simulation.results import SimulationResults
 from hapi.simulation.validated import DistributedRun, LumpedRun
-
-# from hapi.hm.saintvenant import SaintVenant
-from hapi.wrapper import Wrapper
 
 if TYPE_CHECKING:
     from hapi.catchment import Lake as LakeType
@@ -116,7 +115,7 @@ class Run:
     """Run the catchment model.
 
     A namespace of static entry points, not a class to instantiate. Each one validates the
-    model it is given and hands it to :class:`~hapi.wrapper.Wrapper`, returning the
+    model it is given and hands it to :class:`~hapi.engine.wrapper.Wrapper`, returning the
     :class:`~hapi.simulation.results.SimulationResults` the run produced. The same object is also
     assigned to the model's `results`, so the result arrays stay readable off the model
     afterwards.
@@ -133,8 +132,8 @@ class Run:
         - Build a model and run it; the results come back and stay on the model:
             ```python
             >>> from hapi.catchment import Catchment
-            >>> from hapi.routing import Routing
-            >>> from hapi.run import Run
+            >>> from hapi.engine.routing import Routing
+            >>> from hapi.engine.run import Run
             >>> model = Catchment.from_yaml(
             ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
             ... )

@@ -29,7 +29,7 @@ import numpy as np
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
-from hapi.run import Run
+from hapi.engine.run import Run
 
 # %% Paths
 DATA = "examples/hydrological-model/data/distributed_model"

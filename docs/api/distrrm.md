@@ -1,4 +1,4 @@
 # Distributed Rainfall-Runoff Model
 
 ## DistributedRRM
-::: hapi.rrm.distrrm.DistributedRRM
+::: hapi.engine.distributed.DistributedRRM

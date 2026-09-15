@@ -5,7 +5,7 @@ rainfall-runoff model (e.g., HBV) independently for each grid cell and
 then routes the resulting discharge between cells following the river
 network defined by a flow direction raster.
 
-The module belongs to the `hapi.rrm` package and supports both
+The module belongs to the `hapi.engine` package and supports both
 Muskingum and triangular (MAXBAS) routing strategies.
 """
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from hapi.routing import Routing as routing
+from hapi.engine.routing import Routing as routing
 from hapi.simulation.results import RoutingKind, SimulationResults
 from hapi.simulation.validated import DistributedRun
 

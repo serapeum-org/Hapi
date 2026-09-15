@@ -22,8 +22,8 @@ import pytest
 
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.engine.run import Run
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.run import Run
 from hapi.simulation.results import RoutingKind, SimulationResults
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
@@ -148,7 +148,7 @@ class TestRunIsNotACatchment:
         )
 
     def test_run_does_not_import_catchment_at_runtime(self):
-        """Test that importing `hapi.run` does not pull in `hapi.catchment`.
+        """Test that importing `hapi.engine.run` does not pull in `hapi.catchment`.
 
         Test scenario:
             The dependency is inverted: `Run` owns protocols describing what it needs, and
@@ -158,7 +158,7 @@ class TestRunIsNotACatchment:
             of the package.
         """
         probe = (
-            "import sys; import hapi.run; "
+            "import sys; import hapi.engine.run; "
             "print('catchment-imported' if 'hapi.catchment' in sys.modules else 'clean')"
         )
         completed = subprocess.run(
@@ -169,7 +169,7 @@ class TestRunIsNotACatchment:
         )
 
         assert completed.stdout.strip() == "clean", (
-            "importing hapi.run must not import hapi.catchment; the protocols in "
+            "importing hapi.engine.run must not import hapi.catchment; the protocols in "
             "hapi.simulation.protocols exist so the run layer does not depend on the concrete class"
         )
 
@@ -185,7 +185,8 @@ class TestRunIsNotACatchment:
             there.
         """
         probe = (
-            "import sys; import hapi.run, hapi.wrapper; from hapi.rrm import distrrm; "
+            "import sys; import hapi.engine.run, hapi.engine.wrapper; "
+            "from hapi.engine import distributed; "
             "print(','.join(m for m in ('cleopatra', 'matplotlib') if m in sys.modules) "
             "or 'clean')"
         )

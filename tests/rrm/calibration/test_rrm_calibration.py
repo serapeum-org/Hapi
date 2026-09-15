@@ -7,7 +7,7 @@ import statista.descriptors as metrics
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from hapi.routing import Routing
+from hapi.engine.routing import Routing
 
 
 def test_read_parameters_bounds(

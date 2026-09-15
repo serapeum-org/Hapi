@@ -12,9 +12,9 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 ```python
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from hapi.run import Run
+from hapi.engine.run import Run
 from hapi.catchment import Catchment
-from hapi.routing import Routing
+from hapi.engine.routing import Routing
 ```
 - read the meteorological data, data has be in the form of numpy array with the following order [rainfall, ET, Temp, Tm], ET is the potential evapotranspiration, Temp is the temperature (C), and Tm is the long term monthly average temperature.
 

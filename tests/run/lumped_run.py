@@ -4,8 +4,8 @@ import statista.descriptors as metrics
 
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as hbv_lumped
-from hapi.routing import Routing
-from hapi.run import Run
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
 
 # %% Paths
 Comp = "examples"

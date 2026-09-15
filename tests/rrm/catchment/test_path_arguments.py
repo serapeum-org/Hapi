@@ -22,8 +22,8 @@ from pandas import DataFrame
 
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.engine.run import Run
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.run import Run
 
 
 @pytest.fixture(scope="module")

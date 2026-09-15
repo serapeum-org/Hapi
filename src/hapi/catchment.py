@@ -241,7 +241,7 @@ class Catchment:
     The Catchment class includes methods to read the meteorological and
     spatial inputs of the distributed hydrological model. It also reads the
     data of the gauges. Build the catchment, then hand it to whichever
-    :class:`hapi.run.Run` entry point suits it -- `Run.run_distributed(model)`. `Run` states what it
+    :class:`hapi.engine.run.Run` entry point suits it -- `Run.run_distributed(model)`. `Run` states what it
     needs as a protocol, which this class satisfies structurally; neither class inherits
     from the other.
 
@@ -1092,7 +1092,7 @@ class Catchment:
                 results it produced have not been routed, or -- on a MAXBAS run -- they
                 carry no `qout`. The routers record the routing they applied but do not sum
                 the domain, so results routed by calling
-                :class:`~hapi.rrm.distrrm.DistributedRRM` directly reach here labelled
+                :class:`~hapi.engine.distributed.DistributedRRM` directly reach here labelled
                 MAXBAS with no outlet series; the `Wrapper` entry points are what fill it.
         """
         if self.GaugesTable is None:

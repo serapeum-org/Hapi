@@ -4,8 +4,8 @@ from statista.sensitivity import Sensitivity as SA
 
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from hapi.routing import Routing
-from hapi.run import Run
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
 
 # %% Paths
 Parameterpath = "tests/rrm/data/coello/coello-lumpedparameter-muskingum.txt"

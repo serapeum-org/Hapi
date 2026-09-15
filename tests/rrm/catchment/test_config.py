@@ -36,8 +36,8 @@ from hapi.core.config import (
     ParametersConfig,
     RunConfig,
 )
+from hapi.engine.run import Run
 from hapi.inputs import MeteoInputs
-from hapi.run import Run
 
 COMBINED_NC = "tests/rrm/data/coello/meteo.nc"
 

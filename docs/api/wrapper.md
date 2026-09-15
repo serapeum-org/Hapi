@@ -1,4 +1,4 @@
 # Wrapper
 
 ## Wrapper
-::: hapi.wrapper.Wrapper
+::: hapi.engine.wrapper.Wrapper

@@ -20,10 +20,10 @@ import pytest
 
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.engine.distributed import DistributedRRM
+from hapi.engine.wrapper import Wrapper
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
-from hapi.rrm.distrrm import DistributedRRM
 from hapi.simulation.validated import DistributedRun, LumpedRun
-from hapi.wrapper import Wrapper
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
 
@@ -346,7 +346,7 @@ class TestTheEnginesCannotBeReachedUnvalidated:
         results = Wrapper.run_muskingum(run)
 
         assert built.results is None, (
-            "the engine must not write to the catchment; the entry point in hapi.run is what "
+            "the engine must not write to the catchment; the entry point in hapi.engine.run is what "
             "assigns model.results"
         )
         assert results.q_total is not None, "the results come back as a return value"

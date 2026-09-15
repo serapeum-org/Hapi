@@ -19,8 +19,8 @@ import datetime as dt
 import statista.descriptors as metrics
 
 from hapi.catchment import Catchment
-from hapi.routing import Routing
-from hapi.run import Run
+from hapi.engine.routing import Routing
+from hapi.engine.run import Run
 
 # %% Load the configuration and build the model
 Coello = Catchment.from_yaml(

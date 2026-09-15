@@ -4,7 +4,7 @@
 layer. What connects them is stated here: the run layer owns the interfaces, and `Catchment`
 satisfies them structurally.
 
-That is dependency inversion, and it buys two checkable things. `hapi.run` and `hapi.wrapper`
+That is dependency inversion, and it buys two checkable things. `hapi.engine.run` and `hapi.engine.wrapper`
 carry no runtime dependency on the concrete class, so the arrow between the modules points the
 other way. And the requirement is checked by mypy, where it used to live in prose in each
 method's docstring — prose does not fail CI.

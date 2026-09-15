@@ -19,11 +19,11 @@ from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds, ParameterSet, validate_parameter_count
+from hapi.engine.wrapper import Wrapper
 from hapi.inputs import MeteoInputs
 from hapi.simulation.protocols import SpatialDistribution
 from hapi.simulation.results import RoutingKind, SimulationResults
 from hapi.simulation.validated import DistributedRun, LumpedRun
-from hapi.wrapper import Wrapper
 
 ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
 COLUMNS_MISMATCH_ERROR = "all input data should have the same number of columns"
