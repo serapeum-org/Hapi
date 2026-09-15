@@ -87,6 +87,62 @@ class TestTemporalResolution:
         with pytest.raises(ValueError, match="temporal resolutions"):
             Catchment("coello", "2009-01-01", "2009-01-10", temporal_resolution="15min")
 
+    def test_hourly_resolution_scales_the_conversion_factor(self):
+        """Test that the hourly branch divides the daily conversion factor by 24.
+
+        Test scenario:
+            The conversion factor turns depth per step into discharge, so it has to follow
+            the step length. The hourly value must be exactly a twenty-fourth of the daily
+            one, not a rounded constant.
+        """
+        daily = Catchment("coello", "2009-01-01", "2009-01-10")
+        hourly = Catchment(
+            "coello", "2009-01-01", "2009-01-10", temporal_resolution="Hourly"
+        )
+
+        assert hourly.period.conversion_factor == pytest.approx(
+            daily.period.conversion_factor / 24
+        ), (
+            f"Expected {daily.period.conversion_factor / 24}, got "
+            f"{hourly.period.conversion_factor}"
+        )
+
+
+class TestSimulationPeriod:
+    """Tests for the span object every reader dates its inputs by."""
+
+    def test_a_span_that_runs_backwards_is_refused(self):
+        """Test that an end date before the start is named rather than silently empty.
+
+        Test scenario:
+            A backwards span produces an empty `date_index`, which surfaces much later as a
+            zero-length driver mismatch naming neither date.
+        """
+        with pytest.raises(ValueError, match="ends before it starts"):
+            SimulationPeriod.parse("2009-12-31", "2009-01-01")
+
+    def test_the_calendar_is_built_once(self):
+        """Test that the derived calendar is cached rather than rebuilt on every read.
+
+        Test scenario:
+            The class is frozen precisely so derived values cannot drift, which makes the
+            calendar safe to memoise -- yet `date_index`, and `days` and `__len__` through
+            it, rebuilt a `pd.date_range` on each access. `from_model` reads it once per
+            calibration trial and `SimulationResults._step_bounds` twice per call.
+        """
+        period = SimulationPeriod.parse("2009-01-01", "2009-12-31")
+
+        assert period.date_index is period.date_index, (
+            "the calendar cannot change on a frozen period, so it should be built once"
+        )
+        assert len(period) == len(period.date_index), (
+            "the cached index must still be what the length reports"
+        )
+
+
+class TestConceptualModelInputs:
+    """Tests for the value objects the conceptual-model readers produce."""
+
     @pytest.mark.parametrize("initial_cond", [[0, 10, 10], [0] * 7, []])
     def test_an_initial_condition_of_the_wrong_length_is_refused(
         self, initial_cond: list
@@ -129,54 +185,6 @@ class TestTemporalResolution:
         """
         with pytest.raises(ValueError, match="same as LB"):
             ParameterBounds([0.0] * 12, [1.0] * 11)
-
-    def test_a_span_that_runs_backwards_is_refused(self):
-        """Test that an end date before the start is named rather than silently empty.
-
-        Test scenario:
-            A backwards span produces an empty `date_index`, which surfaces much later as a
-            zero-length driver mismatch naming neither date.
-        """
-        with pytest.raises(ValueError, match="ends before it starts"):
-            SimulationPeriod.parse("2009-12-31", "2009-01-01")
-
-    def test_the_calendar_is_built_once(self):
-        """Test that the derived calendar is cached rather than rebuilt on every read.
-
-        Test scenario:
-            The class is frozen precisely so derived values cannot drift, which makes the
-            calendar safe to memoise -- yet `date_index`, and `days` and `__len__` through
-            it, rebuilt a `pd.date_range` on each access. `from_model` reads it once per
-            calibration trial and `SimulationResults._step_bounds` twice per call.
-        """
-        period = SimulationPeriod.parse("2009-01-01", "2009-12-31")
-
-        assert period.date_index is period.date_index, (
-            "the calendar cannot change on a frozen period, so it should be built once"
-        )
-        assert len(period) == len(period.date_index), (
-            "the cached index must still be what the length reports"
-        )
-
-    def test_hourly_resolution_scales_the_conversion_factor(self):
-        """Test that the hourly branch divides the daily conversion factor by 24.
-
-        Test scenario:
-            The conversion factor turns depth per step into discharge, so it has to follow
-            the step length. The hourly value must be exactly a twenty-fourth of the daily
-            one, not a rounded constant.
-        """
-        daily = Catchment("coello", "2009-01-01", "2009-01-10")
-        hourly = Catchment(
-            "coello", "2009-01-01", "2009-01-10", temporal_resolution="Hourly"
-        )
-
-        assert hourly.period.conversion_factor == pytest.approx(
-            daily.period.conversion_factor / 24
-        ), (
-            f"Expected {daily.period.conversion_factor / 24}, got "
-            f"{hourly.period.conversion_factor}"
-        )
 
 
 class TestReadParametersDistributed:

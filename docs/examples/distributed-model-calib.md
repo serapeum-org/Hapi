@@ -9,11 +9,11 @@ The calibration of the Distributed rainfall runoff model follows the same steps 
 
 class Catchment:
 
-    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                 TemporalResolution = "Daily"):
+    def __init__(self, name, start_data, end, fmt="%Y-%m-%d", spatial_resolution="Lumped",
+                 temporal_resolution="Daily", routing_method="Muskingum"):
 		"""
         =============================================================================
-            Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+            Catchment(name, start_data, end, fmt="%Y-%m-%d", spatial_resolution="Lumped",
                              TemporalResolution = "Daily")
         =============================================================================
         Parameters
@@ -42,7 +42,7 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
-Coello = Catchment(name, start, end, SpatialResolution = "Distributed")
+Coello = Catchment(name, start, end, spatial_resolution="Distributed")
 ```
 
 # Read Meteorological Inputs
@@ -92,8 +92,8 @@ Coello.read_lumped_model(HBV, CatchmentArea, InitialCond)
 - to check the performance of the model we need to read the gauge hydrographs
 
 ```python
-Coello.read_gauge_table("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
-GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
+Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
+GaugesPath = Path + "/stations/"
 Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 ```
 ## 3-Run Object
@@ -112,7 +112,7 @@ Run.run_distributed(Coello)
 ```python
 """
 Outputs:
-    1-statevariables: [numpy attribute]
+    1-state_variables:
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
     2-qlz: [numpy attribute]
         3D array of the lower zone discharge

@@ -35,10 +35,13 @@ Coello.read_parameters(Parameterpath, Snow)
 parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
 parameters.rename(columns={1: "value"}, inplace=True)
 # %% parameters boundaries
-UB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col=0, header=None)
+# Each bound read from its own file: `UB` came from `LB-...` and `LB` from `UB-...`,
+# and both were handed straight to `SA(parameters, LB, UB, ...)`, so the sampler was
+# given the range upside down.
+UB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 parnames = UB.index
 UB = UB[1].tolist()
-LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
+LB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 # The bounds moved onto `Calibration` with the is-a -> has-a change, and this script
 # only samples between them -- so it uses the two lists it just read.
