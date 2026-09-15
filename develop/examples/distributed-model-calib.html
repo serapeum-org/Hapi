@@ -1636,11 +1636,11 @@
 </ul>
 <p><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">StartDate</span><span class="p">,</span> <span class="n">EndDate</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s1">'Lumped'</span><span class="p">,</span>
-                 <span class="n">TemporalResolution</span> <span class="o">=</span> <span class="s2">"Daily"</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">start_data</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Lumped"</span><span class="p">,</span>
+                 <span class="n">temporal_resolution</span><span class="o">=</span><span class="s2">"Daily"</span><span class="p">,</span> <span class="n">routing_method</span><span class="o">=</span><span class="s2">"Muskingum"</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        =============================================================================</span>
-<span class="sd">            Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',</span>
+<span class="sd">            Catchment(name, start_data, end, fmt="%Y-%m-%d", spatial_resolution="Lumped",</span>
 <span class="sd">                             TemporalResolution = "Daily")</span>
 <span class="sd">        =============================================================================</span>
 <span class="sd">        Parameters</span>
@@ -1667,7 +1667,7 @@
 <span class="n">end</span> <span class="o">=</span> <span class="s2">"2011-12-31"</span>
 <span class="n">name</span> <span class="o">=</span> <span class="s2">"Coello"</span>
 
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">SpatialResolution</span> <span class="o">=</span> <span class="s2">"Distributed"</span><span class="p">)</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">spatial_resolution</span><span class="o">=</span><span class="s2">"Distributed"</span><span class="p">)</span>
 </code></pre></div>
 <h1 id="read-meteorological-inputs"><a class="toclink" href="#read-meteorological-inputs">Read Meteorological Inputs</a><a class="headerlink" href="#read-meteorological-inputs" title="Permanent link">#</a></h1>
 <ul>
@@ -1705,8 +1705,8 @@
 <ul>
 <li>to check the performance of the model we need to read the gauge hydrographs</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="s2">"Hapi/Data/00inputs/Discharge/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
-<span class="n">GaugesPath</span> <span class="o">=</span> <span class="s2">"Hapi/Data/00inputs/Discharge/stations/"</span>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">read_gauge_table</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/gauges.csv"</span><span class="p">,</span> <span class="n">FlowAccPath</span><span class="p">)</span>
+<span class="n">GaugesPath</span> <span class="o">=</span> <span class="n">Path</span> <span class="o">+</span> <span class="s2">"/stations/"</span>
 <span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">GaugesPath</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="3-run-object"><a class="toclink" href="#3-run-object">3-Run Object</a><a class="headerlink" href="#3-run-object" title="Permanent link">#</a></h2>
@@ -1721,7 +1721,7 @@
 - the result of the simulation is returned, and also assigned to <code>Coello.results</code> as follow</p>
 <div class="highlight"><pre><span></span><code><span class="sd">"""</span>
 <span class="sd">Outputs:</span>
-<span class="sd">    1-statevariables: [numpy attribute]</span>
+<span class="sd">    1-state_variables:</span>
 <span class="sd">        4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]</span>
 <span class="sd">    2-qlz: [numpy attribute]</span>
 <span class="sd">        3D array of the lower zone discharge</span>

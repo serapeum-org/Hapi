@@ -1572,7 +1572,7 @@ one file holding the paths, dates and settings, read by <code>Catchment.from_yam
 <ul>
 <li>First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model <code>RUN</code>.</li>
 </ul>
-<p><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">HBVLumped</span>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="kn">import</span> <span class="n">HBVBergestrom92</span> <span class="k">as</span> <span class="n">HBVLumped</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
@@ -1625,6 +1625,10 @@ period of the simulation is also needed for the comparison.</p>
 <p>all methods in <code>statista.descriptors</code> takes two numpy arrays of the same length and return real number.</p>
 <p><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">statista.descriptors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metrics</span>
 
+<span class="c1"># The observed record has to be read before it can be scored against; the page never</span>
+<span class="c1"># loaded it, so `QGauges` was `None`.</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">read_discharge_gauges</span><span class="p">(</span><span class="n">Path</span> <span class="o">+</span> <span class="s2">"Qout_c.csv"</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+
 <span class="n">Metrics</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="n">Qobs</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">QGauges</span><span class="p">[</span><span class="s1">'q'</span><span class="p">]</span>
 
@@ -1644,7 +1648,7 @@ To plot the calculated and measured discharge import matplotlib</p>
 <p><div class="highlight"><pre><span></span><code><span class="n">gaugei</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">plotstart</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
 <span class="n">plotend</span> <span class="o">=</span> <span class="s2">"2011-12-31"</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">plot_hydrograph</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">gaugei</span><span class="p">,</span> <span class="n">Title</span><span class="o">=</span> <span class="s2">"Lumped Model"</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">plot_hydrograph</span><span class="p">(</span><span class="n">plotstart</span><span class="p">,</span> <span class="n">plotend</span><span class="p">,</span> <span class="n">gaugei</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Lumped Model"</span><span class="p">)</span>
 </code></pre></div>
 <img alt="lumped-model" src="../img/lumpedmodel.png" /></p>
 <ul>
