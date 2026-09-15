@@ -2827,7 +2827,11 @@ argument.</p>
 <span class="normal">797</span>
 <span class="normal">798</span>
 <span class="normal">799</span>
-<span class="normal">800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The arrays one model run produced, the routing that produced them, and their views.</span>
 
@@ -3463,8 +3467,12 @@ argument.</p>
             <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">from_dataset</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
             <span class="c1"># A copy, not the `moveaxis` view: `arr` is a slice of a result array, and</span>
             <span class="c1"># handing a view to a writer that may normalise no-data in place would edit</span>
-            <span class="c1"># the results this call is only supposed to read.</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="c1"># the results this call is only supposed to read. `np.array(copy=True)` rather</span>
+            <span class="c1"># than `ascontiguousarray`, which returns the input untouched when it is</span>
+            <span class="c1"># already contiguous -- and a single-step range is, because numpy ignores</span>
+            <span class="c1"># size-1 dimensions when testing that. `save(start=d, end=d)` therefore kept</span>
+            <span class="c1"># handing out a view, which is exactly the case this guards.</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">"C"</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">cube</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_csv</span><span class="p">(</span>

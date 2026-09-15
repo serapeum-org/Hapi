@@ -2802,7 +2802,16 @@ consumes.</p>
 <span class="normal">919</span>
 <span class="normal">920</span>
 <span class="normal">921</span>
-<span class="normal">922</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
+<span class="normal">927</span>
+<span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -3132,10 +3141,19 @@ consumes.</p>
 <span class="sd">                scaling is applied. Default is None.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: The results came from MAXBAS routing, whose per-cell values are</span>
-<span class="sd">                contributions rather than discharges.</span>
+<span class="sd">            ValueError: The results have not been routed, or came from MAXBAS routing,</span>
+<span class="sd">                whose per-cell values are contributions rather than discharges.</span>
 <span class="sd">        """</span>
         <span class="n">results</span><span class="p">,</span> <span class="n">meteo</span><span class="p">,</span> <span class="n">gauges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gauged_results</span><span class="p">()</span>
+        <span class="c1"># The same two refusals `Catchment.extract_discharge` makes, in the same order.</span>
+        <span class="c1"># This one only tested `outlet_shortcut_valid`, which now excludes `UNROUTED` as</span>
+        <span class="c1"># well as `MAXBAS` -- so unrouted results reached a message stating categorically</span>
+        <span class="c1"># that the run used triangular routing, which it had not.</span>
+        <span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">routing</span> <span class="ow">is</span> <span class="n">RoutingKind</span><span class="o">.</span><span class="n">UNROUTED</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"these results have not been routed, so there is no hydrograph to extract; "</span>
+                <span class="s2">"call a Run.* entry point rather than DistributedRRM.run_lumped_model alone"</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">q_total</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"the results carry no routed discharge; the run did not complete"</span>
@@ -3933,16 +3951,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
-<span class="normal">758</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">758</span>
 <span class="normal">759</span>
 <span class="normal">760</span>
 <span class="normal">761</span>
@@ -4106,7 +4115,16 @@ dict.</p>
 <span class="normal">919</span>
 <span class="normal">920</span>
 <span class="normal">921</span>
-<span class="normal">922</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
+<span class="normal">927</span>
+<span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4450,16 +4468,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
-<span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">626</span>
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
@@ -4580,7 +4589,16 @@ dict.</p>
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
-<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4807,8 +4825,8 @@ scaling is applied. Default is None.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The results came from MAXBAS routing, whose per-cell values are
-contributions rather than discharges.</p>
+                <p>The results have not been routed, or came from MAXBAS routing,
+whose per-cell values are contributions rather than discharges.</p>
               </div>
             </td>
           </tr>
@@ -4874,7 +4892,16 @@ contributions rather than discharges.</p>
 <span class="normal">457</span>
 <span class="normal">458</span>
 <span class="normal">459</span>
-<span class="normal">460</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4896,10 +4923,19 @@ contributions rather than discharges.</p>
 <span class="sd">            scaling is applied. Default is None.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: The results came from MAXBAS routing, whose per-cell values are</span>
-<span class="sd">            contributions rather than discharges.</span>
+<span class="sd">        ValueError: The results have not been routed, or came from MAXBAS routing,</span>
+<span class="sd">            whose per-cell values are contributions rather than discharges.</span>
 <span class="sd">    """</span>
     <span class="n">results</span><span class="p">,</span> <span class="n">meteo</span><span class="p">,</span> <span class="n">gauges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gauged_results</span><span class="p">()</span>
+    <span class="c1"># The same two refusals `Catchment.extract_discharge` makes, in the same order.</span>
+    <span class="c1"># This one only tested `outlet_shortcut_valid`, which now excludes `UNROUTED` as</span>
+    <span class="c1"># well as `MAXBAS` -- so unrouted results reached a message stating categorically</span>
+    <span class="c1"># that the run used triangular routing, which it had not.</span>
+    <span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">routing</span> <span class="ow">is</span> <span class="n">RoutingKind</span><span class="o">.</span><span class="n">UNROUTED</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"these results have not been routed, so there is no hydrograph to extract; "</span>
+            <span class="s2">"call a Run.* entry point rather than DistributedRRM.run_lumped_model alone"</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">q_total</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">"the results carry no routed discharge; the run did not complete"</span>
@@ -5460,16 +5496,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">476</span>
 <span class="normal">477</span>
 <span class="normal">478</span>
 <span class="normal">479</span>
@@ -5608,7 +5635,16 @@ dict.</p>
 <span class="normal">612</span>
 <span class="normal">613</span>
 <span class="normal">614</span>
-<span class="normal">615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
