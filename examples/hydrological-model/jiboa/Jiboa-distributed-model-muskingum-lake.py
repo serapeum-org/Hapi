@@ -1,7 +1,16 @@
-"""This code is used to Run the distributed model for jiboa river in El Salvador where the catchment has an a ustream lake and a volcanic area.
+"""Run the distributed model for the Jiboa river in El Salvador.
 
--   you have to make the root directory to the examples folder to enable the code
-    from reading input files
+The catchment has an upstream lake and a volcanic area, which makes it the only
+exercise of `Run.run_distributed_with_lake` outside the unit tests.
+
+**The dataset this reads is not in the repository.** `examples/hydrological-model/jiboa/data/`
+is untracked -- 85 files, about 2 MB: `lakedata.csv`, `Lakeparameters.txt`, `curve.txt`,
+`initial-jiboa.txt`, `Initial-lake.txt`, and the `meteo-data/`, `gis-data/`, `parameters/`
+and `gauges/` trees. A clone will not have it, and the script raises on the first read.
+`tests/rrm/data/jiboa/` carries only the lake record and its parameters, which is not
+enough to drive this.
+
+Run it from the repository root, so the relative paths below resolve.
 """
 
 import datetime as dt
