@@ -1,4 +1,4 @@
 # DEM
 
 ## DEM
-::: hapi.dem.DEM
+::: hapi.inputs.dem.DEM

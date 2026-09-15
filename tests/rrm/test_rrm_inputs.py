@@ -11,12 +11,8 @@ from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 from shapely.geometry import Polygon
 
-from hapi.inputs import (
-    PARAMETERS_LIST,
-    Inputs,
-    _infer_date_format,
-    read_rasters,
-)
+from hapi.inputs import PARAMETERS_LIST, Inputs, read_rasters
+from hapi.inputs.rasters import _infer_date_format
 
 # UTM 18N covers the Coello basin, which the fixtures carry in geographic coordinates.
 PARAMETER_EPSG = 32618

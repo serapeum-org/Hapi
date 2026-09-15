@@ -48,7 +48,7 @@ class ObjectiveFunctionArityError(ValueError):
     Examples:
         - It carries the message that names what the objective needs:
             ```python
-            >>> from hapi.calibration import (
+            >>> from hapi.calibration.search import (
             ...     OBJECTIVE_FN_ARGS_ERROR,
             ...     ObjectiveFunctionArityError,
             ... )

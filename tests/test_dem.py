@@ -1,6 +1,6 @@
 import numpy as np
 
-from hapi.dem import DEM
+from hapi.inputs.dem import DEM
 
 
 def test_flow_direction_index(coello_df_4000: DEM):

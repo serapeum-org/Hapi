@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from pyramids.dataset import GeoReference
 
-from hapi.dem import (
+from hapi.inputs.dem import (
     D8_ENCODINGS,
     D8_OFFSETS_ESRI,
     D8_OFFSETS_GRASS,

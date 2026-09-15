@@ -42,9 +42,9 @@ from hapi.inputs import (
     FlowNetwork,
     MeteoInputs,
     RiverGeometry,
-    _warn_if_no_sentinel,
     read_rasters,
 )
+from hapi.inputs.rasters import _warn_if_no_sentinel
 from hapi.simulation.results import RoutingKind, SimulationResults
 
 if TYPE_CHECKING:

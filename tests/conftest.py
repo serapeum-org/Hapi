@@ -1,7 +1,7 @@
 import pytest
 
-# importing hapi.dem pulls in pyramids first, which sets up the vendored GDAL
-from hapi.dem import DEM
+# importing hapi.inputs.dem pulls in pyramids first, which sets up the vendored GDAL
+from hapi.inputs.dem import DEM
 from tests.rrm.conftest import *
 
 

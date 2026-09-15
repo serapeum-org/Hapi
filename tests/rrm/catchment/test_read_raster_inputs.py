@@ -739,7 +739,7 @@ class TestReadFlowDir:
             but ``FDT`` comes from ``DEM.flow_direction_table``, which re-reads the raster
             and applies its own ``np.isclose(rtol=1e-5)``. A raster whose no-data value is
             also a valid D8 code shows the split: the cell is ``NaN`` in the array yet
-            still keyed in the table. Reconciling them means changing ``hapi.dem``, which
+            still keyed in the table. Reconciling them means changing ``hapi.inputs.dem``, which
             is slated to move to digital-rivers; this test makes sure the divergence
             cannot drift further unnoticed in the meantime.
         """

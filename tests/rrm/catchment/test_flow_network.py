@@ -11,7 +11,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from hapi.inputs import D8_CODES, FlowNetwork, _to_int_codes
+from hapi.inputs import D8_CODES, FlowNetwork
+from hapi.inputs.network import _to_int_codes
 
 NO_DATA = -9999.0
 

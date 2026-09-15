@@ -17,7 +17,7 @@ from typing import Any
 import numpy as np
 from pyramids.dataset import Dataset
 
-from hapi.dem import DEM
+from hapi.inputs.dem import DEM
 
 
 class Parameters:

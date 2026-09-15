@@ -11,7 +11,7 @@ method's docstring — prose does not fail CI.
 
 `CatchmentLike` is deliberately builder-shaped: its fields really are optional, because a
 half-built catchment is a legitimate state. Narrowing it into a run
-(see [Runs](runs.md)) is where the optionality is resolved.
+(see [Validated runs](validated.md)) is where the optionality is resolved.
 
 ## CatchmentLike
 ::: hapi.simulation.protocols.CatchmentLike
