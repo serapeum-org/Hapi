@@ -38,7 +38,7 @@ Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 routing_fn = Routing.muskingum_v
 Route = 1
 ### run the model
-Run.runLumped(Coello, Route, routing_fn)
+Run.run_lumped(Coello, Route, routing_fn)
 # %% calculate performance criteria
 scores = dict()
 
@@ -65,4 +65,4 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = Path + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=1, StartDate=StartDate, EndDate=EndDate, path=Path)
+Coello.results.save(result=1, start=StartDate, end=EndDate, path=Path)

@@ -13,6 +13,7 @@ import numpy as np
 import datetime as dt
 from osgeo import gdal
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 
@@ -38,20 +39,22 @@ Snow = 0
 Sdate = '2009-01-01'
 Edate = '2011-12-31'
 name = "Coello"
-Coello = Calibration(name, Sdate, Edate, spatial_resolution="Distributed")
+# `Calibration` holds a catchment rather than being one, so the model is built first
+# and every reader is called on `Coello.model`.
+Coello = Calibration(Catchment(name, Sdate, Edate, spatial_resolution="Distributed"))
 
 # Meteorological & GIS Data
-Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
+Coello.model.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
+Coello.model.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
 
 # Lumped Model
-Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
+Coello.model.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 # Gauges Data
-Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.model.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+Coello.model.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 
@@ -62,8 +65,10 @@ Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 ```python
 from hapi.rrm.parameters import Parameters as DP
+from pyramids.dataset import Dataset
 
-raster = gdal.Open(FlowAccPath)
+# A pyramids `Dataset`, not a bare GDAL handle — `Parameters.__init__` refuses anything else.
+raster = Dataset.read_file(FlowAccPath)
 #-------------
 # for lumped catchment parameters
 no_parameters = 12
@@ -74,7 +79,8 @@ no_lumped_par = 1
 lumped_par_pos = [7]
 
 SpatialVarFun = DP(raster, no_parameters, no_lumped_par=no_lumped_par,
-                   lumped_par_pos=lumped_par_pos,Function=2, Klb=klb, Kub=kub)
+                   lumped_par_pos=lumped_par_pos, function=2,
+                   k_lower_bound=klb, k_upper_bound=kub)
 # calculate no of parameters that optimization algorithm is going to generate
 SpatialVarFun.ParametersNO
 
@@ -84,22 +90,24 @@ SpatialVarFun.ParametersNO
 
 ```python
 
-coordinates = Coello.GaugesTable[['id','x','y','weight']][:]
+coordinates = Coello.model.GaugesTable[['id','x','y','weight']][:]
 
-# define the objective function and its arguments
-OF_args = [coordinates]
-
-def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
-    Coello.extract_discharge()
-    all_errors=[]
+# `run_calibration` calls the objective as `objective(QGauges, GaugesTable)` — two
+# positional arguments, and nothing else. The arity is checked against the signature
+# before the search starts, so a mismatch is reported rather than scored as `nan`.
+def objective_function(Qobs, gauges_table):
+    Coello.model.extract_discharge()
+    all_errors = []
     # error for all internal stations
-    for i in range(len(coordinates)):
-        all_errors.append((metrics.rmse(Qobs.loc[:,Qobs.columns[0]],Coello.Qsim[:,i]))) #*coordinates.loc[coordinates.index[i],'weight']
-        print(all_errors)
-        error = sum(all_errors)
-        return error
+    for i in range(len(gauges_table)):
+        all_errors.append(
+            metrics.rmse(Qobs.loc[:, Qobs.columns[0]], Coello.model.Qsim.iloc[:, i])
+        )
+    return sum(all_errors)
 
-    Coello.read_objective_function(objective_function, OF_args)
+
+# Registered outside the function — indented inside it, this line never ran.
+Coello.read_objective_function(objective_function, [])
 ```
 ## Calibration algorithm Arguments
 
@@ -133,6 +141,8 @@ cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs,print_er
 ## Save results
 
 ```python
-SpatialVarFun.Function(Coello.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+# `best_parameters` is the flat vector the optimiser produced, which is what `Function`
+# maps onto the grid; it takes that one argument and nothing else.
+SpatialVarFun.Function(Coello.best_parameters)
 SpatialVarFun.save_parameters(SaveTo)
 ```

@@ -28,7 +28,7 @@ def coello_muskingum_run(
     """Distributed Coello catchment with a completed Muskingum run.
 
     Returns:
-        Catchment: Model with `Qtot` populated by the spatial routing.
+        Catchment: Model with `q_total` populated by the spatial routing.
     """
     coello = Catchment(
         "coello",
@@ -52,8 +52,31 @@ def coello_muskingum_run(
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
     coello.read_gauge_table(coello_gauges_table, coello_acc_path)
     coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
-    Run.RunHapi(coello)
+    Run.run_distributed(coello)
     return coello
+
+
+def test_qout_covers_the_period_exactly(coello_muskingum_run: Catchment):
+    """Test that the outlet hydrograph is as long as the period, not a step longer.
+
+    Args:
+        coello_muskingum_run: Distributed Coello catchment with a completed Muskingum run.
+
+    Test scenario:
+        `q_total` carries the conceptual model's leading initial-state slot, so reading the
+        outlet cell whole gave a `qout` one step longer than the MAXBAS and lake paths
+        produce -- for a field documented as one thing, "the outlet hydrograph". Anything
+        indexing it by the period worked on one routing path and not the other.
+    """
+    # The Muskingum path leaves `qout` for this call to fill: finding the outlet needs the
+    # gauge table, which the engine does not have.
+    coello_muskingum_run.extract_discharge()
+    qout = coello_muskingum_run.results.qout
+
+    assert len(qout) == len(coello_muskingum_run.period), (
+        f"qout must cover the period: {len(qout)} against "
+        f"{len(coello_muskingum_run.period)}"
+    )
 
 
 def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
@@ -61,8 +84,8 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
 
     Test scenario:
         After a Muskingum run, extract_discharge with the default
-        frame_work_1=False walks the gauge table, extracts Qsim per gauge
-        from Qtot, and fills the metrics frame (RMSE, NSE, NSEhf, KGE, WB,
+        Muskingum-routed results walk the gauge table, extracting Qsim per gauge
+        from q_total, and fills the metrics frame (RMSE, NSE, NSEhf, KGE, WB,
         Pearson-CC, R2) with finite numbers.
     """
     coello = coello_muskingum_run
@@ -83,7 +106,7 @@ def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
     assert np.isfinite(coello.metrics.to_numpy(dtype=float)).all(), (
         "All metric values should be finite"
     )
-    assert coello.Qsim.shape == (len(coello.date_index), n_gauges), (
+    assert coello.Qsim.shape == (len(coello.period.date_index), n_gauges), (
         f"Qsim shape mismatch: {coello.Qsim.shape}"
     )
 

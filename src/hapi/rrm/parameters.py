@@ -11,6 +11,8 @@ from __future__ import annotations
 import datetime as dt
 import os
 import warnings
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from pyramids.dataset import Dataset
@@ -176,7 +178,7 @@ class Parameters:
         # Reject an unrecognised selector here rather than leaving `Function` unbound:
         # it is invoked on every calibration iteration, so a silent miss surfaces far
         # from the mistake as a bare AttributeError.
-        strategies = {
+        strategies: dict[int, Callable[..., Any]] = {
             1: self.par3d_lumped,
             2: self.par3d,
             3: self.par2d_lumped_k1_lake,
@@ -274,7 +276,10 @@ class Parameters:
             shape=(self.no_parameters, self.no_elem), dtype=np.float32
         )
 
-        self.Function = strategies[function]
+        # Annotated, not inferred: mypy would otherwise type this from the one assignment and
+        # refuse the HRU reassignment below, and refuse it as a
+        # `hapi.protocols.SpatialDistribution` -- which is the contract a calibration reads.
+        self.Function: Callable[..., Any] = strategies[function]
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
             self.Function = self.hydrologic_response_units

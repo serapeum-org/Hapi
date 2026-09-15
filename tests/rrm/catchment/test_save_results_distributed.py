@@ -1,4 +1,4 @@
-"""Tests for the distributed branch of ``Catchment.save_results``.
+"""Tests for the raster branch of ``SimulationResults.save``.
 
 The distributed branch scaffolds an in-memory ``DatasetCollection`` off the flow-accumulation
 raster and writes one GeoTIFF per timestep. It was previously exercised only by the
@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset
 
+import hapi.results as results_module
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
@@ -51,11 +52,11 @@ def coello_run(
     coello.flow_network = FlowNetwork.from_rasters(coello_acc_path)
     coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-    Run.runFW1(coello)
+    Run.run_maxbas(coello)
     return coello
 
 
-def test_save_results_distributed_writes_one_raster_per_step(
+def test_save_writes_one_raster_per_step(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that the distributed branch writes one readable GeoTIFF per timestep.
@@ -66,7 +67,7 @@ def test_save_results_distributed_writes_one_raster_per_step(
         tmp_path: Destination directory.
 
     Test scenario:
-        `save_results` scaffolds a `DatasetCollection` from the flow-accumulation
+        `save` scaffolds a `DatasetCollection` from the flow-accumulation
         raster via pyramids' `from_dataset` named constructor and writes the
         selected result to one raster per date. Pins that the files land, are
         readable, and carry the template's grid.
@@ -76,7 +77,7 @@ def test_save_results_distributed_writes_one_raster_per_step(
     # result=4 is the snow-pack state variable. The discharge options are available after
     # a FW1 run too since `_set_maxbas_output_fields` landed; this covers the state-variable
     # branch, which reads a different array.
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -94,7 +95,7 @@ def test_save_results_distributed_writes_one_raster_per_step(
     )
 
 
-def test_save_results_distributed_values_match_the_model_array(
+def test_save_values_match_the_model_array(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that the written rasters carry the model's discharge values.
@@ -112,7 +113,7 @@ def test_save_results_distributed_values_match_the_model_array(
     """
     out = tmp_path / "dist"
     out.mkdir()
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -121,8 +122,10 @@ def test_save_results_distributed_values_match_the_model_array(
     )
 
     written = sorted(out.glob("*.tif"))
-    start_i = np.where(coello_run.date_index == np.datetime64("2009-01-01"))[0][0]
-    expected = coello_run.state_variables[:, :, start_i, 0]
+    start_i = np.where(coello_run.period.date_index == np.datetime64("2009-01-01"))[0][
+        0
+    ]
+    expected = coello_run.results.state_variables[:, :, start_i, 0]
     actual = Dataset.read_file(str(written[0])).read_array(band=0)
 
     np.testing.assert_allclose(
@@ -130,7 +133,7 @@ def test_save_results_distributed_values_match_the_model_array(
     )
 
 
-def test_save_results_joins_a_directory_written_without_a_separator(
+def test_save_joins_a_directory_written_without_a_separator(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that a directory given without a trailing separator still writes inside it.
@@ -149,7 +152,7 @@ def test_save_results_joins_a_directory_written_without_a_separator(
     out = tmp_path / "no-separator"
     out.mkdir()
 
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -162,7 +165,7 @@ def test_save_results_joins_a_directory_written_without_a_separator(
     )
 
 
-def test_save_results_creates_the_directory_it_is_given(
+def test_save_creates_the_directory_it_is_given(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that a destination directory that does not exist yet is created.
@@ -179,7 +182,7 @@ def test_save_results_creates_the_directory_it_is_given(
     """
     out = tmp_path / "nested" / "results"
 
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -192,7 +195,7 @@ def test_save_results_creates_the_directory_it_is_given(
     )
 
 
-def test_save_results_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
+def test_save_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
     """Test that a non-string `path` is refused by name rather than by concatenation.
 
     Args:
@@ -204,8 +207,155 @@ def test_save_results_refuses_a_path_that_is_not_a_string(coello_run: Catchment)
         concatenation, naming neither the argument nor what it should be.
     """
     with pytest.raises(TypeError, match="path must be a string") as exc:
-        coello_run.save_results(flow_acc_path="unused", result=1, path=None)
+        coello_run.results.save(flow_acc_path="unused", result=1, path=None)
 
     assert "NoneType" in str(exc.value), (
         f"the error should name what it got: {exc.value}"
     )
+
+
+def test_save_uses_the_prefix_it_is_given(
+    coello_run: Catchment, coello_acc_path: str, tmp_path
+):
+    """Test that an explicit prefix names the files instead of the default.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Destination directory.
+
+    Test scenario:
+        `prefix` defaults to `Result_` only when it is left empty, and every other test in
+        this file takes that default -- so the branch that keeps a caller's prefix was never
+        exercised. A run writing several variables into one directory depends on it.
+    """
+    out = tmp_path / "prefixed"
+    out.mkdir()
+
+    coello_run.results.save(
+        path=f"{out}/",
+        flow_acc_path=coello_acc_path,
+        result=1,
+        start="2009-01-01",
+        end="2009-01-02",
+        prefix="Qtot_",
+    )
+
+    written = sorted(p.name for p in out.glob("*.tif"))
+    assert written == ["Qtot_2009-01-01.tif", "Qtot_2009-01-02.tif"], (
+        f"the files must carry the given prefix, got {written}"
+    )
+
+
+@pytest.mark.parametrize("end, steps", [("2009-01-01", 1), ("2009-01-03", 3)])
+def test_save_hands_the_writer_a_copy_not_a_view(
+    coello_run: Catchment,
+    coello_acc_path: str,
+    tmp_path,
+    monkeypatch,
+    end: str,
+    steps: int,
+):
+    """Test that the array given to the raster writer never aliases the results.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Destination directory.
+        monkeypatch: Used to capture what is assigned to the cube.
+        end: End date, giving a one-step range and a three-step one.
+        steps: How many rasters that range covers.
+
+    Test scenario:
+        A writer that normalises no-data in place would edit the result arrays a *save* is
+        only supposed to read. The guard was `np.ascontiguousarray`, which hands back its
+        input untouched when it is already contiguous -- and numpy ignores size-1
+        dimensions when testing that, so the single-step range `save(start=d, end=d)` asks
+        for still passed a view. One step is the case that regressed; three is the case
+        that always worked.
+    """
+    captured = {}
+
+    class _RecordingCube:
+        """Stand-in for pyramids' DatasetCollection that records what it is given."""
+
+        @classmethod
+        def from_dataset(cls, src, time_length):
+            """Build the recorder instead of an in-memory scaffold."""
+            captured["time_length"] = time_length
+            return cls()
+
+        @property
+        def values(self):
+            """Return what was assigned."""
+            return captured.get("values")
+
+        @values.setter
+        def values(self, array):
+            captured["values"] = array
+
+        def to_file(self, names):
+            """Record the names instead of writing them."""
+            captured["names"] = names
+
+    monkeypatch.setattr(results_module, "Datacube", _RecordingCube)
+
+    coello_run.results.save(
+        path=str(tmp_path),
+        flow_acc_path=coello_acc_path,
+        result=1,
+        start="2009-01-01",
+        end=end,
+    )
+
+    assert captured["time_length"] == steps, (
+        f"expected {steps} steps, got {captured['time_length']}"
+    )
+    assert not np.shares_memory(captured["values"], coello_run.results.q_total), (
+        "the writer must receive a copy; a view lets it edit the results in place"
+    )
+
+
+def test_save_without_a_template_raster_says_what_it_needs(
+    coello_run: Catchment, tmp_path
+):
+    """Test that writing rasters with no `flow_acc_path` names the missing template.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        tmp_path: Destination directory.
+
+    Test scenario:
+        `FlowNetwork` keeps the accumulation array but not its projection, so the grid has to
+        be read back from the file. Without the template the error used to be a pyramids
+        failure on an empty path, several frames from the argument the caller omitted.
+    """
+    with pytest.raises(ValueError, match="flow_acc_path"):
+        coello_run.results.save(path=str(tmp_path), result=1)
+
+
+@pytest.mark.parametrize("result", [0, 9])
+def test_save_refuses_a_raster_option_outside_the_range(
+    coello_run: Catchment, coello_acc_path: str, tmp_path, result: int
+):
+    """Test that a distributed option outside 1-8 raises before any file is written.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Destination directory.
+        result: An out-of-range option.
+
+    Test scenario:
+        The eight options map onto three result fields and five slices of the state array.
+        Anything else has no array to write, and the check has to come before the template
+        is opened so a typo does not leave a half-written directory.
+    """
+    out = tmp_path / "never"
+
+    with pytest.raises(ValueError, match="between 1 and 8"):
+        coello_run.results.save(
+            path=str(out), flow_acc_path=coello_acc_path, result=result
+        )
+
+    assert not out.exists(), "nothing should be created when the option is refused"

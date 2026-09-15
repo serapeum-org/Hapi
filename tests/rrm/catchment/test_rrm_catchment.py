@@ -15,8 +15,8 @@ from hapi.run import Run
 
 def test_create_catchment_instance(coello_rrm_date: list):
     coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    assert coello.dt == 1
-    assert isinstance(coello.date_index, DatetimeIndex)
+    assert coello.period.dt == 1
+    assert isinstance(coello.period.date_index, DatetimeIndex)
     assert isinstance(coello.routing_method, str)
 
 
@@ -38,9 +38,9 @@ class TestLumped:
     ):
         coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        assert isinstance(coello.lumped_model, HBVLumped)
-        assert isinstance(coello.area, float)
-        assert isinstance(coello.initial_cond, list)
+        assert isinstance(coello.model_setup.model, HBVLumped)
+        assert isinstance(coello.model_setup.area, float)
+        assert isinstance(coello.model_setup.initial_cond, list)
 
     def test_read_lumped_read_parameters(
         self,
@@ -50,8 +50,8 @@ class TestLumped:
     ):
         coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
         coello.read_parameters(lumped_parameters_path, coello_Snow)
-        assert isinstance(coello.parameters, list)
-        assert coello.snow == coello_Snow
+        assert isinstance(coello.parameters.values, list)
+        assert coello.parameters.snow == coello_Snow
 
     def test_read_discharge_gauges(
         self,
@@ -82,10 +82,75 @@ class TestLumped:
         coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         routing_fn = Routing.muskingum_v
         route = 1
-        Run.runLumped(coello, route, routing_fn)
+        Run.run_lumped(coello, route, routing_fn)
 
         assert len(coello.Qsim) == 10
         assert coello.Qsim.columns.to_list() == ["q"]
+
+    def test_run_lumped_with_the_default_routing_flag(
+        self,
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        coello_AreaCoeff: float,
+        coello_InitialCond: list,
+        lumped_parameters_path: str,
+        coello_Snow: int,
+    ):
+        """Test that the entry point runs with the `Route` default it declares.
+
+        Test scenario:
+            The conceptual model prepends an initial-state slot, so its series is one step
+            longer than the period. Both routed branches trimmed it and the unrouted one did
+            not, so `Run.run_lumped(model)` -- the default -- raised `Length of values
+            (1096) does not match length of index (1095)` when the period indexed the frame.
+            Nothing exercised the default of a public entry point.
+        """
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        coello.read_parameters(lumped_parameters_path, coello_Snow)
+
+        results = Run.run_lumped(coello)
+
+        assert len(results.q_total) == len(coello.period), (
+            f"the total must cover the period exactly, got {len(results.q_total)} "
+            f"against {len(coello.period)}"
+        )
+        assert len(coello.Qsim) == len(coello.period), (
+            "the frame the entry point builds is indexed by the period"
+        )
+
+    def test_the_routed_and_unrouted_lumped_paths_agree_in_length(
+        self,
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        coello_AreaCoeff: float,
+        coello_InitialCond: list,
+        lumped_parameters_path: str,
+        coello_Snow: int,
+    ):
+        """Test that turning routing on does not change how long the series is.
+
+        Test scenario:
+            The trim moved out of the two routing branches and above them, so this pins that
+            the routed paths still produce exactly what they produced before -- the length is
+            now a property of the run, not of which branch it took.
+        """
+
+        def build() -> Catchment:
+            model = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+            model.read_lumped_inputs(lumped_meteo_data_path)
+            model.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+            model.read_parameters(lumped_parameters_path, coello_Snow)
+            return model
+
+        unrouted = Run.run_lumped(build())
+        routed = Run.run_lumped(build(), 1, Routing.muskingum_v)
+
+        assert len(unrouted.q_total) == len(routed.q_total), (
+            f"routing must not change the length: {len(unrouted.q_total)} against "
+            f"{len(routed.q_total)}"
+        )
 
     def test_save_lumped_results(
         self,
@@ -108,8 +173,8 @@ class TestLumped:
         # discharge gauges
         coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         Route = 1
-        Run.runLumped(coello, Route, Routing.muskingum_v)
-        coello.save_results(result=5, path=path)
+        Run.run_lumped(coello, Route, Routing.muskingum_v)
+        coello.results.save(result=5, path=path)
 
     # # TODO: still not finished as it does not run the plotHydrograph method
     # def test_PlotHydrograph(
@@ -131,7 +196,7 @@ class TestLumped:
     #     coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     #     RoutingFn = Routing.muskingum_v
     #     Route = 1
-    #     Run.runLumped(coello, Route, RoutingFn)
+    #     Run.run_lumped(coello, Route, RoutingFn)
     #     assert len(coello.Qsim) == 10 and coello.Qsim.columns.to_list() == ["q"]
 
 
@@ -149,7 +214,7 @@ class TestDistributed:
         )
         assert coello.spatial_resolution == "distributed"
         assert coello.routing_method == "Muskingum"
-        assert isinstance(coello.start, dt.datetime)
+        assert isinstance(coello.period.start, dt.datetime)
 
     def test_read_meteo_inputs(
         self,
@@ -223,32 +288,9 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        assert isinstance(coello.lumped_model, HBVLumped)
-        assert coello.area == coello_cat_area
-        assert coello.initial_cond == coello_initial_cond
-
-    def test_read_parameters_bound(
-        self,
-        coello_start_date: str,
-        coello_end_date: str,
-        coello_parameter_bounds: Tuple[List, List],
-    ):
-        LB = coello_parameter_bounds[0]
-        UB = coello_parameter_bounds[1]
-        Snow = False
-        coello = Catchment(
-            "coello",
-            coello_start_date,
-            coello_end_date,
-            spatial_resolution="Distributed",
-            temporal_resolution="Daily",
-            fmt="%Y-%m-%d",
-        )
-        coello.read_parameters_bound(UB, LB, Snow)
-        assert all(coello.LB == LB)
-        assert all(coello.UB == UB)
-        assert coello.snow == Snow
-        assert coello.maxbas == False
+        assert isinstance(coello.model_setup.model, HBVLumped)
+        assert coello.model_setup.area == coello_cat_area
+        assert coello.model_setup.initial_cond == coello_initial_cond
 
     def test_read_gauge_table(
         self,
@@ -312,13 +354,13 @@ class TestDistributed:
         )
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
-        assert coello.parameters.shape == (
+        assert coello.parameters.values.shape == (
             coello_rows,
             coello_cols,
             coello_no_parameters - 1,
         )
-        assert coello.snow == Snow
-        assert coello.maxbas is True
+        assert coello.parameters.snow == Snow
+        assert coello.parameters.maxbas is True
 
 
 class TestFW1:
@@ -358,12 +400,17 @@ class TestFW1:
         # coello.readFlowDir(coello_fd_path)
         coello.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        Run.runFW1(coello)
-        assert isinstance(coello.qout, np.ndarray)
-        assert len(coello.qout) == 10
-        assert coello.state_variables.shape == (coello_shape[0], coello_shape[1], 11, 5)
-        assert coello.quz.shape == (coello_shape[0], coello_shape[1], 11)
-        assert coello.qlz.shape == (coello_shape[0], coello_shape[1], 11)
+        Run.run_maxbas(coello)
+        assert isinstance(coello.results.qout, np.ndarray)
+        assert len(coello.results.qout) == 10
+        assert coello.results.state_variables.shape == (
+            coello_shape[0],
+            coello_shape[1],
+            11,
+            5,
+        )
+        assert coello.results.quz.shape == (coello_shape[0], coello_shape[1], 11)
+        assert coello.results.qlz.shape == (coello_shape[0], coello_shape[1], 11)
 
     def test_extract_results(
         self,
@@ -408,18 +455,18 @@ class TestFW1:
         snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, snow, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        Run.runFW1(coello)
+        Run.run_maxbas(coello)
 
-        coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
+        coello.extract_discharge(calculate_metrics=True)
         assert isinstance(coello.metrics, DataFrame)
         assert len(coello.metrics) == 7
         assert len(coello.Qsim) == 10
 
 
 class TestSaveAndExtractAfterFW1:
-    """A second FW1 run covering `save_results` and `extract_discharge`.
+    """A second FW1 run covering `results.save` and `extract_discharge`.
 
-    Named for what it does: it reads the MAXBAS parameter set and calls `Run.runFW1`, so
+    Named for what it does: it reads the MAXBAS parameter set and calls `Run.run_maxbas`, so
     calling it `TestMuskingum` said the opposite of what it exercises. The Muskingum path
     is covered by `test_extract_discharge_distributed.py` and `test_meteo_inputs.py`.
     """
@@ -461,12 +508,17 @@ class TestSaveAndExtractAfterFW1:
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        Run.runFW1(coello)
-        assert isinstance(coello.qout, np.ndarray)
-        assert len(coello.qout) == 10
-        assert coello.state_variables.shape == (coello_shape[0], coello_shape[1], 11, 5)
-        assert coello.quz.shape == (coello_shape[0], coello_shape[1], 11)
-        assert coello.qlz.shape == (coello_shape[0], coello_shape[1], 11)
+        Run.run_maxbas(coello)
+        assert isinstance(coello.results.qout, np.ndarray)
+        assert len(coello.results.qout) == 10
+        assert coello.results.state_variables.shape == (
+            coello_shape[0],
+            coello_shape[1],
+            11,
+            5,
+        )
+        assert coello.results.quz.shape == (coello_shape[0], coello_shape[1], 11)
+        assert coello.results.qlz.shape == (coello_shape[0], coello_shape[1], 11)
 
     def test_extract_results(
         self,
@@ -511,9 +563,9 @@ class TestSaveAndExtractAfterFW1:
         Snow = False
         coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
         coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-        Run.runFW1(coello)
+        Run.run_maxbas(coello)
 
-        coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
+        coello.extract_discharge(calculate_metrics=True)
         assert isinstance(coello.metrics, DataFrame)
         assert len(coello.metrics) == 7
         assert len(coello.Qsim) == 10

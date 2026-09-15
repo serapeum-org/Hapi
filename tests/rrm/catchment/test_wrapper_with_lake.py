@@ -1,9 +1,9 @@
 """End-to-end tests for the two lake-aware wrapper entry points.
 
-`Wrapper.RRMWithlake` and `Wrapper.FW1Withlake` run the lake as a lumped inflow, add its routed
+`Wrapper.run_muskingum_with_lake` and `Wrapper.run_maxbas_with_lake` run the lake as a lumped inflow, add its routed
 discharge to the outflow cell, and then route the sub-catchment — Muskingum in the first case,
 triangular (MAXBAS) in the second. Neither had test coverage, so the sizes they read off
-`MeteoInputs` and `FlowNetwork` and the `_maxbas_routed` flag they leave behind were unpinned.
+`MeteoInputs` and `FlowNetwork` and the routing they record on their results were unpinned.
 
 The bundled Jiboa lake fixture is hourly and twenty steps long while its distributed rasters are
 absent from the repository, so the lake here is driven over the Coello grid instead: real
@@ -21,6 +21,7 @@ from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.rrm.hbv_lake import HBVLake
 from hapi.run import Run
+from hapi.runs import DistributedRun
 from hapi.wrapper import Wrapper
 
 JIBOA_ROOT = "tests/rrm/data/jiboa"
@@ -79,7 +80,7 @@ def _build_coello(
         area: Catchment area in km2.
         initial_cond: Initial HBV state.
         maxbas: Whether `parameters` carries the triangular-routing parameter. The two sets
-            differ in their last band -- MAXBAS against the Muskingum X -- and `DistMaxbas1`
+            differ in their last band -- MAXBAS against the Muskingum X -- and `route_maxbas`
             routes with whatever sits there, so a triangular run needs the MAXBAS set.
 
     Returns:
@@ -161,7 +162,7 @@ def coello_no_lake(
     """Provide a second, identical catchment to run without a lake as the control.
 
     Returns:
-        Catchment: Same inputs as `coello_with_lake_inputs`, to be routed by `RRMModel`.
+        Catchment: Same inputs as `coello_with_lake_inputs`, to be routed by `run_muskingum`.
     """
     return _build_coello(
         coello_start_date,
@@ -192,7 +193,7 @@ def coello_with_lake_inputs_maxbas(
 ) -> Catchment:
     """Provide the same catchment carrying a MAXBAS parameter set.
 
-    `DistMaxbas1` routes each cell with `parameters[..., -1]`, which is MAXBAS in this set and
+    `route_maxbas` routes each cell with `parameters[..., -1]`, which is MAXBAS in this set and
     the Muskingum X in the other. Handed the Muskingum set, every cell routed with X = 0.2 --
     below the one whole step a triangle needs -- and `triangular_routing_1` returned an all-zero
     hydrograph without raising, so the triangular tests asserted their shapes and flags against
@@ -273,7 +274,7 @@ def _make_lake(
 
 
 class TestRRMWithLake:
-    """Tests for `Wrapper.RRMWithlake` (Muskingum routing)."""
+    """Tests for `Wrapper.run_muskingum_with_lake` (Muskingum routing)."""
 
     def test_the_lake_raises_discharge_at_the_outflow_cell(
         self,
@@ -285,8 +286,8 @@ class TestRRMWithLake:
         """Test that the lake's routed outflow actually reaches the cell it drains into.
 
         Test scenario:
-            Injecting the lake into `quz` at the outflow cell is the one thing `RRMWithlake`
-            does that `RRMModel` does not. Running the same catchment both ways isolates it:
+            Injecting the lake into `quz` at the outflow cell is the one thing `run_muskingum_with_lake`
+            does that `run_muskingum` does not. Running the same catchment both ways isolates it:
             everything else is identical, so the whole difference is the lake.
 
             The increase is *not* `QlakeR` — the lake series is routed a second time, through
@@ -296,12 +297,16 @@ class TestRRMWithLake:
         model = coello_with_lake_inputs
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=7)
 
-        Wrapper.RRMModel(coello_no_lake)
-        Wrapper.RRMWithlake(model, lake)
+        coello_no_lake.results = Wrapper.run_muskingum(
+            DistributedRun.from_model(coello_no_lake)
+        )
+        model.results = Wrapper.run_muskingum_with_lake(
+            DistributedRun.from_model(model), lake
+        )
 
         row, col = OUTFLOW_CELL
-        without = coello_no_lake.quz_routed[row, col, :]
-        with_lake = model.quz_routed[row, col, :]
+        without = coello_no_lake.results.quz_routed[row, col, :]
+        with_lake = model.results.quz_routed[row, col, :]
 
         assert np.isfinite(with_lake).all(), (
             "the outflow cell must stay finite -- an all-zero or all-NaN series here means "
@@ -314,9 +319,9 @@ class TestRRMWithLake:
         expected = Routing.muskingum_v(
             lake.QlakeR,
             lake.QlakeR[0],
-            model.parameters[row, col, 10],
-            model.parameters[row, col, 11],
-            model.conversion_factor,
+            model.parameters.values[row, col, 10],
+            model.parameters.values[row, col, 11],
+            model.period.conversion_factor,
         )
         np.testing.assert_allclose(
             with_lake - without,
@@ -346,15 +351,17 @@ class TestRRMWithLake:
         model = coello_with_lake_inputs
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=11)
 
-        Wrapper.RRMWithlake(model, lake)
+        model.results = Wrapper.run_muskingum_with_lake(
+            DistributedRun.from_model(model), lake
+        )
 
         steps = model.meteo.simulation_steps
         rows, cols = model.flow_network.rows, model.flow_network.cols
         assert len(lake.QlakeR) == steps, (
             f"the routed lake series must be {steps} long, got {len(lake.QlakeR)}"
         )
-        assert model.Qtot.shape == (rows, cols, steps), (
-            f"Expected Qtot {(rows, cols, steps)}, got {model.Qtot.shape}"
+        assert model.results.q_total.shape == (rows, cols, steps), (
+            f"Expected q_total {(rows, cols, steps)}, got {model.results.q_total.shape}"
         )
         assert np.isfinite(lake.QlakeR).all(), (
             "the routed lake series must be finite; NaN means the outflow cell's Muskingum "
@@ -371,7 +378,7 @@ class TestRRMWithLake:
         """Test the real handshake: a triangular run sets the flag, a Muskingum run clears it.
 
         Test scenario:
-            The flag tells `extract_discharge` that a cell of `Qtot` is a contribution rather
+            The flag tells `extract_discharge` that a cell of `q_total` is a contribution rather
             than a discharge. Setting it by hand would test the assignment against itself, so
             drive both paths on the same model in the order that makes the flag matter. The
             two read different parameter layouts -- Muskingum takes bands 10 and 11, the
@@ -381,21 +388,25 @@ class TestRRMWithLake:
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=13)
 
-        Wrapper.FW1Withlake(model, lake)
-        assert model._maxbas_routed is True, (
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
+        assert not model.results.outlet_shortcut_valid, (
             "the triangular path must mark the model before this test means anything"
         )
 
         model.read_parameters(coello_dist_parameters_muskingum, False)
-        Wrapper.RRMWithlake(model, lake)
+        model.results = Wrapper.run_muskingum_with_lake(
+            DistributedRun.from_model(model), lake
+        )
 
-        assert model._maxbas_routed is False, (
+        assert model.results.outlet_shortcut_valid, (
             "a Muskingum lake run makes the outlet-cell shortcut valid again"
         )
 
 
 class TestFW1WithLake:
-    """Tests for `Wrapper.FW1Withlake` (triangular/MAXBAS routing)."""
+    """Tests for `Wrapper.run_maxbas_with_lake` (triangular/MAXBAS routing)."""
 
     def test_fills_the_distributed_output_fields(
         self,
@@ -403,24 +414,26 @@ class TestFW1WithLake:
         coello_start_date: str,
         coello_end_date: str,
     ):
-        """Test that the triangular lake path populates `Qtot`, `quz_routed`, `qlz_translated`.
+        """Test that the triangular lake path populates `q_total`, `quz_routed`, `qlz_translated`.
 
         Test scenario:
-            `save_results` and `plot_distributed_results` read those three fields, and only
+            `results.save` and `results.animate` read those three fields, and only
             the Muskingum path used to set them. The fixture is function-scoped so the model
-            has been through `FW1Withlake` and nothing else -- with a shared instance an
+            has been through `run_maxbas_with_lake` and nothing else -- with a shared instance an
             earlier Muskingum run would have filled them and deleting the fix left this green.
         """
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=17)
-        assert model.Qtot is None, "the fixture must arrive with no run behind it"
+        assert model.results is None, "the fixture must arrive with no run behind it"
 
-        Wrapper.FW1Withlake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
 
         rows, cols = model.flow_network.rows, model.flow_network.cols
         steps = model.meteo.simulation_steps
-        for name in ("Qtot", "quz_routed", "qlz_translated"):
-            field = getattr(model, name)
+        for name in ("q_total", "quz_routed", "qlz_translated"):
+            field = getattr(model.results, name)
             assert field is not None, f"{name} must be set by the triangular path"
             assert field.shape == (rows, cols, steps), (
                 f"{name} should be {(rows, cols, steps)}, got {field.shape}"
@@ -443,51 +456,100 @@ class TestFW1WithLake:
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=19)
 
-        Wrapper.FW1Withlake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
 
         expected_len = model.meteo.simulation_steps - 1
-        assert len(model.qout) == expected_len, (
+        assert len(model.results.qout) == expected_len, (
             f"qout should drop the trailing slot: expected {expected_len}, "
-            f"got {len(model.qout)}"
+            f"got {len(model.results.qout)}"
         )
         subcatchment = np.array(
             [
-                np.nansum(model.qlz[:, :, i]) + np.nansum(model.quz[:, :, i])
+                np.nansum(model.results.qlz[:, :, i])
+                + np.nansum(model.results.quz[:, :, i])
                 for i in range(model.meteo.simulation_steps)
             ]
         )[:-1]
         np.testing.assert_allclose(
-            model.qout,
+            model.results.qout,
             subcatchment + lake.QlakeR[:-1],
             rtol=1e-6,
             err_msg="qout must be the trimmed sub-catchment sum plus the trimmed lake series",
         )
 
-    def test_marks_the_model_as_maxbas_routed(
+    def test_records_maxbas_on_the_results(
         self,
         coello_with_lake_inputs_maxbas: Catchment,
         coello_start_date: str,
         coello_end_date: str,
     ):
-        """Test that the triangular lake path sets `_maxbas_routed` from a clean model.
+        """Test that the triangular lake path records MAXBAS on the results it returns.
 
         Test scenario:
             Triangular routing sends every cell straight to the outlet, so reading a gauge
-            cell of `Qtot` under-reports. The flag is what makes `extract_discharge` refuse
-            rather than return the wrong hydrograph.
+            cell of `q_total` under-reports. `RoutingKind.MAXBAS` on the arrays is what makes
+            `extract_discharge` refuse rather than return the wrong hydrograph -- it replaced
+            a `_maxbas_routed` flag on the catchment that three methods had to set and clear
+            by hand.
         """
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=23)
-        assert model._maxbas_routed is False, "a fresh model must start unflagged"
+        assert model.results is None, "a fresh model must arrive with no results"
 
-        Wrapper.FW1Withlake(model, lake)
+        model.results = Wrapper.run_maxbas_with_lake(
+            DistributedRun.from_model(model, needs_flow_direction=False), lake
+        )
 
-        assert model._maxbas_routed is True, (
+        assert not model.results.outlet_shortcut_valid, (
             "a triangular lake run must mark the model as MAXBAS-routed"
         )
 
 
-class TestRunHapiWithLakeEndToEnd:
+class TestTheLakeInputGuards:
+    """`_lake_inputs` names whichever of the three readers was not called."""
+
+    @pytest.mark.parametrize(
+        "missing, expected",
+        [
+            ("MeteoData", "read_meteo_data"),
+            ("Parameters", "read_parameters"),
+            ("OutflowCell", "outflow_cell"),
+        ],
+    )
+    def test_an_unread_lake_input_is_named(
+        self,
+        coello_with_lake_inputs: Catchment,
+        coello_start_date: str,
+        coello_end_date: str,
+        missing: str,
+        expected: str,
+    ):
+        """Test that each missing lake input is reported by the reader that supplies it.
+
+        Args:
+            coello_with_lake_inputs: A distributed catchment ready for a lake run.
+            coello_start_date: Start of the simulation.
+            coello_end_date: End of the simulation.
+            missing: The lake attribute to clear.
+            expected: Substring naming the reader the error must point at.
+
+        Test scenario:
+            All three are indexed straight by the wrapper -- `MeteoData[:, 0]`,
+            `Parameters[11]`, `OutflowCell[0]` -- so an unread one used to fail on `None`
+            several frames in, naming a subscript rather than the call nobody made.
+        """
+        model = coello_with_lake_inputs
+        lake = _make_lake(model, coello_start_date, coello_end_date, seed=11)
+        setattr(lake, missing, None)
+        run = DistributedRun.from_model(model)
+
+        with pytest.raises(ValueError, match=expected):
+            Wrapper.run_muskingum_with_lake(run, lake)
+
+
+class TestRunDistributedWithLakeEndToEnd:
     """Tests that the public entry point completes with the record it documents."""
 
     def test_the_entry_point_runs_with_a_record_of_the_documented_length(
@@ -496,7 +558,7 @@ class TestRunHapiWithLakeEndToEnd:
         coello_start_date: str,
         coello_end_date: str,
     ):
-        """Test that `Run.runHAPIwithLake` validates and then completes.
+        """Test that `Run.run_distributed_with_lake` validates and then completes.
 
         Test scenario:
             The entry point asserts the lake record covers exactly `meteo.time_steps` and
@@ -507,9 +569,11 @@ class TestRunHapiWithLakeEndToEnd:
         model = coello_with_lake_inputs
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=29)
 
-        Run.runHAPIwithLake(model, lake)
+        Run.run_distributed_with_lake(model, lake)
 
         assert lake.MeteoData.shape[0] == model.meteo.time_steps, (
             "the record the entry point accepts must be the one the wrapper can run"
         )
-        assert model.Qtot is not None, "the run must leave a routed discharge field"
+        assert model.results.q_total is not None, (
+            "the run must leave a routed discharge field"
+        )

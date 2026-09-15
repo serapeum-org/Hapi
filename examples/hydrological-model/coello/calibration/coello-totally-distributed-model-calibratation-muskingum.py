@@ -5,6 +5,7 @@ from pyramids.dataset import Dataset
 from statista.descriptors import rmse
 
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.rrm.parameters import Parameters as DP
@@ -30,13 +31,15 @@ Create the model object and read the input data
 start_date = "2009-01-01"
 end_date = "2009-04-10"
 name = "Coello"
-Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
+Coello = Calibration(
+    Catchment(name, start_date, end_date, spatial_resolution="Distributed")
+)
 # %% Meteorological & GIS Data
 
-Coello.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
+Coello.model.meteo = MeteoInputs.from_rasters(PrecPath, TempPath, Evap_Path)
 
-Coello.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
-Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
+Coello.model.flow_network = FlowNetwork.from_rasters(FlowAccPath, FlowDPath)
+Coello.model.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %%
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)
 LB = np.loadtxt(CalibPath + "/LB - tot.txt", usecols=0)
@@ -50,7 +53,7 @@ for muskingum parameters k & x include the upper and lower bound in both
 UB & LB with the order of Klb then kub
 function inside the calibration algorithm is written as following
 
-par_dist = SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
+par_dist = SpatialVarFun(par)
 """
 raster = Dataset.read_file(FlowAccPath)
 # -------------
@@ -68,19 +71,19 @@ SpatialVarFun = DP(
     no_lumped_par=no_lumped_par,
     lumped_par_pos=lumped_par_pos,
     function=2,
-    klb=klb,
-    kub=kub,
+    k_lower_bound=klb,
+    k_upper_bound=kub,
 )
 # calculate no of parameters that optimization algorithm is going to generate
 print(SpatialVarFun.ParametersNO)
 # %% Gauges
-Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.model.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
-print(Coello.GaugesTable)
+Coello.model.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+print(Coello.model.GaugesTable)
 # %% ### Objective function
 
-coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
+coordinates = Coello.model.GaugesTable[["id", "x", "y", "weight"]][:]
 
 # define the objective function and its arguments
 OF_args = [coordinates]
@@ -134,5 +137,8 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% ### Run Calibration
 cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs, print_error=1)
 # %%
-SpatialVarFun.Function(Coello.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+# `Function` takes exactly one argument, the flat vector the optimiser produced --
+# `par3d(self, par_g)`. `kub`/`klb` were commented out of the signature years ago, and
+# `model.parameters` is a `ParameterSet`, a different shape describing a different thing.
+SpatialVarFun.Function(Coello.best_parameters)
 SpatialVarFun.save_parameters(SaveTo)

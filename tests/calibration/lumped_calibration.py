@@ -5,6 +5,8 @@ import pandas as pd
 import statista.descriptors as metrics
 
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
+from hapi.conceptual import ParameterSet
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -18,8 +20,8 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
-Coello = Calibration(name, start, end)
-Coello.read_lumped_inputs(MeteoDataPath)
+Coello = Calibration(Catchment(name, start, end))
+Coello.model.read_lumped_inputs(MeteoDataPath)
 # %% basic_inputs
 # catchment area
 AreaCoeff = 1530
@@ -28,7 +30,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = 0
-Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
+Coello.model.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 # %% Calibration parameters
 # Calibration boundaries
 UB = pd.read_csv(Path + "/UB-3.txt", index_col=0, header=None)
@@ -49,7 +51,7 @@ basic_inputs = dict(Route=Route, RoutingFn=routing_fn, InitialValues=parameters)
 # %%
 ### Objective function
 # outlet discharge
-Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.model.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 OF_args = []
 objective_function = metrics.rmse
@@ -87,7 +89,7 @@ ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start
 optimization_args = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %%
 # run calibration
-cal_parameters = Coello.lumpedCalibration(
+cal_parameters = Coello.calibrate_lumped(
     basic_inputs, optimization_args, print_error=None
 )
 
@@ -95,18 +97,22 @@ print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% run the model
-Coello.parameters = cal_parameters[1]
-Run.runLumped(Coello, Route, routing_fn)
+# `ParameterSet` is frozen, so the values cannot be assigned into it; build the set
+# the optimiser's vector describes.
+Coello.model.parameters = ParameterSet(
+    cal_parameters[1], snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
+)
+Run.run_lumped(Coello.model, Route, routing_fn)
 # %% calculate performance criteria
 scores = dict()
 
-Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
+Qobs = Coello.model.QGauges[Coello.model.QGauges.columns[0]]
 
-scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.model.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.model.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.model.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.model.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.model.Qsim["q"])
 
 print("RMSE= " + str(round(scores["RMSE"], 2)))
 print("NSE= " + str(round(scores["NSE"], 2)))
@@ -117,7 +123,7 @@ print("WB= " + str(round(scores["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
+Coello.model.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 
 # %% save the parameters
 ParPath = Path + "Parameters" + str(dt.datetime.now())[0:10] + ".txt"
@@ -130,4 +136,4 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = Path + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=5, StartDate=StartDate, EndDate=EndDate, path=Path)
+Coello.model.results.save(result=5, start=StartDate, end=EndDate, path=Path)

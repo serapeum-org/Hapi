@@ -6,11 +6,13 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 ```python
 	import pandas as pd
 	import datetime as dt
-	import hapi.rrm.hbv_bergestrom92 as HBVLumped
+	from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 	from hapi.calibration import Calibration
+	from hapi.catchment import Catchment
+	from hapi.conceptual import ParameterSet
 	from hapi.routing import Routing
 	from hapi.run import Run
-	import statista.metrics as metrics
+	import statista.descriptors as metrics
 
 	Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
 	MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
@@ -20,8 +22,10 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	end = "2011-12-31"
 	name = "Coello"
 
-	Coello = Calibration(name, start, end)
-	Coello.read_lumped_inputs(MeteoDataPath)
+	# `Calibration` holds a catchment rather than being one, so the model is built first
+	# and the readers are called on `Coello.model`.
+	Coello = Calibration(Catchment(name, start, end))
+	Coello.model.read_lumped_inputs(MeteoDataPath)
 
 
 	# catchment area
@@ -30,8 +34,8 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	# [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 	InitialCond = [0,10,10,10,0]
 	# no snow subroutine
-	Snow = 0
-	Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
+	Snow = False
+	Coello.model.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 	# Calibration boundaries
 	UB = pd.read_csv(Path + "/lumped/UB-3.txt", index_col = 0, header = None)
@@ -41,7 +45,8 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	LB = LB[1].tolist()
 
 	Maxbas = True
-	Coello.read_parameters_bound(UB, LB, Snow, Maxbas=Maxbas)
+	# `maxbas` is lower case, and `snow` has to be a bool -- `0` is refused by name.
+	Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 
 	parameters = []
 	# Routing
@@ -52,7 +57,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 
 	### Objective function
 	# outlet discharge
-	Coello.read_discharge_gauges(Path+"Qout_c.csv", fmt="%Y-%m-%d")
+	Coello.model.read_discharge_gauges(Path+"Qout_c.csv", fmt="%Y-%m-%d")
 
 	OF_args=[]
 	OF=metrics.rmse
@@ -79,7 +84,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 - Run Calibration
 
 ```python
-	cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, print_error=None)
+	cal_parameters = Coello.calibrate_lumped(Basic_inputs, OptimizationArgs, print_error=None)
 
 	print("Objective Function = " + str(round(cal_parameters[0],2)))
 	print("Parameters are " + str(cal_parameters[1]))

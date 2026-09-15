@@ -11,7 +11,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 - First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
 
 ```python
-import hapi.rrm.hbv_bergestrom92 as HBVLumped
+from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 from hapi.catchment import Catchment
 from hapi.routing import Routing
@@ -64,10 +64,11 @@ Coello.read_parameters(Parameterpath, Snow)
 RoutingFn = Routing.muskingum_v
 Route = 1
 ```
-- now all the data required for the model are prepared in the right form, now you can call the `runLumped` wrapper to initiate the calculation
+- now all the data required for the model are prepared in the right form, now you can
+  call the `run_lumped` wrapper to initiate the calculation
 
 ```python
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 ```
 to calculate some metrics for the quality assessment of the calculate discharge the `statista.descriptors` contains some
 metrics like `rmse`, `nse`, `kge` and `wb` , you need to load it, a measured time series of doscharge for the same
@@ -77,6 +78,10 @@ all methods in `statista.descriptors` takes two numpy arrays of the same length 
 
 ```python
 import statista.descriptors as metrics
+
+# The observed record has to be read before it can be scored against; the page never
+# loaded it, so `QGauges` was `None`.
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 Metrics = dict()
 Qobs = Coello.QGauges['q']
@@ -99,7 +104,7 @@ To plot the calculated and measured discharge import matplotlib
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plot_hydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
+Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 ```
 ![lumped-model](../img/lumpedmodel.png)
 
@@ -110,5 +115,5 @@ start = "2009-01-01"
 end = "2010-04-20"
 
 Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=5, start=start, end=end, path=Path)
+Coello.results.save(result=5, start=start, end=end, path=Path)
 ```

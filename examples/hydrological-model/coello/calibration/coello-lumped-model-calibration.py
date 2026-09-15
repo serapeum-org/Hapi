@@ -8,6 +8,8 @@ import pandas as pd
 import statista.descriptors as metrics
 
 from hapi.calibration import Calibration
+from hapi.catchment import Catchment
+from hapi.conceptual import ParameterSet
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -21,8 +23,8 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
-Coello = Calibration(name, start, end)
-Coello.read_lumped_inputs(MeteoDataPath)
+Coello = Calibration(Catchment(name, start, end))
+Coello.model.read_lumped_inputs(MeteoDataPath)
 # %% Basic_inputs
 
 # catchment area
@@ -32,7 +34,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = False
-Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
+Coello.model.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
 
@@ -58,7 +60,7 @@ Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 ### Objective function
 
 # outlet discharge
-Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.model.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 OF_args = []
 objective_function = metrics.rmse
@@ -97,7 +99,7 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 
 # %% Run Calibration
 
-cal_parameters = Coello.lumpedCalibration(
+cal_parameters = Coello.calibrate_lumped(
     Basic_inputs, OptimizationArgs, print_error=None
 )
 
@@ -106,20 +108,24 @@ print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% Run the Model
 
-Coello.parameters = cal_parameters[1]
-Run.runLumped(Coello, Route, RoutingFn)
+# The optimiser hands back a flat vector; the model holds a checked `ParameterSet`,
+# whose width rule comes from the same (snow, maxbas) pair the bounds were read with.
+Coello.model.parameters = ParameterSet(
+    cal_parameters[1], snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
+)
+Run.run_lumped(Coello.model, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
 scores = dict()
 
-Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
+Qobs = Coello.model.QGauges[Coello.model.QGauges.columns[0]]
 
-scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.model.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.model.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.model.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.model.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.model.Qsim["q"])
 
 print("RMSE= " + str(round(scores["RMSE"], 2)))
 print("NSE= " + str(round(scores["NSE"], 2)))
@@ -132,7 +138,7 @@ print("WB= " + str(round(scores["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
+Coello.model.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 
 ### Save the Parameters
 
@@ -147,4 +153,4 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = Path + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)
+Coello.model.results.save(result=5, start=StartDate, end=EndDate, path=Path)

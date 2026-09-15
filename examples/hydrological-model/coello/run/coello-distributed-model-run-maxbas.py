@@ -4,8 +4,11 @@ Everything that used to be a "Paths" block of hardcoded assignments now lives in
 `coello-distributed-model-run-maxbas.yaml`, next to this script -- `Catchment.from_yaml` reads
 it and assembles the model. Running it stays here, as in any hand-wired script.
 
+The path is written from the repo root, so run this script from there:
+`python examples/hydrological-model/coello/run/coello-distributed-model-run-maxbas.py`.
+
 MAXBAS sends every cell straight to the outlet, so the config loads no flow-direction raster and
-`extract_discharge` needs `frame_work_1=True`: a cell of `Qtot` is that cell's contribution to
+`extract_discharge` takes the basin-wide sum here: a cell of `q_total` is that cell's contribution to
 the outlet rather than the discharge at it, which makes the per-gauge shortcut invalid.
 """
 
@@ -15,31 +18,32 @@ from hapi.catchment import Catchment
 from hapi.run import Run
 
 # %% Load the configuration and build the model
-Coello = Catchment.from_yaml(__file__.removesuffix(".py") + ".yaml")
+Coello = Catchment.from_yaml(
+    "examples/hydrological-model/coello/run/coello-distributed-model-run-maxbas.yaml"
+)
 
 # %% Run the model
 """
-Outputs:
-    ----------
-    1-state_variables: [numpy attribute]
+Outputs, all on `Coello.results` (a `SimulationResults`) once the run returns:
+    1-state_variables:
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-    2-qlz: [numpy attribute]
+    2-qlz:
         3D array of the lower zone discharge
-    3-quz: [numpy attribute]
+    3-quz:
         3D array of the upper zone discharge
-    4-qout: [numpy attribute]
+    4-qout:
         1D timeseries of discharge at the outlet of the catchment
         of unit m3/sec
-    5-quz_routed: [numpy attribute]
+    5-quz_routed:
         3D array of the upper zone discharge  accumulated and
         routed at each time step
-    6-qlz_translated: [numpy attribute]
+    6-qlz_translated:
         3D array of the lower zone discharge translated at each time step
 """
-Run.runFW1(Coello)
+Run.run_maxbas(Coello)
 
 # %% calculate performance criteria
-Coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
+Coello.extract_discharge(calculate_metrics=True)
 
 gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[-1], "id"]
 print("----------------------------------")
@@ -51,4 +55,6 @@ print("KGE= " + str(round(Coello.metrics.loc["KGE", gaugeid], 2)))
 print("WB= " + str(round(Coello.metrics.loc["WB", gaugeid], 2)))
 
 # %% plot the hydrograph at the outlet gauge (row position, not the gauge id)
-Coello.plot_hydrograph(Coello.start, Coello.end, Coello.GaugesTable.index[-1])
+Coello.plot_hydrograph(
+    Coello.period.start, Coello.period.end, Coello.GaugesTable.index[-1]
+)

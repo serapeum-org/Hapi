@@ -13,10 +13,15 @@ import statista.descriptors as metrics
 from pandas import DataFrame
 
 from hapi import calibration as calibration_module
-from hapi.calibration import Calibration
+from hapi.calibration import Calibration, ObjectiveFunctionArityError
+from hapi.catchment import Catchment
+from hapi.conceptual import ParameterBounds
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing
+from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.runs import DistributedRun
 
 CANNED_RESULT = (0.42, np.arange(12, dtype="float64"))
 
@@ -68,16 +73,18 @@ def gauged_calibration(
 
     Returns:
         Calibration: Instance carrying `meteo`, `flow_network`, `GaugesTable` and a
-            synthetic `Qtot` field, with no model run behind it.
+            synthetic `q_total` field, with no model run behind it.
     """
     coello = Calibration(
-        "coello",
-        coello_start_date,
-        coello_end_date,
-        spatial_resolution="Distributed",
-        temporal_resolution="Daily",
+        Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
+        )
     )
-    coello.meteo = MeteoInputs.from_rasters(
+    coello.model.meteo = MeteoInputs.from_rasters(
         coello_prec_path,
         coello_temp_path,
         coello_evap_path,
@@ -87,20 +94,31 @@ def gauged_calibration(
         date=True,
         file_name_data_fmt="%Y.%m.%d",
     )
-    coello.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
+    coello.model.flow_network = FlowNetwork.from_rasters(
+        coello_acc_path, coello_fd_path
+    )
     # Needed even though the objective overwrites `parameters`: `read_parameters` is also
     # what sets `snow`, and HBV's parameter parse branches on it being exactly 0 or 1. Left
     # as None it raises inside the run, which the objective's bare `except` swallows.
-    coello.read_parameters(coello_dist_parameters_muskingum, False)
-    coello.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
-    coello.GaugesTable = DataFrame(
+    coello.model.read_parameters(coello_dist_parameters_muskingum, False)
+    coello.model.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
+    coello.model.GaugesTable = DataFrame(
         {"id": [1, 2], "cell_row": [2, 5], "cell_col": [3, 6]}
     )
-    rows, cols = coello.flow_network.rows, coello.flow_network.cols
-    steps = coello.meteo.time_steps
+    rows, cols = coello.model.flow_network.rows, coello.model.flow_network.cols
+    steps = coello.model.meteo.time_steps
     rng = np.random.default_rng(1337)
-    coello.Qtot = rng.random((rows, cols, steps + 1))
-    coello.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
+    # Stage the post-run state the way the run layer builds it. `q_total` and the rest are
+    # read-only views onto `results`, so a finished Muskingum run is described rather than
+    # poked in field by field.
+    coello.model.results = SimulationResults(
+        routing=RoutingKind.MUSKINGUM,
+        quz=np.zeros((rows, cols, steps + 1)),
+        qlz=np.zeros((rows, cols, steps + 1)),
+        state_variables=np.zeros((rows, cols, steps + 1, 5)),
+        q_total=rng.random((rows, cols, steps + 1)),
+    )
+    coello.model.QGauges = DataFrame(rng.random((steps, 2)), columns=[1, 2])
     return coello
 
 
@@ -110,10 +128,10 @@ class TestExtractDischarge:
     def test_fills_qsim_from_qtot_at_each_gauge_cell(
         self, gauged_calibration: Calibration
     ):
-        """Test that every gauge column is read from its own cell of `Qtot`.
+        """Test that every gauge column is read from its own cell of `q_total`.
 
         Test scenario:
-            The override reads `Qtot[row, col, :-1]` per gauge and sizes the result from
+            The override reads `q_total[row, col, :-1]` per gauge and sizes the result from
             `meteo.time_steps` — the count that moved onto MeteoInputs. Both columns must
             match the cells the gauge table names, and the trailing step must be dropped.
         """
@@ -121,19 +139,19 @@ class TestExtractDischarge:
 
         coello.extract_discharge()
 
-        expected_shape = (coello.meteo.time_steps, 2)
+        expected_shape = (coello.model.meteo.time_steps, 2)
         assert coello.Qsim.shape == expected_shape, (
             f"Expected Qsim shape {expected_shape}, got {coello.Qsim.shape}"
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 0],
-            coello.Qtot[2, 3, :-1],
-            err_msg="gauge 1 must come from cell (2, 3) of Qtot",
+            coello.model.results.q_total[2, 3, :-1],
+            err_msg="gauge 1 must come from cell (2, 3) of q_total",
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 1],
-            coello.Qtot[5, 6, :-1],
-            err_msg="gauge 2 must come from cell (5, 6) of Qtot",
+            coello.model.results.q_total[5, 6, :-1],
+            err_msg="gauge 2 must come from cell (5, 6) of q_total",
         )
 
     def test_factor_scales_each_gauge_independently(
@@ -151,12 +169,12 @@ class TestExtractDischarge:
 
         np.testing.assert_allclose(
             coello.Qsim[:, 0],
-            coello.Qtot[2, 3, :-1] * 2.0,
+            coello.model.results.q_total[2, 3, :-1] * 2.0,
             err_msg="gauge 1 must be scaled by its own factor",
         )
         np.testing.assert_allclose(
             coello.Qsim[:, 1],
-            coello.Qtot[5, 6, :-1] * 10.0,
+            coello.model.results.q_total[5, 6, :-1] * 10.0,
             err_msg="gauge 2 must be scaled by its own factor",
         )
 
@@ -166,12 +184,12 @@ class TestExtractDischarge:
         """Test that reading gauge cells after a MAXBAS run raises instead of under-reporting.
 
         Test scenario:
-            Triangular routing sends every cell straight to the outlet, so a cell of `Qtot`
+            Triangular routing sends every cell straight to the outlet, so a cell of `q_total`
             is that cell's contribution rather than the discharge at it. Calibrating against
             it would fit the wrong signal, so the guard must refuse rather than return numbers.
         """
         coello = gauged_calibration
-        coello._maxbas_routed = True
+        coello.model.results.routing = RoutingKind.MAXBAS
 
         with pytest.raises(ValueError, match="MAXBAS") as exc_info:
             coello.extract_discharge()
@@ -196,8 +214,7 @@ class TestRunCalibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         res = coello.run_calibration(spatial_var_stub, _optimization_args())
 
@@ -206,9 +223,174 @@ class TestRunCalibration:
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
+        )
+
+    def test_a_wrongly_wired_objective_reaches_the_caller(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that an objective of the wrong arity raises instead of scoring `nan`.
+
+        Test scenario:
+            `opt_fun` catches `TypeError` from the objective call and re-raises it as the
+            "needs more inputs" error -- but that `raise` sat inside the `try` that
+            classifies a trial as numerically infeasible, so the error it raised was caught
+            one line later and turned into `(nan, [], 1)`. A caller who wired up an objective
+            with the wrong signature got a full Harmony Search over an all-`nan` landscape
+            and a warning per trial, never the message the constant was written for. It
+            carries its own type now so it can travel through that handler.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+
+        def needs_four_arguments(observed, simulated, gauges, extra):
+            """Take more arguments than `run_calibration` passes."""
+            return 0.0
+
+        coello.read_objective_function(needs_four_arguments, [])
+
+        args = _optimization_args()
+
+        with pytest.raises(ObjectiveFunctionArityError, match="needs more inputs"):
+            coello.run_calibration(spatial_var_stub, args)
+
+    def test_a_type_error_from_inside_a_correct_objective_is_not_a_wiring_error(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that a `TypeError` raised for a value reason does not abort the search.
+
+        Test scenario:
+            The arity diagnosis used to be a blanket `except TypeError` around the objective
+            call *and* the Muskingum constraint loop after it. While the error it raised was
+            swallowed one line later that over-catch was harmless, but once it escaped, any
+            `TypeError` from inside a correctly-wired objective ended the whole calibration
+            and blamed the signature. A `TypeError` there is not exotic: the objective is
+            user-supplied and is handed two pandas frames. Arity is read off the signature
+            before the search starts, so this one is just a bad candidate.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+
+        def right_arity_wrong_values(qgauges, gauges_table):
+            """Take the two arguments the call site passes, then fail on the values."""
+            return "a string" + 1
+
+        coello.read_objective_function(right_arity_wrong_values, [])
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        assert "n_vars" in stub_optimizer, (
+            "a TypeError on the values is one bad candidate, not a wiring error; the "
+            "optimiser should still have been driven"
+        )
+
+    def test_a_numerically_failing_trial_is_still_scored_infeasible(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that letting the arity error out did not stop real failures being caught.
+
+        Test scenario:
+            The point of the handler is that one bad candidate does not end a calibration.
+            Adding a re-raise above it risks turning every numerical failure into a crash,
+            so this pins the other side: an objective that blows up on the *values* is still
+            scored infeasible and the optimiser still runs.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+
+        def divides_by_zero(observed, gauges):
+            """Fail on the numbers, not on the signature."""
+            raise ZeroDivisionError("no discharge at this gauge")
+
+        coello.read_objective_function(divides_by_zero, [])
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        assert "n_vars" in stub_optimizer, (
+            "a failing candidate must not stop the calibration; the optimiser should still "
+            "have been driven"
+        )
+
+    def test_a_trial_parameter_set_does_not_alias_the_optimizer_buffer(
+        self, gauged_calibration: Calibration
+    ):
+        """Test that a trial's parameters are copied out of the reused buffer.
+
+        Test scenario:
+            `SpatialVarFun` fills the *same* `Par3d` array on every trial. Wrapping it by
+            reference gave every `ParameterSet` -- and, through `SimulationResults.run`, every
+            set of results -- a view of an array the next trial overwrites in place, so
+            `results.run.parameters.values` described whichever trial ran last rather than the
+            one that produced those arrays.
+        """
+        coello = gauged_calibration
+        rows, cols = coello.model.flow_network.rows, coello.model.flow_network.cols
+        buffer = np.ones((rows, cols, 12))
+
+        settled = coello._parameter_set(buffer)
+        buffer[:] = 99.0
+
+        assert np.array_equal(settled.values, np.ones((rows, cols, 12))), (
+            "the parameter set must not follow the buffer the next trial overwrites"
+        )
+
+    def test_the_objective_receives_the_extra_arguments_it_was_registered_with(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that `read_objective_function`'s extra arguments reach the objective.
+
+        Test scenario:
+            `read_objective_function(fn, args)` documents `args` as "extra arguments
+            forwarded to it", and `_objective()` returns them saying the same. Two of the
+            three entry points bound them and never passed them, so a caller who supplied
+            them got no error and no effect -- the silent kind of wrong.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+        seen = {}
+
+        def objective_with_extras(qgauges, gauges_table, weight, label):
+            """Take the two the entry point passes plus the two registered with it."""
+            seen["weight"] = weight
+            seen["label"] = label
+            return float(np.abs(qgauges.to_numpy(dtype=float)).mean())
+
+        coello.read_objective_function(objective_with_extras, [0.5, "outlet"])
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        assert seen == {"weight": 0.5, "label": "outlet"}, (
+            f"the registered arguments must reach the objective, got {seen}"
+        )
+
+    def test_extracting_unrouted_results_is_not_blamed_on_maxbas(
+        self, gauged_calibration: Calibration
+    ):
+        """Test that `Calibration.extract_discharge` names the missing routing step.
+
+        Test scenario:
+            `Catchment.extract_discharge` gained an explicit `UNROUTED` refusal; this
+            parallel implementation was left reading only `outlet_shortcut_valid`, which the
+            same change widened to exclude `UNROUTED`. Unrouted results therefore reached a
+            message stating categorically that the run used triangular routing -- a
+            confident, wrong diagnosis. Two implementations of one method disagreeing about
+            one guard is what `RoutingKind` exists to prevent.
+        """
+        coello = gauged_calibration
+        coello.model.results = DistributedRRM.run_lumped_model(
+            DistributedRun.from_model(coello.model)
+        )
+
+        with pytest.raises(ValueError, match="have not been routed") as exc:
+            coello.extract_discharge()
+
+        assert "MAXBAS" not in str(exc.value), (
+            f"unrouted results must not be blamed on MAXBAS: {exc.value}"
         )
 
     def test_rejects_meteo_that_does_not_cover_the_grid(
@@ -222,14 +404,13 @@ class TestRunCalibration:
             grids would burn a full optimisation before failing.
         """
         coello = gauged_calibration
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         # Built in one go: replacing the cubes one at a time is now refused, because a
         # half-applied crop is exactly the inconsistency MeteoInputs guarantees against.
-        coello.meteo = MeteoInputs(
-            precipitation=coello.meteo.precipitation[:, :-1, :],
-            temperature=coello.meteo.temperature[:, :-1, :],
-            evapotranspiration=coello.meteo.evapotranspiration[:, :-1, :],
+        coello.model.meteo = MeteoInputs(
+            precipitation=coello.model.meteo.precipitation[:, :-1, :],
+            temperature=coello.model.meteo.temperature[:, :-1, :],
+            evapotranspiration=coello.model.meteo.evapotranspiration[:, :-1, :],
         )
 
         with pytest.raises(ValueError, match="must share the catchment's grid"):
@@ -264,17 +445,18 @@ class TestRunCalibration:
         """
         coello = gauged_calibration
         coello.read_objective_function(_pairwise_objective, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         ran_with: list[np.ndarray] = []
-        original = calibration_module.Wrapper.RRMModel
+        original = calibration_module.Wrapper.run_muskingum
 
         def spy(model, *args, **kwargs):
-            ran_with.append(np.asarray(model.parameters, dtype=float).copy())
+            ran_with.append(np.asarray(model.parameters.values, dtype=float).copy())
             return original(model, *args, **kwargs)
 
-        monkeypatch.setattr(calibration_module.Wrapper, "RRMModel", staticmethod(spy))
+        monkeypatch.setattr(
+            calibration_module.Wrapper, "run_muskingum", staticmethod(spy)
+        )
 
         coello.run_calibration(spatial_var_stub, _optimization_args())
 
@@ -303,8 +485,8 @@ class TestRunCalibration:
         )
 
 
-class TestFW1Calibration:
-    """Tests for `Calibration.FW1Calibration` (triangular routing)."""
+class TestCalibrateMaxbas:
+    """Tests for `Calibration.calibrate_maxbas` (triangular routing)."""
 
     def test_stores_the_optimizer_result_on_the_instance(
         self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
@@ -316,20 +498,27 @@ class TestFW1Calibration:
             separate code path that also had to be rewired onto `flow_network`.
         """
         coello = gauged_calibration
-        coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        # Three arguments, because `calibrate_maxbas` calls
+        # `objective(QGauges, qout, GaugesTable)`. It used to be wired with `metrics.rmse`,
+        # which takes two -- so every trial raised `TypeError`, was scored `nan`, and this
+        # test still passed because it only ever asserted on the stubbed optimiser's canned
+        # result. The arity check refuses that wiring up front now.
+        coello.read_objective_function(_outlet_objective, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
-        res = coello.FW1Calibration(spatial_var_stub, _optimization_args())
+        res = coello.calibrate_maxbas(spatial_var_stub, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
         assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
 
@@ -370,8 +559,7 @@ class TestCheckOptimizationArgs:
         """
         coello = gauged_calibration
         coello.read_objective_function(metrics.rmse, [])
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         with pytest.raises(TypeError, match=f"{bad_kind} arguments should be a dict"):
             coello.run_calibration(spatial_var_stub, args)
@@ -382,12 +570,14 @@ class TestCheckOptimizationArgs:
 
 
 class TestLumpedCalibration:
-    """Tests for `Calibration.lumpedCalibration`."""
+    """Tests for `Calibration.calibrate_lumped`."""
 
     def test_stores_the_optimizer_result_on_the_instance(
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that the lumped entry point writes back `parameters` and `OFvalue`.
@@ -397,30 +587,44 @@ class TestLumpedCalibration:
             ones, so it is pinned separately: `OFvalue` is still res[0] and `parameters`
             still res[1].
         """
-        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+        coello.model.read_lumped_inputs(lumped_meteo_data_path)
+        # Without this the trials failed and the bare `except` scored them all `nan`; the stub
+        # returns its canned result regardless, so the test passed over a model that never ran.
+        coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0, RoutingFn=Routing.triangular_routing_1, InitialValues=[]
         )
 
-        res = coello.lumpedCalibration(basic_inputs, _optimization_args())
+        res = coello.calibrate_lumped(basic_inputs, _optimization_args())
 
         assert res is CANNED_RESULT, "the optimiser result must be returned untouched"
         assert coello.OFvalue == pytest.approx(CANNED_RESULT[0]), (
             f"OFvalue must be res[0], got {coello.OFvalue}"
         )
         np.testing.assert_array_equal(
-            coello.parameters,
+            coello.best_parameters,
             CANNED_RESULT[1],
-            err_msg="parameters must be res[1], lowercase — not a second attribute",
+            err_msg=(
+                "the optimiser's answer belongs on best_parameters: `parameters` is the "
+                "runnable ParameterSet, a different shape describing a different thing"
+            ),
         )
 
     def test_initial_values_are_seeded_into_the_problem(
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that `InitialValues` reaches the optimisation problem as a starting point.
@@ -430,17 +634,26 @@ class TestLumpedCalibration:
             Both branches must declare one variable per bound, so the problem is the same
             size whether or not a warm start was given.
         """
-        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+        coello.model.read_lumped_inputs(lumped_meteo_data_path)
+        # Without this the trials failed and the bare `except` scored them all `nan`; the stub
+        # returns its canned result regardless, so the test passed over a model that never ran.
+        coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
             RoutingFn=Routing.triangular_routing_1,
             InitialValues=list(np.full(12, 0.5)),
         )
 
-        coello.lumpedCalibration(basic_inputs, _optimization_args())
+        coello.calibrate_lumped(basic_inputs, _optimization_args())
 
         assert stub_optimizer["n_vars"] == 12, (
             f"Expected one variable per bound (12), got {stub_optimizer['n_vars']}"
@@ -450,6 +663,8 @@ class TestLumpedCalibration:
         self,
         coello_rrm_date: list,
         lumped_meteo_data_path: str,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
         stub_optimizer: dict,
     ):
         """Test that `InitialValues` shorter than the bounds is rejected, not indexed out of range.
@@ -460,15 +675,24 @@ class TestLumpedCalibration:
             stub_optimizer: Records whether the optimiser was reached.
 
         Test scenario:
-            The seeded branch loops `range(len(self.LB))` and indexes `initial_values[i]`, so
+            The seeded branch loops `range(len(self.bounds.lower))` and indexes `initial_values[i]`, so
             a shorter list used to run past its end partway through building the problem,
             leaving `opt_prob` half-populated and raising `IndexError` far from the call that
             supplied the list. The length is now compared up front.
         """
-        coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        coello.read_lumped_inputs(lumped_meteo_data_path)
-        coello.LB = np.zeros(12)
-        coello.UB = np.ones(12)
+        coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+        coello.model.read_lumped_inputs(lumped_meteo_data_path)
+        # Without this the trials failed and the bare `except` scored them all `nan`; the stub
+        # returns its canned result regardless, so the test passed over a model that never ran.
+        coello.model.read_lumped_model(HBVLumped, 1530, [0, 10, 10, 10, 0])
+        # Likewise: with no objective function, and nothing observed to score against, every
+        # trial raised on `None` and the bare `except` scored it `nan` -- so the assertions
+        # were reading the stub, not a run.
+        coello.model.read_discharge_gauges(
+            lumped_gauges_path, fmt=coello_gauges_date_fmt
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
         basic_inputs = dict(
             Route=0,
             RoutingFn=Routing.triangular_routing_1,
@@ -478,7 +702,7 @@ class TestLumpedCalibration:
         optimization_args = _optimization_args()
 
         with pytest.raises(ValueError, match="one value per parameter") as exc:
-            coello.lumpedCalibration(basic_inputs, optimization_args)
+            coello.calibrate_lumped(basic_inputs, optimization_args)
 
         assert "3" in str(exc.value), (
             f"the error should name the given length: {exc.value}"
@@ -489,6 +713,28 @@ class TestLumpedCalibration:
         assert "n_vars" not in stub_optimizer, (
             "the optimiser must not be reached when the seed does not match the bounds"
         )
+
+
+def _outlet_objective(qgauges, qout, gauges_table) -> float:
+    """Score a trial the way `calibrate_maxbas` actually calls the objective.
+
+    That entry point invokes `objective_function(QGauges, results.qout, GaugesTable)`, so an
+    objective taking two arguments cannot be called at all -- every trial raised `TypeError`
+    and was scored infeasible. This has the arity the call site uses, so the body runs.
+
+    Args:
+        qgauges: Observed discharge frame.
+        qout: The outlet hydrograph the run produced.
+        gauges_table: Gauge metadata frame.
+
+    Returns:
+        float: A finite score derived from all three.
+    """
+    return float(
+        np.abs(qgauges.to_numpy(dtype=float)).mean()
+        + float(np.nansum(qout))
+        + len(gauges_table)
+    )
 
 
 def _pairwise_objective(qgauges, gauges_table) -> float:
@@ -548,7 +794,8 @@ def spatial_var_stub(gauged_calibration: Calibration) -> _SpatialVarStub:
         _SpatialVarStub: Object exposing `Function`, `Par3d`, `no_parameters`, `no_elem`.
     """
     return _SpatialVarStub(
-        gauged_calibration.flow_network.rows, gauged_calibration.flow_network.cols
+        gauged_calibration.model.flow_network.rows,
+        gauged_calibration.model.flow_network.cols,
     )
 
 
