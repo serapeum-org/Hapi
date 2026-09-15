@@ -100,9 +100,7 @@ class TestReadParametersBound:
     """The reader that settles the search space."""
 
     @pytest.mark.parametrize("snow", [0, 1, "yes", None])
-    def test_a_non_bool_snow_flag_is_refused(
-        self, coello_rrm_date: list, snow
-    ):
+    def test_a_non_bool_snow_flag_is_refused(self, coello_rrm_date: list, snow):
         """Test that `snow` must be a bool, not something merely truthy.
 
         Args:
@@ -161,9 +159,7 @@ class TestReadObjectiveFunction:
 class TestTheGuardsBeforeTheSearch:
     """What each entry point refuses before the optimisation problem is declared."""
 
-    def test_no_bounds_names_the_reader_that_supplies_them(
-        self, coello_rrm_date: list
-    ):
+    def test_no_bounds_names_the_reader_that_supplies_them(self, coello_rrm_date: list):
         """Test that starting without a search space says which reader was skipped.
 
         Args:
@@ -407,7 +403,9 @@ class TestCalibrateLumped:
         error, constraints, fail = stub_engine["scored"]
         assert fail == 1, "a failing trial is reported as infeasible"
         assert np.isnan(error), f"an infeasible trial scores nan, got {error}"
-        assert constraints == [], f"no constraints survive a failed trial, got {constraints}"
+        assert constraints == [], (
+            f"no constraints survive a failed trial, got {constraints}"
+        )
 
     def test_a_wrongly_wired_objective_stops_before_the_optimiser_is_built(
         self, lumped: Calibration, stub_engine: dict
