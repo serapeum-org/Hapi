@@ -2820,7 +2820,43 @@ consumes.</p>
 <span class="normal">937</span>
 <span class="normal">938</span>
 <span class="normal">939</span>
-<span class="normal">940</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span>
+<span class="normal">944</span>
+<span class="normal">945</span>
+<span class="normal">946</span>
+<span class="normal">947</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span>
+<span class="normal">971</span>
+<span class="normal">972</span>
+<span class="normal">973</span>
+<span class="normal">974</span>
+<span class="normal">975</span>
+<span class="normal">976</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -3114,11 +3150,39 @@ consumes.</p>
 <span class="sd">        Args:</span>
 <span class="sd">            objective_function (callable): A callable function to calculate</span>
 <span class="sd">                any kind of metric to be used in the calibration.</span>
-<span class="sd">            args: Any positional or keyword arguments to pass to the</span>
-<span class="sd">                objective function. If None, defaults to an empty list.</span>
+<span class="sd">            args: Extra positional arguments appended to every call of the objective,</span>
+<span class="sd">                after the ones the entry point supplies itself. All three entry points</span>
+<span class="sd">                forward them, and the arity check counts them, so registering arguments the</span>
+<span class="sd">                objective cannot accept is reported before the search starts. `None`</span>
+<span class="sd">                becomes an empty list.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If objective_function is not callable.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            - The arguments are kept as given, and `None` becomes an empty list:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; import statista.descriptors as metrics</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.calibration import Calibration</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.catchment import Catchment</span>
+<span class="sd">                &gt;&gt;&gt; coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))</span>
+<span class="sd">                &gt;&gt;&gt; coello.read_objective_function(metrics.rmse, [0.5, "outlet"])</span>
+<span class="sd">                Objective function is read successfully</span>
+<span class="sd">                &gt;&gt;&gt; coello.OFArgs</span>
+<span class="sd">                [0.5, 'outlet']</span>
+
+<span class="sd">                ```</span>
+<span class="sd">            - Something that cannot be called is refused where it is registered:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.calibration import Calibration</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.catchment import Catchment</span>
+<span class="sd">                &gt;&gt;&gt; coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))</span>
+<span class="sd">                &gt;&gt;&gt; coello.read_objective_function("rmse", [])</span>
+<span class="sd">                Traceback (most recent call last):</span>
+<span class="sd">                    ...</span>
+<span class="sd">                TypeError: The Objective function should be a function, got str</span>
+
+<span class="sd">                ```</span>
 <span class="sd">        """</span>
         <span class="c1"># check objective_function</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">):</span>
@@ -3539,8 +3603,16 @@ consumes.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If `basic_inputs` is missing required keys</span>
-<span class="sd">                `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is</span>
-<span class="sd">                given and does not hold one value per parameter.</span>
+<span class="sd">                `"Route"` or `"RoutingFn"`, if `"InitialValues"` is</span>
+<span class="sd">                given and does not hold one value per parameter, or if the search space is</span>
+<span class="sd">                not the width the conceptual model reads. That last rule is checked here</span>
+<span class="sd">                rather than on :class:`~hapi.conceptual.ParameterBounds` because this is the</span>
+<span class="sd">                one entry point where the optimiser's vector *is* the parameter set: a</span>
+<span class="sd">                distributed calibration searches `SpatialVarFun.ParametersNO` values and</span>
+<span class="sd">                maps them onto the grid.</span>
+<span class="sd">            ObjectiveFunctionArityError: The objective cannot be called with the arguments</span>
+<span class="sd">                this entry point passes -- `observed`, `Qsim`, and whatever</span>
+<span class="sd">                :meth:`read_objective_function` registered.</span>
 <span class="sd">            TypeError: If either bundle of optimization arguments is not a</span>
 <span class="sd">                dict.</span>
 <span class="sd">        """</span>
@@ -3947,8 +4019,25 @@ values at each iteration. Default is None.</p>
             <td>
               <div class="doc-md-description">
                 <p>If <code>basic_inputs</code> is missing required keys
-<code>"Route"</code> or <code>"RoutingFn"</code>, or if <code>"InitialValues"</code> is
-given and does not hold one value per parameter.</p>
+<code>"Route"</code> or <code>"RoutingFn"</code>, if <code>"InitialValues"</code> is
+given and does not hold one value per parameter, or if the search space is
+not the width the conceptual model reads. That last rule is checked here
+rather than on :class:<code>~hapi.conceptual.ParameterBounds</code> because this is the
+one entry point where the optimiser's vector <em>is</em> the parameter set: a
+distributed calibration searches <code>SpatialVarFun.ParametersNO</code> values and
+maps them onto the grid.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="hapi.calibration.ObjectiveFunctionArityError">ObjectiveFunctionArityError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The objective cannot be called with the arguments
+this entry point passes -- <code>observed</code>, <code>Qsim</code>, and whatever
+:meth:<code>read_objective_function</code> registered.</p>
               </div>
             </td>
           </tr>
@@ -3969,35 +4058,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">795</span>
 <span class="normal">796</span>
 <span class="normal">797</span>
 <span class="normal">798</span>
@@ -4142,7 +4203,43 @@ dict.</p>
 <span class="normal">937</span>
 <span class="normal">938</span>
 <span class="normal">939</span>
-<span class="normal">940</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span>
+<span class="normal">944</span>
+<span class="normal">945</span>
+<span class="normal">946</span>
+<span class="normal">947</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span>
+<span class="normal">971</span>
+<span class="normal">972</span>
+<span class="normal">973</span>
+<span class="normal">974</span>
+<span class="normal">975</span>
+<span class="normal">976</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4190,8 +4287,16 @@ dict.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If `basic_inputs` is missing required keys</span>
-<span class="sd">            `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is</span>
-<span class="sd">            given and does not hold one value per parameter.</span>
+<span class="sd">            `"Route"` or `"RoutingFn"`, if `"InitialValues"` is</span>
+<span class="sd">            given and does not hold one value per parameter, or if the search space is</span>
+<span class="sd">            not the width the conceptual model reads. That last rule is checked here</span>
+<span class="sd">            rather than on :class:`~hapi.conceptual.ParameterBounds` because this is the</span>
+<span class="sd">            one entry point where the optimiser's vector *is* the parameter set: a</span>
+<span class="sd">            distributed calibration searches `SpatialVarFun.ParametersNO` values and</span>
+<span class="sd">            maps them onto the grid.</span>
+<span class="sd">        ObjectiveFunctionArityError: The objective cannot be called with the arguments</span>
+<span class="sd">            this entry point passes -- `observed`, `Qsim`, and whatever</span>
+<span class="sd">            :meth:`read_objective_function` registered.</span>
 <span class="sd">        TypeError: If either bundle of optimization arguments is not a</span>
 <span class="sd">            dict.</span>
 <span class="sd">    """</span>
@@ -4486,35 +4591,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span>
-<span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span>
-<span class="normal">653</span>
-<span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">662</span>
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
@@ -4617,7 +4694,35 @@ dict.</p>
 <span class="normal">762</span>
 <span class="normal">763</span>
 <span class="normal">764</span>
-<span class="normal">765</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span>
+<span class="normal">787</span>
+<span class="normal">788</span>
+<span class="normal">789</span>
+<span class="normal">790</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4856,35 +4961,7 @@ whose per-cell values are contributions rather than discharges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
 <span class="normal">442</span>
@@ -4921,7 +4998,35 @@ whose per-cell values are contributions rather than discharges.</p>
 <span class="normal">473</span>
 <span class="normal">474</span>
 <span class="normal">475</span>
-<span class="normal">476</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -5051,8 +5156,11 @@ any kind of metric to be used in the calibration.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Any positional or keyword arguments to pass to the
-objective function. If None, defaults to an empty list.</p>
+                <p>Extra positional arguments appended to every call of the objective,
+after the ones the entry point supplies itself. All three entry points
+forward them, and the arity check counts them, so registering arguments the
+objective cannot accept is reported before the search starts. <code>None</code>
+becomes an empty list.</p>
               </div>
             </td>
             <td>
@@ -5084,6 +5192,30 @@ objective function. If None, defaults to an empty list.</p>
           </tr>
       </tbody>
     </table>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <ul>
+<li>The arguments are kept as given, and <code>None</code> becomes an empty list:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">statista.descriptors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metrics</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">(</span><span class="s2">"coello"</span><span class="p">,</span> <span class="s2">"2009-01-01"</span><span class="p">,</span> <span class="s2">"2009-01-10"</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coello</span><span class="o">.</span><span class="n">read_objective_function</span><span class="p">(</span><span class="n">metrics</span><span class="o">.</span><span class="n">rmse</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="s2">"outlet"</span><span class="p">])</span>
+<span class="n">Objective</span> <span class="n">function</span> <span class="ow">is</span> <span class="n">read</span> <span class="n">successfully</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coello</span><span class="o">.</span><span class="n">OFArgs</span>
+<span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="s1">'outlet'</span><span class="p">]</span>
+</code></pre></div></li>
+<li>Something that cannot be called is refused where it is registered:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catchment</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coello</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">Catchment</span><span class="p">(</span><span class="s2">"coello"</span><span class="p">,</span> <span class="s2">"2009-01-01"</span><span class="p">,</span> <span class="s2">"2009-01-10"</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">coello</span><span class="o">.</span><span class="n">read_objective_function</span><span class="p">(</span><span class="s2">"rmse"</span><span class="p">,</span> <span class="p">[])</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">The</span> <span class="n">Objective</span> <span class="n">function</span> <span class="n">should</span> <span class="n">be</span> <span class="n">a</span> <span class="n">function</span><span class="p">,</span> <span class="n">got</span> <span class="nb">str</span>
+</code></pre></div></li>
+</ul>
 
 
             <details class="mkdocstrings-source">
@@ -5118,7 +5250,35 @@ objective function. If None, defaults to an empty list.</p>
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
-<span class="normal">409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read and store the objective function and its arguments.</span>
@@ -5129,11 +5289,39 @@ objective function. If None, defaults to an empty list.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        objective_function (callable): A callable function to calculate</span>
 <span class="sd">            any kind of metric to be used in the calibration.</span>
-<span class="sd">        args: Any positional or keyword arguments to pass to the</span>
-<span class="sd">            objective function. If None, defaults to an empty list.</span>
+<span class="sd">        args: Extra positional arguments appended to every call of the objective,</span>
+<span class="sd">            after the ones the entry point supplies itself. All three entry points</span>
+<span class="sd">            forward them, and the arity check counts them, so registering arguments the</span>
+<span class="sd">            objective cannot accept is reported before the search starts. `None`</span>
+<span class="sd">            becomes an empty list.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        TypeError: If objective_function is not callable.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        - The arguments are kept as given, and `None` becomes an empty list:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; import statista.descriptors as metrics</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.calibration import Calibration</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.catchment import Catchment</span>
+<span class="sd">            &gt;&gt;&gt; coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))</span>
+<span class="sd">            &gt;&gt;&gt; coello.read_objective_function(metrics.rmse, [0.5, "outlet"])</span>
+<span class="sd">            Objective function is read successfully</span>
+<span class="sd">            &gt;&gt;&gt; coello.OFArgs</span>
+<span class="sd">            [0.5, 'outlet']</span>
+
+<span class="sd">            ```</span>
+<span class="sd">        - Something that cannot be called is refused where it is registered:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.calibration import Calibration</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.catchment import Catchment</span>
+<span class="sd">            &gt;&gt;&gt; coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))</span>
+<span class="sd">            &gt;&gt;&gt; coello.read_objective_function("rmse", [])</span>
+<span class="sd">            Traceback (most recent call last):</span>
+<span class="sd">                ...</span>
+<span class="sd">            TypeError: The Objective function should be a function, got str</span>
+
+<span class="sd">            ```</span>
 <span class="sd">    """</span>
     <span class="c1"># check objective_function</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">objective_function</span><span class="p">):</span>
@@ -5516,35 +5704,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span>
-<span class="normal">489</span>
-<span class="normal">490</span>
-<span class="normal">491</span>
-<span class="normal">492</span>
-<span class="normal">493</span>
-<span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
-<span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span>
@@ -5665,7 +5825,35 @@ dict.</p>
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
-<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>

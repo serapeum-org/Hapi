@@ -2087,7 +2087,9 @@ catchment, so nothing here has to ask whether its inputs were checked.</p>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Distributed rainfall-runoff model runner and spatial router.</span>
 
 <span class="sd">    Runs a lumped hydrological model separately for each grid cell</span>
@@ -2337,7 +2339,9 @@ catchment, so nothing here has to ask whether its inputs were checked.</p>
 <span class="sd">            results: The results to route. Mutated in place.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: The run carries no flow-path-length raster.</span>
+<span class="sd">            ValueError: The run carries no flow-path-length raster, or the raster is</span>
+<span class="sd">                constant -- MAXBAS is scaled along the spread of distances to the outlet,</span>
+<span class="sd">                so a raster with no spread has nothing to scale along.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">run</span><span class="o">.</span><span class="n">flow_path_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -2620,7 +2624,9 @@ by :meth:<code>_record_maxbas</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The run carries no flow-path-length raster.</p>
+                <p>The run carries no flow-path-length raster, or the raster is
+constant -- MAXBAS is scaled along the spread of distances to the outlet,
+so a raster with no spread has nothing to scale along.</p>
               </div>
             </td>
           </tr>
@@ -2684,7 +2690,9 @@ by :meth:<code>_record_maxbas</code>.</p>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">route_maxbas_by_path_length</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -2700,7 +2708,9 @@ by :meth:<code>_record_maxbas</code>.</p>
 <span class="sd">        results: The results to route. Mutated in place.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: The run carries no flow-path-length raster.</span>
+<span class="sd">        ValueError: The run carries no flow-path-length raster, or the raster is</span>
+<span class="sd">            constant -- MAXBAS is scaled along the spread of distances to the outlet,</span>
+<span class="sd">            so a raster with no spread has nothing to scale along.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">run</span><span class="o">.</span><span class="n">flow_path_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
