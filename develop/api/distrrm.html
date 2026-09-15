@@ -2073,7 +2073,12 @@ catchment, so nothing here has to ask whether its inputs were checked.</p>
 <span class="normal">292</span>
 <span class="normal">293</span>
 <span class="normal">294</span>
-<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Distributed rainfall-runoff model runner and spatial router.</span>
 
 <span class="sd">    Runs a lumped hydrological model separately for each grid cell</span>
@@ -2268,6 +2273,11 @@ catchment, so nothing here has to ask whether its inputs were checked.</p>
 <span class="sd">        writes through the alias -- but the alias is visible (`results.quz_routed is</span>
 <span class="sd">        results.quz`), so an in-place edit of one changes the other.</span>
 
+<span class="sd">        It does not fill `qout`. The outlet hydrograph is the sum over the domain, which is</span>
+<span class="sd">        not a routing step -- the `Wrapper` entry points do it after calling a router. So</span>
+<span class="sd">        results produced by driving `DistributedRRM` directly carry `RoutingKind.MAXBAS`</span>
+<span class="sd">        and no `qout`, and `extract_discharge` says so by name.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            results: The results whose `quz` / `qlz` have just been routed. Mutated in place.</span>
 <span class="sd">        """</span>
@@ -2442,12 +2452,7 @@ is modified in place, then the per-cell output fields are filled and
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
 <span class="normal">234</span>
@@ -2464,7 +2469,12 @@ is modified in place, then the per-cell output fields are filled and
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
-<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">route_maxbas</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Route discharge to the outlet using a triangular function.</span>
 
@@ -2602,12 +2612,7 @@ by :meth:<code>_record_maxbas</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">255</span>
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
@@ -2647,7 +2652,12 @@ by :meth:<code>_record_maxbas</code>.</p>
 <span class="normal">292</span>
 <span class="normal">293</span>
 <span class="normal">294</span>
-<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">route_maxbas_by_path_length</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

@@ -3089,7 +3089,14 @@ carries no result attributes of its own and no forwarding properties.</p>
 <span class="normal">1284</span>
 <span class="normal">1285</span>
 <span class="normal">1286</span>
-<span class="normal">1287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1287</span>
+<span class="normal">1288</span>
+<span class="normal">1289</span>
+<span class="normal">1290</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span>
+<span class="normal">1293</span>
+<span class="normal">1294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -4004,10 +4011,17 @@ carries no result attributes of its own and no forwarding properties.</p>
                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the</span>
-            <span class="c1"># basin-wide sum the run already put in `qout`.</span>
+            <span class="c1"># basin-wide sum the run already put in `qout`. Required by name rather than</span>
+            <span class="c1"># reshaped straight: `DistributedRRM.route_maxbas_by_path_length` records the</span>
+            <span class="c1"># routing but has no wrapper to sum the domain after it, so its results reach</span>
+            <span class="c1"># here labelled MAXBAS with `qout` still empty -- and `np.reshape(None, n)`</span>
+            <span class="c1"># reports "cannot reshape array of size 1", naming neither the field nor the</span>
+            <span class="c1"># step that should have filled it.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">)</span>
             <span class="n">gauge_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"id"</span><span class="p">]</span>
-            <span class="n">q_sim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">)</span>
+            <span class="n">q_sim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">_require_field</span><span class="p">(</span><span class="s2">"qout"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">gauge_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_sim</span>
 
             <span class="k">if</span> <span class="n">calculate_metrics</span><span class="p">:</span>
@@ -4832,7 +4846,14 @@ extract from a set of arrays no routing step has filled.</p>
 <span class="normal">1148</span>
 <span class="normal">1149</span>
 <span class="normal">1150</span>
-<span class="normal">1151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span>
+<span class="normal">1155</span>
+<span class="normal">1156</span>
+<span class="normal">1157</span>
+<span class="normal">1158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract and sum discharge at gauge locations.</span>
 
 <span class="sd">    Which hydrograph is the right one depends on how the run was routed, and the results</span>
@@ -4935,10 +4956,17 @@ extract from a set of arrays no routing step has filled.</p>
                 <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the</span>
-        <span class="c1"># basin-wide sum the run already put in `qout`.</span>
+        <span class="c1"># basin-wide sum the run already put in `qout`. Required by name rather than</span>
+        <span class="c1"># reshaped straight: `DistributedRRM.route_maxbas_by_path_length` records the</span>
+        <span class="c1"># routing but has no wrapper to sum the domain after it, so its results reach</span>
+        <span class="c1"># here labelled MAXBAS with `qout` still empty -- and `np.reshape(None, n)`</span>
+        <span class="c1"># reports "cannot reshape array of size 1", naming neither the field nor the</span>
+        <span class="c1"># step that should have filled it.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">)</span>
         <span class="n">gauge_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"id"</span><span class="p">]</span>
-        <span class="n">q_sim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span><span class="p">)</span>
+        <span class="n">q_sim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">_require_field</span><span class="p">(</span><span class="s2">"qout"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">time_steps</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">gauge_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_sim</span>
 
         <span class="k">if</span> <span class="n">calculate_metrics</span><span class="p">:</span>
@@ -5781,14 +5809,7 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span>
-<span class="normal">1158</span>
-<span class="normal">1159</span>
-<span class="normal">1160</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1160</span>
 <span class="normal">1161</span>
 <span class="normal">1162</span>
 <span class="normal">1163</span>
@@ -5915,7 +5936,14 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1284</span>
 <span class="normal">1285</span>
 <span class="normal">1286</span>
-<span class="normal">1287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1287</span>
+<span class="normal">1288</span>
+<span class="normal">1289</span>
+<span class="normal">1290</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span>
+<span class="normal">1293</span>
+<span class="normal">1294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
