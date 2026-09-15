@@ -2811,7 +2811,9 @@ consumes.</p>
 <span class="normal">928</span>
 <span class="normal">929</span>
 <span class="normal">930</span>
-<span class="normal">931</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -3260,8 +3262,8 @@ consumes.</p>
         <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_before_optimising</span><span class="p">()</span>
-        <span class="c1"># `objective(QGauges, GaugesTable)` -- the shape this entry point calls with.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># `objective(QGauges, GaugesTable, *of_args)` -- the shape this entry point uses.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()[</span><span class="mi">1</span><span class="p">]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
         <span class="c1">### calculate the objective function</span>
@@ -3281,9 +3283,10 @@ consumes.</p>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_muskingum</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
                 <span class="c1"># calculate performance of the model</span>
-                <span class="n">error</span> <span class="o">=</span> <span class="n">objective</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">QGauges</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">]</span>
-                <span class="p">)</span>  <span class="c1"># self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,</span>
+                <span class="c1"># `of_args` forwarded, as `read_objective_function` documents. Two of the</span>
+                <span class="c1"># three entry points used to bind them and never pass them, so a caller who</span>
+                <span class="c1"># supplied extra arguments got no error and no effect.</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">objective</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">QGauges</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">,</span> <span class="o">*</span><span class="n">of_args</span><span class="p">)</span>
                 <span class="n">f</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">par</span><span class="p">),</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">))</span>
                 <span class="n">g</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)):</span>
@@ -3409,8 +3412,8 @@ consumes.</p>
         <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_before_optimising</span><span class="p">(</span><span class="n">needs_flow_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="c1"># `objective(QGauges, qout, GaugesTable)`.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># `objective(QGauges, qout, GaugesTable, *of_args)`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()[</span><span class="mi">1</span><span class="p">]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
         <span class="c1"># calculate the objective function</span>
@@ -3431,7 +3434,8 @@ consumes.</p>
                 <span class="n">error</span> <span class="o">=</span> <span class="n">objective</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">QGauges</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span><span class="p">,</span>
-                    <span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">,</span>
+                    <span class="o">*</span><span class="n">of_args</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="c1"># print error</span>
                 <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -3951,9 +3955,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">760</span>
 <span class="normal">761</span>
 <span class="normal">762</span>
 <span class="normal">763</span>
@@ -4124,7 +4126,9 @@ dict.</p>
 <span class="normal">928</span>
 <span class="normal">929</span>
 <span class="normal">930</span>
-<span class="normal">931</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4468,8 +4472,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">626</span>
-<span class="normal">627</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
 <span class="normal">630</span>
@@ -4598,7 +4601,9 @@ dict.</p>
 <span class="normal">753</span>
 <span class="normal">754</span>
 <span class="normal">755</span>
-<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4666,8 +4671,8 @@ dict.</p>
     <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">_check_before_optimising</span><span class="p">(</span><span class="n">needs_flow_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="c1"># `objective(QGauges, qout, GaugesTable)`.</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="c1"># `objective(QGauges, qout, GaugesTable, *of_args)`.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
     <span class="c1"># calculate the objective function</span>
@@ -4688,7 +4693,8 @@ dict.</p>
             <span class="n">error</span> <span class="o">=</span> <span class="n">objective</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">QGauges</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span><span class="p">,</span>
-                <span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">of_args</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="c1"># print error</span>
             <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -5644,7 +5650,8 @@ dict.</p>
 <span class="normal">621</span>
 <span class="normal">622</span>
 <span class="normal">623</span>
-<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">624</span>
+<span class="normal">625</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -5713,8 +5720,8 @@ dict.</p>
     <span class="n">_check_optimization_args</span><span class="p">(</span><span class="n">api_obj_args</span><span class="p">,</span> <span class="n">api_solve_args</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">_check_before_optimising</span><span class="p">()</span>
-    <span class="c1"># `objective(QGauges, GaugesTable)` -- the shape this entry point calls with.</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># `objective(QGauges, GaugesTable, *of_args)` -- the shape this entry point uses.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_check_objective_arity</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective</span><span class="p">()[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calibration starts"</span><span class="p">)</span>
 
     <span class="c1">### calculate the objective function</span>
@@ -5734,9 +5741,10 @@ dict.</p>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_muskingum</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
             <span class="c1"># calculate performance of the model</span>
-            <span class="n">error</span> <span class="o">=</span> <span class="n">objective</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">QGauges</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">]</span>
-            <span class="p">)</span>  <span class="c1"># self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,</span>
+            <span class="c1"># `of_args` forwarded, as `read_objective_function` documents. Two of the</span>
+            <span class="c1"># three entry points used to bind them and never pass them, so a caller who</span>
+            <span class="c1"># supplied extra arguments got no error and no effect.</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">objective</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">QGauges</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">,</span> <span class="o">*</span><span class="n">of_args</span><span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">par</span><span class="p">),</span> <span class="n">spatial_var_fun</span><span class="o">.</span><span class="n">no_parameters</span><span class="p">))</span>
             <span class="n">g</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)):</span>
