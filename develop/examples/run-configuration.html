@@ -1750,10 +1750,17 @@ same order:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Routing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">Run</span>
 
-<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"coello-lumped-model-run.yaml"</span><span class="p">)</span>
+<span class="n">Coello</span> <span class="o">=</span> <span class="n">Catchment</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span>
+    <span class="s2">"examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"</span>
+<span class="p">)</span>
 <span class="c1"># `Route` is the flag; the routing function is the third argument. Passing the function</span>
 <span class="c1"># as the flag routes with nothing, because a callable is truthy.</span>
-<span class="n">Run</span><span class="o">.</span><span class="n">run_lumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Routing</span><span class="o">.</span><span class="n">triangular_routing_1</span><span class="p">)</span>
+<span class="c1">#</span>
+<span class="c1"># The function has to match the parameter set the config declares. This one says</span>
+<span class="c1"># `maxbas: false`, so `Wrapper.run_lumped` takes the Muskingum branch and calls the</span>
+<span class="c1"># function with five arguments — a triangular function takes two and raises. Use</span>
+<span class="c1"># `coello-lumped-model-run-maxbas.yaml` with `Routing.triangular_routing_1` instead.</span>
+<span class="n">Run</span><span class="o">.</span><span class="n">run_lumped</span><span class="p">(</span><span class="n">Coello</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Routing</span><span class="o">.</span><span class="n">muskingum_v</span><span class="p">)</span>
 </code></pre></div>
 <p>The four shipped examples under <code>examples/hydrological-model/coello/run/</code> are each a pair — a
 <code>.py</code> that runs the model and a <code>.yaml</code> beside it holding everything the run needs.</p>
