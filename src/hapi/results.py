@@ -751,8 +751,12 @@ class SimulationResults:
             cube = Datacube.from_dataset(src, arr.shape[2])
             # A copy, not the `moveaxis` view: `arr` is a slice of a result array, and
             # handing a view to a writer that may normalise no-data in place would edit
-            # the results this call is only supposed to read.
-            cube.values = np.ascontiguousarray(np.moveaxis(arr, -1, 0))
+            # the results this call is only supposed to read. `np.array(copy=True)` rather
+            # than `ascontiguousarray`, which returns the input untouched when it is
+            # already contiguous -- and a single-step range is, because numpy ignores
+            # size-1 dimensions when testing that. `save(start=d, end=d)` therefore kept
+            # handing out a view, which is exactly the case this guards.
+            cube.values = np.array(np.moveaxis(arr, -1, 0), order="C", copy=True)
             cube.to_file(names)
 
     def _save_csv(

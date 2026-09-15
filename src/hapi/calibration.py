@@ -21,7 +21,7 @@ from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds, ParameterSet, validate_parameter_count
 from hapi.inputs import MeteoInputs
 from hapi.protocols import SpatialDistribution
-from hapi.results import SimulationResults
+from hapi.results import RoutingKind, SimulationResults
 from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
@@ -423,10 +423,19 @@ class Calibration:
                 scaling is applied. Default is None.
 
         Raises:
-            ValueError: The results came from MAXBAS routing, whose per-cell values are
-                contributions rather than discharges.
+            ValueError: The results have not been routed, or came from MAXBAS routing,
+                whose per-cell values are contributions rather than discharges.
         """
         results, meteo, gauges = self._gauged_results()
+        # The same two refusals `Catchment.extract_discharge` makes, in the same order.
+        # This one only tested `outlet_shortcut_valid`, which now excludes `UNROUTED` as
+        # well as `MAXBAS` -- so unrouted results reached a message stating categorically
+        # that the run used triangular routing, which it had not.
+        if results.routing is RoutingKind.UNROUTED:
+            raise ValueError(
+                "these results have not been routed, so there is no hydrograph to extract; "
+                "call a Run.* entry point rather than DistributedRRM.run_lumped_model alone"
+            )
         if results.q_total is None:
             raise ValueError(
                 "the results carry no routed discharge; the run did not complete"

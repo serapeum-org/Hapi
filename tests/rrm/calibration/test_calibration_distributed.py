@@ -19,7 +19,9 @@ from hapi.conceptual import ParameterBounds
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing
+from hapi.rrm.distrrm import DistributedRRM
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.runs import DistributedRun
 
 CANNED_RESULT = (0.42, np.arange(12, dtype="float64"))
 
@@ -333,6 +335,31 @@ class TestRunCalibration:
 
         assert np.array_equal(settled.values, np.ones((rows, cols, 12))), (
             "the parameter set must not follow the buffer the next trial overwrites"
+        )
+
+    def test_extracting_unrouted_results_is_not_blamed_on_maxbas(
+        self, gauged_calibration: Calibration
+    ):
+        """Test that `Calibration.extract_discharge` names the missing routing step.
+
+        Test scenario:
+            `Catchment.extract_discharge` gained an explicit `UNROUTED` refusal; this
+            parallel implementation was left reading only `outlet_shortcut_valid`, which the
+            same change widened to exclude `UNROUTED`. Unrouted results therefore reached a
+            message stating categorically that the run used triangular routing -- a
+            confident, wrong diagnosis. Two implementations of one method disagreeing about
+            one guard is what `RoutingKind` exists to prevent.
+        """
+        coello = gauged_calibration
+        coello.model.results = DistributedRRM.run_lumped_model(
+            DistributedRun.from_model(coello.model)
+        )
+
+        with pytest.raises(ValueError, match="have not been routed") as exc:
+            coello.extract_discharge()
+
+        assert "MAXBAS" not in str(exc.value), (
+            f"unrouted results must not be blamed on MAXBAS: {exc.value}"
         )
 
     def test_rejects_meteo_that_does_not_cover_the_grid(

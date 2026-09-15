@@ -209,7 +209,15 @@ Jiboa.results.save_animation(Path, fps=2)
 start_date = "2012-07-20"
 end_date = "2012-08-20"
 
-Path = save_to + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
+# `path` is the directory and `prefix` names the files. They used to be one
+# concatenated string, which `save` now joins rather than concatenates -- so this wrote
+# `Result_*.tif` into a directory literally called `Lumped_Parameters_<date>_`.
+prefix = "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
 Jiboa.results.save(
-    result=1, start=start_date, end=end_date, path=Path, flow_acc_path=flow_acc_path
+    result=1,
+    start=start_date,
+    end=end_date,
+    path=save_to,
+    prefix=prefix,
+    flow_acc_path=flow_acc_path,
 )

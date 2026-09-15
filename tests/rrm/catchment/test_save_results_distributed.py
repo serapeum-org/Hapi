@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset
 
+import hapi.results as results_module
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
@@ -243,6 +244,75 @@ def test_save_uses_the_prefix_it_is_given(
     written = sorted(p.name for p in out.glob("*.tif"))
     assert written == ["Qtot_2009-01-01.tif", "Qtot_2009-01-02.tif"], (
         f"the files must carry the given prefix, got {written}"
+    )
+
+
+@pytest.mark.parametrize("end, steps", [("2009-01-01", 1), ("2009-01-03", 3)])
+def test_save_hands_the_writer_a_copy_not_a_view(
+    coello_run: Catchment,
+    coello_acc_path: str,
+    tmp_path,
+    monkeypatch,
+    end: str,
+    steps: int,
+):
+    """Test that the array given to the raster writer never aliases the results.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Destination directory.
+        monkeypatch: Used to capture what is assigned to the cube.
+        end: End date, giving a one-step range and a three-step one.
+        steps: How many rasters that range covers.
+
+    Test scenario:
+        A writer that normalises no-data in place would edit the result arrays a *save* is
+        only supposed to read. The guard was `np.ascontiguousarray`, which hands back its
+        input untouched when it is already contiguous -- and numpy ignores size-1
+        dimensions when testing that, so the single-step range `save(start=d, end=d)` asks
+        for still passed a view. One step is the case that regressed; three is the case
+        that always worked.
+    """
+    captured = {}
+
+    class _RecordingCube:
+        """Stand-in for pyramids' DatasetCollection that records what it is given."""
+
+        @classmethod
+        def from_dataset(cls, src, time_length):
+            """Build the recorder instead of an in-memory scaffold."""
+            captured["time_length"] = time_length
+            return cls()
+
+        @property
+        def values(self):
+            """Return what was assigned."""
+            return captured.get("values")
+
+        @values.setter
+        def values(self, array):
+            captured["values"] = array
+
+        def to_file(self, names):
+            """Record the names instead of writing them."""
+            captured["names"] = names
+
+    monkeypatch.setattr(results_module, "Datacube", _RecordingCube)
+
+    coello_run.results.save(
+        path=str(tmp_path),
+        flow_acc_path=coello_acc_path,
+        result=1,
+        start="2009-01-01",
+        end=end,
+    )
+
+    assert captured["time_length"] == steps, (
+        f"expected {steps} steps, got {captured['time_length']}"
+    )
+    assert not np.shares_memory(captured["values"], coello_run.results.q_total), (
+        "the writer must receive a copy; a view lets it edit the results in place"
     )
 
 
