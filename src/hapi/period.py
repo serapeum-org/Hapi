@@ -232,8 +232,14 @@ class SimulationPeriod:
 
         One for both resolutions today. It is a property rather than a stored `1` so the
         Muskingum routing has a single place to read it from; whether an hourly run should
-        route with a different value is an open question, recorded in the planning notes
-        rather than silently answered here.
+        route with a different value is an open question, filed as issue #218 rather than
+        silently answered here.
+
+        Note that the catchment routing reads this while the lake paths in
+        :mod:`hapi.wrapper` pass :attr:`conversion_factor` (86.4 daily) into the same `dt`
+        parameter of the same `Routing.muskingum_v`. Both predate this class and neither was
+        changed when it was extracted, so one of the two is routing on a time step 86.4x off
+        from the other. Which one is the same physics question as issue #218.
         """
         return 1.0
 

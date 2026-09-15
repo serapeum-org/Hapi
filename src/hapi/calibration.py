@@ -238,6 +238,13 @@ class Calibration:
         overwrites in place. `results.run` is documented as the inputs those arrays came
         from; without the copy it described whichever trial happened to run last.
 
+        The copy is a full `(rows, cols, n_parameters)` cube and stays alive as long as the
+        results object holding it does. On the Coello grid that is 13x14x12 floats; on a
+        1000x1000 grid it is about 96 MB per retained result, in the same loop
+        :attr:`~hapi.runs.DistributedRun.keep_state_variables` exists to keep small. Nothing
+        bounds it, because correctness came first -- provenance that describes a different
+        trial is worse than provenance that costs memory.
+
         Args:
             values: The trial parameter array or vector.
 

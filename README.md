@@ -127,4 +127,5 @@ Quick start
 - class method/function: snake_case (get_file, read_config). They should have a verb in them, because they perform some action.
 
 The CamelCase entry points that survived from earlier releases (`Run.RunHapi`, `Wrapper.RRMModel` and the rest)
-have been renamed to snake_case. There is no compatibility alias: the names above are the only ones.
+have been renamed to snake_case — `Run.run_distributed`, `Wrapper.run_muskingum`, and so on. There is no
+compatibility alias: the old CamelCase spellings are gone.

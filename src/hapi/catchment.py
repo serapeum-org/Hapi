@@ -1077,9 +1077,10 @@ class Catchment:
             # Muskingum accumulates downstream, so the outlet cell of `q_total` is the
             # outlet hydrograph. The engine cannot set this itself: finding the outlet
             # needs the gauge table, which is an analysis input, not a run input.
-            # Trimmed like every other path: `q_total` carries the conceptual model's
-            # initial-state slot, so the untrimmed form made `qout` a step longer here than
-            # on the MAXBAS and lake paths, for a field documented as one hydrograph.
+            # Trimmed like every other path: the conceptual model allocates one slot more
+            # than it fills, so the untrimmed form made `qout` a step longer here than on
+            # the MAXBAS and lake paths, for a field documented as one hydrograph. `[:-1]`
+            # drops the unwritten trailing slot; index 0 stays the model's initial state.
             self.results.qout = self.results.q_total[outlet_x, outlet_y, :-1]
 
             for i in range(len(self.GaugesTable)):
@@ -1361,7 +1362,8 @@ class Lake:
         Args:
             path (str): Path to the meteorological data CSV file.
                 Columns must be in the order [date, rainfall, ET,
-                temperature].
+                temperature, long-term average temperature]. The lake
+                wrappers read that fourth driver as column 3.
             fmt (str): Date format string used to parse the date
                 index.
         """

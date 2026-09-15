@@ -145,8 +145,10 @@ class SimulationResults:
         q_total: `quz_routed + qlz_translated`. Read it through
             :attr:`outlet_shortcut_valid` rather than assuming what a cell means.
         qout: The outlet hydrograph, when the run computed one, and always `len(period)`
-            long -- the conceptual model's leading initial-state slot is dropped on every
-            path that fills it. The MAXBAS paths sum over the domain and set it directly;
+            long. The conceptual model allocates one slot more than it fills, and every
+            path that produces a series drops that unwritten trailing slot -- so index 0
+            is the model's initial state, not a simulated step, which matters when scoring
+            the first value against an observation. The MAXBAS paths sum over the domain and set it directly;
             the Muskingum paths leave it `None` for
             :meth:`~hapi.catchment.Catchment.extract_discharge` to read off the outlet cell,
             which needs the gauge table the engine does not have.
@@ -597,11 +599,11 @@ class SimulationResults:
         Args:
             path: Output directory for a distributed run (created if it does not exist), or
                 the CSV file itself for a lumped one. Default is "", the working directory.
-            result: What to write. Distributed: 1 - Total discharge, 2 - Upper zone
-                discharge, 3 - Lower zone discharge, 4 - Snow pack, 5 - Soil moisture,
-                6 - Upper zone, 7 - Lower zone, 8 - Water content. Lumped: 1 - simulated
-                discharge, 2 - upper zone, 3 - lower zone, 4 - the five states, 5 - all of
-                them. Default is 1.
+            result: What to write. Distributed: 1 - Total discharge, 2 - Surface flow (the
+                routed upper zone), 3 - Ground water flow (the translated lower zone),
+                4 - Snow pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
+                8 - Water content. Lumped: 1 - simulated discharge, 2 - upper zone,
+                3 - lower zone, 4 - the five states, 5 - all of them. Default is 1.
             start: Start of the output period. A string is parsed with `fmt`. If empty, the
                 run's first step.
             end: End of the output period, inclusive. If empty, the run's last step.

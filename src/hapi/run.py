@@ -43,8 +43,9 @@ def _check_lake_meteo(run: DistributedRun, lake: LakeType) -> None:
 
     Raises:
         ValueError: The lake has no meteorological record, the record is a different length
-            from the distributed drivers, or it carries fewer than the three columns the
-            lake model reads.
+            from the distributed drivers, or it carries fewer than the four columns the
+            lake model reads, including the long-term average temperature the wrappers
+            index as column 3.
     """
     meteo_data = lake.MeteoData
     if meteo_data is None:
@@ -253,8 +254,9 @@ class Run:
             model: The model to run. See :class:`DistributedModel` for what it must carry.
             lake: Lake object containing lake configuration and
                 meteorological data. Must have a `MeteoData` attribute
-                with shape `(time_steps, >= 3)` where columns are
-                rain, ET, and temperature.
+                with shape `(time_steps, >= 4)` where columns are
+                rain, ET, temperature, and the long-term average
+                temperature the wrappers read as column 3.
 
         Returns:
             SimulationResults: The run's output, also assigned to `model.results`.
@@ -320,8 +322,9 @@ class Run:
             model: The model to run. See :class:`DistributedModel` for what it must carry.
             lake: Lake object containing lake configuration and
                 meteorological data. Must have a `MeteoData` attribute
-                with shape `(time_steps, >= 3)` where columns are
-                rain, ET, and temperature.
+                with shape `(time_steps, >= 4)` where columns are
+                rain, ET, temperature, and the long-term average
+                temperature the wrappers read as column 3.
 
         Returns:
             SimulationResults: The run's output, also assigned to `model.results`.
