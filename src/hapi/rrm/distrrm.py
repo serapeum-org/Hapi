@@ -283,6 +283,15 @@ class DistributedRRM:
 
         MaxFPL = np.nanmax(run.flow_path_length)
         MinFPL = np.nanmin(run.flow_path_length)
+        # A constant raster makes the normalisation below divide by zero, which produces
+        # NaN and then surfaces as "Maxbas value has to be at least 1, got nan" from inside
+        # `triangular_routing_2`, several frames from the raster that caused it.
+        if MaxFPL == MinFPL:
+            raise ValueError(
+                f"the flow-path-length raster is constant at {MinFPL}, so there is no "
+                f"range to scale MAXBAS along; this routing needs cells at different "
+                f"distances from the outlet"
+            )
         # resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
         resize_fun = lambda g: (
             (((g - MinFPL) / (MaxFPL - MinFPL)) * (1 * MAXBAS - 1)) + 1

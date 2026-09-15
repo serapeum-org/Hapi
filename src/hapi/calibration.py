@@ -542,8 +542,8 @@ class Calibration:
         _check_optimization_args(api_obj_args, api_solve_args)
 
         self._check_before_optimising()
-        # `objective(QGauges, GaugesTable)` -- the shape this entry point calls with.
-        self._check_objective_arity(2)
+        # `objective(QGauges, GaugesTable, *of_args)` -- the shape this entry point uses.
+        self._check_objective_arity(2 + len(self._objective()[1]))
         print("Calibration starts")
 
         ### calculate the objective function
@@ -563,9 +563,10 @@ class Calibration:
             try:
                 self.model.results = Wrapper.run_muskingum(run)
                 # calculate performance of the model
-                error = objective(
-                    self.model.QGauges, *[self.model.GaugesTable]
-                )  # self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,
+                # `of_args` forwarded, as `read_objective_function` documents. Two of the
+                # three entry points used to bind them and never pass them, so a caller who
+                # supplied extra arguments got no error and no effect.
+                error = objective(self.model.QGauges, self.model.GaugesTable, *of_args)
                 f = list(range(9, len(par), spatial_var_fun.no_parameters))
                 g = list()
                 for i in range(len(f)):
@@ -691,8 +692,8 @@ class Calibration:
         _check_optimization_args(api_obj_args, api_solve_args)
 
         self._check_before_optimising(needs_flow_direction=False)
-        # `objective(QGauges, qout, GaugesTable)`.
-        self._check_objective_arity(3)
+        # `objective(QGauges, qout, GaugesTable, *of_args)`.
+        self._check_objective_arity(3 + len(self._objective()[1]))
         print("Calibration starts")
 
         # calculate the objective function
@@ -713,7 +714,8 @@ class Calibration:
                 error = objective(
                     self.model.QGauges,
                     self.model.results.qout,
-                    *[self.model.GaugesTable],
+                    self.model.GaugesTable,
+                    *of_args,
                 )
                 # print error
                 if print_error != 0:

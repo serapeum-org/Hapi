@@ -337,6 +337,35 @@ class TestRunCalibration:
             "the parameter set must not follow the buffer the next trial overwrites"
         )
 
+    def test_the_objective_receives_the_extra_arguments_it_was_registered_with(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that `read_objective_function`'s extra arguments reach the objective.
+
+        Test scenario:
+            `read_objective_function(fn, args)` documents `args` as "extra arguments
+            forwarded to it", and `_objective()` returns them saying the same. Two of the
+            three entry points bound them and never passed them, so a caller who supplied
+            them got no error and no effect -- the silent kind of wrong.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+        seen = {}
+
+        def objective_with_extras(qgauges, gauges_table, weight, label):
+            """Take the two the entry point passes plus the two registered with it."""
+            seen["weight"] = weight
+            seen["label"] = label
+            return float(np.abs(qgauges.to_numpy(dtype=float)).mean())
+
+        coello.read_objective_function(objective_with_extras, [0.5, "outlet"])
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        assert seen == {"weight": 0.5, "label": "outlet"}, (
+            f"the registered arguments must reach the objective, got {seen}"
+        )
+
     def test_extracting_unrouted_results_is_not_blamed_on_maxbas(
         self, gauged_calibration: Calibration
     ):

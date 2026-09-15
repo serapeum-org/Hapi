@@ -304,6 +304,38 @@ class TestTheHydraulicCellSkip:
         ), "a skipped river cell must be left for the hydraulic model, not routed here"
 
 
+class TestPathLengthRoutingNeedsARange:
+    """Scaling MAXBAS along a distance needs cells at different distances."""
+
+    def test_a_constant_raster_is_refused(self, maxbas_run: DistributedRun):
+        """Test that a flow-path-length raster with no range says so.
+
+        Args:
+            maxbas_run: A validated run carrying a MAXBAS parameter set.
+
+        Test scenario:
+            The normalisation divides by `max - min`. A constant raster makes that zero, so
+            every cell's MAXBAS became NaN and the failure surfaced as "Maxbas value has to
+            be at least 1, got nan" from inside `triangular_routing_2` -- several frames
+            from the raster that caused it, and naming a parameter the caller never set.
+        """
+        rows, cols = maxbas_run.flow_network.shape
+        flat = np.full((rows, cols), 7.0)
+        flat[np.isnan(maxbas_run.flow_network.flow_acc_arr)] = np.nan
+        run = DistributedRun(
+            period=maxbas_run.period,
+            meteo=maxbas_run.meteo,
+            flow_network=maxbas_run.flow_network,
+            parameters=maxbas_run.parameters,
+            model_setup=maxbas_run.model_setup,
+            flow_path_length=flat,
+        )
+        results = DistributedRRM.run_lumped_model(run)
+
+        with pytest.raises(ValueError, match="constant at"):
+            DistributedRRM.route_maxbas_by_path_length(run, results)
+
+
 class TestTheOutletShortcut:
     """Reading the outlet cell only means something for a scheme that accumulates."""
 
