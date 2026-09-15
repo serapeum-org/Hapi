@@ -6,7 +6,7 @@ import pytest
 from pyramids.dataset import Dataset
 from pyramids.feature import FeatureCollection
 
-from hapi.parameters.parameters import Parameter
+from hapi.data.figshare import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 

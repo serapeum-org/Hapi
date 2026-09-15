@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from hapi.parameters.parameters import (
+from hapi.data.figshare import (
     FigshareAPIClient,
     FileManager,
     Parameter,
@@ -103,9 +103,7 @@ class TestFileManager:
         mock_response.iter_content.return_value = [b"fake content"]
         mock_response.raise_for_status = MagicMock()
 
-        with patch(
-            "hapi.parameters.parameters.requests.get", return_value=mock_response
-        ):
+        with patch("hapi.data.figshare.requests.get", return_value=mock_response):
             FileManager.download_file(url, file_path)
 
         assert new_dir.exists(), "The directory should be created."
@@ -181,9 +179,7 @@ class TestParameterManagerMock:
             ]
         }
 
-        with patch(
-            "hapi.parameters.parameters.FileManager.download_file"
-        ) as mock_download:
+        with patch("hapi.data.figshare.FileManager.download_file") as mock_download:
             parameter_manager.download_files(set_id=1, download_dir=tmp_path)
 
         mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
@@ -323,9 +319,7 @@ class TestParameter:
         parameter = Parameter(version=1)
         int_test_dir = parameter.download_dir
         # mock to download only one parameter set
-        with patch(
-            "hapi.parameters.parameters.ParameterManager.PARAMETER_SET_ID", new=[1]
-        ):
+        with patch("hapi.data.figshare.ParameterManager.PARAMETER_SET_ID", new=[1]):
             parameter.get_parameters()
 
         downloaded_files = list(int_test_dir.glob("**/*"))

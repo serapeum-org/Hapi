@@ -97,9 +97,9 @@ documentation = "https://serapeum-org.github.io/Hapi"
 Changelog = "https://github.com/serapeum-org/Hapi/blob/main/docs/change-log.md"
 
 [project.scripts]
-download-parameters = "hapi.parameters.parameters:main"
-download-parameter-set = "hapi.parameters.parameters:main"
-list-parameter-names = "hapi.parameters.parameters:main"
+download-parameters = "hapi.data.figshare:main"
+download-parameter-set = "hapi.data.figshare:main"
+list-parameter-names = "hapi.data.figshare:main"
 
 
 [build-system]

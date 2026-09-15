@@ -1,4 +1,4 @@
-from hapi.parameters.parameters import Parameter
+from hapi.data.figshare import Parameter
 
 # parameter_set = 1
 parameter_set = "min"

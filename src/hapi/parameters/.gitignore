@@ -1,7 +1,5 @@
-# Ignore everything in this directory
-
+# The download target for `HAPI_DATA_DIR`: the Beck et al. (2016) parameter sets land here,
+# and none of them belong in the repository. The downloader itself is `hapi/data/figshare.py`;
+# this directory holds no code.
 *
-# Except this file
 !.gitignore
-!download_parameters.py
-!parameters.py
