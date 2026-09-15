@@ -252,6 +252,10 @@ class TestTheRouterRecordsTheRoutingItApplied:
             f"the path-length router must record what it applied, got {results.routing}"
         )
         assert results.q_total is not None, "the per-cell fields must be filled"
+        assert results.qout is None, (
+            "summing the domain is not a routing step, so a router leaves `qout` empty; "
+            "the `Wrapper` entry points are what fill it"
+        )
 
 
 class TestTheHydraulicCellSkip:
@@ -332,6 +336,43 @@ class TestTheOutletShortcut:
         assert results.outlet_shortcut_valid is valid, (
             f"{routing} should give outlet_shortcut_valid={valid}"
         )
+
+    def test_extracting_maxbas_results_without_an_outlet_series_names_the_field(
+        self, built_catchment: Catchment, maxbas_run: DistributedRun
+    ):
+        """Test that MAXBAS results carrying no `qout` say which field is missing.
+
+        Args:
+            built_catchment: A distributed catchment with its gauge table read.
+            maxbas_run: A validated run carrying a MAXBAS parameter set.
+
+        Test scenario:
+            `route_maxbas_by_path_length` records the routing but has no wrapper to sum the
+            domain after it, so its results reach `extract_discharge` labelled MAXBAS with
+            `qout` still empty -- the one state the UNROUTED guard cannot see, because it
+            only tests for UNROUTED. `np.reshape(None, n)` then reported "cannot reshape
+            array of size 1", naming neither the field nor the step that should have filled
+            it.
+        """
+        rows, cols = maxbas_run.flow_network.shape
+        gradient = np.arange(rows * cols, dtype=float).reshape(rows, cols)
+        gradient[np.isnan(maxbas_run.flow_network.flow_acc_arr)] = np.nan
+        with_fpl = DistributedRun(
+            period=maxbas_run.period,
+            meteo=maxbas_run.meteo,
+            flow_network=maxbas_run.flow_network,
+            parameters=maxbas_run.parameters,
+            model_setup=maxbas_run.model_setup,
+            flow_path_length=gradient,
+        )
+        results = DistributedRRM.run_lumped_model(with_fpl)
+        DistributedRRM.route_maxbas_by_path_length(with_fpl, results)
+
+        catchment = copy(built_catchment)
+        catchment.results = results
+
+        with pytest.raises(ValueError, match="`qout` is empty"):
+            catchment.extract_discharge()
 
     def test_extracting_from_unrouted_results_names_the_missing_step(
         self, built_catchment: Catchment

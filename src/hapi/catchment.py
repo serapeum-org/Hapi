@@ -1124,10 +1124,17 @@ class Catchment:
                     )
         else:
             # MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the
-            # basin-wide sum the run already put in `qout`.
+            # basin-wide sum the run already put in `qout`. Required by name rather than
+            # reshaped straight: `DistributedRRM.route_maxbas_by_path_length` records the
+            # routing but has no wrapper to sum the domain after it, so its results reach
+            # here labelled MAXBAS with `qout` still empty -- and `np.reshape(None, n)`
+            # reports "cannot reshape array of size 1", naming neither the field nor the
+            # step that should have filled it.
             self.Qsim = pd.DataFrame(index=self.period.date_index)
             gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            q_sim = np.reshape(self.results.qout, self.meteo.time_steps)
+            q_sim = np.reshape(
+                self.results._require_field("qout"), self.meteo.time_steps
+            )
             self.Qsim.loc[:, gauge_id] = q_sim
 
             if calculate_metrics:

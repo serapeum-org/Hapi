@@ -330,7 +330,9 @@ class SimulationResults:
         if value is None:
             raise ValueError(
                 f"`{name}` is empty because no routing step has filled it; these results "
-                f"are {self.routing.value}"
+                f"are {self.routing.value}. `qout` is filled by the `Wrapper` entry points, "
+                f"not by the routers -- summing the domain is not a routing step -- so "
+                f"results routed by calling `DistributedRRM` directly do not carry one"
             )
         return value
 

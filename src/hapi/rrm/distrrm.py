@@ -213,6 +213,11 @@ class DistributedRRM:
         writes through the alias -- but the alias is visible (`results.quz_routed is
         results.quz`), so an in-place edit of one changes the other.
 
+        It does not fill `qout`. The outlet hydrograph is the sum over the domain, which is
+        not a routing step -- the `Wrapper` entry points do it after calling a router. So
+        results produced by driving `DistributedRRM` directly carry `RoutingKind.MAXBAS`
+        and no `qout`, and `extract_discharge` says so by name.
+
         Args:
             results: The results whose `quz` / `qlz` have just been routed. Mutated in place.
         """
