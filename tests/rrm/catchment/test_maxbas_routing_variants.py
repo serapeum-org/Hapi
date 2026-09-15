@@ -294,10 +294,10 @@ class TestRoutingGuards:
             coello_InitialCond,
         )
 
+        run = LumpedRun.from_model(model)
+
         with pytest.raises(TypeError, match="callable"):
-            Wrapper.run_lumped(
-                LumpedRun.from_model(model), Routing=1, RoutingFn=routing_fn
-            )
+            Wrapper.run_lumped(run, Routing=1, RoutingFn=routing_fn)
 
 
 class TestLumpedRouting:

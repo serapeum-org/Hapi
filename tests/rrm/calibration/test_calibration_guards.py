@@ -247,8 +247,10 @@ class TestTheGuardsBeforeTheSearch:
             argument, and the failure would otherwise be a `KeyError` inside the objective
             once per trial.
         """
+        args = _optimization_args()
+
         with pytest.raises(ValueError, match=missing):
-            lumped.calibrate_lumped(basic_inputs, _optimization_args())
+            lumped.calibrate_lumped(basic_inputs, args)
 
     def test_no_observed_record_names_the_reader_that_supplies_it(
         self,
@@ -278,10 +280,10 @@ class TestTheGuardsBeforeTheSearch:
         coello.read_parameters_bound([0.0] * 12, [1.0] * 12, False)
         coello.read_objective_function(metrics.rmse, [])
 
+        args = _optimization_args()
+
         with pytest.raises(ValueError, match="read_discharge_gauges"):
-            coello.calibrate_lumped(
-                {"Route": 0, "RoutingFn": None}, _optimization_args()
-            )
+            coello.calibrate_lumped({"Route": 0, "RoutingFn": None}, args)
 
 
 class TestGaugedResults:
@@ -428,10 +430,10 @@ class TestCalibrateLumped:
 
         lumped.read_objective_function(needs_five, [])
 
+        args = _optimization_args()
+
         with pytest.raises(ObjectiveFunctionArityError, match="needs more inputs"):
-            lumped.calibrate_lumped(
-                {"Route": 0, "RoutingFn": None}, _optimization_args()
-            )
+            lumped.calibrate_lumped({"Route": 0, "RoutingFn": None}, args)
 
         assert "scored" not in stub_engine, (
             "the optimiser must not be built when the objective cannot be called"
@@ -453,10 +455,10 @@ class TestCalibrateLumped:
         """
         lumped.bounds = ParameterBounds(np.zeros(9), np.ones(9))
 
+        args = _optimization_args()
+
         with pytest.raises(ValueError, match="takes 12 parameters"):
-            lumped.calibrate_lumped(
-                {"Route": 0, "RoutingFn": None}, _optimization_args()
-            )
+            lumped.calibrate_lumped({"Route": 0, "RoutingFn": None}, args)
 
         assert "scored" not in stub_engine, (
             "the optimiser must not be built for a width the model cannot read"

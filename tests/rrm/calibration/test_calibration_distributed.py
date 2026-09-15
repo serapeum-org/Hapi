@@ -254,8 +254,10 @@ class TestRunCalibration:
 
         coello.read_objective_function(needs_four_arguments, [])
 
+        args = _optimization_args()
+
         with pytest.raises(ObjectiveFunctionArityError, match="needs more inputs"):
-            coello.run_calibration(spatial_var_stub, _optimization_args())
+            coello.run_calibration(spatial_var_stub, args)
 
     def test_a_type_error_from_inside_a_correct_objective_is_not_a_wiring_error(
         self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub

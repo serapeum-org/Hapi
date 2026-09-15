@@ -499,12 +499,16 @@ class TestDatesAreResolvedAgainstTheRun:
             `fmt`; a datetime must skip that, since `strptime` on one raises `TypeError`.
             Reaching the *result*-option error proves both bounds resolved.
         """
+        start = dt.datetime(2009, 1, 1)
+        end = dt.datetime(2009, 1, 5)
+        destination = str(tmp_path)
+
         with pytest.raises(ValueError, match="between 1 and 8"):
             unrouted.save(
-                path=str(tmp_path),
+                path=destination,
                 result=99,
-                start=dt.datetime(2009, 1, 1),
-                end=dt.datetime(2009, 1, 5),
+                start=start,
+                end=end,
                 flow_acc_path="unused",
             )
 

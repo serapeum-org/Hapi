@@ -33,6 +33,9 @@ from hapi.wrapper import Wrapper
 if TYPE_CHECKING:
     from hapi.catchment import Lake as LakeType
 
+#: Logged by each distributed entry point when it returns.
+RUN_FINISHED = "Model Run has finished"
+
 
 def _check_lake_meteo(run: DistributedRun, lake: LakeType) -> None:
     """Check the lake's record lines up with the distributed drivers.
@@ -182,7 +185,7 @@ class Run:
         results = Wrapper.run_muskingum(run)
 
         model.results = results
-        logger.info("Model Run has finished")
+        logger.info(RUN_FINISHED)
         return results
 
     @staticmethod
@@ -271,7 +274,7 @@ class Run:
         results = Wrapper.run_muskingum_with_lake(run, lake)
 
         model.results = results
-        logger.info("Model Run has finished")
+        logger.info(RUN_FINISHED)
         return results
 
     @staticmethod
@@ -307,7 +310,7 @@ class Run:
         results = Wrapper.run_maxbas(run)
 
         model.results = results
-        logger.info("Model Run has finished")
+        logger.info(RUN_FINISHED)
         return results
 
     @staticmethod

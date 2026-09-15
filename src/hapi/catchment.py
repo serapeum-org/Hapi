@@ -21,7 +21,7 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
@@ -207,6 +207,33 @@ def _name_the_path(path) -> Iterator[None]:
         yield
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"{exc} (path: {path})") from exc
+
+
+#: The seven performance metrics `extract_discharge` scores a gauge with, in the order the
+#: `metrics` frame indexes them. Named once because both routing branches compute the same
+#: seven, and writing them out twice is how the two drift apart.
+GAUGE_METRICS: dict[str, Any] = {
+    "RMSE": metrics.rmse,
+    "NSE": metrics.nse,
+    "NSEhf": metrics.nse_hf,
+    "KGE": metrics.kge,
+    "WB": metrics.wb,
+    "Pearson-CC": metrics.pearson_corr_coeff,
+    "R2": metrics.r2,
+}
+
+
+def _score_gauge(frame: pd.DataFrame, gauge_id: Any, q_obs, q_sim) -> None:
+    """Fill one gauge's column of a metrics frame.
+
+    Args:
+        frame: The metrics frame, indexed by :data:`GAUGE_METRICS`' keys.
+        gauge_id: The column to write.
+        q_obs: Observed discharge at that gauge.
+        q_sim: Simulated discharge at that gauge.
+    """
+    for name, metric in GAUGE_METRICS.items():
+        frame.loc[name, gauge_id] = round(metric(q_obs, q_sim), 3)
 
 
 class Catchment:
@@ -1071,8 +1098,9 @@ class Catchment:
                 index=self.period.date_index, columns=self.QGauges.columns
             )
             if calculate_metrics:
-                index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
-                self.metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
+                self.metrics = pd.DataFrame(
+                    index=list(GAUGE_METRICS), columns=self.QGauges.columns
+                )
             # sum the lower zone and the upper zone discharge
             outlet_x = self.flow_network.outlet[0][0]
             outlet_y = self.flow_network.outlet[1][0]
@@ -1104,27 +1132,8 @@ class Catchment:
                     self.Qsim.loc[:, gauge_id] = q_sim
 
                 if calculate_metrics:
-                    q_obs = self.QGauges.loc[:, gauge_id]
-                    self.metrics.loc["RMSE", gauge_id] = round(
-                        metrics.rmse(q_obs, q_sim), 3
-                    )
-                    self.metrics.loc["NSE", gauge_id] = round(
-                        metrics.nse(q_obs, q_sim), 3
-                    )
-                    self.metrics.loc["NSEhf", gauge_id] = round(
-                        metrics.nse_hf(q_obs, q_sim), 3
-                    )
-                    self.metrics.loc["KGE", gauge_id] = round(
-                        metrics.kge(q_obs, q_sim), 3
-                    )
-                    self.metrics.loc["WB", gauge_id] = round(
-                        metrics.wb(q_obs, q_sim), 3
-                    )
-                    self.metrics.loc["Pearson-CC", gauge_id] = round(
-                        metrics.pearson_corr_coeff(q_obs, q_sim), 3
-                    )
-                    self.metrics.loc["R2", gauge_id] = round(
-                        metrics.r2(q_obs, q_sim), 3
+                    _score_gauge(
+                        self.metrics, gauge_id, self.QGauges.loc[:, gauge_id], q_sim
                     )
         else:
             # MAXBAS: a cell of `q_total` is a contribution, so the hydrograph is the
@@ -1142,24 +1151,10 @@ class Catchment:
             self.Qsim.loc[:, gauge_id] = q_sim
 
             if calculate_metrics:
-                index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
-                self.metrics = pd.DataFrame(index=index)
-
-                # if CalculateMetrics:
-                q_obs = self.QGauges.loc[:, gauge_id]
-                self.metrics.loc["RMSE", gauge_id] = round(
-                    metrics.rmse(q_obs, q_sim), 3
+                self.metrics = pd.DataFrame(index=list(GAUGE_METRICS))
+                _score_gauge(
+                    self.metrics, gauge_id, self.QGauges.loc[:, gauge_id], q_sim
                 )
-                self.metrics.loc["NSE", gauge_id] = round(metrics.nse(q_obs, q_sim), 3)
-                self.metrics.loc["NSEhf", gauge_id] = round(
-                    metrics.nse_hf(q_obs, q_sim), 3
-                )
-                self.metrics.loc["KGE", gauge_id] = round(metrics.kge(q_obs, q_sim), 3)
-                self.metrics.loc["WB", gauge_id] = round(metrics.wb(q_obs, q_sim), 3)
-                self.metrics.loc["Pearson-CC", gauge_id] = round(
-                    metrics.pearson_corr_coeff(q_obs, q_sim), 3
-                )
-                self.metrics.loc["R2", gauge_id] = round(metrics.r2(q_obs, q_sim), 3)
 
     def plot_hydrograph(
         self,
