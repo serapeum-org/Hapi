@@ -23,7 +23,7 @@ class RiverGeometry:
     """The hydraulic rasters the flood model reads, held together and checked as a set.
 
     Five arrays that must describe one grid, previously five loose attributes on
-    :class:`~hapi.catchment.Catchment` assigned by a single loop that checked nothing -- not
+    :class:`~hapi.model.catchment.Catchment` assigned by a single loop that checked nothing -- not
     that they shared a shape, and not that they covered the catchment. Two unrelated places
     then dereferenced them: the flood entry point, and the Muskingum routing loop, which read
     `bankfull_depth[x, y]` to decide whether a cell belongs to a hydraulic model.

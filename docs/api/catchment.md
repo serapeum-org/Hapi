@@ -27,4 +27,4 @@ A YAML run configuration reaches only the first two: `kinematic` selects the flo
 [`hapi.core.config`](config.md) does not describe.
 
 ## Catchment
-::: hapi.catchment.Catchment
+::: hapi.model.catchment.Catchment

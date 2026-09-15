@@ -1,16 +1,9 @@
-"""Catchment module for the Hapi hydrological modeling framework.
+"""The model builder: assembling a catchment from its inputs.
 
-This module provides the Catchment and Lake classes for reading
-meteorological and spatial inputs, running distributed hydrological
-models, extracting discharge, and saving results. The Catchment class
-is the base class that reads all inputs required by the model
-(rainfall, temperature, ET, flow accumulation, flow direction,
-parameters, and gauge data). It supports both lumped and distributed
-spatial modes with daily or hourly temporal resolutions.
-
-The Lake class provides similar functionality for simulating a lake
-as a lumped model using a rating curve, where the lake and its
-upstream sub-catchments are treated as one lumped model.
+`Catchment` is not configured through its constructor. It is assembled by assigning input
+objects and by successive `read_*()` calls, and a run then validates the result. The
+engine never imports this module -- it states what it needs through
+`hapi.simulation.protocols`, which `Catchment` satisfies structurally.
 """
 
 from __future__ import annotations
@@ -57,6 +50,7 @@ CONCEPTUAL_MODELS: dict[str, type[BaseConceptualModel]] = {
     "HBVBergestrom92": HBVBergestrom92,
     "HBV": HBV,
 }
+
 
 #: Accepted routing methods, canonicalised to one spelling.
 #:
@@ -395,7 +389,7 @@ class Catchment:
 
             - Build a lumped model and inspect what the configuration gave it:
                 ```python
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> model = Catchment.from_yaml(
                 ...     "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
                 ... )
@@ -410,7 +404,7 @@ class Catchment:
             - Build a distributed model, whose drivers and routing network come from the
               `meteo` and `flow_network` blocks:
                 ```python
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> model = Catchment.from_yaml(
                 ...     "examples/hydrological-model/coello/run/"
                 ...     "coello-distributed-model-run-netcdf.yaml"
@@ -543,7 +537,7 @@ class Catchment:
                 >>> import numpy as np, tempfile
                 >>> from pathlib import Path
                 >>> from pyramids.dataset import Dataset, GeoReference
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> path = Path(tempfile.mkdtemp()) / "fpl.tif"
                 >>> Dataset.from_array(
                 ...     np.array([[10, 20], [30, -9999]], dtype="int32"),
@@ -566,7 +560,7 @@ class Catchment:
                 >>> import numpy as np, tempfile
                 >>> from pathlib import Path
                 >>> from pyramids.dataset import Dataset, GeoReference
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> path = Path(tempfile.mkdtemp()) / "fpl_near.tif"
                 >>> Dataset.from_array(
                 ...     np.array([[10, 20], [30, -9990]], dtype="int32"),
@@ -815,7 +809,7 @@ class Catchment:
                 >>> import os, tempfile
                 >>> from pyramids.feature import FeatureCollection
                 >>> from shapely.geometry import Point
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> path = os.path.join(tempfile.mkdtemp(), "gauges.geojson")
                 >>> FeatureCollection(
                 ...     {"id": [1, 2], "name": ["Station 1", "Station 2"]},
@@ -835,7 +829,7 @@ class Catchment:
                 ```python
                 >>> import os, tempfile
                 >>> import pandas as pd
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> path = os.path.join(tempfile.mkdtemp(), "gauges.csv")
                 >>> pd.DataFrame({"id": [1], "name": ["Station 1"]}).to_csv(path, index=False)
                 >>> model = Catchment("coello", "2009-01-01", "2009-01-10",
@@ -851,7 +845,7 @@ class Catchment:
                 ```python
                 >>> import os, tempfile
                 >>> import pandas as pd
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> path = os.path.join(tempfile.mkdtemp(), "gauges.csv")
                 >>> pd.DataFrame(
                 ...     {"id": [1], "start": ["03/04/2009"], "end": ["05/06/2011"]}
@@ -1306,148 +1300,3 @@ class Catchment:
             logger.debug("R2= " + str(round(self.metrics.loc["R2", gauge_id], 2)))
 
         return fig, ax
-
-
-class Lake:
-    """Lake simulation using a lumped model with a rating curve.
-
-    The Lake class reads meteorological inputs and a lumped model module to
-    simulate a lake. The lake and its upstream sub-catchments are treated as
-    one lumped model that produces a discharge input to the lake. The
-    discharge input changes the volume of the water in the lake, and the
-    outflow is obtained from the volume-outflow (stage-discharge) curve.
-    """
-
-    def __init__(
-        self,
-        start: str = "",
-        end: str = "",
-        fmt: str = "%Y-%m-%d",
-        temporal_resolution: str = "Daily",
-        split: bool = False,
-    ):
-        """Initialize a Lake instance for lake simulation.
-
-        Args:
-            start (str, optional): Start date. Default is "".
-            end (str, optional): End date. Default is "".
-            fmt (str, optional): Date format. Default is "%Y-%m-%d".
-            temporal_resolution (str, optional): "Daily" or "Hourly".
-                Default is "Daily".
-            split (bool, optional): True to subset the data between
-                the start and end dates. Default is False.
-        """
-        self.OutflowCell: list | None = None
-        self.Snow: int | None = None
-        self.Split = split
-        self.start = dt.datetime.strptime(start, fmt)
-        self.end = dt.datetime.strptime(end, fmt)
-
-        if temporal_resolution.lower() == "daily":
-            self.Index = pd.date_range(start, end, freq="D")
-        elif temporal_resolution.lower() == "hourly":
-            self.Index = pd.date_range(start, end, freq="h")
-        else:
-            raise ValueError(
-                f"available temporal resolutions are 'daily' and 'hourly', got "
-                f"{temporal_resolution!r}"
-            )
-
-        self.MeteoData: np.ndarray | None = None
-        self.Parameters: list | None = None
-        self.LumpedModel: BaseConceptualModel | None = None
-        self.CatArea: float | None = None
-        self.LakeArea: float | None = None
-        self.InitialCond: list | None = None
-        self.StageDischargeCurve: np.ndarray | None = None
-        #: The lake's own simulated outflow, and that series routed to the outflow cell.
-        #: Filled by the lake-aware wrapper entry points, which used to create them by
-        #: assignment -- so they existed only after a run and nothing said they were coming.
-        self.Qlake: np.ndarray | None = None
-        self.QlakeR: np.ndarray | None = None
-
-    def read_meteo_data(self, path: str | Path, fmt: str):
-        """Read meteorological data for the lake simulation.
-
-        Reads rainfall, evapotranspiration, and temperature data from a
-        CSV file.
-
-        Args:
-            path (str): Path to the meteorological data CSV file.
-                Columns must be in the order [date, rainfall, ET,
-                temperature, long-term average temperature]. The lake
-                wrappers read that fourth driver as column 3.
-            fmt (str): Date format string used to parse the date
-                index.
-        """
-        df = pd.read_csv(path, index_col=0)
-        df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
-
-        if self.Split:
-            df = df.loc[self.start : self.end, :]
-
-        self.MeteoData = df.values  # lakeCalibArray = lakeCalibArray[:,0:-1]
-
-        logger.debug("Lake Meteo data are read successfully")
-
-    def read_parameters(self, path: str | Path):
-        """Read lake model parameters from a text file.
-
-        Args:
-            path: Path to the parameter text file, as a `str` or a `Path`.
-        """
-        self.Parameters = np.loadtxt(path).tolist()
-        logger.debug("Lake Parameters are read successfully")
-
-    def read_lumped_model(
-        self,
-        lumped_model: type[BaseConceptualModel],
-        catchment_area,
-        lake_area,
-        initial_condition,
-        outflow_cell,
-        stage_discharge_curve,
-        snow,
-    ):
-        """Read and set up a lumped model for lake simulation.
-
-        Args:
-            lumped_model: A class representing the lumped conceptual
-                model (e.g., HBV).
-            catchment_area (float): Catchment area in km2.
-            lake_area (float): Area of the lake in km2.
-            initial_condition (list): Initial conditions list
-                containing [Snow Pack, Soil Moisture, Upper Zone,
-                Lower Zone, Water Content, Lake volume].
-            outflow_cell (list): Indices of the cell where the lake
-                hydrograph is to be added.
-            stage_discharge_curve (np.ndarray): Volume-outflow
-                (stage-discharge) curve array.
-            snow (int): 0 to skip snow processes, 1 to simulate
-                snow. If 1, snow-related parameters must be
-                provided.
-
-        Raises:
-            ValueError: If `lumped_model` is not a class.
-            TypeError: If `initial_condition` is not a list.
-        """
-        if not inspect.isclass(lumped_model):
-            raise ValueError(
-                "ConceptualModel should be a module or a python file contains functions "
-            )
-
-        self.LumpedModel = lumped_model()
-
-        self.CatArea = catchment_area
-        self.LakeArea = lake_area
-        self.InitialCond = initial_condition
-
-        if self.InitialCond is not None and not isinstance(self.InitialCond, list):
-            raise TypeError(
-                f"init_st should be of type list, got {type(self.InitialCond).__name__}"
-            )
-
-        self.Snow = snow
-        self.OutflowCell = outflow_cell
-        self.StageDischargeCurve = stage_discharge_curve
-        logger.debug("Lumped model is read successfully")

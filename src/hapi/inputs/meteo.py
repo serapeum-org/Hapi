@@ -55,7 +55,7 @@ class MeteoInputs:
     r"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.
 
     Each field is a `(rows, cols, time)` array — cell first, time last — which is the layout
-    :class:`~hapi.catchment.Catchment` and the conceptual models index. The three cubes must
+    :class:`~hapi.model.catchment.Catchment` and the conceptual models index. The three cubes must
     agree on all three axes; that is checked on construction, because a silent mismatch surfaces
     much later as a confusing index error inside the run loop.
 

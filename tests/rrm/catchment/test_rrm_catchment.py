@@ -6,11 +6,11 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import DatetimeIndex
 
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.engine.routing import Routing
 from hapi.engine.run import Run
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
 
 
 def test_create_catchment_instance(coello_rrm_date: list):

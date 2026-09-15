@@ -8,7 +8,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	import datetime as dt
 	from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 	from hapi.calibration import Calibration
-	from hapi.catchment import Catchment
+	from hapi.model.catchment import Catchment
 	from hapi.conceptual import ParameterSet
 	from hapi.engine.routing import Routing
 	from hapi.engine.run import Run

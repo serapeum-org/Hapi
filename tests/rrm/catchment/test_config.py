@@ -25,7 +25,6 @@ import yaml
 from pydantic import ValidationError
 
 from hapi.calibration import Calibration
-from hapi.catchment import Catchment
 from hapi.core.config import (
     CatchmentConfig,
     ConceptualModelConfig,
@@ -38,6 +37,7 @@ from hapi.core.config import (
 )
 from hapi.engine.run import Run
 from hapi.inputs import MeteoInputs
+from hapi.model.catchment import Catchment
 
 COMBINED_NC = "tests/rrm/data/coello/meteo.nc"
 

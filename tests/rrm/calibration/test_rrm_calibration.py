@@ -5,9 +5,9 @@ import pytest
 import statista.descriptors as metrics
 
 from hapi.calibration import Calibration
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.engine.routing import Routing
+from hapi.model.catchment import Catchment
 
 
 def test_read_parameters_bounds(

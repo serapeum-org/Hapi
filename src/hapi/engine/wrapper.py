@@ -20,7 +20,7 @@ from hapi.simulation.results import RoutingKind, SimulationResults
 from hapi.simulation.validated import DistributedRun, LumpedRun
 
 if TYPE_CHECKING:
-    from hapi.catchment import Lake
+    from hapi.model.lake import Lake
 
 
 def _lake_inputs(lake: Lake) -> tuple[np.ndarray, list, list]:

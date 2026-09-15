@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from hapi.catchment import Catchment
 from hapi.engine.run import Run
+from hapi.model.catchment import Catchment
 
 # %% Load the configuration and build the model
 Coello = Catchment.from_yaml(

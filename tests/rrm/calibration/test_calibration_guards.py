@@ -15,10 +15,10 @@ import pytest
 import statista.descriptors as metrics
 
 from hapi.calibration import Calibration, ObjectiveFunctionArityError
-from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import MeteoInputs
+from hapi.model.catchment import Catchment
 from hapi.simulation.results import RoutingKind, SimulationResults
 
 CANNED_RESULT = (0.25, np.arange(12, dtype=float), {"time": 1.0})

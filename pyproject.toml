@@ -189,7 +189,7 @@ exclude = [
 
 [[tool.mypy.overrides]]
 module = [
-    "hapi.catchment",
+    "hapi.model.catchment",
 ]
 # The builder itself, and the last module on this list. `Catchment` is assembled by
 # successive read_*() calls, so its inputs are X | None until the matching one has run --
@@ -265,7 +265,7 @@ description = "Run all test suite"
 cmd = [
     "pytest", "--doctest-modules", "-p", "no:cacheprovider", "--no-cov",
     "src/hapi/core/config.py", "src/hapi/core/period.py",
-    "src/hapi/catchment.py", "src/hapi/conceptual/setup.py",
+    "src/hapi/model", "src/hapi/conceptual/setup.py",
     "src/hapi/inputs",
     "src/hapi/simulation/results.py", "src/hapi/simulation/validated.py",
     "src/hapi/engine/routing.py", "src/hapi/engine/run.py",

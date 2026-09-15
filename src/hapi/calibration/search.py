@@ -17,10 +17,10 @@ from loguru import logger
 from Oasis.harmonysearch import HSapi
 from Oasis.optimization import Optimization
 
-from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds, ParameterSet, validate_parameter_count
 from hapi.engine.wrapper import Wrapper
 from hapi.inputs import MeteoInputs
+from hapi.model.catchment import Catchment
 from hapi.simulation.protocols import SpatialDistribution
 from hapi.simulation.results import RoutingKind, SimulationResults
 from hapi.simulation.validated import DistributedRun, LumpedRun
@@ -123,7 +123,7 @@ class Calibration:
     Examples:
         ```python
         >>> from hapi.calibration import Calibration      # doctest: +SKIP
-        >>> from hapi.catchment import Catchment          # doctest: +SKIP
+        >>> from hapi.model.catchment import Catchment          # doctest: +SKIP
         >>> model = Catchment.from_yaml("coello.yaml")    # doctest: +SKIP
         >>> calibration = Calibration(model)              # doctest: +SKIP
         >>> calibration.read_parameters_bound(upper, lower)   # doctest: +SKIP
@@ -401,7 +401,7 @@ class Calibration:
                 ```python
                 >>> import statista.descriptors as metrics
                 >>> from hapi.calibration import Calibration
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))
                 >>> coello.read_objective_function(metrics.rmse, [0.5, "outlet"])
                 Objective function is read successfully
@@ -412,7 +412,7 @@ class Calibration:
             - Something that cannot be called is refused where it is registered:
                 ```python
                 >>> from hapi.calibration import Calibration
-                >>> from hapi.catchment import Catchment
+                >>> from hapi.model.catchment import Catchment
                 >>> coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))
                 >>> coello.read_objective_function("rmse", [])
                 Traceback (most recent call last):

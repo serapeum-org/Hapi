@@ -8,11 +8,11 @@ import pandas as pd
 import statista.descriptors as metrics
 
 from hapi.calibration import Calibration
-from hapi.catchment import Catchment
 from hapi.conceptual import ParameterSet
-from hapi.engine.routing import Routing
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.engine.routing import Routing
 from hapi.engine.run import Run
+from hapi.model.catchment import Catchment
 
 # %% Paths
 Parameterpath = "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"

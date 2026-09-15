@@ -16,11 +16,11 @@ import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
 
 from hapi.calibration import Calibration
-from hapi.catchment import Catchment
 from hapi.conceptual import ParameterSet
-from hapi.engine.routing import Routing
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.engine.routing import Routing
 from hapi.engine.run import Run
+from hapi.model.catchment import Catchment
 
 # %% Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"

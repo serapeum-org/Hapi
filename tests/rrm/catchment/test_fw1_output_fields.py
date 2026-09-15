@@ -13,12 +13,12 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset
 
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.engine.distributed import DistributedRRM
 from hapi.engine.routing import Routing
 from hapi.engine.run import Run
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
 from hapi.simulation.validated import DistributedRun
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"

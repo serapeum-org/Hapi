@@ -62,7 +62,7 @@ class FlowNetwork:
     Built from the flow-accumulation and flow-direction rasters, which together fix both
     *where* the catchment is -- its grid, its domain cells, its outlet -- and *how* water
     moves through it. The two were separate readers on
-    :class:`~hapi.catchment.Catchment`; holding them together keeps the grid with the
+    :class:`~hapi.model.catchment.Catchment`; holding them together keeps the grid with the
     array it is measured from.
 
     Only what the rasters carry is stored. Everything the flow-accumulation reader computed

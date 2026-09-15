@@ -14,13 +14,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.engine.distributed import DistributedRRM
 from hapi.engine.routing import Routing
 from hapi.engine.run import Run
 from hapi.engine.wrapper import Wrapper
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
 from hapi.simulation.validated import DistributedRun, LumpedRun
 
 

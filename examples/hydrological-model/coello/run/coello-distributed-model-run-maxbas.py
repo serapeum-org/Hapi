@@ -14,8 +14,8 @@ the outlet rather than the discharge at it, which makes the per-gauge shortcut i
 
 from __future__ import annotations
 
-from hapi.catchment import Catchment
 from hapi.engine.run import Run
+from hapi.model.catchment import Catchment
 
 # %% Load the configuration and build the model
 Coello = Catchment.from_yaml(

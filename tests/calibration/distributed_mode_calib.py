@@ -13,9 +13,9 @@ from pyramids.dataset import Dataset
 
 from hapi.calibration import Calibration
 from hapi.calibration.distribution import Parameters as DP
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
 
 # %% Paths
 Path = Comp + "/data/distributed/coello"

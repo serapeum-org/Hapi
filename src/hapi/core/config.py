@@ -2,9 +2,9 @@
 
 This module describes data and nothing else: `RunConfig` and the blocks it nests validate a
 parsed YAML mapping and hold the result. It imports nothing from `hapi`, which keeps it a leaf
-of the import graph and lets `hapi.catchment` import it at module level. Reading the file and
+of the import graph and lets `hapi.model.catchment` import it at module level. Reading the file and
 building a model out of it -- the `Catchment` construction, the `MeteoInputs` / `FlowNetwork`
-loaders, the `read_*` call order -- belongs to :meth:`hapi.catchment.Catchment.from_yaml`.
+loaders, the `read_*` call order -- belongs to :meth:`hapi.model.catchment.Catchment.from_yaml`.
 
 The schema covers lumped and distributed runs, which disagree on the shape of two blocks:
 
@@ -28,7 +28,7 @@ against an author.
 
 Out of scope, each because the schema carries no field that reaches it:
 
-- Lake-aware runs (`hapi.catchment.Lake`) and the flood model (`Run.run_flood`), which need
+- Lake-aware runs (`hapi.model.catchment.Lake`) and the flood model (`Run.run_flood`), which need
   a lake record and a river geometry respectively -- so `read_river_geometry` is unreachable.
 - `read_flow_path_length`, and with it `route_maxbas_by_path_length`, which scales each cell's MAXBAS by its
   distance to the outlet.
@@ -296,7 +296,7 @@ class CatchmentConfig(BaseModel):
     fmt: str = "%Y-%m-%d"
     spatial_resolution: Literal["lumped", "distributed"] = "lumped"
     temporal_resolution: Literal["daily", "hourly"] = "daily"
-    # Two of the three keys of `hapi.catchment.ROUTING_METHODS`, which is what the constructor
+    # Two of the three keys of `hapi.model.catchment.ROUTING_METHODS`, which is what the constructor
     # accepts. `kinematic` is left out deliberately: it selects the flood model, whose inputs
     # (`read_river_geometry`, `bankfull_depth`) this schema does not carry, so a configuration
     # naming it would validate and then build a model that cannot run. Adding a method there

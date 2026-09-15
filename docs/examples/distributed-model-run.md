@@ -13,7 +13,7 @@ import numpy as np
 import datetime as dt
 from osgeo import gdal
 from hapi.calibration import Calibration
-from hapi.catchment import Catchment
+from hapi.model.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBV
 

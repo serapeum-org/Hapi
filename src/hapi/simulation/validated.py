@@ -1,6 +1,6 @@
 """The validated inputs one run needs, as a type rather than a convention.
 
-:class:`~hapi.catchment.Catchment` is a *builder*: it is constructed empty and filled by
+:class:`~hapi.model.catchment.Catchment` is a *builder*: it is constructed empty and filled by
 `read_*` calls that may run in any order, some of which a given run never needs. So every input
 on it is declared `X | None`, and that is honest -- a catchment half-way through assembly really
 does have no flow network.

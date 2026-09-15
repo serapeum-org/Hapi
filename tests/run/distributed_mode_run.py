@@ -5,9 +5,9 @@ from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
 import hapi.conceptual.hbv_bergestrom92 as HBV
-from hapi.catchment import Catchment
 from hapi.engine.run import Run
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
 
 # %% Paths
 Path = Comp + "/data/distributed/coello"

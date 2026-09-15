@@ -18,11 +18,11 @@ import inspect
 import numpy as np
 import pytest
 
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.engine.distributed import DistributedRRM
 from hapi.engine.wrapper import Wrapper
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
+from hapi.model.catchment import Catchment
 from hapi.simulation.validated import DistributedRun, LumpedRun
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"

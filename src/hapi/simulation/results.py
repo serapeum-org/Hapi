@@ -1,7 +1,7 @@
 """The arrays a model run produces, the routing that produced them, and how to view them.
 
 Running a model used to leave its output as nine separate attributes on the
-:class:`~hapi.catchment.Catchment` it was handed, with a private boolean recording which
+:class:`~hapi.model.catchment.Catchment` it was handed, with a private boolean recording which
 routing scheme had written them. That made a catchment's state unknowable between runs --
 the fields of a finished run and the fields of a half-finished one look the same -- and it
 put the interpretation of the arrays (`_maxbas_routed`) on the input object rather than on
@@ -150,7 +150,7 @@ class SimulationResults:
             is the model's initial state, not a simulated step, which matters when scoring
             the first value against an observation. The MAXBAS paths sum over the domain and set it directly;
             the Muskingum paths leave it `None` for
-            :meth:`~hapi.catchment.Catchment.extract_discharge` to read off the outlet cell,
+            :meth:`~hapi.model.catchment.Catchment.extract_discharge` to read off the outlet cell,
             which needs the gauge table the engine does not have.
         run: The validated inputs these arrays came from, carried as provenance. It is what
             makes the arrays interpretable on their own: the calendar to index them by, the

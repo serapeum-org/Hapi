@@ -12,10 +12,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds, ParameterSet
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.core.period import SimulationPeriod
+from hapi.model.catchment import Catchment
 
 MAXBAS_BANDS = 11
 MUSKINGUM_BANDS = 12

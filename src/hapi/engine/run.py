@@ -8,7 +8,7 @@ at known locations based on a given performance function.
 `Run` is a namespace of static entry points, not a class to instantiate. Each one takes the
 model it should run, validates it, and hands it to :class:`~hapi.engine.wrapper.Wrapper`. What each
 entry point requires is stated by the protocols below rather than by naming a concrete class:
-:class:`~hapi.catchment.Catchment` satisfies them structurally, so this module does not import
+:class:`~hapi.model.catchment.Catchment` satisfies them structurally, so this module does not import
 it at runtime and anything else carrying the same attributes runs too.
 """
 
@@ -30,7 +30,7 @@ from hapi.simulation.results import SimulationResults
 from hapi.simulation.validated import DistributedRun, LumpedRun
 
 if TYPE_CHECKING:
-    from hapi.catchment import Lake as LakeType
+    from hapi.model.lake import Lake as LakeType
 
 #: Logged by each distributed entry point when it returns.
 RUN_FINISHED = "Model Run has finished"
@@ -131,7 +131,7 @@ class Run:
     Examples:
         - Build a model and run it; the results come back and stay on the model:
             ```python
-            >>> from hapi.catchment import Catchment
+            >>> from hapi.model.catchment import Catchment
             >>> from hapi.engine.routing import Routing
             >>> from hapi.engine.run import Run
             >>> model = Catchment.from_yaml(
@@ -146,7 +146,7 @@ class Run:
             ```
 
     See Also:
-        hapi.catchment.Catchment.from_yaml: Builds a model from a run configuration.
+        hapi.model.catchment.Catchment.from_yaml: Builds a model from a run configuration.
     """
 
     @staticmethod

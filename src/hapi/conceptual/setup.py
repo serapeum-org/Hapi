@@ -1,6 +1,6 @@
 """The conceptual model a run executes, and the parameters it is configured with.
 
-Seven attributes on :class:`~hapi.catchment.Catchment` described one thing -- the
+Seven attributes on :class:`~hapi.model.catchment.Catchment` described one thing -- the
 rainfall-runoff model, configured and ready to run -- and were set by two readers that did
 not know about each other: `read_parameters` set `parameters`, `snow` and `maxbas`, while
 `read_lumped_model` set `lumped_model`, `area`, `initial_cond` and `q_init`.

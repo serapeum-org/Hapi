@@ -35,7 +35,7 @@ class Catchment:
 - To instantiate the object you need to provide the `name`, `statedate`, `enddate`, and the `SpatialResolution`
 
 ```python
-from hapi.catchment import Catchment
+from hapi.model.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 
 start = "2009-01-01"

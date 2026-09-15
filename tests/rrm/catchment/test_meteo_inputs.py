@@ -17,11 +17,11 @@ from pandas import DataFrame
 from pyramids.dataset import Dataset, DatasetCollection, GeoReference
 from pyramids.netcdf import NetCDF
 
-from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.engine.run import Run
 from hapi.inputs import METEO_VARIABLES, FlowNetwork, MeteoInputs, read_rasters
 from hapi.inputs import meteo as inputs_module
+from hapi.model.catchment import Catchment
 
 NC_DIR = "tests/rrm/data/coello"
 

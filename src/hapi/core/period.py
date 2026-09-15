@@ -1,6 +1,6 @@
 """The span of time a model run covers, and everything the temporal resolution implies.
 
-Six attributes on :class:`~hapi.catchment.Catchment` used to describe one thing: `start`,
+Six attributes on :class:`~hapi.model.catchment.Catchment` used to describe one thing: `start`,
 `end` and `temporal_resolution` were given, and `date_index`, `dt` and `conversion_factor`
 were derived from them in the constructor and then stored beside them as if they were
 independent. Storing a derivation is how the three drift apart -- reassigning `end` left

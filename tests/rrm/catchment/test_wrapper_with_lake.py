@@ -15,13 +15,14 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from hapi.catchment import Catchment, Lake
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.conceptual.hbv_lake import HBVLake
 from hapi.engine.routing import Routing
 from hapi.engine.run import Run
 from hapi.engine.wrapper import Wrapper
 from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
+from hapi.model.lake import Lake
 from hapi.simulation.validated import DistributedRun
 
 JIBOA_ROOT = "tests/rrm/data/jiboa"

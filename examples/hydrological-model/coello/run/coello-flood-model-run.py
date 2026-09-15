@@ -26,10 +26,10 @@ from __future__ import annotations
 
 import numpy as np
 
-from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
 from hapi.engine.run import Run
+from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
 
 # %% Paths
 DATA = "examples/hydrological-model/data/distributed_model"

@@ -22,8 +22,8 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset, GeoReference
 
-from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs, read_rasters
+from hapi.model.catchment import Catchment
 
 CELL_SIZE = 4000.0
 """Cell size in metres used by every synthetic raster here (matches the Coello grid)."""

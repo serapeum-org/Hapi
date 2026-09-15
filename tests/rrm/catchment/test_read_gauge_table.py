@@ -17,7 +17,7 @@ from pandas import DataFrame
 from pyramids.feature import FeatureCollection
 from shapely.geometry import Point
 
-from hapi.catchment import Catchment
+from hapi.model.catchment import Catchment
 
 GAUGES = [
     (1, "Station 1", 454795.6728, 503143.3264),

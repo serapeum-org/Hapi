@@ -10,7 +10,7 @@ A run configuration moves all of it into a YAML file that sits beside the data i
 same order:
 
 ```python
-from hapi.catchment import Catchment
+from hapi.model.catchment import Catchment
 from hapi.engine.routing import Routing
 from hapi.engine.run import Run
 

@@ -25,11 +25,12 @@ from cleopatra.glyphs.gridded.array_glyph import Animation, FrameLabel
 from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
-from hapi.catchment import Catchment, Lake
-from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.conceptual.hbv import HBV
 from hapi.conceptual.hbv_lake import HBVLake
 from hapi.engine.run import Run
+from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.model.catchment import Catchment
+from hapi.model.lake import Lake
 
 # %%
 root_dir = Path(r"examples/hydrological-model/jiboa/data")

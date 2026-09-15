@@ -5,7 +5,7 @@ rules tying them together — which blocks a given `spatial_resolution` requires
 refuses — live on `RunConfig`.
 
 Build a model from a file with
-[`Catchment.from_yaml`](catchment.md#hapi.catchment.Catchment.from_yaml).
+[`Catchment.from_yaml`](catchment.md#hapi.model.catchment.Catchment.from_yaml).
 
 ## RunConfig
 ::: hapi.core.config.RunConfig

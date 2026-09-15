@@ -1,7 +1,7 @@
 """What the run layer accepts from a caller, before it has been narrowed.
 
 The entry points in :mod:`hapi.engine.run` used to declare their argument as
-:class:`~hapi.catchment.Catchment` -- a class of 40-odd attributes, of which any one run touches
+:class:`~hapi.model.catchment.Catchment` -- a class of 40-odd attributes, of which any one run touches
 a dozen. That named the wrong thing: it over-stated the requirement, and pointed the dependency
 at a concrete class, so the run layer could not be reasoned about without the class it runs.
 
