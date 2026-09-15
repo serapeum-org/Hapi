@@ -14,10 +14,17 @@ from hapi.catchment import Catchment
 from hapi.routing import Routing
 from hapi.run import Run
 
-Coello = Catchment.from_yaml("coello-lumped-model-run.yaml")
+Coello = Catchment.from_yaml(
+    "examples/hydrological-model/coello/run/coello-lumped-model-run.yaml"
+)
 # `Route` is the flag; the routing function is the third argument. Passing the function
 # as the flag routes with nothing, because a callable is truthy.
-Run.run_lumped(Coello, 1, Routing.triangular_routing_1)
+#
+# The function has to match the parameter set the config declares. This one says
+# `maxbas: false`, so `Wrapper.run_lumped` takes the Muskingum branch and calls the
+# function with five arguments — a triangular function takes two and raises. Use
+# `coello-lumped-model-run-maxbas.yaml` with `Routing.triangular_routing_1` instead.
+Run.run_lumped(Coello, 1, Routing.muskingum_v)
 ```
 
 The four shipped examples under `examples/hydrological-model/coello/run/` are each a pair — a
