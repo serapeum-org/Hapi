@@ -1940,8 +1940,8 @@
 
 <h1 id="catchment"><a class="toclink" href="#catchment">Catchment</a><a class="headerlink" href="#catchment" title="Permanent link">#</a></h1>
 <h2 id="routing-methods"><a class="toclink" href="#routing-methods">Routing methods</a><a class="headerlink" href="#routing-methods" title="Permanent link">#</a></h2>
-<p><code>Catchment</code> and <code>Calibration</code> accept exactly three routing methods, matched case-insensitively
-and stored in the one spelling the internals compare against:</p>
+<p><code>Catchment</code> accepts exactly three routing methods, matched case-insensitively and stored in one
+spelling:</p>
 <table>
 <thead>
 <tr>
@@ -1968,11 +1968,15 @@ and stored in the one spelling the internals compare against:</p>
 </tr>
 </tbody>
 </table>
+<p><code>Calibration</code> does not take one at all: it holds a <code>Catchment</code>, and reads the method off the model
+it was given.</p>
 <p>Anything else raises a <code>ValueError</code> naming the three. Before this check the constructor stored
-whatever string it was handed, so a run configured as <code>"Max_bas"</code> — or as a descriptive label
-such as <code>"Muskingum-Cunge"</code> — was accepted and then silently routed with Muskingum, because
-<code>distrrm.route_muskingum</code> compares against <code>"Muskingum"</code> exactly. Rejecting the spelling is what
-makes that comparison trustworthy; a script passing a spelling outside the table has to be updated
+whatever string it was handed, so a run configured as <code>"Max_bas"</code> — or as a descriptive label such
+as <code>"Muskingum-Cunge"</code> — was accepted and then silently routed with Muskingum, because the routing
+loop compared against <code>"Muskingum"</code> exactly. That comparison is gone: which router runs is decided
+by the entry point you call, and the stored method is read by <code>Run.run_flood</code>, which derives
+<code>skip_hydraulic_cells</code> from <code>"Kinematic"</code>, and by the cross-check against <code>parameters.maxbas</code>. One
+spelling is what keeps both honest; a script passing a spelling outside the table has to be updated
 to one of the three.</p>
 <p>A YAML run configuration reaches only the first two: <code>kinematic</code> selects the flood model, which
 <a href="config.html"><code>hapi.config</code></a> does not describe.</p>
@@ -3096,7 +3100,8 @@ carries no result attributes of its own and no forwarding properties.</p>
 <span class="normal">1291</span>
 <span class="normal">1292</span>
 <span class="normal">1293</span>
-<span class="normal">1294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1294</span>
+<span class="normal">1295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3964,9 +3969,10 @@ carries no result attributes of its own and no forwarding properties.</p>
             <span class="c1"># Muskingum accumulates downstream, so the outlet cell of `q_total` is the</span>
             <span class="c1"># outlet hydrograph. The engine cannot set this itself: finding the outlet</span>
             <span class="c1"># needs the gauge table, which is an analysis input, not a run input.</span>
-            <span class="c1"># Trimmed like every other path: `q_total` carries the conceptual model's</span>
-            <span class="c1"># initial-state slot, so the untrimmed form made `qout` a step longer here than</span>
-            <span class="c1"># on the MAXBAS and lake paths, for a field documented as one hydrograph.</span>
+            <span class="c1"># Trimmed like every other path: the conceptual model allocates one slot more</span>
+            <span class="c1"># than it fills, so the untrimmed form made `qout` a step longer here than on</span>
+            <span class="c1"># the MAXBAS and lake paths, for a field documented as one hydrograph. `[:-1]`</span>
+            <span class="c1"># drops the unwritten trailing slot; index 0 stays the model's initial state.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[</span><span class="n">outlet_x</span><span class="p">,</span> <span class="n">outlet_y</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
@@ -4853,7 +4859,8 @@ extract from a set of arrays no routing step has filled.</p>
 <span class="normal">1155</span>
 <span class="normal">1156</span>
 <span class="normal">1157</span>
-<span class="normal">1158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">1158</span>
+<span class="normal">1159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract and sum discharge at gauge locations.</span>
 
 <span class="sd">    Which hydrograph is the right one depends on how the run was routed, and the results</span>
@@ -4909,9 +4916,10 @@ extract from a set of arrays no routing step has filled.</p>
         <span class="c1"># Muskingum accumulates downstream, so the outlet cell of `q_total` is the</span>
         <span class="c1"># outlet hydrograph. The engine cannot set this itself: finding the outlet</span>
         <span class="c1"># needs the gauge table, which is an analysis input, not a run input.</span>
-        <span class="c1"># Trimmed like every other path: `q_total` carries the conceptual model's</span>
-        <span class="c1"># initial-state slot, so the untrimmed form made `qout` a step longer here than</span>
-        <span class="c1"># on the MAXBAS and lake paths, for a field documented as one hydrograph.</span>
+        <span class="c1"># Trimmed like every other path: the conceptual model allocates one slot more</span>
+        <span class="c1"># than it fills, so the untrimmed form made `qout` a step longer here than on</span>
+        <span class="c1"># the MAXBAS and lake paths, for a field documented as one hydrograph. `[:-1]`</span>
+        <span class="c1"># drops the unwritten trailing slot; index 0 stays the model's initial state.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[</span><span class="n">outlet_x</span><span class="p">,</span> <span class="n">outlet_y</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
@@ -5809,8 +5817,7 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1160</span>
-<span class="normal">1161</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1161</span>
 <span class="normal">1162</span>
 <span class="normal">1163</span>
 <span class="normal">1164</span>
@@ -5943,7 +5950,8 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1291</span>
 <span class="normal">1292</span>
 <span class="normal">1293</span>
-<span class="normal">1294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1294</span>
+<span class="normal">1295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>

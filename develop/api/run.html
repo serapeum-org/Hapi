@@ -1949,8 +1949,7 @@ afterwards.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/run.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
-<span class="normal">112</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
 <span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
@@ -2224,7 +2223,10 @@ afterwards.</p>
 <span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">:</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the catchment model.</span>
 
 <span class="sd">    A namespace of static entry points, not a class to instantiate. Each one validates the</span>
@@ -2369,8 +2371,9 @@ afterwards.</p>
 <span class="sd">            model: The model to run. See :class:`DistributedModel` for what it must carry.</span>
 <span class="sd">            lake: Lake object containing lake configuration and</span>
 <span class="sd">                meteorological data. Must have a `MeteoData` attribute</span>
-<span class="sd">                with shape `(time_steps, &gt;= 3)` where columns are</span>
-<span class="sd">                rain, ET, and temperature.</span>
+<span class="sd">                with shape `(time_steps, &gt;= 4)` where columns are</span>
+<span class="sd">                rain, ET, temperature, and the long-term average</span>
+<span class="sd">                temperature the wrappers read as column 3.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SimulationResults: The run's output, also assigned to `model.results`.</span>
@@ -2436,8 +2439,9 @@ afterwards.</p>
 <span class="sd">            model: The model to run. See :class:`DistributedModel` for what it must carry.</span>
 <span class="sd">            lake: Lake object containing lake configuration and</span>
 <span class="sd">                meteorological data. Must have a `MeteoData` attribute</span>
-<span class="sd">                with shape `(time_steps, &gt;= 3)` where columns are</span>
-<span class="sd">                rain, ET, and temperature.</span>
+<span class="sd">                with shape `(time_steps, &gt;= 4)` where columns are</span>
+<span class="sd">                rain, ET, temperature, and the long-term average</span>
+<span class="sd">                temperature the wrappers read as column 3.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SimulationResults: The run's output, also assigned to `model.results`.</span>
@@ -2685,8 +2689,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
-<span class="normal">150</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
@@ -2721,7 +2724,8 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
-<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">185</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_distributed</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed hydrological model.</span>
 
@@ -2829,8 +2833,9 @@ the Wrapper.</p>
               <div class="doc-md-description">
                 <p>Lake object containing lake configuration and
 meteorological data. Must have a <code>MeteoData</code> attribute
-with shape <code>(time_steps, &gt;= 3)</code> where columns are
-rain, ET, and temperature.</p>
+with shape <code>(time_steps, &gt;= 4)</code> where columns are
+rain, ET, temperature, and the long-term average
+temperature the wrappers read as column 3.</p>
               </div>
             </td>
             <td>
@@ -2896,8 +2901,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
-<span class="normal">242</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
 <span class="normal">245</span>
@@ -2928,7 +2932,9 @@ does not match the distributed raster data length.</p>
 <span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span>
-<span class="normal">273</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_distributed_with_lake</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2943,8 +2949,9 @@ does not match the distributed raster data length.</p>
 <span class="sd">        model: The model to run. See :class:`DistributedModel` for what it must carry.</span>
 <span class="sd">        lake: Lake object containing lake configuration and</span>
 <span class="sd">            meteorological data. Must have a `MeteoData` attribute</span>
-<span class="sd">            with shape `(time_steps, &gt;= 3)` where columns are</span>
-<span class="sd">            rain, ET, and temperature.</span>
+<span class="sd">            with shape `(time_steps, &gt;= 4)` where columns are</span>
+<span class="sd">            rain, ET, temperature, and the long-term average</span>
+<span class="sd">            temperature the wrappers read as column 3.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        SimulationResults: The run's output, also assigned to `model.results`.</span>
@@ -3097,8 +3104,7 @@ dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
-<span class="normal">188</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
@@ -3149,7 +3155,8 @@ dimensions.</p>
 <span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
-<span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">239</span>
+<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_flood</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">skip_hydraulic_cells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -3384,10 +3391,7 @@ Required when <code>Route</code> is not 0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
@@ -3429,7 +3433,10 @@ Required when <code>Route</code> is not 0.</p>
 <span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">SupportsQsim</span><span class="p">,</span>
     <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -3638,9 +3645,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
 <span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
@@ -3672,7 +3677,9 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_maxbas</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the FW1 distributed hydrological model.</span>
 
@@ -3777,8 +3784,9 @@ then executes the FW1 model with lake routing via the Wrapper.</p>
               <div class="doc-md-description">
                 <p>Lake object containing lake configuration and
 meteorological data. Must have a <code>MeteoData</code> attribute
-with shape <code>(time_steps, &gt;= 3)</code> where columns are
-rain, ET, and temperature.</p>
+with shape <code>(time_steps, &gt;= 4)</code> where columns are
+rain, ET, temperature, and the long-term average
+temperature the wrappers read as column 3.</p>
               </div>
             </td>
             <td>
@@ -3844,9 +3852,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
@@ -3872,7 +3878,10 @@ does not match the distributed raster data length.</p>
 <span class="normal">336</span>
 <span class="normal">337</span>
 <span class="normal">338</span>
-<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_maxbas_with_lake</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the FW1 distributed model with a lake component.</span>
 
@@ -3884,8 +3893,9 @@ does not match the distributed raster data length.</p>
 <span class="sd">        model: The model to run. See :class:`DistributedModel` for what it must carry.</span>
 <span class="sd">        lake: Lake object containing lake configuration and</span>
 <span class="sd">            meteorological data. Must have a `MeteoData` attribute</span>
-<span class="sd">            with shape `(time_steps, &gt;= 3)` where columns are</span>
-<span class="sd">            rain, ET, and temperature.</span>
+<span class="sd">            with shape `(time_steps, &gt;= 4)` where columns are</span>
+<span class="sd">            rain, ET, temperature, and the long-term average</span>
+<span class="sd">            temperature the wrappers read as column 3.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        SimulationResults: The run's output, also assigned to `model.results`.</span>

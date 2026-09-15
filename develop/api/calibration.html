@@ -2813,7 +2813,14 @@ consumes.</p>
 <span class="normal">930</span>
 <span class="normal">931</span>
 <span class="normal">932</span>
-<span class="normal">933</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -2957,6 +2964,13 @@ consumes.</p>
 <span class="sd">        `SimulationResults.run`, every set of results -- a view of an array the next trial</span>
 <span class="sd">        overwrites in place. `results.run` is documented as the inputs those arrays came</span>
 <span class="sd">        from; without the copy it described whichever trial happened to run last.</span>
+
+<span class="sd">        The copy is a full `(rows, cols, n_parameters)` cube and stays alive as long as the</span>
+<span class="sd">        results object holding it does. On the Coello grid that is 13x14x12 floats; on a</span>
+<span class="sd">        1000x1000 grid it is about 96 MB per retained result, in the same loop</span>
+<span class="sd">        :attr:`~hapi.runs.DistributedRun.keep_state_variables` exists to keep small. Nothing</span>
+<span class="sd">        bounds it, because correctness came first -- provenance that describes a different</span>
+<span class="sd">        trial is worse than provenance that costs memory.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            values: The trial parameter array or vector.</span>
@@ -3955,14 +3969,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">767</span>
 <span class="normal">768</span>
 <span class="normal">769</span>
 <span class="normal">770</span>
@@ -4128,7 +4135,14 @@ dict.</p>
 <span class="normal">930</span>
 <span class="normal">931</span>
 <span class="normal">932</span>
-<span class="normal">933</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4472,14 +4486,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">634</span>
 <span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
@@ -4603,7 +4610,14 @@ dict.</p>
 <span class="normal">755</span>
 <span class="normal">756</span>
 <span class="normal">757</span>
-<span class="normal">758</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4842,14 +4856,7 @@ whose per-cell values are contributions rather than discharges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
@@ -4907,7 +4914,14 @@ whose per-cell values are contributions rather than discharges.</p>
 <span class="normal">466</span>
 <span class="normal">467</span>
 <span class="normal">468</span>
-<span class="normal">469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -5074,14 +5088,7 @@ objective function. If None, defaults to an empty list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
@@ -5104,7 +5111,14 @@ objective function. If None, defaults to an empty list.</p>
 <span class="normal">399</span>
 <span class="normal">400</span>
 <span class="normal">401</span>
-<span class="normal">402</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read and store the objective function and its arguments.</span>
@@ -5502,14 +5516,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
 <span class="normal">486</span>
@@ -5651,7 +5658,14 @@ dict.</p>
 <span class="normal">622</span>
 <span class="normal">623</span>
 <span class="normal">624</span>
-<span class="normal">625</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>

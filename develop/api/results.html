@@ -2048,8 +2048,10 @@ one in place edits the other.</p>
             <td>
               <div class="doc-md-description">
                 <p>The outlet hydrograph, when the run computed one, and always <code>len(period)</code>
-long -- the conceptual model's leading initial-state slot is dropped on every
-path that fills it. The MAXBAS paths sum over the domain and set it directly;
+long. The conceptual model allocates one slot more than it fills, and every
+path that produces a series drops that unwritten trailing slot -- so index 0
+is the model's initial state, not a simulated step, which matters when scoring
+the first value against an observation. The MAXBAS paths sum over the domain and set it directly;
 the Muskingum paths leave it <code>None</code> for
 :meth:<code>~hapi.catchment.Catchment.extract_discharge</code> to read off the outlet cell,
 which needs the gauge table the engine does not have.</p>
@@ -2831,7 +2833,9 @@ argument.</p>
 <span class="normal">801</span>
 <span class="normal">802</span>
 <span class="normal">803</span>
-<span class="normal">804</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The arrays one model run produced, the routing that produced them, and their views.</span>
 
@@ -2861,8 +2865,10 @@ argument.</p>
 <span class="sd">        q_total: `quz_routed + qlz_translated`. Read it through</span>
 <span class="sd">            :attr:`outlet_shortcut_valid` rather than assuming what a cell means.</span>
 <span class="sd">        qout: The outlet hydrograph, when the run computed one, and always `len(period)`</span>
-<span class="sd">            long -- the conceptual model's leading initial-state slot is dropped on every</span>
-<span class="sd">            path that fills it. The MAXBAS paths sum over the domain and set it directly;</span>
+<span class="sd">            long. The conceptual model allocates one slot more than it fills, and every</span>
+<span class="sd">            path that produces a series drops that unwritten trailing slot -- so index 0</span>
+<span class="sd">            is the model's initial state, not a simulated step, which matters when scoring</span>
+<span class="sd">            the first value against an observation. The MAXBAS paths sum over the domain and set it directly;</span>
 <span class="sd">            the Muskingum paths leave it `None` for</span>
 <span class="sd">            :meth:`~hapi.catchment.Catchment.extract_discharge` to read off the outlet cell,</span>
 <span class="sd">            which needs the gauge table the engine does not have.</span>
@@ -3313,11 +3319,11 @@ argument.</p>
 <span class="sd">        Args:</span>
 <span class="sd">            path: Output directory for a distributed run (created if it does not exist), or</span>
 <span class="sd">                the CSV file itself for a lumped one. Default is "", the working directory.</span>
-<span class="sd">            result: What to write. Distributed: 1 - Total discharge, 2 - Upper zone</span>
-<span class="sd">                discharge, 3 - Lower zone discharge, 4 - Snow pack, 5 - Soil moisture,</span>
-<span class="sd">                6 - Upper zone, 7 - Lower zone, 8 - Water content. Lumped: 1 - simulated</span>
-<span class="sd">                discharge, 2 - upper zone, 3 - lower zone, 4 - the five states, 5 - all of</span>
-<span class="sd">                them. Default is 1.</span>
+<span class="sd">            result: What to write. Distributed: 1 - Total discharge, 2 - Surface flow (the</span>
+<span class="sd">                routed upper zone), 3 - Ground water flow (the translated lower zone),</span>
+<span class="sd">                4 - Snow pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,</span>
+<span class="sd">                8 - Water content. Lumped: 1 - simulated discharge, 2 - upper zone,</span>
+<span class="sd">                3 - lower zone, 4 - the five states, 5 - all of them. Default is 1.</span>
 <span class="sd">            start: Start of the output period. A string is parsed with `fmt`. If empty, the</span>
 <span class="sd">                run's first step.</span>
 <span class="sd">            end: End of the output period, inclusive. If empty, the run's last step.</span>
@@ -3771,9 +3777,7 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">410</span>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
@@ -3905,7 +3909,9 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
 <span class="normal">539</span>
 <span class="normal">540</span>
 <span class="normal">541</span>
-<span class="normal">542</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -4158,11 +4164,11 @@ the CSV file itself for a lumped one. Default is "", the working directory.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>What to write. Distributed: 1 - Total discharge, 2 - Upper zone
-discharge, 3 - Lower zone discharge, 4 - Snow pack, 5 - Soil moisture,
-6 - Upper zone, 7 - Lower zone, 8 - Water content. Lumped: 1 - simulated
-discharge, 2 - upper zone, 3 - lower zone, 4 - the five states, 5 - all of
-them. Default is 1.</p>
+                <p>What to write. Distributed: 1 - Total discharge, 2 - Surface flow (the
+routed upper zone), 3 - Ground water flow (the translated lower zone),
+4 - Snow pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
+8 - Water content. Lumped: 1 - simulated discharge, 2 - upper zone,
+3 - lower zone, 4 - the five states, 5 - all of them. Default is 1.</p>
               </div>
             </td>
             <td>
@@ -4349,9 +4355,7 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">584</span>
 <span class="normal">585</span>
 <span class="normal">586</span>
 <span class="normal">587</span>
@@ -4458,7 +4462,9 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 <span class="normal">688</span>
 <span class="normal">689</span>
 <span class="normal">690</span>
-<span class="normal">691</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -4476,11 +4482,11 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 <span class="sd">    Args:</span>
 <span class="sd">        path: Output directory for a distributed run (created if it does not exist), or</span>
 <span class="sd">            the CSV file itself for a lumped one. Default is "", the working directory.</span>
-<span class="sd">        result: What to write. Distributed: 1 - Total discharge, 2 - Upper zone</span>
-<span class="sd">            discharge, 3 - Lower zone discharge, 4 - Snow pack, 5 - Soil moisture,</span>
-<span class="sd">            6 - Upper zone, 7 - Lower zone, 8 - Water content. Lumped: 1 - simulated</span>
-<span class="sd">            discharge, 2 - upper zone, 3 - lower zone, 4 - the five states, 5 - all of</span>
-<span class="sd">            them. Default is 1.</span>
+<span class="sd">        result: What to write. Distributed: 1 - Total discharge, 2 - Surface flow (the</span>
+<span class="sd">            routed upper zone), 3 - Ground water flow (the translated lower zone),</span>
+<span class="sd">            4 - Snow pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,</span>
+<span class="sd">            8 - Water content. Lumped: 1 - simulated discharge, 2 - upper zone,</span>
+<span class="sd">            3 - lower zone, 4 - the five states, 5 - all of them. Default is 1.</span>
 <span class="sd">        start: Start of the output period. A string is parsed with `fmt`. If empty, the</span>
 <span class="sd">            run's first step.</span>
 <span class="sd">        end: End of the output period, inclusive. If empty, the run's last step.</span>
@@ -4700,9 +4706,7 @@ supported.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">544</span>
-<span class="normal">545</span>
-<span class="normal">546</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">546</span>
 <span class="normal">547</span>
 <span class="normal">548</span>
 <span class="normal">549</span>
@@ -4736,7 +4740,9 @@ supported.</p>
 <span class="normal">577</span>
 <span class="normal">578</span>
 <span class="normal">579</span>
-<span class="normal">580</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Save the animation built by :meth:`animate`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses PillowWriter;</span>

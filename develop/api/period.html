@@ -2183,7 +2183,13 @@ gets a new period rather than a mutated one.</p>
 <span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationPeriod</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The span a run covers, and the calendar and unit factors it implies.</span>
 
@@ -2384,8 +2390,14 @@ gets a new period rather than a mutated one.</p>
 
 <span class="sd">        One for both resolutions today. It is a property rather than a stored `1` so the</span>
 <span class="sd">        Muskingum routing has a single place to read it from; whether an hourly run should</span>
-<span class="sd">        route with a different value is an open question, recorded in the planning notes</span>
-<span class="sd">        rather than silently answered here.</span>
+<span class="sd">        route with a different value is an open question, filed as issue #218 rather than</span>
+<span class="sd">        silently answered here.</span>
+
+<span class="sd">        Note that the catchment routing reads this while the lake paths in</span>
+<span class="sd">        :mod:`hapi.wrapper` pass :attr:`conversion_factor` (86.4 daily) into the same `dt`</span>
+<span class="sd">        parameter of the same `Routing.muskingum_v`. Both predate this class and neither was</span>
+<span class="sd">        changed when it was extracted, so one of the two is routing on a time step 86.4x off</span>
+<span class="sd">        from the other. Which one is the same physics question as issue #218.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="mf">1.0</span>
 
@@ -2421,9 +2433,9 @@ gets a new period rather than a mutated one.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/period.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""int: Number of steps, so `len(period)` reads as the span."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">days</span>
 </code></pre></div></td></tr></table></div>
@@ -2694,8 +2706,13 @@ calibration trial) and twice per <code>SimulationResults._step_bounds</code> cal
         <p>float: The routing time-step factor.</p>
 <p>One for both resolutions today. It is a property rather than a stored <code>1</code> so the
 Muskingum routing has a single place to read it from; whether an hourly run should
-route with a different value is an open question, recorded in the planning notes
-rather than silently answered here.</p>
+route with a different value is an open question, filed as issue #218 rather than
+silently answered here.</p>
+<p>Note that the catchment routing reads this while the lake paths in
+:mod:<code>hapi.wrapper</code> pass :attr:<code>conversion_factor</code> (86.4 daily) into the same <code>dt</code>
+parameter of the same <code>Routing.muskingum_v</code>. Both predate this class and neither was
+changed when it was extracted, so one of the two is routing on a time step 86.4x off
+from the other. Which one is the same physics question as issue #218.</p>
 
     </div>
 

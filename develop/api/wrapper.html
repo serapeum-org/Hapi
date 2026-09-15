@@ -2239,7 +2239,11 @@ routing.</p>
 <span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
-<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
@@ -2571,12 +2575,16 @@ routing.</p>
         <span class="c1"># The lumped total discharge is exactly what `q_total` means, so it goes there rather</span>
         <span class="c1"># than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period</span>
         <span class="c1"># and puts the frame on the model -- so this engine writes nothing outside `results`.</span>
-        <span class="c1"># The conceptual model prepends an initial-state slot, so its series is one step</span>
-        <span class="c1"># longer than the period covers. Trimmed once, here, rather than inside each</span>
-        <span class="c1"># routing branch: both routed branches used to do it and the unrouted one did not,</span>
-        <span class="c1"># so `Run.run_lumped(model)` -- the entry point's own default, `Route=0` -- produced</span>
-        <span class="c1"># an `n + 1` series and then raised `Length of values (1096) does not match length</span>
-        <span class="c1"># of index (1095)` when the period indexed it.</span>
+        <span class="c1"># The conceptual model allocates one slot more than it fills: `simulate` sizes its</span>
+        <span class="c1"># arrays `len(prec) + 1` and writes indices 0..n-1, so index 0 carries the initial</span>
+        <span class="c1"># state, 1..n-1 the simulated steps, and index n is never written. `[:-1]` drops</span>
+        <span class="c1"># that unwritten trailing slot -- the leading initial-state one is kept, which is</span>
+        <span class="c1"># why `q_total[0]` is the warm-up value rather than a simulated step.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Trimmed once, here, rather than inside each routing branch: both routed branches</span>
+        <span class="c1"># used to do it and the unrouted one did not, so `Run.run_lumped(model)` -- the</span>
+        <span class="c1"># entry point's own default, `Route=0` -- produced an `n + 1` series and then raised</span>
+        <span class="c1"># `Length of values (1096) does not match length of index (1095)`.</span>
         <span class="n">q_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
@@ -2894,7 +2902,11 @@ routing is enabled.</p>
 <span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
-<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">LumpedRun</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2967,12 +2979,16 @@ routing is enabled.</p>
     <span class="c1"># The lumped total discharge is exactly what `q_total` means, so it goes there rather</span>
     <span class="c1"># than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period</span>
     <span class="c1"># and puts the frame on the model -- so this engine writes nothing outside `results`.</span>
-    <span class="c1"># The conceptual model prepends an initial-state slot, so its series is one step</span>
-    <span class="c1"># longer than the period covers. Trimmed once, here, rather than inside each</span>
-    <span class="c1"># routing branch: both routed branches used to do it and the unrouted one did not,</span>
-    <span class="c1"># so `Run.run_lumped(model)` -- the entry point's own default, `Route=0` -- produced</span>
-    <span class="c1"># an `n + 1` series and then raised `Length of values (1096) does not match length</span>
-    <span class="c1"># of index (1095)` when the period indexed it.</span>
+    <span class="c1"># The conceptual model allocates one slot more than it fills: `simulate` sizes its</span>
+    <span class="c1"># arrays `len(prec) + 1` and writes indices 0..n-1, so index 0 carries the initial</span>
+    <span class="c1"># state, 1..n-1 the simulated steps, and index n is never written. `[:-1]` drops</span>
+    <span class="c1"># that unwritten trailing slot -- the leading initial-state one is kept, which is</span>
+    <span class="c1"># why `q_total[0]` is the warm-up value rather than a simulated step.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Trimmed once, here, rather than inside each routing branch: both routed branches</span>
+    <span class="c1"># used to do it and the unrouted one did not, so `Run.run_lumped(model)` -- the</span>
+    <span class="c1"># entry point's own default, `Route=0` -- produced an `n + 1` series and then raised</span>
+    <span class="c1"># `Length of values (1096) does not match length of index (1095)`.</span>
     <span class="n">q_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
