@@ -3,8 +3,8 @@ import datetime as dt
 import statista.descriptors as metrics
 
 from hapi.catchment import Catchment
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as hbv_lumped
 from hapi.routing import Routing
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as hbv_lumped
 from hapi.run import Run
 
 # %% Paths

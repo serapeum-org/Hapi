@@ -78,7 +78,7 @@ Coello.read_parameters(ParPathRun, Snow)
 	and define the initial condition, and catchment area.
 
 ```python
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBV
 
 CatchmentArea = 1530
 InitialCond = [0,5,5,5,0]

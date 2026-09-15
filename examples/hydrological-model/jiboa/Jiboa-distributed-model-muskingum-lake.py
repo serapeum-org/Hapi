@@ -27,8 +27,8 @@ from cleopatra.styling.scaling import ColorScaling
 
 from hapi.catchment import Catchment, Lake
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv import HBV
-from hapi.rrm.hbv_lake import HBVLake
+from hapi.conceptual.hbv import HBV
+from hapi.conceptual.hbv_lake import HBVLake
 from hapi.run import Run
 
 # %%

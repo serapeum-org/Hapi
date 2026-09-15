@@ -3,8 +3,8 @@ import statista.descriptors as metrics
 from statista.sensitivity import Sensitivity as SA
 
 from hapi.catchment import Catchment
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.routing import Routing
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
 # %% Paths

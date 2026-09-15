@@ -1,6 +1,6 @@
 """Lumped Conceptual HBV model.
 
-The ``hapi.rrm.hbv`` module implements the HBV-96 lumped conceptual
+The ``hapi.conceptual.hbv`` module implements the HBV-96 lumped conceptual
 hydrological model. The model consists of precipitation partitioning,
 snow accumulation and melt, soil moisture accounting, and a response
 routine that converts precipitation into runoff. State variables are
@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from hapi.rrm.base_model import BaseConceptualModel
+from hapi.conceptual.base import BaseConceptualModel
 
 # HBV base model parameters
 P_LB = [
@@ -99,11 +99,11 @@ class HBV(BaseConceptualModel):
       discharge via recession coefficients.
 
     The class inherits from
-    :class:`~hapi.rrm.base_model.BaseConceptualModel` and provides
+    :class:`~hapi.conceptual.base.BaseConceptualModel` and provides
     concrete implementations of all required subroutines.
 
     Examples:
-        >>> from hapi.rrm.hbv import HBV
+        >>> from hapi.conceptual.hbv import HBV
         >>> model = HBV()
         >>> rf, sf = model.precipitation(
         ...     temp=5.0, ltt=0.0, utt=2.0, prec=10.0,
@@ -139,7 +139,7 @@ class HBV(BaseConceptualModel):
             Temperature above the upper threshold produces only
             rainfall:
 
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> rf, sf = HBV.precipitation(
             ...     temp=10.0, ltt=0.0, utt=2.0, prec=15.0,
             ...     rfcf=1.0, sfcf=1.0,
@@ -217,7 +217,7 @@ class HBV(BaseConceptualModel):
             When temperature exceeds the melt threshold, snow melts
             and infiltration occurs:
 
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> inf, wc_new, sp_new = HBV.snow(
             ...     cfmax=0.1, temp=5.0, ttm=0.0, cfr=0.05,
             ...     cwh=0.1, rf=2.0, sf=0.0,
@@ -320,7 +320,7 @@ class HBV(BaseConceptualModel):
             Compute soil moisture update for a warm day with
             infiltration:
 
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> sm_new, uz_int_1 = HBV.soil(
             ...     fc=200.0, beta=2.0, etf=0.1, temp=20.0,
             ...     tm=18.0, e_corr=1.0, lp=0.3, c_flux=0.01,
@@ -391,7 +391,7 @@ class HBV(BaseConceptualModel):
         Examples:
             Compute discharge from upper and lower zone storages:
 
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> q_0, q_1, uz_new, lz_new = HBV.response(
             ...     perc=0.5, alpha=0.5, k=0.01, k1=0.001,
             ...     lz_old=20.0, uz_int_1=15.0,
@@ -447,7 +447,7 @@ class HBV(BaseConceptualModel):
                 ``maxbas``.
 
         Examples:
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> weights = HBV.tf(5)
             >>> print(weights.round(4))
             [0.1429 0.2857 0.2857 0.1429 0.1429]
@@ -489,7 +489,7 @@ class HBV(BaseConceptualModel):
 
         Examples:
             >>> import numpy as np
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> model = HBV()
             >>> q = np.array([0.0, 0.0, 5.0, 3.0, 1.0, 0.0])
             >>> q_routed = model.routing(q, maxbas=3)
@@ -569,7 +569,7 @@ class HBV(BaseConceptualModel):
             Run a single step without snow:
 
             >>> import numpy as np
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> model = HBV()
             >>> par = np.array([
             ...     1.0, 200.0, 2.0, 0.1, 0.3, 0.01,
@@ -746,7 +746,7 @@ class HBV(BaseConceptualModel):
             Run a short simulation without snow:
 
             >>> import numpy as np
-            >>> from hapi.rrm.hbv import HBV
+            >>> from hapi.conceptual.hbv import HBV
             >>> model = HBV()
             >>> par = np.array([
             ...     1.0, 200.0, 2.0, 0.1, 0.3, 0.01,

@@ -1,6 +1,6 @@
 """HBV Bergestrom 1992 Lumped Conceptual Hydrological Model.
 
-The ``hapi.rrm.hbv_bergestrom92`` module implements the HBV-96 lumped
+The ``hapi.conceptual.hbv_bergestrom92`` module implements the HBV-96 lumped
 conceptual model based on Bergstrom (1992), using two reservoirs with
 three linear responses: surface runoff, interflow, and baseflow.
 
@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from hapi.rrm.base_model import BaseConceptualModel
+from hapi.conceptual.base import BaseConceptualModel
 
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
@@ -44,12 +44,12 @@ class HBVBergestrom92(BaseConceptualModel):
     runoff, interflow, and baseflow.
 
     The model inherits from
-    :class:`~hapi.rrm.base_model.BaseConceptualModel` and implements
+    :class:`~hapi.conceptual.base.BaseConceptualModel` and implements
     the ``precipitation``, ``snow``, ``soil``, ``response``,
     ``routing``, and ``simulate`` methods.
 
     Examples:
-        >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+        >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
         >>> model = HBVBergestrom92()
     """
 
@@ -80,7 +80,7 @@ class HBVBergestrom92(BaseConceptualModel):
                 - **sf** (*float*): Snowfall [mm].
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> rf, sf = HBVBergestrom92.precipitation(
             ...     prec=10.0, temp=-2.0, tt=0.0, rfcf=1.0, sfcf=0.8
             ... )
@@ -156,7 +156,7 @@ class HBVBergestrom92(BaseConceptualModel):
                 - **sp_new** (*float*): New snow pack state [mm].
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> inf, wc_new, sp_new = HBVBergestrom92.snow(
             ...     temp=5.0, rf=3.0, sf=0.0, wc_old=2.0,
             ...     sp_old=10.0, tt=0.0, cfmax=3.0, cfr=0.05,
@@ -242,7 +242,7 @@ class HBVBergestrom92(BaseConceptualModel):
                   into the upper zone [mm].
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> sm_new, uz_int_1 = HBVBergestrom92.soil(
             ...     temp=20.0, inf=5.0, ep=3.0, sm_old=50.0,
             ...     uz_old=10.0, tm=18.0, fc=200.0, beta=2.0,
@@ -320,7 +320,7 @@ class HBVBergestrom92(BaseConceptualModel):
                 - **lz_new** (*float*): New lower zone storage [mm].
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> q_uz, q_lz, uz_new, lz_new = HBVBergestrom92.response(
             ...     lz_old=30.0, uz_int_1=20.0, perc=1.0, k=0.005,
             ...     k1=0.03, k2=0.015, uzl=10.0,
@@ -384,7 +384,7 @@ class HBVBergestrom92(BaseConceptualModel):
                 function, summing to 1.0.
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> import numpy as np
             >>> w = HBVBergestrom92.tf(3)
             >>> np.isclose(w.sum(), 1.0)
@@ -425,7 +425,7 @@ class HBVBergestrom92(BaseConceptualModel):
             ValueError: If ``maxbas`` is less than 1.
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> import numpy as np
             >>> model = HBVBergestrom92()
             >>> q = np.array([0.0, 1.0, 2.0, 3.0, 2.0, 1.0])
@@ -504,7 +504,7 @@ class HBVBergestrom92(BaseConceptualModel):
                   ``[sp, sm, uz, lz, wc]`` in mm.
 
         Examples:
-            >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+            >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
             >>> import numpy as np
             >>> np.random.seed(42)
             >>> model = HBVBergestrom92()

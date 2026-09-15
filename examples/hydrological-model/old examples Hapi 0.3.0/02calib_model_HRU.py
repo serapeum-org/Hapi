@@ -28,7 +28,7 @@ from osgeo import gdal
 # import Wrapper
 # import hapi.GISpy as GIS
 import hapi.gis.giscatchment as GC
-import hapi.rrm.hbv as HBV
+import hapi.conceptual.hbv as HBV
 import hapi.rrm.parameters as DP
 import hapi.sm.performancecriteria as PC
 

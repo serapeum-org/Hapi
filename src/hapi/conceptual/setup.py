@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 
 if TYPE_CHECKING:
-    from hapi.rrm.base_model import BaseConceptualModel
+    from hapi.conceptual.base import BaseConceptualModel
 
 #: (snow, maxbas) -> how many parameters the conceptual model reads in that configuration.
 #: The snow routine adds five; MAXBAS replaces the two Muskingum parameters with one.
@@ -257,7 +257,7 @@ class ConceptualModelSetup:
     Examples:
         ```python
         >>> from hapi.conceptual import ConceptualModelSetup
-        >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+        >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
         >>> setup = ConceptualModelSetup(
         ...     HBVBergestrom92(), 1530.0, [0, 10, 10, 10, 0], q_init=5.0
         ... )

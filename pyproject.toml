@@ -208,7 +208,7 @@ disable_error_code = [
 ]
 
 [[tool.mypy.overrides]]
-module = "hapi.rrm.base_model"
+module = "hapi.conceptual.base"
 disable_error_code = ["empty-body"]
 
 

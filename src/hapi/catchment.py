@@ -33,6 +33,8 @@ from pyramids.dataset import Dataset
 from pyramids.feature import FeatureCollection
 
 from hapi.conceptual import ConceptualModelSetup, ParameterSet
+from hapi.conceptual.hbv import HBV
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
 from hapi.core.config import RunConfig
 from hapi.core.period import SimulationPeriod
 from hapi.inputs import (
@@ -44,11 +46,9 @@ from hapi.inputs import (
     read_rasters,
 )
 from hapi.results import RoutingKind, SimulationResults
-from hapi.rrm.hbv import HBV
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
 if TYPE_CHECKING:
-    from hapi.rrm.base_model import BaseConceptualModel
+    from hapi.conceptual.base import BaseConceptualModel
 
 #: Conceptual models `conceptual_model.model_class` can name in a YAML configuration.
 #: `read_lumped_model` still takes any `type[BaseConceptualModel]`, so this only bounds what the

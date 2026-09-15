@@ -19,9 +19,9 @@ import numpy as np
 import pytest
 
 from hapi.catchment import Catchment
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 from hapi.rrm.distrrm import DistributedRRM
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.runs import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 

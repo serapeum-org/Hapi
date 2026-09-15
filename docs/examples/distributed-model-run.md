@@ -15,7 +15,7 @@ from osgeo import gdal
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBV
 
 import statista.descriptors as metrics
 

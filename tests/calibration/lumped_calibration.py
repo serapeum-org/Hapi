@@ -7,8 +7,8 @@ import statista.descriptors as metrics
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterSet
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.routing import Routing
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
 # %% Paths

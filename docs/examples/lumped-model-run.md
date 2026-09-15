@@ -11,7 +11,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 - First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
 
 ```python
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 from hapi.catchment import Catchment
 from hapi.routing import Routing

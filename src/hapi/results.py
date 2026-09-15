@@ -633,7 +633,7 @@ class SimulationResults:
                 >>> from hapi.conceptual import ConceptualModelSetup, ParameterSet
                 >>> from hapi.core.period import SimulationPeriod
                 >>> from hapi.results import RoutingKind, SimulationResults
-                >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+                >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
                 >>> from hapi.runs import LumpedRun
                 >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-03")
                 >>> run = LumpedRun(

@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from hapi.conceptual.hbv_lake import HBVLake
 from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
 from hapi.rrm.distrrm import DistributedRRM as distrrm
-from hapi.rrm.hbv_lake import HBVLake
 from hapi.runs import DistributedRun, LumpedRun
 
 if TYPE_CHECKING:

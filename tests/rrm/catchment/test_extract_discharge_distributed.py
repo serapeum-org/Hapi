@@ -5,8 +5,8 @@ import pytest
 from pandas import DataFrame
 
 from hapi.catchment import Catchment
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 
 

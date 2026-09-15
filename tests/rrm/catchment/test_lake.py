@@ -3,7 +3,7 @@ import datetime as dt
 import numpy as np
 
 from hapi.catchment import Lake
-from hapi.rrm.hbv_lake import HBVLake
+from hapi.conceptual.hbv_lake import HBVLake
 
 
 def test_lake():

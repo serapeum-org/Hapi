@@ -28,7 +28,7 @@ import numpy as np
 
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
 from hapi.run import Run
 
 # %% Paths

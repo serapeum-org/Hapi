@@ -14,10 +14,10 @@ import pytest
 from pyramids.dataset import Dataset
 
 from hapi.catchment import Catchment
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
 from hapi.runs import DistributedRun
 

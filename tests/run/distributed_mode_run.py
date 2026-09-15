@@ -4,7 +4,7 @@ from cleopatra.glyphs.gridded.array_glyph import Animation, FrameLabel
 from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
-import hapi.rrm.hbv_bergestrom92 as HBV
+import hapi.conceptual.hbv_bergestrom92 as HBV
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.run import Run

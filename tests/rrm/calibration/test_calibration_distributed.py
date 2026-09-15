@@ -16,11 +16,11 @@ from hapi import calibration as calibration_module
 from hapi.calibration import Calibration, ObjectiveFunctionArityError
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.runs import DistributedRun
 
 CANNED_RESULT = (0.42, np.arange(12, dtype="float64"))

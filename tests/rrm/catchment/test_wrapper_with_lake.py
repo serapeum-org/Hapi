@@ -16,10 +16,10 @@ import numpy as np
 import pytest
 
 from hapi.catchment import Catchment, Lake
+from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
+from hapi.conceptual.hbv_lake import HBVLake
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
-from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
-from hapi.rrm.hbv_lake import HBVLake
 from hapi.run import Run
 from hapi.runs import DistributedRun
 from hapi.wrapper import Wrapper
