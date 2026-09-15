@@ -1949,10 +1949,7 @@ afterwards.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/run.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
@@ -2226,7 +2223,10 @@ afterwards.</p>
 <span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
-<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">:</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the catchment model.</span>
 
 <span class="sd">    A namespace of static entry points, not a class to instantiate. Each one validates the</span>
@@ -2299,7 +2299,7 @@ afterwards.</p>
         <span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_muskingum</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
 
         <span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">RUN_FINISHED</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span>
 
     <span class="nd">@staticmethod</span>
@@ -2388,7 +2388,7 @@ afterwards.</p>
         <span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_muskingum_with_lake</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">lake</span><span class="p">)</span>
 
         <span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">RUN_FINISHED</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span>
 
     <span class="nd">@staticmethod</span>
@@ -2424,7 +2424,7 @@ afterwards.</p>
         <span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_maxbas</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
 
         <span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">RUN_FINISHED</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span>
 
     <span class="nd">@staticmethod</span>
@@ -2689,10 +2689,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
@@ -2725,7 +2722,10 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_distributed</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed hydrological model.</span>
 
@@ -2760,7 +2760,7 @@ row counts, column counts, or temporal lengths.</p>
     <span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_muskingum</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
 
     <span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">RUN_FINISHED</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">results</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2901,10 +2901,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
@@ -2934,7 +2931,10 @@ does not match the distributed raster data length.</p>
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
-<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_distributed_with_lake</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2966,7 +2966,7 @@ does not match the distributed raster data length.</p>
     <span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_muskingum_with_lake</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">lake</span><span class="p">)</span>
 
     <span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">RUN_FINISHED</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">results</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3104,10 +3104,7 @@ dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
@@ -3156,7 +3153,10 @@ dimensions.</p>
 <span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
-<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_flood</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">skip_hydraulic_cells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -3391,10 +3391,7 @@ Required when <code>Route</code> is not 0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">347</span>
 <span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span>
@@ -3436,7 +3433,10 @@ Required when <code>Route</code> is not 0.</p>
 <span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
-<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">SupportsQsim</span><span class="p">,</span>
     <span class="n">Route</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -3645,10 +3645,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
@@ -3679,7 +3676,10 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
-<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_maxbas</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the FW1 distributed hydrological model.</span>
 
@@ -3712,7 +3712,7 @@ row counts, column counts, or temporal lengths.</p>
     <span class="n">results</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="o">.</span><span class="n">run_maxbas</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
 
     <span class="n">model</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Model Run has finished"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">RUN_FINISHED</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">results</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3852,10 +3852,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">316</span>
 <span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span>
@@ -3881,7 +3878,10 @@ does not match the distributed raster data length.</p>
 <span class="normal">339</span>
 <span class="normal">340</span>
 <span class="normal">341</span>
-<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_maxbas_with_lake</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the FW1 distributed model with a lake component.</span>
 
