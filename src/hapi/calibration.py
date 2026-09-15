@@ -387,11 +387,39 @@ class Calibration:
         Args:
             objective_function (callable): A callable function to calculate
                 any kind of metric to be used in the calibration.
-            args: Any positional or keyword arguments to pass to the
-                objective function. If None, defaults to an empty list.
+            args: Extra positional arguments appended to every call of the objective,
+                after the ones the entry point supplies itself. All three entry points
+                forward them, and the arity check counts them, so registering arguments the
+                objective cannot accept is reported before the search starts. `None`
+                becomes an empty list.
 
         Raises:
             TypeError: If objective_function is not callable.
+
+        Examples:
+            - The arguments are kept as given, and `None` becomes an empty list:
+                ```python
+                >>> import statista.descriptors as metrics
+                >>> from hapi.calibration import Calibration
+                >>> from hapi.catchment import Catchment
+                >>> coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))
+                >>> coello.read_objective_function(metrics.rmse, [0.5, "outlet"])
+                Objective function is read successfully
+                >>> coello.OFArgs
+                [0.5, 'outlet']
+
+                ```
+            - Something that cannot be called is refused where it is registered:
+                ```python
+                >>> from hapi.calibration import Calibration
+                >>> from hapi.catchment import Catchment
+                >>> coello = Calibration(Catchment("coello", "2009-01-01", "2009-01-10"))
+                >>> coello.read_objective_function("rmse", [])
+                Traceback (most recent call last):
+                    ...
+                TypeError: The Objective function should be a function, got str
+
+                ```
         """
         # check objective_function
         if not callable(objective_function):
@@ -812,8 +840,16 @@ class Calibration:
 
         Raises:
             ValueError: If `basic_inputs` is missing required keys
-                `"Route"` or `"RoutingFn"`, or if `"InitialValues"` is
-                given and does not hold one value per parameter.
+                `"Route"` or `"RoutingFn"`, if `"InitialValues"` is
+                given and does not hold one value per parameter, or if the search space is
+                not the width the conceptual model reads. That last rule is checked here
+                rather than on :class:`~hapi.conceptual.ParameterBounds` because this is the
+                one entry point where the optimiser's vector *is* the parameter set: a
+                distributed calibration searches `SpatialVarFun.ParametersNO` values and
+                maps them onto the grid.
+            ObjectiveFunctionArityError: The objective cannot be called with the arguments
+                this entry point passes -- `observed`, `Qsim`, and whatever
+                :meth:`read_objective_function` registered.
             TypeError: If either bundle of optimization arguments is not a
                 dict.
         """

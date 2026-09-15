@@ -1046,9 +1046,12 @@ class Catchment:
                 per-gauge (Muskingum) path. Default is None.
 
         Raises:
-            ValueError: The gauge table has not been read, the model has not been run, or
-                the results it produced have not been routed -- there is no hydrograph to
-                extract from a set of arrays no routing step has filled.
+            ValueError: The gauge table has not been read, the model has not been run, the
+                results it produced have not been routed, or -- on a MAXBAS run -- they
+                carry no `qout`. The routers record the routing they applied but do not sum
+                the domain, so results routed by calling
+                :class:`~hapi.rrm.distrrm.DistributedRRM` directly reach here labelled
+                MAXBAS with no outlet series; the `Wrapper` entry points are what fill it.
         """
         if self.GaugesTable is None:
             raise ValueError("please read the gauges' table first.")

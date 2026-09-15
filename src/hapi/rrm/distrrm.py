@@ -268,7 +268,9 @@ class DistributedRRM:
             results: The results to route. Mutated in place.
 
         Raises:
-            ValueError: The run carries no flow-path-length raster.
+            ValueError: The run carries no flow-path-length raster, or the raster is
+                constant -- MAXBAS is scaled along the spread of distances to the outlet,
+                so a raster with no spread has nothing to scale along.
         """
         if run.flow_path_length is None:
             raise ValueError(
