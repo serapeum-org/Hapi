@@ -8,6 +8,7 @@ of predicted runoff at known locations based on a given performance function.
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable
 from typing import Any
 
@@ -276,6 +277,39 @@ class Calibration:
             DistributedRun.from_model(self.model, **narrowing)
         self._objective()
 
+    def _check_objective_arity(self, arguments: int) -> None:
+        """Check the objective can be called the way this entry point calls it.
+
+        Read off the signature rather than by calling it: arity is a property of the wiring,
+        knowable before a single trial runs. It used to be diagnosed from a `TypeError`
+        raised *by* the call, which cannot tell "you gave me too few arguments" apart from a
+        `TypeError` raised inside a correctly-wired objective for a value reason -- and the
+        `try` covered the Muskingum constraint loop after the call as well. Classifying that
+        as a wiring error would end the whole search and blame the signature; classifying it
+        as a bad candidate, which is what happens now, is right.
+
+        Args:
+            arguments: How many positional arguments this entry point passes, `of_args`
+                included.
+
+        Raises:
+            ObjectiveFunctionArityError: The objective cannot accept that many.
+        """
+        objective, of_args = self._objective()
+        try:
+            signature = inspect.signature(objective)
+        except (TypeError, ValueError):
+            # A builtin or C function with no introspectable signature. Nothing to check.
+            return
+        try:
+            signature.bind(*([None] * arguments))
+        except TypeError as exc:
+            raise ObjectiveFunctionArityError(
+                f"{OBJECTIVE_FN_ARGS_ERROR}; this entry point passes {arguments} "
+                f"({arguments - len(of_args)} of its own plus {len(of_args)} from "
+                f"read_objective_function)"
+            ) from exc
+
     def _search_space(self) -> ParameterBounds:
         """Return the bounds, or say which reader supplies them.
 
@@ -499,6 +533,8 @@ class Calibration:
         _check_optimization_args(api_obj_args, api_solve_args)
 
         self._check_before_optimising()
+        # `objective(QGauges, GaugesTable)` -- the shape this entry point calls with.
+        self._check_objective_arity(2)
         print("Calibration starts")
 
         ### calculate the objective function
@@ -518,21 +554,16 @@ class Calibration:
             try:
                 self.model.results = Wrapper.run_muskingum(run)
                 # calculate performance of the model
-                try:
-                    error = objective(
-                        self.model.QGauges, *[self.model.GaugesTable]
-                    )  # self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,
-                    f = list(range(9, len(par), spatial_var_fun.no_parameters))
-                    g = list()
-                    for i in range(len(f)):
-                        k = par[f[i]]
-                        x = par[f[i] + 1]
-                        g.append(2 * k * x / self.model.period.dt)
-                        g.append((2 * k * (1 - x)) / self.model.period.dt)
-
-                except TypeError as e:
-                    # the objective function received fewer inputs than it needs
-                    raise ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR) from e
+                error = objective(
+                    self.model.QGauges, *[self.model.GaugesTable]
+                )  # self.model.results.qout, self.model.results.quz_routed, self.model.results.qlz_translated,
+                f = list(range(9, len(par), spatial_var_fun.no_parameters))
+                g = list()
+                for i in range(len(f)):
+                    k = par[f[i]]
+                    x = par[f[i] + 1]
+                    g.append(2 * k * x / self.model.period.dt)
+                    g.append((2 * k * (1 - x)) / self.model.period.dt)
 
                 # print error
                 if print_error != 0:
@@ -540,10 +571,6 @@ class Calibration:
                     print(par)
 
                 fail = 0
-            except ObjectiveFunctionArityError:
-                # Not a bad parameter set: the objective function itself is wired up wrong,
-                # and every trial would fail the same way. Let it out.
-                raise
             except Exception as exc:
                 # A genuine numerical failure for this candidate. Narrowed from a bare
                 # `except`, which also caught KeyboardInterrupt -- so a long calibration
@@ -655,6 +682,8 @@ class Calibration:
         _check_optimization_args(api_obj_args, api_solve_args)
 
         self._check_before_optimising(needs_flow_direction=False)
+        # `objective(QGauges, qout, GaugesTable)`.
+        self._check_objective_arity(3)
         print("Calibration starts")
 
         # calculate the objective function
@@ -672,25 +701,17 @@ class Calibration:
             try:
                 self.model.results = Wrapper.run_maxbas(run)
                 # calculate performance of the model
-                try:
-                    error = objective(
-                        self.model.QGauges,
-                        self.model.results.qout,
-                        *[self.model.GaugesTable],
-                    )
-                except TypeError as e:
-                    # the objective function received fewer inputs than it needs
-                    raise ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR) from e
-
+                error = objective(
+                    self.model.QGauges,
+                    self.model.results.qout,
+                    *[self.model.GaugesTable],
+                )
                 # print error
                 if print_error != 0:
                     print(round(error, 3))
                     print(par)
 
                 fail = 0
-            except ObjectiveFunctionArityError:
-                # See run_calibration: a wrongly-wired objective is not a bad candidate.
-                raise
             except Exception as exc:
                 # See run_calibration: narrowed from a bare `except`.
                 logger.warning(f"trial failed, scoring it infeasible: {exc!r}")
@@ -792,6 +813,9 @@ class Calibration:
         # cannot live on `ParameterBounds`: a distributed calibration searches
         # `SpatialVarFun.ParametersNO` values -- 980 on the shipped Coello grid -- and
         # mapping them onto the grid is the whole job of the spatial distribution.
+        # `objective(observed, Qsim, *of_args)`.
+        self._check_objective_arity(2 + len(self._objective()[1]))
+
         lumped_bounds = self._search_space()
         validate_parameter_count(
             lumped_bounds.lower, lumped_bounds.snow, lumped_bounds.maxbas
@@ -835,29 +859,21 @@ class Calibration:
                 self.model.results = run_results
                 self.Qsim = run_results.q_total
                 # calculate performance of the model
-                try:
-                    error = objective(
-                        observed[observed.columns[-1]],
-                        self.Qsim,
-                        *of_args,
-                    )
-                    g = [
-                        2 * par[-2] * par[-1] / self.model.period.dt,
-                        (2 * par[-2] * (1 - par[-1])) / self.model.period.dt,
-                    ]
-                except TypeError as e:
-                    # the objective function received fewer inputs than it needs
-                    raise ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR) from e
-
+                error = objective(
+                    observed[observed.columns[-1]],
+                    self.Qsim,
+                    *of_args,
+                )
+                g = [
+                    2 * par[-2] * par[-1] / self.model.period.dt,
+                    (2 * par[-2] * (1 - par[-1])) / self.model.period.dt,
+                ]
                 if print_error != 0:
                     print(
                         f"Error = {round(error, 3)} Inequality Const = {np.round(g, 2)}"
                     )
                     # print(par)
                 fail = 0
-            except ObjectiveFunctionArityError:
-                # See run_calibration: a wrongly-wired objective is not a bad candidate.
-                raise
             except Exception as exc:
                 # A genuine numerical failure for this candidate. Narrowed from a bare
                 # `except`, which also caught KeyboardInterrupt -- so a long calibration

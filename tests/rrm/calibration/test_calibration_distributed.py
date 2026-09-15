@@ -255,6 +255,36 @@ class TestRunCalibration:
         with pytest.raises(ObjectiveFunctionArityError, match="needs more inputs"):
             coello.run_calibration(spatial_var_stub, _optimization_args())
 
+    def test_a_type_error_from_inside_a_correct_objective_is_not_a_wiring_error(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that a `TypeError` raised for a value reason does not abort the search.
+
+        Test scenario:
+            The arity diagnosis used to be a blanket `except TypeError` around the objective
+            call *and* the Muskingum constraint loop after it. While the error it raised was
+            swallowed one line later that over-catch was harmless, but once it escaped, any
+            `TypeError` from inside a correctly-wired objective ended the whole calibration
+            and blamed the signature. A `TypeError` there is not exotic: the objective is
+            user-supplied and is handed two pandas frames. Arity is read off the signature
+            before the search starts, so this one is just a bad candidate.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+
+        def right_arity_wrong_values(qgauges, gauges_table):
+            """Take the two arguments the call site passes, then fail on the values."""
+            return "a string" + 1
+
+        coello.read_objective_function(right_arity_wrong_values, [])
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        assert "n_vars" in stub_optimizer, (
+            "a TypeError on the values is one bad candidate, not a wiring error; the "
+            "optimiser should still have been driven"
+        )
+
     def test_a_numerically_failing_trial_is_still_scored_infeasible(
         self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
     ):
@@ -410,7 +440,12 @@ class TestCalibrateMaxbas:
             separate code path that also had to be rewired onto `flow_network`.
         """
         coello = gauged_calibration
-        coello.read_objective_function(metrics.rmse, [])
+        # Three arguments, because `calibrate_maxbas` calls
+        # `objective(QGauges, qout, GaugesTable)`. It used to be wired with `metrics.rmse`,
+        # which takes two -- so every trial raised `TypeError`, was scored `nan`, and this
+        # test still passed because it only ever asserted on the stubbed optimiser's canned
+        # result. The arity check refuses that wiring up front now.
+        coello.read_objective_function(_outlet_objective, [])
         coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
 
         res = coello.calibrate_maxbas(spatial_var_stub, _optimization_args())
@@ -620,6 +655,28 @@ class TestLumpedCalibration:
         assert "n_vars" not in stub_optimizer, (
             "the optimiser must not be reached when the seed does not match the bounds"
         )
+
+
+def _outlet_objective(qgauges, qout, gauges_table) -> float:
+    """Score a trial the way `calibrate_maxbas` actually calls the objective.
+
+    That entry point invokes `objective_function(QGauges, results.qout, GaugesTable)`, so an
+    objective taking two arguments cannot be called at all -- every trial raised `TypeError`
+    and was scored infeasible. This has the arity the call site uses, so the body runs.
+
+    Args:
+        qgauges: Observed discharge frame.
+        qout: The outlet hydrograph the run produced.
+        gauges_table: Gauge metadata frame.
+
+    Returns:
+        float: A finite score derived from all three.
+    """
+    return float(
+        np.abs(qgauges.to_numpy(dtype=float)).mean()
+        + float(np.nansum(qout))
+        + len(gauges_table)
+    )
 
 
 def _pairwise_objective(qgauges, gauges_table) -> float:
