@@ -20,7 +20,7 @@ from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
 from hapi.run import Run
-from hapi.runs import DistributedRun, LumpedRun
+from hapi.simulation.validated import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
 

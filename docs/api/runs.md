@@ -20,7 +20,7 @@ Both are frozen. The checks happen at construction, so a mutable run would let a
 input in afterwards and reach an engine with something never validated.
 
 ## DistributedRun
-::: hapi.runs.DistributedRun
+::: hapi.simulation.validated.DistributedRun
 
 ## LumpedRun
-::: hapi.runs.LumpedRun
+::: hapi.simulation.validated.LumpedRun

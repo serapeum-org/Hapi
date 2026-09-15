@@ -195,7 +195,7 @@ module = [
 # successive read_*() calls, so its inputs are X | None until the matching one has run --
 # which mypy cannot verify and which is honest rather than a defect. Everything that
 # *consumes* a catchment now narrows first and type-checks clean: `run`, `wrapper` and
-# `distrrm` through `hapi.runs`, and `calibration` through its own accessors plus the
+# `distrrm` through `hapi.simulation.validated`, and `calibration` through its own accessors plus the
 # `SpatialDistribution` protocol.
 disable_error_code = [
     "union-attr",

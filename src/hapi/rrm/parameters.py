@@ -282,7 +282,7 @@ class Parameters:
 
         # Annotated, not inferred: mypy would otherwise type this from the one assignment and
         # refuse the HRU reassignment below, and refuse it as a
-        # `hapi.protocols.SpatialDistribution` -- which is the contract a calibration reads.
+        # `hapi.simulation.protocols.SpatialDistribution` -- which is the contract a calibration reads.
         self.Function: Callable[..., Any] = strategies[function]
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:

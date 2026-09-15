@@ -14,10 +14,10 @@ half-built catchment is a legitimate state. Narrowing it into a run
 (see [Runs](runs.md)) is where the optionality is resolved.
 
 ## CatchmentLike
-::: hapi.protocols.CatchmentLike
+::: hapi.simulation.protocols.CatchmentLike
 
 ## SupportsQsim
-::: hapi.protocols.SupportsQsim
+::: hapi.simulation.protocols.SupportsQsim
 
 ## SpatialDistribution
-::: hapi.protocols.SpatialDistribution
+::: hapi.simulation.protocols.SpatialDistribution

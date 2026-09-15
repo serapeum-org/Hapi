@@ -23,9 +23,9 @@ import pandas as pd
 from loguru import logger
 
 from hapi.inputs import RiverGeometry
-from hapi.protocols import CatchmentLike, SupportsQsim
-from hapi.results import SimulationResults
-from hapi.runs import DistributedRun, LumpedRun
+from hapi.simulation.protocols import CatchmentLike, SupportsQsim
+from hapi.simulation.results import SimulationResults
+from hapi.simulation.validated import DistributedRun, LumpedRun
 
 # from hapi.hm.saintvenant import SaintVenant
 from hapi.wrapper import Wrapper
@@ -117,7 +117,7 @@ class Run:
 
     A namespace of static entry points, not a class to instantiate. Each one validates the
     model it is given and hands it to :class:`~hapi.wrapper.Wrapper`, returning the
-    :class:`~hapi.results.SimulationResults` the run produced. The same object is also
+    :class:`~hapi.simulation.results.SimulationResults` the run produced. The same object is also
     assigned to the model's `results`, so the result arrays stay readable off the model
     afterwards.
 

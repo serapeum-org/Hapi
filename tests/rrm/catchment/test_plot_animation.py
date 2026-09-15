@@ -6,8 +6,8 @@ import pytest
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.results import RoutingKind, SimulationResults
 from hapi.run import Run
+from hapi.simulation.results import RoutingKind, SimulationResults
 
 
 @pytest.fixture(scope="module")

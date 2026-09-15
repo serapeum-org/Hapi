@@ -18,7 +18,7 @@ the validation. Nothing reaches the engines without passing through it, so the q
 being one of discipline.
 
 They hold inputs only. Results come back as a return value -- see
-:class:`~hapi.results.SimulationResults` -- so a run cannot half-overwrite what it read.
+:class:`~hapi.simulation.results.SimulationResults` -- so a run cannot half-overwrite what it read.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ from hapi.core.period import SimulationPeriod
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 
 if TYPE_CHECKING:
-    from hapi.protocols import CatchmentLike
+    from hapi.simulation.protocols import CatchmentLike
 
 ROWS_MISMATCH_ERROR = "the parameters must have as many rows as the catchment grid"
 COLS_MISMATCH_ERROR = "the parameters must have as many columns as the catchment grid"

@@ -22,7 +22,7 @@ from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 from hapi.rrm.distrrm import DistributedRRM
-from hapi.runs import DistributedRun, LumpedRun
+from hapi.simulation.validated import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"

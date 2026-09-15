@@ -18,7 +18,7 @@ from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 from hapi.run import Run
-from hapi.runs import DistributedRun
+from hapi.simulation.validated import DistributedRun
 
 
 class _LakeStub:

@@ -19,7 +19,7 @@ from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
 from hapi.run import Run
-from hapi.runs import DistributedRun
+from hapi.simulation.validated import DistributedRun
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
 

@@ -20,9 +20,9 @@ from Oasis.optimization import Optimization
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds, ParameterSet, validate_parameter_count
 from hapi.inputs import MeteoInputs
-from hapi.protocols import SpatialDistribution
-from hapi.results import RoutingKind, SimulationResults
-from hapi.runs import DistributedRun, LumpedRun
+from hapi.simulation.protocols import SpatialDistribution
+from hapi.simulation.results import RoutingKind, SimulationResults
+from hapi.simulation.validated import DistributedRun, LumpedRun
 from hapi.wrapper import Wrapper
 
 ROWS_MISMATCH_ERROR = "all input data should have the same number of rows"
@@ -241,7 +241,7 @@ class Calibration:
         The copy is a full `(rows, cols, n_parameters)` cube and stays alive as long as the
         results object holding it does. On the Coello grid that is 13x14x12 floats; on a
         1000x1000 grid it is about 96 MB per retained result, in the same loop
-        :attr:`~hapi.runs.DistributedRun.keep_state_variables` exists to keep small. Nothing
+        :attr:`~hapi.simulation.validated.DistributedRun.keep_state_variables` exists to keep small. Nothing
         bounds it, because correctness came first -- provenance that describes a different
         trial is worse than provenance that costs memory.
 
@@ -273,7 +273,7 @@ class Calibration:
         so there may be nothing to narrow yet, and the first trial checks it then.
 
         Args:
-            **narrowing: Forwarded to :meth:`~hapi.runs.DistributedRun.from_model`.
+            **narrowing: Forwarded to :meth:`~hapi.simulation.validated.DistributedRun.from_model`.
 
         Raises:
             ValueError: The objective function is unread, or the model's inputs disagree.
@@ -535,7 +535,7 @@ class Calibration:
 
         Args:
             spatial_var_fun: The spatial-distribution object that maps the optimiser's flat
-                vector onto the model's grid. See :class:`~hapi.protocols.SpatialDistribution`
+                vector onto the model's grid. See :class:`~hapi.simulation.protocols.SpatialDistribution`
                 for the four members read off it.
             optimization_args: A list of three elements:
                 - `optimization_args[0]` (dict): Harmony Search API
@@ -683,7 +683,7 @@ class Calibration:
 
         Args:
             spatial_var_fun: The spatial-distribution object. See
-                :class:`~hapi.protocols.SpatialDistribution`.
+                :class:`~hapi.simulation.protocols.SpatialDistribution`.
             optimization_args: A list of three elements:
                 - `optimization_args[0]` (dict): Harmony Search API
                   objective arguments (e.g., HMS, HMCR, PAR).

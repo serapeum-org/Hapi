@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset
 
-import hapi.results as results_module
+import hapi.simulation.results as results_module
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs

@@ -23,8 +23,8 @@ import pytest
 from hapi.catchment import Catchment
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import FlowNetwork, MeteoInputs
-from hapi.results import RoutingKind, SimulationResults
 from hapi.run import Run
+from hapi.simulation.results import RoutingKind, SimulationResults
 
 DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
 
@@ -170,7 +170,7 @@ class TestRunIsNotACatchment:
 
         assert completed.stdout.strip() == "clean", (
             "importing hapi.run must not import hapi.catchment; the protocols in "
-            "hapi.protocols exist so the run layer does not depend on the concrete class"
+            "hapi.simulation.protocols exist so the run layer does not depend on the concrete class"
         )
 
     def test_running_a_model_does_not_import_a_plotting_stack(self):
@@ -178,7 +178,7 @@ class TestRunIsNotACatchment:
 
         Test scenario:
             `SimulationResults` renders and writes itself -- `animate`, `save_animation` and
-            `save` moved there off `Catchment`. Since `hapi.results` is what every engine
+            `save` moved there off `Catchment`. Since `hapi.simulation.results` is what every engine
             imports, a module-scope cleopatra import there would put a plotting stack in the
             path of every model run, which is worse than the arrangement it replaced. The
             import is inside `animate` for exactly that reason, and this is what holds it

@@ -45,7 +45,7 @@ from hapi.inputs import (
     _warn_if_no_sentinel,
     read_rasters,
 )
-from hapi.results import RoutingKind, SimulationResults
+from hapi.simulation.results import RoutingKind, SimulationResults
 
 if TYPE_CHECKING:
     from hapi.conceptual.base import BaseConceptualModel

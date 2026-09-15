@@ -8,9 +8,9 @@ at a concrete class, so the run layer could not be reasoned about without the cl
 :class:`CatchmentLike` states the requirement instead, and states it *honestly*: a catchment is
 a builder, so its inputs really are `X | None` until the matching `read_*` call has run. An
 entry point accepts one of these and immediately narrows it with
-:meth:`~hapi.runs.DistributedRun.from_model`, which is where the optionality is resolved and
+:meth:`~hapi.simulation.validated.DistributedRun.from_model`, which is where the optionality is resolved and
 every cross-input check happens. Past that seam the engines see
-:class:`~hapi.runs.DistributedRun` or :class:`~hapi.runs.LumpedRun`, whose fields are not
+:class:`~hapi.simulation.validated.DistributedRun` or :class:`~hapi.simulation.validated.LumpedRun`, whose fields are not
 optional at all.
 
 So there are two types on purpose, and the split is the point: this one describes what a caller
@@ -29,7 +29,7 @@ import numpy as np
 from hapi.conceptual import ConceptualModelSetup, ParameterSet
 from hapi.core.period import SimulationPeriod
 from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
-from hapi.results import SimulationResults
+from hapi.simulation.results import SimulationResults
 
 
 class CatchmentLike(Protocol):

@@ -19,7 +19,7 @@ from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.inputs import MeteoInputs
-from hapi.results import RoutingKind, SimulationResults
+from hapi.simulation.results import RoutingKind, SimulationResults
 
 CANNED_RESULT = (0.25, np.arange(12, dtype=float), {"time": 1.0})
 

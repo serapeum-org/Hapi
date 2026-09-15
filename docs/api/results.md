@@ -44,7 +44,7 @@ model run never pays for a plotting stack it does not use.
 against the observed gauge record, which is an analysis input, not something a run produced.
 
 ## SimulationResults
-::: hapi.results.SimulationResults
+::: hapi.simulation.results.SimulationResults
 
 ## RoutingKind
-::: hapi.results.RoutingKind
+::: hapi.simulation.results.RoutingKind

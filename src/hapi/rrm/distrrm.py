@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
-from hapi.runs import DistributedRun
+from hapi.simulation.results import RoutingKind, SimulationResults
+from hapi.simulation.validated import DistributedRun
 
 
 class DistributedRRM:
@@ -25,9 +25,9 @@ class DistributedRRM:
     and routes the resulting discharge between cells following the
     river network.
 
-    The class is stateless. Every method takes a :class:`~hapi.runs.DistributedRun` --
+    The class is stateless. Every method takes a :class:`~hapi.simulation.validated.DistributedRun` --
     validated, non-optional inputs -- and either returns the results it built or mutates the
-    :class:`~hapi.results.SimulationResults` it is handed. Nothing here reads or writes a
+    :class:`~hapi.simulation.results.SimulationResults` it is handed. Nothing here reads or writes a
     catchment, so nothing here has to ask whether its inputs were checked.
     """
 

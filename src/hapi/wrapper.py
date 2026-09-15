@@ -14,10 +14,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from hapi.conceptual.hbv_lake import HBVLake
-from hapi.results import RoutingKind, SimulationResults
 from hapi.routing import Routing as routing
 from hapi.rrm.distrrm import DistributedRRM as distrrm
-from hapi.runs import DistributedRun, LumpedRun
+from hapi.simulation.results import RoutingKind, SimulationResults
+from hapi.simulation.validated import DistributedRun, LumpedRun
 
 if TYPE_CHECKING:
     from hapi.catchment import Lake
@@ -83,7 +83,7 @@ class Wrapper:
         Args:
             run: The validated inputs. Reads the drivers, the flow network, the parameter
                 cube and the conceptual model setup, and honours
-                :attr:`~hapi.runs.DistributedRun.skip_hydraulic_cells`, which leaves cells
+                :attr:`~hapi.simulation.validated.DistributedRun.skip_hydraulic_cells`, which leaves cells
                 with a positive `river_geometry.bankfull_depth` for a 1D hydraulic model
                 to route instead.
 
@@ -111,7 +111,7 @@ class Wrapper:
         routing.
 
         Args:
-            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
+            run: The validated inputs. See :class:`~hapi.simulation.validated.DistributedRun`, which
                 `DistributedRun.from_model(model)` builds and checks.
             Lake: The lake record, carrying:
 
@@ -209,7 +209,7 @@ class Wrapper:
         `results.animate` work on this path; see that method for the MAXBAS semantics.
 
         Args:
-            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
+            run: The validated inputs. See :class:`~hapi.simulation.validated.DistributedRun`, which
                 `DistributedRun.from_model(model)` builds and checks.
 
         Returns:
@@ -247,7 +247,7 @@ class Wrapper:
         has been routed using the triangular function.
 
         Args:
-            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
+            run: The validated inputs. See :class:`~hapi.simulation.validated.DistributedRun`, which
                 `DistributedRun.from_model(model)` builds and checks.
             Lake: The lake record. See :meth:`run_muskingum_with_lake` for the fields it
                 must carry; this path reads the same ones.
@@ -326,7 +326,7 @@ class Wrapper:
         the period's conversion factor.
 
         Args:
-            run: The validated inputs. See :class:`~hapi.runs.LumpedRun`, which
+            run: The validated inputs. See :class:`~hapi.simulation.validated.LumpedRun`, which
                 `LumpedRun.from_model(model)` builds and checks. Reads the `(time, 4)`
                 driver record, the parameter set and the conceptual model setup.
             Routing (int, optional): Flag to enable routing. Set to

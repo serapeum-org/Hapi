@@ -21,7 +21,7 @@ from hapi.conceptual.hbv_lake import HBVLake
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.routing import Routing
 from hapi.run import Run
-from hapi.runs import DistributedRun
+from hapi.simulation.validated import DistributedRun
 from hapi.wrapper import Wrapper
 
 JIBOA_ROOT = "tests/rrm/data/jiboa"

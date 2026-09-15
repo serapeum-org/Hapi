@@ -37,7 +37,7 @@ from loguru import logger
 from pyramids.dataset import Dataset
 from pyramids.dataset import DatasetCollection as Datacube
 
-from hapi.runs import DistributedRun, LumpedRun
+from hapi.simulation.validated import DistributedRun, LumpedRun
 
 if TYPE_CHECKING:
     import matplotlib.animation
@@ -100,7 +100,7 @@ class RoutingKind(Enum):
     Examples:
         - The kind carries its own name, which is what a run records on its results:
             ```python
-            >>> from hapi.results import RoutingKind
+            >>> from hapi.simulation.results import RoutingKind
             >>> RoutingKind.MUSKINGUM.value
             'muskingum'
             >>> sorted(kind.value for kind in RoutingKind)
@@ -133,7 +133,7 @@ class SimulationResults:
             run was asked not to keep them -- it is five times the size of every other field
             put together and nothing but :meth:`save` and :meth:`animate` reads it, so a run
             that will not look at it need not pay for it. See
-            :attr:`~hapi.runs.DistributedRun.keep_state_variables`.
+            :attr:`~hapi.simulation.validated.DistributedRun.keep_state_variables`.
         quz_routed: Upper-zone discharge after routing. `None` until a routing step runs.
             After a MAXBAS run this *is* :attr:`quz`, not a copy of it -- the triangular
             routing works in place and a copy would double the memory of a
@@ -164,7 +164,7 @@ class SimulationResults:
         - A freshly run, unrouted set knows it is not yet interpretable at the outlet:
             ```python
             >>> import numpy as np
-            >>> from hapi.results import RoutingKind, SimulationResults
+            >>> from hapi.simulation.results import RoutingKind, SimulationResults
             >>> cube = np.zeros((2, 3, 4), dtype="float32")
             >>> results = SimulationResults(
             ...     routing=RoutingKind.UNROUTED, quz=cube, qlz=cube,
@@ -179,7 +179,7 @@ class SimulationResults:
         - The outlet-cell shortcut is valid under Muskingum and not under MAXBAS:
             ```python
             >>> import numpy as np
-            >>> from hapi.results import RoutingKind, SimulationResults
+            >>> from hapi.simulation.results import RoutingKind, SimulationResults
             >>> cube = np.zeros((2, 3, 4), dtype="float32")
             >>> states = np.zeros((2, 3, 4, 5), dtype="float32")
             >>> muskingum = SimulationResults(
@@ -193,7 +193,7 @@ class SimulationResults:
         - Arrays with no run behind them say what is missing rather than failing on `None`:
             ```python
             >>> import numpy as np
-            >>> from hapi.results import RoutingKind, SimulationResults
+            >>> from hapi.simulation.results import RoutingKind, SimulationResults
             >>> cube = np.zeros((2, 3, 4), dtype="float32")
             >>> orphan = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
             >>> orphan.save(path="out")
@@ -233,7 +233,7 @@ class SimulationResults:
             - Muskingum accumulates downstream, so a cell is a discharge:
                 ```python
                 >>> import numpy as np
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> cube = np.zeros((2, 3, 4), dtype="float32")
                 >>> muskingum = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
                 >>> muskingum.outlet_shortcut_valid
@@ -243,7 +243,7 @@ class SimulationResults:
             - MAXBAS and unrouted arrays do not support the shortcut:
                 ```python
                 >>> import numpy as np
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> cube = np.zeros((2, 3, 4), dtype="float32")
                 >>> [
                 ...     SimulationResults(kind, cube, cube, None).outlet_shortcut_valid
@@ -463,7 +463,7 @@ class SimulationResults:
               before the plotting stack is imported:
                 ```python
                 >>> import numpy as np
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> cube = np.zeros((2, 3, 4), dtype="float32")
                 >>> results = SimulationResults(
                 ...     RoutingKind.MUSKINGUM, cube, cube, None, q_total=cube
@@ -478,7 +478,7 @@ class SimulationResults:
               rather than failing on `None` several frames in:
                 ```python
                 >>> import numpy as np
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> cube = np.zeros((2, 3, 4), dtype="float32")
                 >>> orphan = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
                 >>> orphan.animate("2009-01-01", "2009-01-02", option=1)
@@ -564,7 +564,7 @@ class SimulationResults:
             - There is nothing to write until :meth:`animate` has built it:
                 ```python
                 >>> import numpy as np
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> cube = np.zeros((2, 3, 4), dtype="float32")
                 >>> results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
                 >>> results.anim is None
@@ -632,9 +632,9 @@ class SimulationResults:
                 >>> import numpy as np
                 >>> from hapi.conceptual import ConceptualModelSetup, ParameterSet
                 >>> from hapi.core.period import SimulationPeriod
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92
-                >>> from hapi.runs import LumpedRun
+                >>> from hapi.simulation.validated import LumpedRun
                 >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-03")
                 >>> run = LumpedRun(
                 ...     period=period,
@@ -662,7 +662,7 @@ class SimulationResults:
               `outputs.results_dir` is optional and a caller can forward `None`:
                 ```python
                 >>> import numpy as np
-                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.simulation.results import RoutingKind, SimulationResults
                 >>> cube = np.zeros((2, 3, 4), dtype="float32")
                 >>> results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
                 >>> results.save(path=None)
@@ -674,7 +674,7 @@ class SimulationResults:
 
         See Also:
             animate: Renders the same arrays instead of writing them.
-            hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
+            hapi.simulation.validated.DistributedRun.keep_state_variables: Whether the state options have
                 anything to write.
         """
         # Checked rather than delegated: `outputs.results_dir` is optional in a run
