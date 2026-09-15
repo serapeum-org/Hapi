@@ -78,7 +78,7 @@ class SpatialDistribution(Protocol):
 
     The optimiser searches over a flat vector; the model runs on a `(rows, cols, n)` array. A
     spatial-distribution object is what converts one into the other, and
-    :class:`hapi.rrm.parameters.Parameters` is the implementation that ships here.
+    :class:`hapi.calibration.distribution.Parameters` is the implementation that ships here.
 
     The calibration entry points used to type this argument `Callable[..., Any]`, which was
     doubly wrong: a calibration never calls it, and what it actually does is read four members

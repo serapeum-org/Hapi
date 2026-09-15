@@ -23,7 +23,7 @@ from pyramids.dataset import Dataset
 from scipy.stats import norm
 
 # functions
-from hapi.rrm.parameters import Parameters as DP
+from hapi.calibration.distribution import Parameters as DP
 
 # %%
 path = "C:/Users/Mostafa/Desktop/delineation/HRU/HAND/"

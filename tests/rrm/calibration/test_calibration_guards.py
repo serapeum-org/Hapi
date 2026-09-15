@@ -57,7 +57,7 @@ def stub_engine(monkeypatch) -> dict:
     Returns:
         dict: Records the objective's return value under `"scored"`.
     """
-    from hapi import calibration as calibration_module
+    from hapi.calibration import search as calibration_module
 
     recorded: dict = {}
 

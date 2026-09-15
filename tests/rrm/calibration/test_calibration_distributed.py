@@ -12,8 +12,8 @@ import pytest
 import statista.descriptors as metrics
 from pandas import DataFrame
 
-from hapi import calibration as calibration_module
 from hapi.calibration import Calibration, ObjectiveFunctionArityError
+from hapi.calibration import search as calibration_module
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped

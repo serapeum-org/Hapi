@@ -64,7 +64,7 @@ Coello.model.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 - The `DistParameters` distribute the parameter vector on the cells following some spatial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in an additional map)
 
 ```python
-from hapi.rrm.parameters import Parameters as DP
+from hapi.calibration.distribution import Parameters as DP
 from pyramids.dataset import Dataset
 
 # A pyramids `Dataset`, not a bare GDAL handle — `Parameters.__init__` refuses anything else.

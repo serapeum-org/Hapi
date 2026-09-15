@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset, GeoReference
 
-from hapi.rrm.parameters import Parameters as DP
+from hapi.calibration.distribution import Parameters as DP
 
 NO_DATA = -9999
 """No-data sentinel stamped on the synthetic rasters in :class:`TestParametersMasking`."""
@@ -371,7 +371,7 @@ SUBPROCESS_PROBE = """
 import sys
 import numpy as np
 from pyramids.dataset import Dataset, GeoReference
-from hapi.rrm.parameters import Parameters
+from hapi.calibration.distribution import Parameters
 
 raster = Dataset.from_array(
     np.array([[1, 2], [3, -9999]], dtype="int32"),

@@ -9,7 +9,7 @@ algorithm into a defined HRUs by a classified raster
 import numpy as np
 from pyramids.dataset import Dataset
 
-from hapi.rrm.parameters import Parameters as DP
+from hapi.calibration.distribution import Parameters as DP
 
 # data path
 path = "/data/"

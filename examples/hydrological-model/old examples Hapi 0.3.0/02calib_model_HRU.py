@@ -29,7 +29,7 @@ from osgeo import gdal
 # import hapi.GISpy as GIS
 import hapi.gis.giscatchment as GC
 import hapi.conceptual.hbv as HBV
-import hapi.rrm.parameters as DP
+import hapi.calibration.distribution as DP
 import hapi.sm.performancecriteria as PC
 
 # functions

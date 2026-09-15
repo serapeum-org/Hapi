@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from pyramids.dataset import Dataset, GeoReference
 
-from hapi.rrm.parameters import Parameters
+from hapi.calibration.distribution import Parameters
 
 NO_DATA = -9999.0
 

@@ -12,7 +12,7 @@ from hapi.calibration import Calibration
 from hapi.catchment import Catchment
 from hapi.inputs import FlowNetwork, MeteoInputs
 from hapi.conceptual.hbv_bergestrom92 import HBVBergestrom92 as HBV
-from hapi.rrm.parameters import Parameters as DP
+from hapi.calibration.distribution import Parameters as DP
 
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"

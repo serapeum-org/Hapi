@@ -111,7 +111,7 @@ class Parameters:
                 ```python
                 >>> import numpy as np
                 >>> from pyramids.dataset import Dataset, GeoReference
-                >>> from hapi.rrm.parameters import Parameters
+                >>> from hapi.calibration.distribution import Parameters
                 >>> raster = Dataset.from_array(
                 ...     np.array([[1, 2], [3, -9999]], dtype="int32"),
                 ...     geo_ref=GeoReference(
@@ -133,7 +133,7 @@ class Parameters:
                 ```python
                 >>> import numpy as np
                 >>> from pyramids.dataset import Dataset, GeoReference
-                >>> from hapi.rrm.parameters import Parameters
+                >>> from hapi.calibration.distribution import Parameters
                 >>> raster = Dataset.from_array(
                 ...     np.array([[1, 2], [3, -9990]], dtype="int32"),
                 ...     geo_ref=GeoReference(
