@@ -151,3 +151,57 @@ def test_dir_lists_the_names_before_they_are_touched(package: str):
     )
 
     assert f"hapi.{package}" in listed, f"the probe did not import hapi.{package}"
+
+
+#: The public top-level names of the single module each of these packages replaced, as they were
+#: on `main` before the restructure. The package's commit said its imports were unaffected, so
+#: every one of them has to stay importable from the package itself.
+OLD_MODULE_NAMES = {
+    "calibration": (
+        "COLUMNS_MISMATCH_ERROR",
+        "Calibration",
+        "OBJECTIVE_FN_ARGS_ERROR",
+        "ObjectiveFunctionArityError",
+        "ROWS_MISMATCH_ERROR",
+    ),
+    "conceptual": (
+        "ConceptualModelSetup",
+        "PARAMETER_COUNTS",
+        "ParameterBounds",
+        "ParameterSet",
+        "parameter_count",
+        "validate_initial_cond",
+        "validate_parameter_count",
+        "validate_q_init",
+    ),
+    "inputs": (
+        "D8_CODES",
+        "FlowNetwork",
+        "Inputs",
+        "METEO_VARIABLES",
+        "MeteoInputs",
+        "PARAMETERS_LIST",
+        "RIVER_GEOMETRY_RASTERS",
+        "RiverGeometry",
+        "read_rasters",
+    ),
+}
+
+
+@pytest.mark.parametrize("package", sorted(OLD_MODULE_NAMES))
+def test_a_package_keeps_every_name_its_old_module_had(package: str):
+    """Test that a package named after the module it replaced still exports all of its names.
+
+    Args:
+        package: A subpackage that took over a single module's import path.
+
+    Test scenario:
+        `hapi.calibration` became a package whose `__init__` re-exported only `Calibration` and
+        `ObjectiveFunctionArityError`, so `from hapi.calibration import OBJECTIVE_FN_ARGS_ERROR`
+        -- valid against the old module -- raised `ImportError`, while the commit said imports of
+        `hapi.calibration` were unaffected.
+    """
+    module = importlib.import_module(f"hapi.{package}")
+    missing = [name for name in OLD_MODULE_NAMES[package] if name not in module.__all__]
+
+    assert not missing, f"hapi.{package} no longer exports {missing}"
