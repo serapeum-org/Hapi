@@ -804,7 +804,9 @@ class Parameters:
         """Save distributed parameters as raster files.
 
         Takes the generated 3D parameter array and saves each parameter
-        layer as a separate GeoTIFF raster file.
+        layer as a separate GeoTIFF raster file. The destination is checked before
+        the first raster is written, so a save refused for a bad `path` leaves
+        nothing half-written on disk.
 
         Args:
             path: Existing folder the parameter rasters are written into, as a `str`
@@ -814,9 +816,6 @@ class Parameters:
             TypeError: `path` is neither a `str` nor a `Path` -- `None` included.
             FileNotFoundError: The output directory does not exist.
             NotADirectoryError: `path` exists but is a file.
-
-            All three are checked before the first raster is written, so a failed
-            save leaves nothing half-written on disk.
 
         Note:
             The Parameters object should have the following attributes
