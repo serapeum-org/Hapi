@@ -1019,7 +1019,7 @@ class Catchment:
                 )
             else:
                 f = pd.read_csv(
-                    f"{path}/{name}.csv",
+                    folder / f"{name}.csv",
                     header=0,
                     index_col=0,
                     delimiter=delimiter,
