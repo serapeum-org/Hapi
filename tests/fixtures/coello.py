@@ -7,8 +7,8 @@ from pyramids.dataset import Dataset
 from pyramids.feature import FeatureCollection
 
 from hapi.data.figshare import Parameter
-from tests.rrm.calibration.conftest import *
-from tests.rrm.catchment.conftest import *
+from tests.fixtures.calibration import *
+from tests.fixtures.catchment import *
 
 
 @pytest.fixture(scope="session")
@@ -40,13 +40,13 @@ def download_max_min_parameter(hapi_data_dir: str):
 
 @pytest.fixture(scope="module")
 def rrm_test_results() -> str:
-    return "tests/rrm/data/test_results"
+    return "tests/datasets/test_results"
 
 
 @pytest.fixture(scope="module")
 def coello_basin() -> FeatureCollection:
     return FeatureCollection.read_file(
-        "tests/rrm/data/coello/coello-basin-extended.geojson"
+        "tests/datasets/coello/coello-basin-extended.geojson"
     )
 
 
@@ -62,27 +62,27 @@ def coello_end_date() -> str:
 
 @pytest.fixture(scope="module")
 def coello_evap_path() -> str:
-    return "tests/rrm/data/coello/evap"
+    return "tests/datasets/coello/evap"
 
 
 @pytest.fixture(scope="module")
 def coello_prec_path() -> str:
-    return "tests/rrm/data/coello/prec"
+    return "tests/datasets/coello/prec"
 
 
 @pytest.fixture(scope="module")
 def coello_temp_path() -> str:
-    return "tests/rrm/data/coello/temp"
+    return "tests/datasets/coello/temp"
 
 
 @pytest.fixture(scope="module")
 def coello_acc_path() -> str:
-    return "tests/rrm/data/coello/gis/acc4000.tif"
+    return "tests/datasets/coello/gis/acc4000.tif"
 
 
 @pytest.fixture(scope="module")
 def coello_acc_raster() -> Dataset:
-    return Dataset.read_file("tests/rrm/data/coello/gis/acc4000.tif")
+    return Dataset.read_file("tests/datasets/coello/gis/acc4000.tif")
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +115,7 @@ def coello_acc_values() -> List:
 
 @pytest.fixture(scope="module")
 def coello_fd_path() -> str:
-    return "tests/rrm/data/coello/gis/fd4000.tif"
+    return "tests/datasets/coello/gis/fd4000.tif"
 
 
 @pytest.fixture(scope="module")
@@ -226,17 +226,17 @@ def coello_initial_cond() -> List:
 @pytest.fixture(scope="module")
 def coello_parameter_bounds() -> Tuple[list, list]:
     ub = np.loadtxt(
-        "tests/rrm/data/coello/calibration/upper-bound-tot.txt", usecols=0
+        "tests/datasets/coello/calibration/upper-bound-tot.txt", usecols=0
     ).tolist()
     lb = np.loadtxt(
-        "tests/rrm/data/coello/calibration/lower-bound-tot.txt", usecols=0
+        "tests/datasets/coello/calibration/lower-bound-tot.txt", usecols=0
     ).tolist()
     return lb, ub
 
 
 @pytest.fixture(scope="module")
 def coello_gauges_table() -> str:
-    return "tests/rrm/data/coello/calibration/gauges.csv"
+    return "tests/datasets/coello/calibration/gauges.csv"
 
 
 @pytest.fixture(scope="module")
@@ -246,7 +246,7 @@ def coello_gauge_names() -> List:
 
 @pytest.fixture(scope="module")
 def coello_gauges_path() -> str:
-    return "tests/rrm/data/coello/calibration"
+    return "tests/datasets/coello/calibration"
 
 
 @pytest.fixture(scope="module")
@@ -271,19 +271,19 @@ def coello_shape(coello_rows, coello_cols) -> Tuple:
 
 @pytest.fixture(scope="module")
 def coello_parameters() -> np.ndarray:
-    return np.loadtxt("tests/rrm/data/coello/calibration/parameters.csv")
+    return np.loadtxt("tests/datasets/coello/calibration/parameters.csv")
 
 
 @pytest.fixture(scope="module")
 def coello_parameters_dist() -> np.ndarray:
-    return np.load("tests/rrm/data/coello/calibration/parameters.npy")
+    return np.load("tests/datasets/coello/calibration/parameters.npy")
 
 
 @pytest.fixture(scope="module")
 def coello_dist_parameters_maxbas() -> str:
-    return "tests/rrm/data/coello/parameters/maxbas"
+    return "tests/datasets/coello/parameters/maxbas"
 
 
 @pytest.fixture(scope="module")
 def coello_dist_parameters_muskingum() -> str:
-    return "tests/rrm/data/coello/parameters/muskingum"
+    return "tests/datasets/coello/parameters/muskingum"

@@ -569,7 +569,7 @@ class MeteoInputs:
                 >>> meteo = MeteoInputs.from_config(
                 ...     MeteoConfig(
                 ...         source="netcdf",
-                ...         path="tests/rrm/data/coello/meteo.nc",
+                ...         path="tests/datasets/coello/meteo.nc",
                 ...         precipitation="precipitation",
                 ...         temperature="temperature",
                 ...         evapotranspiration="evapotranspiration",
@@ -588,7 +588,7 @@ class MeteoInputs:
                 >>> meteo = MeteoInputs.from_config(
                 ...     MeteoConfig(
                 ...         source="netcdf",
-                ...         path="tests/rrm/data/coello/meteo.nc",
+                ...         path="tests/datasets/coello/meteo.nc",
                 ...         precipitation="precipitation",
                 ...         temperature="temperature",
                 ...         evapotranspiration="evapotranspiration",

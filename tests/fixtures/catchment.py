@@ -9,12 +9,12 @@ gauges_datefmt = "%Y-%m-%d"
 
 @pytest.fixture(scope="module")
 def lumped_parameters_path() -> str:
-    return "tests/rrm/data/coello/coello-lumpedparameter-muskingum.txt"
+    return "tests/datasets/coello/coello-lumpedparameter-muskingum.txt"
 
 
 @pytest.fixture(scope="module")
 def lumped_meteo_data_path() -> str:
-    return "tests/rrm/data/coello/meteo-lumped-data-MSWEP.csv"
+    return "tests/datasets/coello/meteo-lumped-data-MSWEP.csv"
 
 
 @pytest.fixture(scope="module")

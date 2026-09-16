@@ -7,7 +7,7 @@ exercise of `Run.run_distributed_with_lake` outside the unit tests.
 is untracked -- 85 files, about 2 MB: `lakedata.csv`, `Lakeparameters.txt`, `curve.txt`,
 `initial-jiboa.txt`, `Initial-lake.txt`, and the `meteo-data/`, `gis-data/`, `parameters/`
 and `gauges/` trees. A clone will not have it, and the script raises on the first read.
-`tests/rrm/data/jiboa/` carries only the lake record and its parameters, which is not
+`tests/datasets/jiboa/` carries only the lake record and its parameters, which is not
 enough to drive this.
 
 Run it from the repository root, so the relative paths below resolve.

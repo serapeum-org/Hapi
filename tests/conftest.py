@@ -2,12 +2,12 @@ import pytest
 
 # importing hapi.inputs.dem pulls in pyramids first, which sets up the vendored GDAL
 from hapi.inputs.dem import DEM
-from tests.rrm.conftest import *
+from tests.fixtures.coello import *
 
 
 @pytest.fixture(scope="module")
 def coello_df_4000() -> DEM:
-    return DEM.read_file("tests/rrm/data/coello/gis/fd4000.tif")
+    return DEM.read_file("tests/datasets/coello/gis/fd4000.tif")
 
 
 @pytest.fixture(scope="module")

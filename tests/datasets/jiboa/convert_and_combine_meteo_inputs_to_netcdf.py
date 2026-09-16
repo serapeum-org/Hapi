@@ -2,11 +2,11 @@ r"""Regenerate the Jiboa NetCDF fixtures from the raster folders.
 
 Two steps, four files: each of `prec/`, `temp/` and `evap/` is packed into its own NetCDF,
 then the three are merged into `meteo.nc` with the variables named after the drivers. The
-Coello counterpart is `tests/rrm/data/coello/convert_and_combine_meteo_inputs_to_netcdf.py`.
+Coello counterpart is `tests/datasets/coello/convert_and_combine_meteo_inputs_to_netcdf.py`.
 
 Run from the repository root:
 
-    pixi run -e dev python tests/rrm/data/jiboa/convert_and_combine_meteo_inputs_to_netcdf.py
+    pixi run -e dev python tests/datasets/jiboa/convert_and_combine_meteo_inputs_to_netcdf.py
 
 NOTE: `meteo_inputs/prec`, `temp` and `evap` are **empty in the repository** -- the Jiboa
 rasters are not committed, which is why no distributed Jiboa run is exercised anywhere. Point
@@ -27,7 +27,7 @@ import numpy as np
 
 from hapi.inputs import METEO_VARIABLES, MeteoInputs
 
-root = "tests/rrm/data/jiboa/meteo_inputs"
+root = "tests/datasets/jiboa/meteo_inputs"
 
 # Driver -> its raster folder; each NetCDF takes the folder's name.
 FOLDERS = {"precipitation": "prec", "temperature": "temp", "evapotranspiration": "evap"}

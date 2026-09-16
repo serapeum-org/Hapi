@@ -536,7 +536,7 @@ class TestReadFlowAcc:
             Guards the production fixture against a regression in grid shape, in the set of
             distinct accumulation values recovered after masking, or in the domain-cell
             count (89 cells, matching the ``Par2d`` width asserted in
-            ``tests/rrm/test_dist_parameters.py``).
+            ``tests/calibration/test_distribution.py``).
         """
         catchment.flow_network = FlowNetwork.from_rasters(coello_acc_path)
 

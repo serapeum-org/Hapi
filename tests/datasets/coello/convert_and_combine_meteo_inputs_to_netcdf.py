@@ -5,7 +5,7 @@ then the three are merged into `meteo.nc` with the variables named after the dri
 
 Run from the repository root:
 
-    pixi run -e dev python tests/rrm/data/coello/convert_and_combine_meteo_inputs_to_netcdf.py
+    pixi run -e dev python tests/datasets/coello/convert_and_combine_meteo_inputs_to_netcdf.py
 
 The Coello rasters are named `0_Tair2m_..._2009.01.01.tif` -- a `%Y.%m.%d` date with dots.
 Rhine's are `0_Temp_..._1979_1_1.tif`, so they need `r"\d{4}_\d{1,2}_\d{1,2}"` and
@@ -19,7 +19,7 @@ import numpy as np
 
 from hapi.inputs import METEO_VARIABLES, MeteoInputs
 
-root = "tests/rrm/data/coello"
+root = "tests/datasets/coello"
 
 # Driver -> its raster folder; each NetCDF takes the folder's name.
 FOLDERS = {"precipitation": "prec", "temperature": "temp", "evapotranspiration": "evap"}

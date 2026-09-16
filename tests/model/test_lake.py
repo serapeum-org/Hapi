@@ -10,7 +10,7 @@ def test_lake():
     start_date = "2012.06.14 19:00:00"
     end_date = "2012.6.15 14:00:00"
     fmt = "%Y.%m.%d %H:%M:%S"
-    root_dir = "tests/rrm/data/jiboa"
+    root_dir = "tests/datasets/jiboa"
     lake = Lake(
         start=start_date,
         end=end_date,

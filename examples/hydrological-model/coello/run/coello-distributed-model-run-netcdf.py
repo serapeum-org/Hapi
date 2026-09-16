@@ -5,8 +5,8 @@ Standalone version of the workflow behind
 test_the_drivers_come_from_the_file_and_cover_the_model`: one `MeteoInputs.from_netcdf` call
 replaces the three raster-folder reads, so the model touches no meteorological raster at all.
 `meteo.nc` packs the rainfall, temperature and evapotranspiration folders bundled under
-`tests/rrm/data/coello/{prec,temp,evap}` into one file with the calendar inside it -- see
-`tests/rrm/data/coello/convert_and_combine_meteo_inputs_to_netcdf.py` for how it was built.
+`tests/datasets/coello/{prec,temp,evap}` into one file with the calendar inside it -- see
+`tests/datasets/coello/convert_and_combine_meteo_inputs_to_netcdf.py` for how it was built.
 
 Everything that used to be a "Paths" block of hardcoded assignments now lives in
 `coello-distributed-model-run-netcdf.yaml`, next to this script -- `Catchment.from_yaml` reads

@@ -1,6 +1,6 @@
 """Unit tests for ``Catchment.read_gauge_table``, covering both input formats.
 
-The CSV branch is exercised by ``tests/rrm/catchment/test_rrm_catchment.py``; the
+The CSV branch is exercised by ``tests/model/test_catchment.py``; the
 GeoJSON branch had no coverage at all, which is why it is the focus here. That branch is
 where vector reading moved from ``geopandas.read_file`` to
 ``pyramids.feature.FeatureCollection.read_file``, so these tests pin the behaviour the
