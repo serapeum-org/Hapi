@@ -419,6 +419,51 @@ class TestSaveParametersValidation:
         with pytest.raises(FileNotFoundError, match="does not exist"):
             DP(_raster(), 12).save_parameters(tmp_path / "absent")
 
+    def test_none_is_refused_by_name(self):
+        """Test that `None` is rejected with a `TypeError` naming what was expected.
+
+        Test scenario:
+            Rejecting `None` is what `save_parameters` always did. Widening the signature
+            to `str | Path` briefly let it through to pyramids, which failed on the bare
+            parameter name with `DriverNotExistError` -- an error about file extensions
+            that says nothing about the argument the caller got wrong.
+        """
+        distributor = DP(_raster(), 12)
+        distributor.Snow = 0
+        distributor.Par3d = np.zeros((2, 2, 12), dtype="float32")
+
+        with pytest.raises(TypeError, match="str or Path naming a directory") as exc:
+            distributor.save_parameters(None)
+
+        assert "NoneType" in str(exc.value), (
+            f"the error should name the type it got: {exc.value}"
+        )
+
+    def test_an_existing_file_is_refused_before_anything_is_written(self, tmp_path):
+        """Test that a path to a file, not a directory, fails before the first write.
+
+        Args:
+            tmp_path: pytest's per-test temporary directory.
+
+        Test scenario:
+            The up-front check exists to stop a save failing halfway with some rasters on
+            disk. An existence check lets a file through, and the first `dataset_like` then
+            fails trying to write inside it. The guard has to ask for a directory.
+        """
+        not_a_directory = tmp_path / "afile.txt"
+        not_a_directory.write_text("not a directory", encoding="utf-8")
+        distributor = DP(_raster(), 12)
+        distributor.Snow = 0
+        distributor.Par3d = np.zeros((2, 2, 12), dtype="float32")
+
+        with pytest.raises(NotADirectoryError, match="is not a directory"):
+            distributor.save_parameters(not_a_directory)
+
+        written = sorted(p.name for p in tmp_path.iterdir() if p != not_a_directory)
+        assert not written, (
+            f"nothing should be written before the guard fires: {written}"
+        )
+
     def test_path_object_is_accepted(self, tmp_path):
         """Test that a ``pathlib.Path`` output directory writes the rasters.
 

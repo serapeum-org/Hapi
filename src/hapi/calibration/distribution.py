@@ -800,31 +800,42 @@ class Parameters:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
 
-    def save_parameters(self, path: str | Path | None):
+    def save_parameters(self, path: str | Path):
         """Save distributed parameters as raster files.
 
         Takes the generated 3D parameter array and saves each parameter
         layer as a separate GeoTIFF raster file.
 
         Args:
-            path: Folder the parameter rasters are written into, as a `str` or a
-                `Path`. `None` writes them into the working directory.
+            path: Existing folder the parameter rasters are written into, as a `str`
+                or a `Path`. Each raster is named `<parameter>_<YYYY-MM-DD>.tif`.
 
         Raises:
-            FileNotFoundError: The output directory does not exist. Checked up front so
-                the failure does not surface midway through writing.
+            TypeError: `path` is neither a `str` nor a `Path` -- `None` included.
+            FileNotFoundError: The output directory does not exist.
+            NotADirectoryError: `path` exists but is a file.
+
+            All three are checked before the first raster is written, so a failed
+            save leaves nothing half-written on disk.
 
         Note:
             The Parameters object should have the following attributes
             set before calling this method: `DistParFn`, `raster`,
             `Par`, `no_parameters`, `snow`, `kub`, and `klb`.
         """
-        # Checked here rather than left to pyramids: the directory must exist before
-        # the first raster is written, or a run fails halfway through with some
-        # parameters on disk and some not. Raised rather than asserted so the check
-        # survives `python -O`.
-        if path is not None and not Path(path).exists():
+        # Checked here rather than left to pyramids: the directory must exist, and be a
+        # directory, before the first raster is written, or a run fails halfway through
+        # with some parameters on disk and some not. Raised rather than asserted so the
+        # checks survive `python -O`.
+        if not isinstance(path, str | Path):
+            raise TypeError(
+                f"path must be a str or Path naming a directory, got {type(path).__name__}"
+            )
+        folder = Path(path)
+        if not folder.exists():
             raise FileNotFoundError(f"{path} you have provided does not exist")
+        if not folder.is_dir():
+            raise NotADirectoryError(f"{path} is not a directory")
 
         # save
         if self.Snow == 0:  # now snow subroutine
@@ -863,13 +874,9 @@ class Parameters:
 
         # Joined with `/` rather than concatenated, so a `Path` works and a directory
         # given without a trailing separator no longer writes `some/dir01_rfcf_....tif`
-        # beside the folder it was meant to go in. A bare name, when `path` is None,
-        # still lands in the working directory.
+        # beside the folder it was meant to go in.
         stamp = str(dt.datetime.now())[0:10]
-        destinations: list[str | Path] = [
-            Path(path) / f"{name}_{stamp}.tif" if path is not None else name
-            for name in pnme
-        ]
+        destinations = [folder / f"{name}_{stamp}.tif" for name in pnme]
 
         for i in range(np.shape(self.Par3d)[2]):
             Dataset.dataset_like(self.raster, self.Par3d[:, :, i], path=destinations[i])
