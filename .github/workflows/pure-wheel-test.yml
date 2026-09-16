@@ -48,11 +48,19 @@ jobs:
 
       - name: Verify the wheel contains the package modules
         # Guards against a packaging regression in [tool.setuptools.packages.find]
-        # (e.g. a renamed subpackage silently dropping out of the distribution).
+        # (e.g. a renamed subpackage silently dropping out of the distribution). One
+        # `__init__.py` per subpackage: a subpackage missing its marker is dropped by
+        # find_packages, which is exactly how a module disappears from the wheel.
         run: |
-          pixi run -e dev python -m zipfile -l dist/*.whl | grep "hapi/catchment.py"
-          pixi run -e dev python -m zipfile -l dist/*.whl | grep "hapi/rrm/distrrm.py"
-          pixi run -e dev python -m zipfile -l dist/*.whl | grep "hapi/parameters/parameters.py"
+          pixi run -e dev python -m zipfile -l dist/*.whl > wheel-contents.txt
+          grep "hapi/core/__init__.py" wheel-contents.txt
+          grep "hapi/data/__init__.py" wheel-contents.txt
+          grep "hapi/inputs/__init__.py" wheel-contents.txt
+          grep "hapi/conceptual/__init__.py" wheel-contents.txt
+          grep "hapi/simulation/__init__.py" wheel-contents.txt
+          grep "hapi/model/__init__.py" wheel-contents.txt
+          grep "hapi/engine/__init__.py" wheel-contents.txt
+          grep "hapi/calibration/__init__.py" wheel-contents.txt
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -111,7 +119,7 @@ jobs:
         shell: bash
         run: |
           cd "${RUNNER_TEMP}"
-          python -c "import hapi; from hapi.catchment import Catchment; print('hapi imported from', hapi.__file__)"
+          python -c "import hapi; from hapi.model.catchment import Catchment; from hapi.engine.run import Run; print('hapi imported from', hapi.__file__)"
           list-parameter-names --help
 
       - name: Install the test runner
