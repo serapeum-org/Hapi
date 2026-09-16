@@ -174,13 +174,15 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 
 The keyword arguments are forwarded to
 `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`; see its documentation for the full list.
-The plain ones are `figsize`, `interval`, `cmap`, `vmin`/`vmax`, `title` and `ticks_spacing`.
+The plain ones are `figsize`, `cmap`, `vmin`/`vmax`, `title` and `ticks_spacing`.
 cleopatra 0.30 moved the styling keywords onto typed group objects, so the colour scale is
 `color=ColorScaling.linear()` (also `.power(gamma=...)`, `.sym_log(...)`, `.midpoint(at=...)`,
-`.boundary(bounds=...)`), the cell-value labels are
-`cells=CellValues(show=True, size=..., background_threshold=...)`, and the frame time-stamp is
-`frame_label=FrameLabel(location=[...], color=...)`. The gauge markers are built by Hapi itself
-from the gauge table you pass as `gauges=`.
+`.boundary(bounds=...)`) and the cell-value labels are
+`cells=CellValues(show=True, size=..., background_threshold=...)`. cleopatra 0.38 then grouped the
+playback options the same way: the frame delay and the frame time-stamp go in
+`playback=Animation(interval=..., frame_label=FrameLabel(location=[...], color=...))`. Passing
+`interval` or `frame_label` directly raises `ValueError`. The gauge markers are built by Hapi
+itself from the gauge table you pass as `gauges=`.
 
 `option` selects the variable to animate:
 
@@ -194,7 +196,7 @@ from the gauge table you pass as `gauges=`.
 | 6 | Upper zone | | |
 
 ```python
-from cleopatra.glyphs.gridded.array_glyph import FrameLabel
+from cleopatra.glyphs.gridded.array_glyph import Animation, FrameLabel
 from cleopatra.styling.params import CellValues
 from cleopatra.styling.scaling import ColorScaling
 
@@ -208,11 +210,10 @@ anim = Coello.results.animate(
     gauges=Coello.GaugesTable,
     figsize=(9, 9),
     ticks_spacing=5,
-    interval=200,
     cmap="inferno",
     color=ColorScaling.linear(),
     cells=CellValues(show=True),
-    frame_label=FrameLabel(location=[0.1, 0.2]),
+    playback=Animation(interval=200, frame_label=FrameLabel(location=[0.1, 0.2])),
 )
 ```
 ![Animation](../img/anim.gif)
