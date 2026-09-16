@@ -152,7 +152,7 @@ def test_extract_parameters_boundaries(
 
 
 def test_create_lumped_parameter():
-    path = "tests/rrm/data/coello/prec"
+    path = "tests/datasets/coello/prec"
     lumped_data = Inputs.create_lumped_inputs(
         path,
         regex_string=r"\d{4}.\d{2}.\d{2}",
@@ -398,7 +398,7 @@ class TestVectorTypes:
             own file, and the basin was applied as a mask — reading a whole raster would
             report the ring value instead.
         """
-        inputs = Inputs("tests/rrm/data/coello/gis/acc4000.tif")
+        inputs = Inputs("tests/datasets/coello/gis/acc4000.tif")
 
         stats = inputs.extract_parameters(
             coello_basin, utm_parameter_set, as_raster=False

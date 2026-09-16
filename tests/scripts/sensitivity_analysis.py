@@ -8,8 +8,8 @@ from hapi.engine.run import Run
 from hapi.model.catchment import Catchment
 
 # %% Paths
-Parameterpath = "tests/rrm/data/coello/coello-lumpedparameter-muskingum.txt"
-MeteoDataPath = "tests/rrm/data/coello/meteo-lumped-data-MSWEP.csv"
+Parameterpath = "tests/datasets/coello/coello-lumpedparameter-muskingum.txt"
+MeteoDataPath = "tests/datasets/coello/meteo-lumped-data-MSWEP.csv"
 Path = "examples/data/lumped/"
 # %%
 ### meteorological data

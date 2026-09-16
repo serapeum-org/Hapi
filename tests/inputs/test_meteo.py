@@ -23,7 +23,7 @@ from hapi.inputs import METEO_VARIABLES, FlowNetwork, MeteoInputs, read_rasters
 from hapi.inputs import meteo as inputs_module
 from hapi.model.catchment import Catchment
 
-NC_DIR = "tests/rrm/data/coello"
+NC_DIR = "tests/datasets/coello"
 
 
 @pytest.fixture(scope="module")
@@ -60,7 +60,7 @@ def from_netcdf_files() -> MeteoInputs:
 
 
 #: One NetCDF holding all three drivers, its variables named after them. Regenerate with
-#: `tests/rrm/data/coello/convert_and_combine_meteo_inputs_to_netcdf.py`.
+#: `tests/datasets/coello/convert_and_combine_meteo_inputs_to_netcdf.py`.
 COMBINED_NC = f"{NC_DIR}/meteo.nc"
 
 

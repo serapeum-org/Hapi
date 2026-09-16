@@ -25,7 +25,7 @@ from hapi.model.catchment import Catchment
 from hapi.model.lake import Lake
 from hapi.simulation.validated import DistributedRun
 
-JIBOA_ROOT = "tests/rrm/data/jiboa"
+JIBOA_ROOT = "tests/datasets/jiboa"
 # Must be inside the Coello domain. (2, 1) -- the cell the Jiboa fixture drains into -- is
 # masked here, so the lake's Muskingum parameters read NaN, `muskingum_v` divides by NaN, and
 # the injected series is all-NaN. The cell then routes to zeros and every assertion on it

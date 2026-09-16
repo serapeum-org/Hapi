@@ -266,7 +266,7 @@ class TestParameterManagerIntegration:
     def test_integration_download_files(self, parameter_manager):
         """Integration test for downloading files from an article."""
         set_id = 1
-        int_test_dir = Path("tests/rrm/data/parameters/download_files")
+        int_test_dir = Path("tests/datasets/parameters/download_files")
         int_test_dir.mkdir(parents=True, exist_ok=True)
 
         parameter_manager.download_files(set_id, int_test_dir)

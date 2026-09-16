@@ -23,7 +23,7 @@ from hapi.engine.run import Run
 from hapi.inputs import METEO_VARIABLES, FlowNetwork, MeteoInputs
 from hapi.model.catchment import Catchment
 
-COMBINED_NC = "tests/rrm/data/coello/meteo.nc"
+COMBINED_NC = "tests/datasets/coello/meteo.nc"
 
 METRIC_NAMES = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
 

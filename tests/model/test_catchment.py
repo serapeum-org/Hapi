@@ -163,7 +163,7 @@ class TestLumped:
         lumped_gauges_path: str,
         coello_gauges_date_fmt: str,
     ):
-        path = "tests/rrm/data/test-Lumped-Model_results.txt"
+        path = "tests/datasets/test-Lumped-Model_results.txt"
         if os.path.exists(path):
             os.remove(path)
         coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])

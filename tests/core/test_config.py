@@ -39,7 +39,7 @@ from hapi.engine.run import Run
 from hapi.inputs import MeteoInputs
 from hapi.model.catchment import Catchment
 
-COMBINED_NC = "tests/rrm/data/coello/meteo.nc"
+COMBINED_NC = "tests/datasets/coello/meteo.nc"
 
 
 @pytest.fixture
@@ -1113,9 +1113,9 @@ class TestMeteoInputsFromConfig:
         meteo = MeteoInputs.from_config(
             MeteoConfig(
                 source="netcdf_files",
-                precipitation="tests/rrm/data/coello/prec.nc",
-                temperature="tests/rrm/data/coello/temp.nc",
-                evapotranspiration="tests/rrm/data/coello/evap.nc",
+                precipitation="tests/datasets/coello/prec.nc",
+                temperature="tests/datasets/coello/temp.nc",
+                evapotranspiration="tests/datasets/coello/evap.nc",
             ),
             start=coello_start_date,
             end=coello_end_date,
