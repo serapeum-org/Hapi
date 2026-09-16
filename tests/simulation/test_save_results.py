@@ -8,6 +8,8 @@ unverified — these tests cover it directly.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from pyramids.dataset import Dataset
@@ -333,6 +335,22 @@ def test_save_without_a_template_raster_says_what_it_needs(
     """
     with pytest.raises(ValueError, match="flow_acc_path"):
         coello_run.results.save(path=tmp_path, result=1)
+
+
+def test_save_treats_an_empty_path_template_as_missing(coello_run: Catchment, tmp_path):
+    """Test that `flow_acc_path=Path("")` gets the same message as omitting it.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        tmp_path: Destination directory.
+
+    Test scenario:
+        The guard tested truthiness, and `Path("")` is `Path(".")`, which is always truthy,
+        so a caller spelling the empty default as a `Path` skipped the message and got a
+        GDAL failure on the current directory instead.
+    """
+    with pytest.raises(ValueError, match="flow_acc_path"):
+        coello_run.results.save(path=tmp_path, result=1, flow_acc_path=Path(""))
 
 
 @pytest.mark.parametrize("result", [0, 9])

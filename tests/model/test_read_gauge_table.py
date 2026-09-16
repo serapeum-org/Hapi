@@ -10,6 +10,8 @@ a ``GeoDataFrame`` for everything downstream.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -160,6 +162,26 @@ class TestReadGaugeTable:
         )
         assert not hasattr(catchment.GaugesTable, "crs"), (
             "a CSV gauge table has no geometry and must not become a spatial frame"
+        )
+
+    def test_an_empty_path_accumulation_file_means_none_was_given(
+        self, catchment, coello_gauges_table
+    ):
+        """Test that `flow_acc_file=Path("")` skips gauge location, like the empty default.
+
+        Args:
+            coello_gauges_table: Path fixture for the Coello gauge CSV.
+
+        Test scenario:
+            The empty string means "do not locate the gauges on the grid". The guard tested
+            truthiness, and `Path("")` is `Path(".")`, which is always truthy, so the same
+            intent spelled as a `Path` tried to open the current directory as a raster.
+        """
+        catchment.read_gauge_table(coello_gauges_table, flow_acc_file=Path(""))
+
+        assert "cell_row" not in catchment.GaugesTable.columns, (
+            "no accumulation raster was given, so the gauges must not be located; got columns "
+            f"{list(catchment.GaugesTable.columns)}"
         )
 
     def test_start_and_end_columns_are_parsed_as_dates(self, catchment, tmp_path):

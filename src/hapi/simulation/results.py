@@ -723,7 +723,9 @@ class SimulationResults:
         Raises:
             ValueError: `flow_acc_path` is empty, or `result` is not between 1 and 8.
         """
-        if not flow_acc_path:
+        # Compared as text: `Path("")` is `Path(".")`, which is always truthy, so a
+        # truthiness test lets the empty default through when it is spelled as a Path.
+        if str(flow_acc_path) in ("", "."):
             raise ValueError(
                 "writing rasters needs a georeferencing template; pass flow_acc_path, the "
                 "flow-accumulation raster the model was built on"

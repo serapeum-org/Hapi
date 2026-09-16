@@ -892,7 +892,9 @@ class Catchment:
                         "column should be omitted entirely."
                     )
                 self.GaugesTable[column] = parsed
-        if flow_acc_file and "cell_row" not in col_list:
+        # Compared as text: `Path("")` is `Path(".")`, which is always truthy, so a
+        # truthiness test would read the current directory as the accumulation raster.
+        if str(flow_acc_file) not in ("", ".") and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
             # calculate the nearest cell to each station
             dataset = Dataset.read_file(flow_acc_file)
